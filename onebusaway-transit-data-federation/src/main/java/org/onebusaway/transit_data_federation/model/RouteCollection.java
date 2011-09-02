@@ -57,6 +57,7 @@ public class RouteCollection {
 
   private String textColor;
 
+  // TODO Removing this reference for now, needs work to figure out right version of Route to use.
   @ManyToMany(fetch = FetchType.LAZY)
   @IndexColumn(name = "sequence", base = 1)
   private List<Route> routes;
