@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <parent>
+<!--   <parent>
     <artifactId>onebusaway</artifactId>
     <groupId>org.onebusaway</groupId>
     <version>1.0.7</version>
-  </parent>
+  </parent> -->
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.onebusaway</groupId>
   <artifactId>onebusaway-application-modules</artifactId>
-  <version>2.0.1-SNAPSHOT</version>
+  <version>2.0.2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>onebusaway-application-modules</name>
@@ -18,7 +18,7 @@
     <struts-version>2.1.8.1</struts-version>
     <spring-version>3.0.3.RELEASE</spring-version>
     <gwt-version>2.1.0</gwt-version>
-    <gtfs-version>1.1.9</gtfs-version>
+    <gtfs-version>2.0.2-SNAPSHOT</gtfs-version>
     <onebusaway-siri-version>0.0.3</onebusaway-siri-version>
   </properties>
 
@@ -430,6 +430,13 @@
       </plugins>
     </pluginManagement>
     <plugins>
+     <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
