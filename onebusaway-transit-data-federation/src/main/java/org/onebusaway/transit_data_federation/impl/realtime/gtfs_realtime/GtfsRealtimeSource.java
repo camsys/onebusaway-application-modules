@@ -35,6 +35,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.services.AgencyService;
@@ -245,8 +246,19 @@ public class GtfsRealtimeSource {
         Date timestamp = new Date(record.getTimeOfRecord());
         Date prev = _lastVehicleUpdate.get(vehicleId);
         if (prev == null || prev.before(timestamp)) {
+          _log.debug("update for vehicle=" + vehicleId + " tripId= " + record.getTripId() 
+              + " blockId= " + record.getBlockId()
+              + ", foo=" + record.getStatus());
+          try {
+            record.setPhase(EVehiclePhase.IN_PROGRESS);
+            //record.setStatus(status)
           _vehicleLocationListener.handleVehicleLocationRecord(record);
+          } catch (Exception any) {
+            _log.error("vlr insert failed=" + any);
+          }
           _lastVehicleUpdate.put(vehicleId, timestamp);
+        } else {
+          _log.error("out of order update for vehicle=" + record.getVehicleId());
         }
       }
     }
