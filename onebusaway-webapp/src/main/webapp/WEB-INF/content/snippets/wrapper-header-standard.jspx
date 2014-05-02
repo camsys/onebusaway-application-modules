@@ -60,23 +60,9 @@
 
 <jsp:element name="li">
   <jsp:attribute name="class">
-    <s:if test="#uri.startsWith(#contextPath + '/p/Research')">current</s:if>
-  </jsp:attribute>
-  <a href="${pageContext.request.contextPath}/p/Research.action">Research</a>
-</jsp:element>
-
-<jsp:element name="li">
-  <jsp:attribute name="class">
     <s:if test="#uri.startsWith(#contextPath + '/p/ContactUs')">current</s:if>
   </jsp:attribute>
   <a href="${pageContext.request.contextPath}/p/ContactUs.action">Contact Us</a>
-</jsp:element>
-
-<jsp:element name="li">
-  <jsp:attribute name="class">
-    <s:if test="#uri.startsWith(#contextPath + '/user')">current</s:if>
-  </jsp:attribute>
-  <a href="${pageContext.request.contextPath}/user/index.action">Settings</a>
 </jsp:element>
 
 </ul>
