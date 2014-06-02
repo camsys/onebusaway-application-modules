@@ -202,15 +202,20 @@ class ScheduledBlockLocationServiceImpl implements
 
       BlockStopTimeEntry blockStopTime = stopTimes.get(stopTimeIndex);
       StopTimeEntry stopTime = blockStopTime.getStopTime();
-
+      BlockStopTimeEntry previousBlockStopTime = null;
+      
+      if(stopTimeIndex > 0){
+    	 previousBlockStopTime = stopTimes.get(stopTimeIndex - 1);
+      }
+      
       /**
        * Is the vehicle currently at a layover at the stop?
        */
       if (stopTime.getArrivalTime() <= scheduleTime
           && scheduleTime <= stopTime.getDepartureTime()) {
 
-        return getScheduledBlockLocationWhenAtStopTime(blockStopTime, stopTime,
-            scheduleTime, stopTimeIndex);
+        return getScheduledBlockLocationWhenAtStopTime(blockStopTime, previousBlockStopTime,
+        		stopTime, scheduleTime, stopTimeIndex);
       }
     }
 
@@ -238,8 +243,8 @@ class ScheduledBlockLocationServiceImpl implements
   }
 
   private ScheduledBlockLocation getScheduledBlockLocationWhenAtStopTime(
-      BlockStopTimeEntry blockStopTime, StopTimeEntry stopTime,
-      int scheduleTime, int stopTimeIndex) {
+      BlockStopTimeEntry blockStopTime, BlockStopTimeEntry previousBlockStopTime,
+      StopTimeEntry stopTime, int scheduleTime, int stopTimeIndex) {
     StopEntry stop = stopTime.getStop();
 
     ScheduledBlockLocation result = new ScheduledBlockLocation();
@@ -268,6 +273,14 @@ class ScheduledBlockLocationServiceImpl implements
     result.setActiveTrip(blockStopTime.getTrip());
     result.setInService(true);
     result.setStopTimeIndex(stopTimeIndex);
+    
+    // If there is more than 1 stop, grab the previous stop
+    if(blockStopTime.hasPreviousStop()){
+   	 result.setPreviousStop(previousBlockStopTime);
+   	 result.setPreviousStopTimeOffset(0);
+   	 result.setPreviousDistanceAlongBlock(previousBlockStopTime.getDistanceAlongBlock());
+   }
+    
     return result;
   }
 
@@ -298,7 +311,7 @@ class ScheduledBlockLocationServiceImpl implements
       result.setClosestStop(blockAfter);
       result.setClosestStopTimeOffset(toTimeOffset);
     }
-
+    result.setPreviousStop(blockBefore);
     result.setNextStop(blockAfter);
     result.setNextStopTimeOffset(toTimeOffset);
 
@@ -411,6 +424,7 @@ class ScheduledBlockLocationServiceImpl implements
 
     result.setClosestStop(blockStopTime);
     result.setClosestStopTimeOffset(stopTime.getArrivalTime() - scheduleTime);
+    result.setPreviousStop(blockStopTime);
     result.setNextStop(blockStopTime);
     result.setNextStopTimeOffset(stopTime.getArrivalTime() - scheduleTime);
     result.setScheduledTime(scheduleTime);

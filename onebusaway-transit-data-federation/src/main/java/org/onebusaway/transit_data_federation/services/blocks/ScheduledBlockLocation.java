@@ -38,6 +38,12 @@ public class ScheduledBlockLocation {
   private BlockStopTimeEntry nextStop;
 
   private int nextStopTimeOffset;
+  
+  private BlockStopTimeEntry previousStop;
+  
+  private int previousStopTimeOffset;
+  
+  private double previousDistanceAlongBlock= Double.NaN;
 
   private boolean inService;
 
@@ -137,7 +143,31 @@ public class ScheduledBlockLocation {
     this.nextStopTimeOffset = nextStopTimeOffset;
   }
 
-  /**
+  public BlockStopTimeEntry getPreviousStop() {
+	return previousStop;
+}
+
+public void setPreviousStop(BlockStopTimeEntry previousStop) {
+	this.previousStop = previousStop;
+}
+
+public int getPreviousStopTimeOffset() {
+	return previousStopTimeOffset;
+}
+
+public void setPreviousStopTimeOffset(int previousStopTimeOffset) {
+	this.previousStopTimeOffset = previousStopTimeOffset;
+}
+
+public double getPreviousDistanceAlongBlock() {
+	return previousDistanceAlongBlock;
+}
+
+public void setPreviousDistanceAlongBlock(double previousDistanceAlongBlock) {
+	this.previousDistanceAlongBlock = previousDistanceAlongBlock;
+}
+
+/**
    * A scheduled block location can exist but not be considered "in service" in
    * the following cases:
    * 
@@ -188,4 +218,5 @@ public class ScheduledBlockLocation {
     b.append(")");
     return b.toString();
   }
+
 }
