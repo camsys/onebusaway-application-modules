@@ -42,8 +42,6 @@ public class ScheduledBlockLocation {
   private BlockStopTimeEntry previousStop;
   
   private int previousStopTimeOffset;
-  
-  private double previousDistanceAlongBlock= Double.NaN;
 
   private boolean inService;
 
@@ -157,14 +155,6 @@ public int getPreviousStopTimeOffset() {
 
 public void setPreviousStopTimeOffset(int previousStopTimeOffset) {
 	this.previousStopTimeOffset = previousStopTimeOffset;
-}
-
-public double getPreviousDistanceAlongBlock() {
-	return previousDistanceAlongBlock;
-}
-
-public void setPreviousDistanceAlongBlock(double previousDistanceAlongBlock) {
-	this.previousDistanceAlongBlock = previousDistanceAlongBlock;
 }
 
 /**
