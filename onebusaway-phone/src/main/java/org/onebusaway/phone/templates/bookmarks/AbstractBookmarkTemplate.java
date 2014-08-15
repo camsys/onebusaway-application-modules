@@ -18,12 +18,14 @@ package org.onebusaway.phone.templates.bookmarks;
 import org.onebusaway.presentation.model.BookmarkWithStopsBean;
 import org.onebusaway.presentation.services.BookmarkPresentationService;
 import org.onebusaway.presentation.services.text.TextModification;
-import org.onebusaway.probablecalls.agitemplates.AbstractAgiTemplate;
+import org.onebusaway.probablecalls.AbstractIvrTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-public abstract class AbstractBookmarkTemplate extends AbstractAgiTemplate {
-
+public abstract class AbstractBookmarkTemplate extends AbstractIvrTemplate {
+  private static Logger _log = LoggerFactory.getLogger(AbstractBookmarkTemplate.class);
   private TextModification _destinationPronunciation;
 
   private BookmarkPresentationService _bookmarkPresentationService;
@@ -48,9 +50,10 @@ public abstract class AbstractBookmarkTemplate extends AbstractAgiTemplate {
 
     String name = bookmark.getName();
     
-    if (name == null || name.length() == 0)
+    if (name == null || name.length() == 0) {
       name = _bookmarkPresentationService.getNameForStops(bookmark.getStops());
-
+      _log.debug("stop name=" + name);
+    }
     addText(_destinationPronunciation.modify(name));
   }
 }

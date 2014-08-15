@@ -16,6 +16,7 @@
 package org.onebusaway.phone.actions.stops;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.onebusaway.geospatial.model.CoordinateBounds;
@@ -24,11 +25,16 @@ import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.model.SearchQueryBean.EQueryType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.opensymphony.xwork2.ActionChainResult;
 
 public class StopForCodeAction extends AbstractAction {
 
   private static final long serialVersionUID = 1L;
-
+  private static Logger _log = LoggerFactory.getLogger(StopForCodeAction.class);
+  
   private String _stopCode;
 
   private List<String> _stopIds;
@@ -53,9 +59,12 @@ public class StopForCodeAction extends AbstractAction {
     if (bounds == null)
       return NEEDS_DEFAULT_SEARCH_LOCATION;
 
-    if (_stopCode == null || _stopCode.length() == 0)
+    if (_stopCode == null || _stopCode.length() == 0) {
+      _log.error("missing required input stopCode");
       return INPUT;
+    }
 
+    _log.debug("searching with stopCode=" + _stopCode);
     SearchQueryBean searchQuery = new SearchQueryBean();
     searchQuery.setBounds(bounds);
     searchQuery.setMaxCount(5);
@@ -69,13 +78,36 @@ public class StopForCodeAction extends AbstractAction {
     logUserInteraction("query", _stopCode);
 
     if (_stops.size() == 0) {
+      _log.debug("no stop found");
       return "noStopsFound";
     } else if (_stops.size() == 1) {
       StopBean stop = _stops.get(0);
       _stopIds = Arrays.asList(stop.getId());
+      _log.debug("found one stop = " + _stopIds);
+      
+      LinkedList<? extends String> chainHistory = ActionChainResult.getChainHistory();
+      for (String history : chainHistory) {
+        _log.debug("chain: " + history);
+      }
+      if (chainHistory.contains(makeKey("/", "/stop/arrivalsAndDeparturesForStopId", null))) {
+        _log.debug("cannot chain, result already present");
+        return null;
+      }
+      
       return SUCCESS;
     } else {
+      _log.error("found multiple stops");
       return "multipleStopsFound";
     }
   }
+  
+  private String makeKey(String namespace, String actionName, String methodName) {
+    if (null == methodName) {
+        String key = namespace + "/" + actionName;
+        _log.error("makeKey returning " + key);
+        return key;
+    }
+
+    return namespace + "/" + actionName + "!" + methodName;
+}
 }

@@ -19,9 +19,9 @@ import java.util.List;
 
 import org.onebusaway.phone.templates.Messages;
 import org.onebusaway.presentation.services.text.TextModification;
-import org.onebusaway.probablecalls.AgiActionName;
-import org.onebusaway.probablecalls.agitemplates.AbstractAgiTemplate;
-import org.onebusaway.probablecalls.agitemplates.AgiTemplateId;
+import org.onebusaway.probablecalls.AbstractIvrTemplate;
+import org.onebusaway.probablecalls.IvrActionName;
+import org.onebusaway.probablecalls.agitemplates.IvrTemplateId;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,8 +29,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.util.ValueStack;
 
-@AgiTemplateId("/search/multipleRoutesFound")
-public class MultipleRoutesFoundTemplate extends AbstractAgiTemplate {
+@IvrTemplateId("/search/multipleRoutesFound")
+public class MultipleRoutesFoundTemplate extends AbstractIvrTemplate {
 
   private TextModification _routeNumberPronunciation;
   
@@ -66,12 +66,12 @@ public class MultipleRoutesFoundTemplate extends AbstractAgiTemplate {
       
       String key = Integer.toString(index++);
       addText(key);
-      AgiActionName action = addAction(key,"/search/tree");
+      IvrActionName action = addAction(key,"/search/tree");
       action.putParam("route", route);
     }
 
     addMessage(Messages.HOW_TO_GO_BACK);
-    addAction("\\*", "/back");
+    addAction("8", "/back");
 
     addMessage(Messages.TO_REPEAT);
   }

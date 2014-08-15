@@ -16,26 +16,26 @@
 package org.onebusaway.phone.templates.stops;
 
 import org.onebusaway.phone.templates.Messages;
-import org.onebusaway.probablecalls.agitemplates.AbstractAgiTemplate;
-import org.onebusaway.probablecalls.agitemplates.AgiTemplateId;
+import org.onebusaway.probablecalls.AbstractIvrTemplate;
+import org.onebusaway.probablecalls.agitemplates.IvrTemplateId;
 
 
 import com.opensymphony.xwork2.ActionContext;
 
 
-@AgiTemplateId("/stop/index")
-public class IndexTemplate extends AbstractAgiTemplate {
+@IvrTemplateId("/stop/index")
+public class IndexTemplate extends AbstractIvrTemplate {
 
     @Override
     public void buildTemplate(ActionContext context) {
 
         addMessage(Messages.STOP_INDEX_ACTION);
-        addActionWithParameterFromMatch("([1-9][0-9]*)#", "/stop/byCode", "stopCode", 1);
+        addActionWithParameterFromMatch("([1-9][0-9]*)", "/stop/byCode", "stopCode", 1); //TODO used to need #
 
-        addAction("(#|0|[1-9].*\\*)", "/repeat");
+        addAction("9", "/repeat");
 
         addMessage(Messages.HOW_TO_GO_BACK);
-        addAction("\\*", "/back");
+        addAction("8", "/back");
 
         addMessage(Messages.TO_REPEAT);
     }

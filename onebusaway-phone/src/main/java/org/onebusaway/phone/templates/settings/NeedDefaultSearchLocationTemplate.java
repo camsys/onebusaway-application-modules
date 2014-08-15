@@ -16,13 +16,13 @@
 package org.onebusaway.phone.templates.settings;
 
 import org.onebusaway.phone.templates.Messages;
-import org.onebusaway.probablecalls.agitemplates.AbstractAgiTemplate;
-import org.onebusaway.probablecalls.agitemplates.AgiTemplateId;
+import org.onebusaway.probablecalls.AbstractIvrTemplate;
+import org.onebusaway.probablecalls.agitemplates.IvrTemplateId;
 
 import com.opensymphony.xwork2.ActionContext;
 
-@AgiTemplateId("/settings/needDefaultSearchLocation")
-public class NeedDefaultSearchLocationTemplate extends AbstractAgiTemplate {
+@IvrTemplateId("/settings/needDefaultSearchLocation")
+public class NeedDefaultSearchLocationTemplate extends AbstractIvrTemplate {
 
   @Override
   public void buildTemplate(ActionContext context) {

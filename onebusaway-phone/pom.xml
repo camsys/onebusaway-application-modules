@@ -36,7 +36,7 @@
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-probablecalls</artifactId>
-            <version>1.0.5</version>
+            <version>1.0.7-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.opensymphony</groupId>
@@ -44,7 +44,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
+        <dependency>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+          <version>14.0.1</version>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
@@ -60,6 +64,12 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+      		<groupId>javax.servlet</groupId>
+      		<artifactId>servlet-api</artifactId>
+      		<scope>provided</scope>
+    	</dependency>
+        
     </dependencies>
 
     <build>

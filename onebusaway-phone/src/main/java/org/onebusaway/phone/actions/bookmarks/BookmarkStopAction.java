@@ -23,12 +23,16 @@ import org.onebusaway.phone.actions.AbstractAction;
 import org.onebusaway.presentation.services.BookmarkPresentationService;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.users.model.properties.RouteFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class BookmarkStopAction extends AbstractAction {
 
+  private static Logger _log = LoggerFactory.getLogger(BookmarkStopAction.class);
+  
   private static final long serialVersionUID = 1L;
 
   private List<StopBean> _stops = new ArrayList<StopBean>();
@@ -66,7 +70,7 @@ public class BookmarkStopAction extends AbstractAction {
     _currentUserService.addStopBookmark(name, stopIds, new RouteFilter());
     
     logUserInteraction("stopIds",stopIds);
-    
+    _log.debug("bookmark found stops=" + stopIds);
     return SUCCESS;
   }
 }

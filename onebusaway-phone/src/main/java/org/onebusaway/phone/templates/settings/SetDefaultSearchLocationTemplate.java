@@ -18,17 +18,17 @@ package org.onebusaway.phone.templates.settings;
 import com.opensymphony.xwork2.ActionContext;
 
 import org.onebusaway.phone.templates.Messages;
-import org.onebusaway.probablecalls.AgiActionName;
-import org.onebusaway.probablecalls.agitemplates.AbstractAgiTemplate;
-import org.onebusaway.probablecalls.agitemplates.AgiTemplateId;
+import org.onebusaway.probablecalls.AbstractIvrTemplate;
+import org.onebusaway.probablecalls.IvrActionName;
+import org.onebusaway.probablecalls.agitemplates.IvrTemplateId;
 
-@AgiTemplateId("/settings/setDefaultSearchLocation")
-public class SetDefaultSearchLocationTemplate extends AbstractAgiTemplate {
+@IvrTemplateId("/settings/setDefaultSearchLocation")
+public class SetDefaultSearchLocationTemplate extends AbstractIvrTemplate {
 
   @Override
   public void buildTemplate(ActionContext context) {
     addMessage(Messages.SET_DEFAULT_LOCATION);
-    AgiActionName action = setNextAction("/back");
+    IvrActionName action = setNextAction("/back");
     action.putParam("count", 2);
   }
 }

@@ -29,12 +29,15 @@ import org.onebusaway.container.stop.StopButtonService;
 public class PhoneServerMain {
 
   private static final String ARG_RESOURCES = "resources";
+  private static final String ARG_IMPL = "impl";
 
   public static void main(String[] args) throws Exception {
 
     Options options = new Options();
     Daemonizer.buildOptions(options);
+    options.addOption(ARG_IMPL, true, "impl");
     options.addOption(ARG_RESOURCES, true, "resources");
+    
 
     Parser parser = new GnuParser();
     CommandLine cli = parser.parse(options, args);
@@ -66,7 +69,21 @@ public class PhoneServerMain {
   private static List<String> getResources(CommandLine cli) {
     List<String> resources = new ArrayList<String>();
     resources.add("classpath:org/onebusaway/phone/application-context.xml");
-
+    boolean isAGI = false; //default
+    
+    if (cli.hasOption(ARG_IMPL)) {
+      String val = cli.getOptionValue(ARG_IMPL);
+      if ("tm".equalsIgnoreCase(val)) {
+        isAGI = false;
+      }
+    }
+    
+    if (isAGI) {
+      resources.add("classpath:org/onebusaway/phone/application-context-agi.xml");
+    } else {
+      resources.add("classpath:org/onebusaway/phone/application-context-tm.xml");
+    }
+    
     if (cli.hasOption(ARG_RESOURCES)) {
       String[] tokens = cli.getOptionValue(ARG_RESOURCES).split(",");
       for (String token : tokens)

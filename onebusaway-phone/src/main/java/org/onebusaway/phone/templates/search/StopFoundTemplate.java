@@ -19,9 +19,9 @@ import java.util.Arrays;
 
 import org.onebusaway.phone.templates.Messages;
 import org.onebusaway.presentation.services.text.TextModification;
-import org.onebusaway.probablecalls.AgiActionName;
-import org.onebusaway.probablecalls.agitemplates.AbstractAgiTemplate;
-import org.onebusaway.probablecalls.agitemplates.AgiTemplateId;
+import org.onebusaway.probablecalls.AbstractIvrTemplate;
+import org.onebusaway.probablecalls.IvrActionName;
+import org.onebusaway.probablecalls.agitemplates.IvrTemplateId;
 import org.onebusaway.transit_data.model.StopBean;
 
 import com.opensymphony.xwork2.ActionContext;
@@ -30,8 +30,8 @@ import com.opensymphony.xwork2.util.ValueStack;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-@AgiTemplateId("/search/stopFound")
-public class StopFoundTemplate extends AbstractAgiTemplate {
+@IvrTemplateId("/search/stopFound")
+public class StopFoundTemplate extends AbstractIvrTemplate {
 
   private TextModification _destinationPronunciation;
 
@@ -67,20 +67,20 @@ public class StopFoundTemplate extends AbstractAgiTemplate {
     addText(stop.getCode());
 
     addMessage(Messages.STOP_FOUND_ARRIVAL_INFO);
-    AgiActionName arrivalInfoAction = addAction("1", "/stop/arrivalsAndDeparturesForStopId");
+    IvrActionName arrivalInfoAction = addAction("1", "/stop/arrivalsAndDeparturesForStopId");
     arrivalInfoAction.putParam("stopIds", Arrays.asList(stop.getId()));
 
     addMessage(Messages.STOP_FOUND_BOOKMARK_THIS_LOCATION);
-    AgiActionName bookmarkAction = addAction("2", "/stop/bookmark");
+    IvrActionName bookmarkAction = addAction("2", "/stop/bookmark");
     bookmarkAction.putParam("stop", stop);
 
     addMessage(Messages.STOP_FOUND_RETURN_TO_MAIN_MENU);
     addAction("3", "/index");
 
-    addAction("[04-9]", "/repeat");
+    addAction("9", "/repeat");
 
     addMessage(Messages.HOW_TO_GO_BACK);
-    addAction("\\*", "/back");
+    addAction("8", "/back");
 
     addMessage(Messages.TO_REPEAT);
   }

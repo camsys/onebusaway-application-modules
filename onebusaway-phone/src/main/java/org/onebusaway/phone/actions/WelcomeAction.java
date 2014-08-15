@@ -16,11 +16,14 @@
 package org.onebusaway.phone.actions;
 
 import org.onebusaway.users.services.CurrentUserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class WelcomeAction extends AbstractAction {
 
     private static final long serialVersionUID = 1L;
+    private static Logger _log = LoggerFactory.getLogger(WelcomeAction.class);
     
     private CurrentUserService _currentUserService;
     
@@ -31,9 +34,13 @@ public class WelcomeAction extends AbstractAction {
     
     @Override
     public String execute() {
+      _log.debug("execute");
       logUserInteraction();
-      if( _currentUserService.hasPhoneNumberRegistration() )
+      if( _currentUserService.hasPhoneNumberRegistration() ) {
+        _log.debug("registering");
         return "registration";
+      }
+      _log.debug("not registering");
       return SUCCESS;
     }
 }

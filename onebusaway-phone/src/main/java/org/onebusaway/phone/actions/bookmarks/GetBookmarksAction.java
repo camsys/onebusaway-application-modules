@@ -20,12 +20,16 @@ import java.util.List;
 import org.onebusaway.phone.actions.AbstractAction;
 import org.onebusaway.presentation.model.BookmarkWithStopsBean;
 import org.onebusaway.presentation.services.BookmarkPresentationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class GetBookmarksAction extends AbstractAction {
 
+  private static Logger _log = LoggerFactory.getLogger(GetBookmarksAction.class);
+  
   private static final long serialVersionUID = 1L;
 
   private BookmarkPresentationService _bookmarkPresentationService;
@@ -45,6 +49,7 @@ public class GetBookmarksAction extends AbstractAction {
   @Override
   public String execute() throws Exception {
     _bookmarks = _bookmarkPresentationService.getBookmarksWithStops(_currentUser.getBookmarks());
+    _log.debug("found bookmarks=" + _bookmarks);
     logUserInteraction();
     return SUCCESS;
   }

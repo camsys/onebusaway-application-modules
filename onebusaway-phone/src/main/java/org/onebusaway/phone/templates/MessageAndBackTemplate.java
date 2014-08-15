@@ -15,14 +15,14 @@
  */
 package org.onebusaway.phone.templates;
 
-import org.onebusaway.probablecalls.agitemplates.AbstractAgiTemplate;
-import org.onebusaway.probablecalls.agitemplates.AgiTemplateId;
+import org.onebusaway.probablecalls.AbstractIvrTemplate;
+import org.onebusaway.probablecalls.agitemplates.IvrTemplateId;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.util.ValueStack;
 
-@AgiTemplateId("/message_and_back")
-public class MessageAndBackTemplate extends AbstractAgiTemplate {
+@IvrTemplateId("/message_and_back")
+public class MessageAndBackTemplate extends AbstractIvrTemplate {
 
   public MessageAndBackTemplate() {
     super(true);
@@ -43,7 +43,7 @@ public class MessageAndBackTemplate extends AbstractAgiTemplate {
     if (nextAction != null) {
       setNextAction(nextAction);
     } else {
-      addAction(".*\\*", "/back");
+      addAction("8", "/back");
       setNextAction("/back");
     }
   }

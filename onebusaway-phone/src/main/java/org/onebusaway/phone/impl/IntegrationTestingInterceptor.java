@@ -20,6 +20,10 @@ import java.util.Map;
 import org.asteriskjava.fastagi.AgiRequest;
 import org.onebusaway.presentation.impl.users.PhoneNumberLoginInterceptor;
 import org.onebusaway.probablecalls.AgiEntryPoint;
+import org.onebusaway.probablecalls.twilio.TwilioEntryPoint;
+import org.onebusaway.probablecalls.twilio.TwilioRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
@@ -31,11 +35,21 @@ public class IntegrationTestingInterceptor extends AbstractInterceptor {
 
   private static final long serialVersionUID = 1L;
 
+  private static Logger _log = LoggerFactory.getLogger(IntegrationTestingInterceptor.class);
+  
   @Override
   public String intercept(ActionInvocation invocation) throws Exception {
     ActionContext context = invocation.getInvocationContext();
-    AgiRequest request = AgiEntryPoint.getAgiRequest(context);
-    Map<?, ?> r = request.getRequest();
+    _log.debug("intercept(" + invocation +")");
+    
+    Map<?, ?> r = null;
+    if (isTwilio()) {
+      TwilioRequest tr = TwilioEntryPoint.getTwilioRequest(context);
+      r = tr.getContextMap();
+    } else {
+      AgiRequest request = AgiEntryPoint.getAgiRequest(context);
+      r = request.getRequest();
+    }
 
     /**
      * This interceptor will be called multiple times in the course of
@@ -48,6 +62,11 @@ public class IntegrationTestingInterceptor extends AbstractInterceptor {
       context.getParameters().put(PhoneNumberLoginInterceptor.RESET_USER,
           Boolean.TRUE);
     return invocation.invoke();
+  }
+
+  private boolean isTwilio() {
+    // TODO Auto-generated method stub
+    return true;
   }
 
 }

@@ -91,7 +91,7 @@ public class AbstractAction extends ActionSupport implements CurrentUserAware {
     ActionContext context = ActionContext.getContext();
     ActionInvocation invocation = context.getActionInvocation();
     ActionProxy proxy = invocation.getProxy();
-
+    
     entry.put("interface", "phone");
     entry.put("namespace", proxy.getNamespace());
     entry.put("actionName", proxy.getActionName());

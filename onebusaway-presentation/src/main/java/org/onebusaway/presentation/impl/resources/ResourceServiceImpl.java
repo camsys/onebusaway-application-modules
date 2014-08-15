@@ -112,7 +112,7 @@ public class ResourceServiceImpl implements ResourceService {
     _pattern = pattern;
   }
 
-  @Autowired
+  @Autowired(required=false)
   public void setServletContext(ServletContext servletContext) {
 
     _servletContext = servletContext;

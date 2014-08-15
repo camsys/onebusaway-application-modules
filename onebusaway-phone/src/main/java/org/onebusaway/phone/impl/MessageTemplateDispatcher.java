@@ -15,15 +15,20 @@
  */
 package org.onebusaway.phone.impl;
 
-import org.onebusaway.probablecalls.AgiActionName;
+import org.onebusaway.probablecalls.IvrActionName;
 import org.onebusaway.probablecalls.agitemplates.AgiTemplate;
 import org.onebusaway.probablecalls.agitemplates.AgiTemplateDispatcher;
+import org.onebusaway.probablecalls.twilio.TwilioTemplateDispatcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.util.ValueStack;
 
-public class MessageTemplateDispatcher extends AgiTemplateDispatcher {
+public class MessageTemplateDispatcher extends TwilioTemplateDispatcher {
 
+  private static Logger _log = LoggerFactory.getLogger(MessageTemplateDispatcher.class);
+  
   private static final long serialVersionUID = 1L;
 
   private String _message;
@@ -44,17 +49,18 @@ public class MessageTemplateDispatcher extends AgiTemplateDispatcher {
     return _nextAction;
   }
 
-  @Override
-  protected AgiActionName executeTemplate(ActionContext context,
+//  @Override
+  protected IvrActionName executeTemplate(ActionContext context,
       AgiTemplate template) throws Exception {
-
+    _log.debug("executeTemplate(" + context + ", " + template);
+    
     if (_message != null) {
       ValueStack stack = context.getValueStack();
       MessageSource source = new MessageSource(_message,_nextAction);
       stack.push(source);
     }
-
-    return super.executeTemplate(context, template);
+//    return super.executeTemplate(context, template);
+    return template.execute(context);
   }
 
   public static class MessageSource {

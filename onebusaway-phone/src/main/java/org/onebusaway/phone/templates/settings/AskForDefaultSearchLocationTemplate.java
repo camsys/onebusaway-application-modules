@@ -16,14 +16,14 @@
 package org.onebusaway.phone.templates.settings;
 
 import org.onebusaway.phone.templates.Messages;
-import org.onebusaway.probablecalls.agitemplates.AbstractAgiTemplate;
-import org.onebusaway.probablecalls.agitemplates.AgiTemplateId;
+import org.onebusaway.probablecalls.AbstractIvrTemplate;
+import org.onebusaway.probablecalls.agitemplates.IvrTemplateId;
 
 import com.opensymphony.xwork2.ActionContext;
 
 
-@AgiTemplateId("/settings/askForDefaultSearchLocation")
-public class AskForDefaultSearchLocationTemplate extends AbstractAgiTemplate {
+@IvrTemplateId("/settings/askForDefaultSearchLocation")
+public class AskForDefaultSearchLocationTemplate extends AbstractIvrTemplate {
 
     @Override
     public void buildTemplate(ActionContext context) {
@@ -31,10 +31,10 @@ public class AskForDefaultSearchLocationTemplate extends AbstractAgiTemplate {
         addMessage(Messages.ASK_FOR_LOCATION);
         addActionWithParameterFromMatch("([0-9]+)#", "/settings/setDefaultSearchLocation", "location", 1);
 
-        addAction("(#|[0-9]+\\*)", "/repeat");
+        addAction("9", "/repeat");
 
         addMessage(Messages.HOW_TO_GO_BACK);
-        addAction("\\*", "/back");
+        addAction("8", "/back");
 
         addMessage(Messages.TO_REPEAT);
     }

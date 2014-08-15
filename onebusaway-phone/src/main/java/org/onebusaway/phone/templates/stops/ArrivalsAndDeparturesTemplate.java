@@ -25,24 +25,28 @@ import org.onebusaway.presentation.client.RoutePresenter;
 import org.onebusaway.presentation.impl.AgencyPresenter;
 import org.onebusaway.presentation.impl.ArrivalAndDepartureComparator;
 import org.onebusaway.presentation.services.text.TextModification;
-import org.onebusaway.probablecalls.AgiActionName;
+import org.onebusaway.probablecalls.AbstractIvrTemplate;
+import org.onebusaway.probablecalls.IvrActionName;
 import org.onebusaway.probablecalls.agitemplates.AbstractAgiTemplate;
-import org.onebusaway.probablecalls.agitemplates.AgiTemplateId;
+import org.onebusaway.probablecalls.agitemplates.IvrTemplateId;
 import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopsWithArrivalsAndDeparturesBean;
 import org.onebusaway.transit_data.model.TransitDataConstants;
 import org.onebusaway.transit_data.model.trips.TripBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.util.ValueStack;
 
-@AgiTemplateId("/stop/arrivalsAndDepartures")
-public class ArrivalsAndDeparturesTemplate extends AbstractAgiTemplate {
+@IvrTemplateId("/stop/arrivalsAndDepartures")
+public class ArrivalsAndDeparturesTemplate extends AbstractIvrTemplate {
 
+  private static Logger _log = LoggerFactory.getLogger(ArrivalsAndDeparturesTemplate.class);
   private TextModification _routeNumberPronunciation;
 
   private TextModification _destinationPronunciation;
@@ -65,7 +69,7 @@ public class ArrivalsAndDeparturesTemplate extends AbstractAgiTemplate {
 
   @Override
   public void buildTemplate(ActionContext context) {
-
+    _log.debug("in!");
     ValueStack valueStack = context.getValueStack();
     PhoneArrivalsAndDeparturesModel model = (PhoneArrivalsAndDeparturesModel) valueStack.findValue("model");
     StopsWithArrivalsAndDeparturesBean result = model.getResult();
@@ -73,21 +77,21 @@ public class ArrivalsAndDeparturesTemplate extends AbstractAgiTemplate {
     buildPredictedArrivalsTemplate(result.getArrivalsAndDepartures());
 
     addMessage(Messages.ARRIVAL_INFO_ON_SPECIFIC_ROUTE);
-    AgiActionName byRouteAction = addActionWithParameterFromMatch("1(\\d+)#",
+    IvrActionName byRouteAction = addActionWithParameterFromMatch("1(\\d+)#",
         "/stop/arrivalsAndDeparturesForRoute", "route", 1);
     byRouteAction.putParam("model", model);
 
     addMessage(Messages.ARRIVAL_INFO_BOOKMARK_THIS_LOCATION);
-    AgiActionName bookmarkAction = addAction("2", "/stop/bookmark");
+    IvrActionName bookmarkAction = addAction("2", "/stop/bookmark");
     bookmarkAction.putParam("stops", result.getStops());
 
     addMessage(Messages.ARRIVAL_INFO_RETURN_TO_MAIN_MENU);
     addAction("3", "/index");
 
-    addAction("(#|[04-9]|1.*\\*)", "/repeat");
+    addAction("9", "/repeat");
 
     addMessage(Messages.HOW_TO_GO_BACK);
-    addAction("\\*", "/back");
+    addAction("8", "/back");
 
     addMessage(Messages.TO_REPEAT);
   }

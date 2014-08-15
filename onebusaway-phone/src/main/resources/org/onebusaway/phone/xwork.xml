@@ -16,7 +16,7 @@
     limitations under the License.
 
 -->
-<!DOCTYPE xwork PUBLIC "-//OpenSymphony Group//XWork 2.0//EN" "http://www.opensymphony.com/xwork/xwork-2.0.dtd">
+<!DOCTYPE xwork PUBLIC "-//OpenSymphony Group//XWork 2.0//EN" "http://struts.apache.org/dtds/xwork-2.0.dtd">
 <xwork>
 
     <include file="org/onebusaway/probablecalls/xwork.xml" />
@@ -103,6 +103,7 @@
         </action>
 
         <action name="/stop/arrivalsAndDeparturesForStopId" class="org.onebusaway.phone.actions.stops.ArrivalsAndDeparturesForStopIdAction">
+        	<result type="message" name="input">NO_MOST_RECENT</result> <!--  todo remove this -->
             <result>/stop/arrivalsAndDepartures</result>
         </action>
 

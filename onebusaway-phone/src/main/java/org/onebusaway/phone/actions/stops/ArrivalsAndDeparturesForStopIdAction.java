@@ -20,6 +20,8 @@ import java.util.Set;
 
 import org.onebusaway.phone.actions.AbstractAction;
 import org.onebusaway.phone.impl.PhoneArrivalsAndDeparturesModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.ModelDriven;
@@ -28,7 +30,8 @@ public class ArrivalsAndDeparturesForStopIdAction extends AbstractAction
     implements ModelDriven<PhoneArrivalsAndDeparturesModel> {
 
   private static final long serialVersionUID = 1L;
-
+  private static Logger _log = LoggerFactory.getLogger(ArrivalsAndDeparturesForStopIdAction.class);
+  
   private PhoneArrivalsAndDeparturesModel _model;
 
   @Autowired
@@ -50,14 +53,18 @@ public class ArrivalsAndDeparturesForStopIdAction extends AbstractAction
 
   public String execute() throws Exception {
 
-    if (_model.isMissingData())
+    _log.debug("execute");
+    if (_model.isMissingData()) {
+      _log.debug("missing data");
       return INPUT;
-
+    }
+    _log.debug("processing...");
     _model.process();
-
+    _log.debug("processed");
     logUserInteraction("stopIds", _model.getStopIds(), "routeIds",
         _model.getRouteFilter());
 
+    _log.debug("returning success");
     return SUCCESS;
   }
 }

@@ -19,13 +19,13 @@ import java.util.List;
 
 import org.onebusaway.phone.templates.Messages;
 import org.onebusaway.presentation.model.BookmarkWithStopsBean;
-import org.onebusaway.probablecalls.AgiActionName;
-import org.onebusaway.probablecalls.agitemplates.AgiTemplateId;
+import org.onebusaway.probablecalls.IvrActionName;
+import org.onebusaway.probablecalls.agitemplates.IvrTemplateId;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.util.ValueStack;
 
-@AgiTemplateId("/bookmarks/manage")
+@IvrTemplateId("/bookmarks/manage")
 public class ManageTemplate extends AbstractBookmarkTemplate {
 
   public ManageTemplate() {
@@ -53,7 +53,7 @@ public class ManageTemplate extends AbstractBookmarkTemplate {
         String toPress = Integer.toString(index);
         addText(toPress);
 
-        AgiActionName deleteAction = addAction(toPress,
+        IvrActionName deleteAction = addAction(toPress,
             "/bookmarks/deleteByIndex");
         deleteAction.putParam("index", index - 1);
 
@@ -61,10 +61,10 @@ public class ManageTemplate extends AbstractBookmarkTemplate {
       }
     }
 
-    addAction("(#|0|.+\\*)", "/repeat");
+    addAction("9", "/repeat");
 
     addMessage(Messages.HOW_TO_GO_BACK);
-    addAction("\\*", "/back");
+    addAction("8", "/back");
 
     addMessage(Messages.TO_REPEAT);
   }

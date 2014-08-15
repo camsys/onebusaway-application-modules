@@ -24,20 +24,30 @@
            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
            http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-2.0.xsd">
-
-    <!-- This turns on automatic annotation configuration -->
-    <context:annotation-config />
-
-
-    <import resource="classpath:org/onebusaway/presentation/application-context.xml" />
-    <import resource="classpath:org/onebusaway/geocoder/application-context.xml" />
-
-    <context:component-scan base-package="org.onebusaway.phone.impl" />
-
-    <bean id="myxworkConfiguration" class="org.onebusaway.phone.XWorkConfigurationFactoryBean">
-        <property name="xmlConfigurationSource" value="org/onebusaway/phone/xwork.xml" />
+<!--  Twilio specific implementation of phone -->
+    
+    <bean id="mappingStrategy" class="org.onebusaway.probablecalls.twilio.SimpleMappingStrategy">
+    	<property name="mappings">
+    		<map>
+    			<entry key="index.twiml" value-ref="twilioEntryPoint" />
+    		</map>
+    	</property>
+    	<property name="registry" ref="twilioTemplateRegistry" />
     </bean>
 
-	<import resource="classpath:org/onebusaway/phone/application-context-tm.xml" />
-	
+    <bean id="twilioEntryPoint" class="org.onebusaway.phone.impl.CustomTwilioEntryPoint">
+        <property name="action" value="/welcome" />
+        <property name="configuration" ref="myxworkConfiguration" />
+        <property name="pauseBetweenActions" value="500" />
+        <property name="mappingStrategy" ref="mappingStrategy" />
+    </bean>
+
+	<bean id="twilioTemplateSource" class="org.onebusaway.probablecalls.twilio.ClasspathScanningTwilioTemplateSource">
+		<property name="scanPackage" value="org.onebusaway.phone.templates" />
+	</bean>
+
+	<bean id="twilioTemplateRegistry" class="org.onebusaway.probablecalls.twilio.TwilioTemplateRegistry">
+		<property name="source" ref="twilioTemplateSource" />
+	</bean>
+           
 </beans>

@@ -15,17 +15,18 @@
  */
 package org.onebusaway.phone.templates;
 
+import org.onebusaway.probablecalls.AbstractIvrTemplate;
 import org.onebusaway.probablecalls.agitemplates.AbstractAgiTemplate;
-import org.onebusaway.probablecalls.agitemplates.AgiTemplateId;
+import org.onebusaway.probablecalls.agitemplates.IvrTemplateId;
 
 import com.opensymphony.xwork2.ActionContext;
 
-@AgiTemplateId("/welcome")
-public class WelcomeTemplate extends AbstractAgiTemplate {
+@IvrTemplateId("/welcome")
+public class WelcomeTemplate extends AbstractIvrTemplate {
 
     @Override
     public void buildTemplate(ActionContext context) {
-
+        addInput(1);
         addAction("0", "/help", "message", Messages.INDEX_HELP);
         
         addAction("1", "/stop/index");
@@ -36,7 +37,8 @@ public class WelcomeTemplate extends AbstractAgiTemplate {
         addAction("6", "/search/index");
         addAction("7", "/settings/index");
         
-        addAction("[#89*]", "/repeat");
+        //addAction("[#89*]", "/repeat");
+        addAction("9", "/repeat");
         
         setNextAction("/index");
 

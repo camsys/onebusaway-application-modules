@@ -22,15 +22,19 @@ import java.util.Set;
 import org.onebusaway.collections.MappingLibrary;
 import org.onebusaway.phone.templates.Messages;
 import org.onebusaway.presentation.model.BookmarkWithStopsBean;
-import org.onebusaway.probablecalls.AgiActionName;
-import org.onebusaway.probablecalls.agitemplates.AgiTemplateId;
+import org.onebusaway.probablecalls.IvrActionName;
+import org.onebusaway.probablecalls.agitemplates.IvrTemplateId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.util.ValueStack;
 
-@AgiTemplateId("/bookmarks/index")
+@IvrTemplateId("/bookmarks/index")
 public class IndexTemplate extends AbstractBookmarkTemplate {
 
+  private static Logger _log = LoggerFactory.getLogger(IndexTemplate.class);
+  
   public IndexTemplate() {
     super(true);
   }
@@ -41,7 +45,7 @@ public class IndexTemplate extends AbstractBookmarkTemplate {
 
     ValueStack stack = context.getValueStack();
     List<BookmarkWithStopsBean> bookmarks = (List<BookmarkWithStopsBean>) stack.findValue("bookmarks");
-
+    _log.debug("found bookmarks=" + bookmarks);
     if (bookmarks.isEmpty()) {
       addMessage(Messages.BOOKMARKS_EMPTY);
     } else {
@@ -53,7 +57,7 @@ public class IndexTemplate extends AbstractBookmarkTemplate {
 
         addMessage(Messages.FOR);
 
-        AgiActionName stopAction = addAction(toPress,
+        IvrActionName stopAction = addAction(toPress,
             "/stop/arrivalsAndDeparturesForStopId");
 
         List<String> stopIds = MappingLibrary.map(bookmark.getStops(), "id");
@@ -62,7 +66,7 @@ public class IndexTemplate extends AbstractBookmarkTemplate {
 
         stopAction.putParam("stopIds", stopIds);
         stopAction.putParam("routeIds", routeIds);
-
+        _log.debug("stopAction has param stopIds=" + stopIds);
         addBookmarkDescription(bookmark);
 
         addMessage(Messages.PLEASE_PRESS);
@@ -72,10 +76,10 @@ public class IndexTemplate extends AbstractBookmarkTemplate {
       }
     }
 
-    addAction("(#|0|.+\\*)", "/repeat");
+    addAction("9", "/repeat");
 
     addMessage(Messages.HOW_TO_GO_BACK);
-    addAction("\\*", "/back");
+    addAction("8", "/back");
 
     addMessage(Messages.TO_REPEAT);
   }

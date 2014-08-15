@@ -41,10 +41,14 @@ import org.onebusaway.users.client.model.UserBean;
 import org.onebusaway.users.services.CurrentUserService;
 import org.onebusaway.utility.text.NaturalStringOrder;
 import org.onebusaway.utility.text.StringLibrary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class ArrivalsAndDeparturesModel {
 
+  private static Logger _log = LoggerFactory.getLogger(ArrivalsAndDeparturesModel.class);
+  
   private static final OrderConstraint SORT_BY_TIME = new SortByTime();
 
   private static final OrderConstraint SORT_BY_DEST = new SortByDestination();
@@ -169,7 +173,7 @@ public class ArrivalsAndDeparturesModel {
   }
 
   public void process() {
-
+    _log.debug("process");
     _result = _transitDataService.getStopsWithArrivalsAndDepartures(_stopIds,
         _query);
 
@@ -177,6 +181,8 @@ public class ArrivalsAndDeparturesModel {
     filterResults();
     orderResults();
 
+    _log.debug("found results=" + _result.getArrivalsAndDepartures().size());
+    
     _agencies = AgencyPresenter.getAgenciesForArrivalAndDepartures(_result.getArrivalsAndDepartures());
 
     _timeZone = TimeZone.getTimeZone(_result.getTimeZone());

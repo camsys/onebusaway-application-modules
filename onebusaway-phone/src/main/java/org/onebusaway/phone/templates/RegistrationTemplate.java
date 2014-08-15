@@ -15,13 +15,13 @@
  */
 package org.onebusaway.phone.templates;
 
-import org.onebusaway.probablecalls.agitemplates.AbstractAgiTemplate;
-import org.onebusaway.probablecalls.agitemplates.AgiTemplateId;
+import org.onebusaway.probablecalls.AbstractIvrTemplate;
+import org.onebusaway.probablecalls.agitemplates.IvrTemplateId;
 
 import com.opensymphony.xwork2.ActionContext;
 
-@AgiTemplateId("/registration")
-public class RegistrationTemplate extends AbstractAgiTemplate {
+@IvrTemplateId("/registration")
+public class RegistrationTemplate extends AbstractIvrTemplate {
 
   @Override
   public void buildTemplate(ActionContext context) {

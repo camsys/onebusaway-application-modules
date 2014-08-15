@@ -15,13 +15,13 @@
  */
 package org.onebusaway.phone.templates;
 
-import org.onebusaway.probablecalls.agitemplates.AbstractAgiTemplate;
-import org.onebusaway.probablecalls.agitemplates.AgiTemplateId;
+import org.onebusaway.probablecalls.AbstractIvrTemplate;
+import org.onebusaway.probablecalls.agitemplates.IvrTemplateId;
 
 import com.opensymphony.xwork2.ActionContext;
 
-@AgiTemplateId("/find_your_stop")
-public class FindYourStopTemplate extends AbstractAgiTemplate {
+@IvrTemplateId("/find_your_stop")
+public class FindYourStopTemplate extends AbstractIvrTemplate {
 
     @Override
     public void buildTemplate(ActionContext context) {
@@ -32,10 +32,10 @@ public class FindYourStopTemplate extends AbstractAgiTemplate {
         addMessage(Messages.FIND_YOUR_STOP_BY_ROUTE_NUMBER);
         addAction("2", "/search/index");
 
-        addAction("[#03-9]","/repeat");
+        addAction("9","/repeat");
         
         addMessage(Messages.HOW_TO_GO_BACK);
-        addAction("\\*", "/back");
+        addAction("8", "/back");
 
         addMessage(Messages.TO_REPEAT);
     }

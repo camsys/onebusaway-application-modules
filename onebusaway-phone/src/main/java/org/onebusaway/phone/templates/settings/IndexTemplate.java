@@ -17,8 +17,8 @@ package org.onebusaway.phone.templates.settings;
 
 import org.onebusaway.phone.templates.Messages;
 import org.onebusaway.presentation.services.text.TextModification;
-import org.onebusaway.probablecalls.agitemplates.AbstractAgiTemplate;
-import org.onebusaway.probablecalls.agitemplates.AgiTemplateId;
+import org.onebusaway.probablecalls.AbstractIvrTemplate;
+import org.onebusaway.probablecalls.agitemplates.IvrTemplateId;
 import org.onebusaway.users.client.model.UserBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,8 +26,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.util.ValueStack;
 
-@AgiTemplateId("/settings/index")
-public class IndexTemplate extends AbstractAgiTemplate {
+@IvrTemplateId("/settings/index")
+public class IndexTemplate extends AbstractIvrTemplate {
 
   private TextModification _locationPronunciation;
 
@@ -59,9 +59,9 @@ public class IndexTemplate extends AbstractAgiTemplate {
     }
 
     addMessage(Messages.HOW_TO_GO_BACK);
-    addAction("\\*", "/back");
+    addAction("8", "/back");
 
     addMessage(Messages.TO_REPEAT);
-    addAction("[#23456789*]", "/repeat");
+    addAction("9", "/repeat");
   }
 }

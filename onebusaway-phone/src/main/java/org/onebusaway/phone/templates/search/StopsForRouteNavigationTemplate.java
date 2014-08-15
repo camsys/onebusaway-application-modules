@@ -21,9 +21,9 @@ import org.onebusaway.phone.actions.search.NavigationBean;
 import org.onebusaway.phone.templates.Messages;
 import org.onebusaway.presentation.services.SelectionNameTypes;
 import org.onebusaway.presentation.services.text.TextModification;
-import org.onebusaway.probablecalls.AgiActionName;
-import org.onebusaway.probablecalls.agitemplates.AbstractAgiTemplate;
-import org.onebusaway.probablecalls.agitemplates.AgiTemplateId;
+import org.onebusaway.probablecalls.AbstractIvrTemplate;
+import org.onebusaway.probablecalls.IvrActionName;
+import org.onebusaway.probablecalls.agitemplates.IvrTemplateId;
 import org.onebusaway.transit_data.model.NameBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -31,8 +31,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.util.ValueStack;
 
-@AgiTemplateId("/search/navigation")
-public class StopsForRouteNavigationTemplate extends AbstractAgiTemplate {
+@IvrTemplateId("/search/navigation")
+public class StopsForRouteNavigationTemplate extends AbstractIvrTemplate {
 
   private TextModification _destinationPronunciation;
 
@@ -70,7 +70,7 @@ public class StopsForRouteNavigationTemplate extends AbstractAgiTemplate {
 
     if (index >= names.size()) {
 
-      AgiActionName action = setNextAction("/search/navigate-to");
+      IvrActionName action = setNextAction("/search/navigate-to");
       action.putParam("navigation", navigation);
       action.putParam("index", 0);
       action.setExcludeFromHistory(true);
@@ -93,13 +93,13 @@ public class StopsForRouteNavigationTemplate extends AbstractAgiTemplate {
       addNavigateToAction(navigation, "7", first(index - 10));
       addNavigateToAction(navigation, "9", index + 10);
 
-      AgiActionName action = setNextAction("/search/navigate-to");
+      IvrActionName action = setNextAction("/search/navigate-to");
       action.putParam("navigation", navigation);
       action.putParam("index", index + 1);
       action.setExcludeFromHistory(true);
     }
 
-    addAction("\\*", "/back");
+    addAction("8", "/back");
   }
 
   private int first(int i) {
@@ -110,7 +110,7 @@ public class StopsForRouteNavigationTemplate extends AbstractAgiTemplate {
 
   private void addNavigateToAction(NavigationBean navigation, String key,
       int index) {
-    AgiActionName action = addAction(key, "/search/navigate-to");
+    IvrActionName action = addAction(key, "/search/navigate-to");
     action.putParam("navigation", navigation);
     action.putParam("index", index);
     action.setExcludeFromHistory(true);
@@ -121,7 +121,7 @@ public class StopsForRouteNavigationTemplate extends AbstractAgiTemplate {
     int keyIndex = (index % 2) + 1;
 
     String key = Integer.toString(keyIndex);
-    AgiActionName action = addAction(key, "/search/navigate-down");
+    IvrActionName action = addAction(key, "/search/navigate-down");
     action.putParam("navigation", navigation);
     action.putParam("index", index);
     return key;

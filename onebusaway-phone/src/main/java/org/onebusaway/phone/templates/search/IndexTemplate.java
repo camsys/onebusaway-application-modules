@@ -16,26 +16,26 @@
 package org.onebusaway.phone.templates.search;
 
 import org.onebusaway.phone.templates.Messages;
-import org.onebusaway.probablecalls.agitemplates.AbstractAgiTemplate;
-import org.onebusaway.probablecalls.agitemplates.AgiTemplateId;
+import org.onebusaway.probablecalls.AbstractIvrTemplate;
+import org.onebusaway.probablecalls.agitemplates.IvrTemplateId;
 
 
 import com.opensymphony.xwork2.ActionContext;
 
 
-@AgiTemplateId("/search/index")
-public class IndexTemplate extends AbstractAgiTemplate {
+@IvrTemplateId("/search/index")
+public class IndexTemplate extends AbstractIvrTemplate {
 
     @Override
     public void buildTemplate(ActionContext context) {
-
+        addInput(1);
         addMessage(Messages.SEARCH_INDEX_ACTION);
-        addActionWithParameterFromMatch("([1-9][0-9]*)#", "/search/route", "routeName", 1);
+        addActionWithParameterFromMatch("([1-9][0-9]*)", "/search/route", "routeName", 1);  // TODO this should require a #
 
-        addAction("(#|0|[1-9].*\\*)","/repeat");
+        addAction("9","/repeat");
         
         addMessage(Messages.HOW_TO_GO_BACK);
-        addAction("\\*", "/back");
+        addAction("8", "/back");
 
         addMessage(Messages.TO_REPEAT);
     }

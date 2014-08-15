@@ -28,7 +28,15 @@
             classpath:data-sources.xml
         </param-value>
     </context-param>
-
+	<servlet>
+		<servlet-name>twilioEntryPoint</servlet-name>
+<!-- 		<servlet-class>org.onebusaway.phone.impl.CustomTwilioEntryPoint</servlet-class> -->
+		<servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>twilioEntryPoint</servlet-name>
+		<url-pattern>/voice</url-pattern>
+	</servlet-mapping>
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
