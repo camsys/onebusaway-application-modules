@@ -76,6 +76,8 @@
     <module>onebusaway-gwt-common</module>
     <module>onebusaway-phone</module>
     <module>onebusaway-phone-webapp</module>
+    <module>onebusaway-twilio</module>
+    <module>onebusaway-twilio-webapp</module>
     <module>onebusaway-presentation</module>
     <module>onebusaway-quickstart</module>
     <module>onebusaway-sms-webapp</module>
