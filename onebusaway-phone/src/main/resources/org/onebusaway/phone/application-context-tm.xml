@@ -35,6 +35,10 @@
     	<property name="registry" ref="twilioTemplateRegistry" />
     </bean>
 
+    <bean id="twilioDispatch" class="org.onebusaway.phone.impl.TwilioDispatchServlet">
+    	<property name="mappingStrategy" ref="mappingStrategy" />
+	</bean>
+
     <bean id="twilioEntryPoint" class="org.onebusaway.phone.impl.CustomTwilioEntryPoint">
         <property name="action" value="/welcome" />
         <property name="configuration" ref="myxworkConfiguration" />
