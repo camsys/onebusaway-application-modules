@@ -5,22 +5,27 @@ import org.apache.struts2.convention.annotation.Results;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.opensymphony.xwork2.ActionContext;
+
 
 @Results({
-  @Result(name="stopsIndex", location="stops/index", type="redirectAction")
+  @Result(name="stops-index", location="stops/index", type="redirectAction", params={"From", "${phoneNumber}"})
 })
 public class IndexAction extends TwilioSupport {
 
+  private static final long serialVersionUID = 1L;
   private static Logger _log = LoggerFactory.getLogger(IndexAction.class);
   
   @Override
   public String execute() throws Exception {
-    _log.info("in execute! with input=" + getInput());
+    _log.error("in execute! with input=" + getInput());
     
     
     if ("3".equals(getInput())) {
-      _log.error("redirecting");
-      return "stopsIndex";
+      clearNextAction();
+      return "stops-index";
+    } else {
+      setNextAction("index");
     }
     return INPUT;
   }

@@ -5,12 +5,15 @@ import org.onebusaway.twilio.actions.TwilioSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.opensymphony.xwork2.ActionContext;
+
 @Results({
   @Result(name="back", location="index", type="redirectAction"),
   @Result(name="stop-for-code", location="stop-for-code", type="chain")
   })
 public class IndexAction extends TwilioSupport {
 
+  private static final long serialVersionUID = 1L;
   private static Logger _log = LoggerFactory.getLogger(IndexAction.class);
   private String _stopCode;
   
@@ -33,6 +36,8 @@ public class IndexAction extends TwilioSupport {
       setStopCode(getInput());
       _log.debug("forwarding to stops");
       return "stop-for-code";
+    } else {
+      setNextAction("stops/index");
     }
     
     return INPUT;

@@ -11,11 +11,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionSupport;
 
 public class TwilioSupport extends ActionSupport implements ParameterAware {
 
   public static final String INPUT_KEY = "Digits";
+  public static final String PHONE_NUMBER_KEY = "From";
   public static final String NEEDS_DEFAULT_SEARCH_LOCATION = "needsDefaultSearchLocation";
   private static Logger _log = LoggerFactory.getLogger(StopForCodeAction.class);
   
@@ -61,11 +63,34 @@ public class TwilioSupport extends ActionSupport implements ParameterAware {
   
   public String getInput() {
     if (_parameters != null && _parameters.containsKey(INPUT_KEY)) {
-      return _parameters.get(INPUT_KEY)[0];
+      Object val = _parameters.get(INPUT_KEY);
+      if (val instanceof String[]) {
+        return ((String[])val)[0];
+      }
+      return (String)val;
+    }
+    return null;
+  }
+  
+  public String getPhoneNumber() {
+    if (_parameters != null && _parameters.containsKey(PHONE_NUMBER_KEY)) {
+    	Object val = _parameters.get(PHONE_NUMBER_KEY);
+    	if (val instanceof String[]) {
+      	return ((String[])val)[0];
+    	}
+      return (String)val;
     }
     return null;
   }
 
+  protected void setNextAction(String actionName) {
+    ActionContext.getContext().getSession().put("twilio.nextAction", actionName);
+  }
+  
+  protected void clearNextAction() {
+    ActionContext.getContext().getSession().remove("twilio.nextAction");
+  }
+  
   protected CoordinateBounds getDefaultSearchArea() {
     return _serviceAreaService.getServiceArea();
   }
