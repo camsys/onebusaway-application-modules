@@ -15,19 +15,19 @@
     limitations under the License.
 
 -->
-<html xmlns:jsp="http://java.sun.com/JSP/Page"
+<Response xmlns:jsp="http://java.sun.com/JSP/Page"
       xmlns:c="http://java.sun.com/jsp/jstl/core"
      xmlns:s="/struts-tags"
      xmlns:wiki="/oba-wiki-tags">
-<jsp:directive.page contentType="application/xml" />
-<Response>
-<Gather>
-<Say>
-Welcome.  Our system lets you access real-time bus arrival information over the phone.  When you first call the system, you are asked to enter your stop number, followed by the pound sign.  Once youve entered your stop number, this system will list scheduled bus arrivals and departures at your stop.</Say>
-<Pause length="1">
-</Pause>
-<Say>
-Where is your bus... lets find out.  If you are a first time user, or need help, please press zero.</Say>
-</Gather>
+  <jsp:directive.page contentType="application/xml" />
+  <Gather>
+    <Say>
+      Welcome.  Our system lets you access real-time bus arrival information over the phone.  When you first call the system, you are asked to enter your stop number, followed by the pound sign.  Once youve entered your stop number, this system will list scheduled bus arrivals and departures at your stop.
+    </Say>
+    <Pause length="1">
+    </Pause>
+    <Say>
+      Where is your bus... lets find out.  If you are a first time user, or need help, please press zero.
+    </Say>
+  </Gather>
 </Response>
-</html>
