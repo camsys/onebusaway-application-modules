@@ -18,7 +18,7 @@ public class IndexAction extends TwilioSupport {
   
   @Override
   public String execute() throws Exception {
-    _log.error("in execute! with input=" + getInput());
+    _log.debug("in execute! with input=" + getInput());
     
     
     if ("3".equals(getInput())) {
