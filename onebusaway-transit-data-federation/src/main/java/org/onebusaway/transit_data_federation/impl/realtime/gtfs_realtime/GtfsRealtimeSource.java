@@ -258,18 +258,21 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
       List<CombinedTripUpdatesAndVehiclePosition> updates) {
 
     Set<AgencyAndId> seenVehicles = new HashSet<AgencyAndId>();
-
+    _log.info("in combinedUpdates with "+ updates.size() + " updates");
     for (CombinedTripUpdatesAndVehiclePosition update : updates) {
       VehicleLocationRecord record = _tripsLibrary.createVehicleLocationRecordForUpdate(result, update);
+      _log.info("record=" + record + " for updates=" + update);
       if (record != null) {
         if (record.getTripId() != null) {
           result.addUnmatchedTripId(record.getTripId().toString());
         }
         AgencyAndId vehicleId = record.getVehicleId();
+        _log.info("tripId=" + record.getTripId() + ", vehicleId=" + vehicleId);
         seenVehicles.add(vehicleId);
         Date timestamp = new Date(record.getTimeOfRecord());
         Date prev = _lastVehicleUpdate.get(vehicleId);
         if (prev == null || prev.before(timestamp)) {
+          _log.error("update for vehicleId=" + vehicleId);
           _vehicleLocationListener.handleVehicleLocationRecord(record);
           _lastVehicleUpdate.put(vehicleId, timestamp);
         }

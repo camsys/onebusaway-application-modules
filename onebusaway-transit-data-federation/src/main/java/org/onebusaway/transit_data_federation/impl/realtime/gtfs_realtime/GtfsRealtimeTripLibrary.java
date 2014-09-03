@@ -130,9 +130,11 @@ class GtfsRealtimeTripLibrary {
       TripUpdate tu = fe.getTripUpdate();
 
       if (tu.hasVehicle() && tu.getVehicle().hasId()) {
+        
         // Trip update has a vehicle ID - index by vehicle ID
         String vehicleId = tu.getVehicle().getId();
-
+        _log.info("found VehicleId " + vehicleId);
+        
         if (!tripUpdatesByVehicleId.containsKey(vehicleId)) {
           tripUpdatesByVehicleId.put(vehicleId, tu);
         } else {
@@ -157,6 +159,7 @@ class GtfsRealtimeTripLibrary {
         BlockDescriptor bd = getTripDescriptorAsBlockDescriptor(result, td);
 
         if (bd == null) {
+          _log.error("missing block descriptor");
           continue;
         }
 
@@ -203,11 +206,12 @@ class GtfsRealtimeTripLibrary {
          * Vehicle position does not have vehicle ID but has TripDescriptor, so
          * use that, but only if there is only one.
          */
-
+        _log.info("raw trip, no vehicle");
         TripDescriptor td = vp.getTrip();
         BlockDescriptor bd = getTripDescriptorAsBlockDescriptor(result, td);
 
         if (bd == null) {
+          _log.error("missing block descriptor(2)");
           continue;
         }
 
@@ -229,6 +233,7 @@ class GtfsRealtimeTripLibrary {
          * Pathological VehiclePosition contains no identifying information;
          * skip.
          */
+        _log.error("empty vehicle position");
         continue;
       }
     }
@@ -236,6 +241,7 @@ class GtfsRealtimeTripLibrary {
     // Remove multiple vehicles where multiple anonymous vehicles are present in
     // a block
     for (BlockDescriptor bd : badAnonymousVehiclePositions) {
+      _log.error("anonymous bd: " + bd);
       anonymousVehiclePositionsByBlock.remove(bd);
     }
 
@@ -289,7 +295,11 @@ class GtfsRealtimeTripLibrary {
       }
 
       if (vehicleId != null) {
-        update.block.setVehicleId(vehicleId);
+        if (update.block != null) {
+          update.block.setVehicleId(vehicleId);
+        } else {
+          _log.error("missing block for vehicleId=" + vehicleId);
+        }
       }
     }
 
@@ -317,11 +327,16 @@ class GtfsRealtimeTripLibrary {
 
     BlockDescriptor blockDescriptor = update.block;
 
+    if (blockDescriptor != null) {
+      
     record.setBlockId(blockDescriptor.getBlockInstance().getBlock().getBlock().getId());
-
+    _log.info("blockId=" + record.getBlockId());
     applyTripUpdatesToRecord(result, blockDescriptor, update.tripUpdates, record);
-
+    } else {
+      _log.error("missing blockDescriptor for record=" + record.toString());
+    }
     if (update.vehiclePosition != null) {
+      _log.info("postion update");
       applyVehiclePositionToRecord(update.vehiclePosition, record);
     }
 
@@ -330,19 +345,26 @@ class GtfsRealtimeTripLibrary {
      */
     record.setVehicleId(record.getBlockId());
 
+    if (record.getTripId() == null) {
+      _log.error("unmatched tripId for " + record.getBlockId());
+    }
+    
     if (result != null) {
       if (record.getTripId() != null) {
         result.addMatchedTripId(record.getTripId().toString());
       } else {
         // we don't have a tripId, use the BlockId instead
+        if (record.getBlockId() != null) {
         result.addMatchedTripId(record.getBlockId().toString());
+        }
       }
     }
     
-    if (blockDescriptor.getVehicleId() != null) {
+    if (blockDescriptor != null && blockDescriptor.getVehicleId() != null) {
       String agencyId = record.getBlockId().getAgencyId();
       record.setVehicleId(new AgencyAndId(agencyId,
           blockDescriptor.getVehicleId()));
+      _log.error("returning record=" + agencyId);
     }
 
     return record;
@@ -371,12 +393,14 @@ class GtfsRealtimeTripLibrary {
   private BlockDescriptor getTripDescriptorAsBlockDescriptor(MonitoredResult result,
       TripDescriptor trip) {
     if (!trip.hasTripId()) {
+      _log.error("empty tripId");
       return null;
     }
+    _log.error("tripId=" + trip.getTripId());
     TripEntry tripEntry = _entitySource.getTrip(trip.getTripId());
     if (tripEntry == null) {
       if (result != null) {
-        _log.debug("reporting unmatched trip with id=" + trip.getTripId());
+        _log.error("reporting unmatched trip with id=" + trip.getTripId());
         result.addUnmatchedTripId(trip.getTripId());
       } else {
         _log.warn("no trip found with id=" + trip.getTripId());
@@ -461,10 +485,11 @@ class GtfsRealtimeTripLibrary {
     for (BlockTripEntry blockTrip : blockTrips) {
       TripEntry trip = blockTrip.getTrip();
       AgencyAndId tripId = trip.getId();
+      _log.info("trip=" + tripId);
       List<TripUpdate> updatesForTrip = tripUpdatesByTripId.get(tripId.getId());
       if (updatesForTrip != null) {
         for (TripUpdate tripUpdate : updatesForTrip) {
-
+          _log.info("trip update=" + tripUpdate);
           if (tripUpdate.hasExtension(GtfsRealtimeOneBusAway.obaTripUpdate)) {
             OneBusAwayTripUpdate obaTripUpdate = tripUpdate.getExtension(GtfsRealtimeOneBusAway.obaTripUpdate);
             if (obaTripUpdate.hasDelay()) {
@@ -480,15 +505,20 @@ class GtfsRealtimeTripLibrary {
             if (obaTripUpdate.hasTimestamp()) {
               best.timestamp = obaTripUpdate.getTimestamp() * 1000;
             }
+          } else {
+            _log.info("missing oba trip extension");
           }
 
           for (StopTimeUpdate stopTimeUpdate : tripUpdate.getStopTimeUpdateList()) {
             BlockStopTimeEntry blockStopTime = getBlockStopTimeForStopTimeUpdate(
                 tripUpdate, stopTimeUpdate, blockTrip.getStopTimes(),
                 instance.getServiceDate());
-            if (blockStopTime == null)
+            if (blockStopTime == null) {
+              _log.error("discarding stopTime for serviceDate=" + instance.getServiceDate() + " with stopTimes=" + blockTrip.getStopTimes());
               continue;
+            }
             StopTimeEntry stopTime = blockStopTime.getStopTime();
+            _log.info("stop update=" + stopTime.getStop().getId());
             int currentArrivalTime = computeArrivalTime(stopTime,
                 stopTimeUpdate, instance.getServiceDate());
             if (currentArrivalTime >= 0) {
@@ -502,7 +532,7 @@ class GtfsRealtimeTripLibrary {
                   stopTime.getDepartureTime(), currentDepartureTime, best);
             }
           }
-        }
+        } 
       }
     }
 
@@ -533,21 +563,27 @@ class GtfsRealtimeTripLibrary {
         }
         // The stop sequence and stop id didn't match, so we fall through to
         // match by stop id if possible
+        _log.info("giving up on stopSeq=" + stopSequence + " matching against " + stopTimes);
 
       } else {
         _log.warn("StopTimeSequence is out of bounds: stopSequence="
             + stopSequence + " tripUpdate=\n" + tripUpdate);
       }
+    } else {
+      _log.info("no stop sequence");
     }
 
     if (stopTimeUpdate.hasStopId()) {
       int time = getTimeForStopTimeUpdate(stopTimeUpdate, serviceDate);
+      _log.info("time=" + time);
       String stopId = stopTimeUpdate.getStopId();
       // There could be loops, meaning a stop could appear multiple times along
       // a trip. To get around this.
       Min<BlockStopTimeEntry> bestMatches = new Min<BlockStopTimeEntry>();
       for (BlockStopTimeEntry blockStopTime : stopTimes) {
+        _log.debug(blockStopTime.getStopTime().getStop().getId().getId() + " ?= " + stopId);
         if (blockStopTime.getStopTime().getStop().getId().getId().equals(stopId)) {
+          _log.info("matched stopId=" + stopId);
           StopTimeEntry stopTime = blockStopTime.getStopTime();
           int departureDelta = Math.abs(stopTime.getDepartureTime() - time);
           int arrivalDelta = Math.abs(stopTime.getArrivalTime() - time);
@@ -555,8 +591,14 @@ class GtfsRealtimeTripLibrary {
           bestMatches.add(arrivalDelta, blockStopTime);
         }
       }
-      if (!bestMatches.isEmpty())
+      if (!bestMatches.isEmpty()) {
+        _log.error("match");
         return bestMatches.getMinElement();
+      } else {
+        _log.error("did not match stopId=" + stopTimeUpdate.getStopId());
+      }
+    } else {
+      _log.info("no stop id");
     }
 
     return null;
@@ -568,18 +610,23 @@ class GtfsRealtimeTripLibrary {
     if (stopTimeUpdate.hasArrival()) {
       StopTimeEvent arrival = stopTimeUpdate.getArrival();
       if (arrival.hasTime()) {
+        _log.info("arrival=" + (arrival.getTime() - serviceDate / 1000));
         return (int) (arrival.getTime() - serviceDate / 1000);
       }
       if (arrival.hasDelay()) {
+        _log.info("delay=" + ((t - serviceDate) / 1000 - arrival.getDelay()));
+        // TODO this will not work for frequency based times, serviceDate is the start of the day
         return (int) ((t - serviceDate) / 1000 - arrival.getDelay());
       }
     }
     if (stopTimeUpdate.hasDeparture()) {
       StopTimeEvent departure = stopTimeUpdate.getDeparture();
       if (departure.hasTime()) {
+        _log.info("departure=" + (departure.getTime() - serviceDate / 1000));
         return (int) (departure.getTime() - serviceDate / 1000);
       }
       if (departure.hasDelay()) {
+        _log.info("departure delay=" + ((t - serviceDate) / 1000 - departure.getDelay()));
         return (int) ((t - serviceDate) / 1000 - departure.getDelay());
       }
     }
@@ -633,6 +680,7 @@ class GtfsRealtimeTripLibrary {
     Position position = vehiclePosition.getPosition();
     record.setCurrentLocationLat(position.getLatitude());
     record.setCurrentLocationLon(position.getLongitude());
+    _log.info("(" + position.getLatitude() + ", " + position.getLongitude() + ")");
   }
 
   private long currentTime() {

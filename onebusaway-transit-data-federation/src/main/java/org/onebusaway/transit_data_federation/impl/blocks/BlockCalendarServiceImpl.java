@@ -45,12 +45,16 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.FrequencyEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 class BlockCalendarServiceImpl implements BlockCalendarService {
 
+  private static final Logger _log = LoggerFactory.getLogger(BlockCalendarServiceImpl.class);
+  
   private ExtendedCalendarService _calendarService;
 
   private BlockIndexService _blockIndexService;
@@ -166,6 +170,7 @@ class BlockCalendarServiceImpl implements BlockCalendarService {
     List<BlockTripIndex> indices = _blockIndexService.getBlockTripIndicesForAgencyId(agencyId);
     List<BlockLayoverIndex> layoverIndices = _blockIndexService.getBlockLayoverIndicesForAgencyId(agencyId);
     List<FrequencyBlockTripIndex> frequencyIndices = _blockIndexService.getFrequencyBlockTripIndicesForAgencyId(agencyId);
+    _log.info("frequencies=" + frequencyIndices);
     return getActiveBlocksInTimeRange(indices, layoverIndices,
         frequencyIndices, timeFrom, timeTo);
   }

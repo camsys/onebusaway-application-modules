@@ -31,6 +31,8 @@ import org.onebusaway.transit_data_federation.services.realtime.VehicleStatusSer
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -38,6 +40,8 @@ import org.springframework.stereotype.Component;
 class VehicleStatusServiceImpl implements VehicleLocationListener,
     VehicleStatusService {
 
+  private static final Logger _log = LoggerFactory.getLogger(VehicleStatusServiceImpl.class);
+  
   private ConcurrentHashMap<AgencyAndId, VehicleLocationRecord> _vehicleRecordsById = new ConcurrentHashMap<AgencyAndId, VehicleLocationRecord>();
 
   private TransitGraphDao _transitGraphDao;
@@ -90,11 +94,13 @@ class VehicleStatusServiceImpl implements VehicleLocationListener,
     }
 
     // TODO : Maybe not require service date?
-    if (blockId != null && record.getServiceDate() != 0)
+    if (blockId != null && record.getServiceDate() != 0) {
       _blockVehicleLocationService.handleVehicleLocationRecord(record);
+    } 
 
     // if vehicle has no block or has lost it, remove it from the block VLS.
     else {
+      _log.error("discarding for missing service date");
       if(record.getVehicleId() != null) {
         _blockVehicleLocationService.resetVehicleLocation(record.getVehicleId());
       }
