@@ -170,7 +170,7 @@ class BlockCalendarServiceImpl implements BlockCalendarService {
     List<BlockTripIndex> indices = _blockIndexService.getBlockTripIndicesForAgencyId(agencyId);
     List<BlockLayoverIndex> layoverIndices = _blockIndexService.getBlockLayoverIndicesForAgencyId(agencyId);
     List<FrequencyBlockTripIndex> frequencyIndices = _blockIndexService.getFrequencyBlockTripIndicesForAgencyId(agencyId);
-    _log.info("frequencies=" + frequencyIndices);
+    _log.debug("frequencies=" + frequencyIndices);
     return getActiveBlocksInTimeRange(indices, layoverIndices,
         frequencyIndices, timeFrom, timeTo);
   }
