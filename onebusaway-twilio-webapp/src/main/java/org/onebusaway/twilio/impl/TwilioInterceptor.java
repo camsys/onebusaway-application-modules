@@ -1,7 +1,9 @@
 package org.onebusaway.twilio.impl;
 
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.struts2.interceptor.SessionAware;
 import org.onebusaway.presentation.impl.users.XWorkRequestAttributes;
@@ -36,8 +38,23 @@ public class TwilioInterceptor extends AbstractInterceptor {
   @Override
   public String intercept(ActionInvocation invocation) throws Exception {
     ActionContext context = invocation.getInvocationContext();
-    _log.debug("in with params=" + context.getParameters() + " and session=" + context.getSession());
     Map<String, Object> parameters = context.getParameters();
+    
+    /* Stringify parameters for debugging output */
+    String paramString = "";  
+    for (Entry<String, Object> entry : parameters.entrySet()) {
+    	paramString += entry.getKey() + "=";
+    	Object val = entry.getValue();
+    	if (val instanceof String[]) {
+    		paramString += Arrays.toString((String[])val);
+    	} else {
+    		paramString += val.toString();
+    	}
+    	paramString += ", ";
+    }
+    paramString = paramString.substring(0, paramString.lastIndexOf(','));
+
+    _log.debug("in with params={" + paramString + "} and session=" + context.getSession());
 
     Object phoneNumber = parameters.get(_phoneNumberParameterName);
     if (phoneNumber == null) {

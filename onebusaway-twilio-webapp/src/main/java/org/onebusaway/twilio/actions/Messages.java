@@ -168,6 +168,8 @@ public class Messages {
 
   public static final String DIRECTION_BOUND = "DIRECTION_BOUND";
 
+  public static final String FOR_TRAVEL_FROM = "FOR_TRAVEL_FROM";
+  
   public static final String FOR_TRAVEL_TO = "FOR_TRAVEL_TO";
 
   public static final String FOR_STOPS_IN = "FOR_STOPS_IN";

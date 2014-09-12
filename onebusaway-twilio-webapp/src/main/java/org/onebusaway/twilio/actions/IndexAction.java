@@ -8,8 +8,17 @@ import org.slf4j.LoggerFactory;
 import com.opensymphony.xwork2.ActionContext;
 
 
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.convention.annotation.Results;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.opensymphony.xwork2.ActionContext;
+
+
 @Results({
-  @Result(name="stops-index", location="stops/index", type="redirectAction", params={"From", "${phoneNumber}"})
+  @Result(name="stops-index", location="stops/index", type="redirectAction", params={"From", "${phoneNumber}"}),
+  @Result(name="search-index", location="search/index", type="redirectAction", params={"From", "${phoneNumber}"})
 })
 public class IndexAction extends TwilioSupport {
 
@@ -24,6 +33,9 @@ public class IndexAction extends TwilioSupport {
     if ("3".equals(getInput())) {
       clearNextAction();
       return "stops-index";
+    } else if ("6".equals(getInput())) {
+    	clearNextAction();
+    	return "search-index";
     } else {
       setNextAction("index");
     }

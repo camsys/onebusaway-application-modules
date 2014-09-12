@@ -1,5 +1,8 @@
 package org.onebusaway.twilio.actions;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.struts2.interceptor.ParameterAware;
@@ -34,12 +37,14 @@ public class TwilioSupport extends ActionSupport implements ParameterAware {
   
   protected void addMessage(String msg) {
     _log.debug(msg);
-    _message.append(getText(msg));
+    _message.append(" " + getText(msg) + " ");
   }
   
   protected void addMessage(String msg, Object... args) {
     _log.error("todo: discarding additonal args");
-    _message.append(getText(msg));
+    _log.debug(msg);
+    //_message.append(getText(msg));
+    _message.append(" " + getText(msg) + " ");
     _log.debug(getText(msg));
   }
   
@@ -72,6 +77,18 @@ public class TwilioSupport extends ActionSupport implements ParameterAware {
     return null;
   }
   
+  public String clearInput() {
+    if (_parameters != null && _parameters.containsKey(INPUT_KEY)) {
+      _parameters.remove(INPUT_KEY);
+      Object val = _parameters.remove(INPUT_KEY);
+      if (val instanceof String[]) {
+        return ((String[])val)[0];
+      }
+      return (String)val;
+    }
+    return null;
+  }
+  
   public String getPhoneNumber() {
     if (_parameters != null && _parameters.containsKey(PHONE_NUMBER_KEY)) {
     	Object val = _parameters.get(PHONE_NUMBER_KEY);
@@ -96,6 +113,14 @@ public class TwilioSupport extends ActionSupport implements ParameterAware {
   }
   
   protected void logUserInteraction(Object... objects) {
-    _log.info("logUserInteraction(" + objects + ")");
+	  String text = "logUserInteraction(";
+	  for (int i=0; i<objects.length; ++i) {
+		  text += objects[i].toString();
+		  if (i<objects.length-1) {
+			  text += ", ";
+		  }
+	  }
+	  text += ")";
+	  _log.info(text);
   }
 }
