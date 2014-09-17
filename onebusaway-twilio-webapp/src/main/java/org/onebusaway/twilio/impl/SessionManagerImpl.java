@@ -58,7 +58,7 @@ public class SessionManagerImpl implements SessionManager {
 
   @PreDestroy
   public void stop() {
-  	_debug("stop");
+  	_log.debug("stop");
     _executor.shutdownNow();
   }
 
