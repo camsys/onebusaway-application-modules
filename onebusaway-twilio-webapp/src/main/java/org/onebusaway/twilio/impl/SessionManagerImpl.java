@@ -12,10 +12,14 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.onebusaway.twilio.services.SessionManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SessionManagerImpl implements SessionManager {
+  private static Logger _log = LoggerFactory.getLogger(SessionManagerImpl.class);
+
   private ConcurrentHashMap<String, ContextEntry> _contextEntriesByKey = new ConcurrentHashMap<String, ContextEntry>();
 
   private ScheduledExecutorService _executor;
@@ -30,6 +34,7 @@ public class SessionManagerImpl implements SessionManager {
    * @param sessionReaperFrequency time, in seconds
    */
   public void setSessionReapearFrequency(int sessionReaperFrequency) {
+  	_log.debug("setSessionReapearFrequency");
     _sessionReaperFrequency = sessionReaperFrequency;
   }
 
@@ -39,11 +44,13 @@ public class SessionManagerImpl implements SessionManager {
    * @param sessionTimeout time, in seconds
    */
   public void setSessionTimeout(int sessionTimeout) {
-    _sessionTimeout = sessionTimeout;
+  	_log.debug("setSessionTimeout");
+  	_sessionTimeout = sessionTimeout;
   }
 
   @PostConstruct
   public void start() {
+	_log.debug("start");
     _executor = Executors.newSingleThreadScheduledExecutor();
     _executor.scheduleAtFixedRate(new SessionCleanup(),
         _sessionReaperFrequency, _sessionReaperFrequency, TimeUnit.SECONDS);
@@ -51,6 +58,7 @@ public class SessionManagerImpl implements SessionManager {
 
   @PreDestroy
   public void stop() {
+  	_debug("stop");
     _executor.shutdownNow();
   }
 
@@ -60,12 +68,14 @@ public class SessionManagerImpl implements SessionManager {
 
   @Override
   public Map<String, Object> getContext(String key) {
+  	_log.debug("getContext");
     ContextEntry entry = getOrCreateContextEntry(key);
     return entry.getContext();
   }
   
   @Override
   public boolean hasContext(String key) {
+  	_log.debug("hasContext");
     return _contextEntriesByKey.containsKey(key);
   }
 
@@ -92,6 +102,7 @@ public class SessionManagerImpl implements SessionManager {
     private boolean _valid = true;
 
     public synchronized boolean isValidAfterTouch() {
+      _log.debug("isValidAfterTouch");
       if (!_valid)
         return false;
       _lastAccess = System.currentTimeMillis();
@@ -99,12 +110,14 @@ public class SessionManagerImpl implements SessionManager {
     }
 
     public synchronized boolean isValidAfterAccessCheck(long minTime) {
+      _log.debug("isValidAfterAccessCheck");
       if (_lastAccess < minTime)
         _valid = false;
       return _valid;
     }
 
     public Map<String, Object> getContext() {
+      _log.debug("getContext");
       return _context;
     }
 
@@ -113,6 +126,7 @@ public class SessionManagerImpl implements SessionManager {
   private class SessionCleanup implements Runnable {
 
     public void run() {
+      _log.debug("run");
 
       long minTime = System.currentTimeMillis() - _sessionTimeout * 1000;
 

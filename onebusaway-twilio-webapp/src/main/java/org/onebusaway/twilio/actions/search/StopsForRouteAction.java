@@ -3,9 +3,11 @@ package org.onebusaway.twilio.actions.search;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
+import org.apache.struts2.interceptor.SessionAware;
 import org.onebusaway.presentation.model.StopSelectionBean;
 import org.onebusaway.presentation.services.StopSelectionService;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
@@ -22,7 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 	  @Result(name="success", location="stops-for-route-navigation", type="chain")
 	  //@Result(name="success", location="stops-for-route-navigation", type="redirect")
 })
-public class StopsForRouteAction extends TwilioSupport {
+public class StopsForRouteAction extends TwilioSupport implements SessionAware {
 	  private static final long serialVersionUID = 1L;
 	  private static Logger _log = LoggerFactory.getLogger(IndexAction.class);
 
@@ -33,6 +35,7 @@ public class StopsForRouteAction extends TwilioSupport {
 	  private NavigationBean _navigation;
 
 	  private StopBean _stop;
+	  private Map sessionMap;
 
 	  @Autowired
 	  public void setStopSelectionService(StopSelectionService stopSelectionService) {
@@ -59,8 +62,23 @@ public class StopsForRouteAction extends TwilioSupport {
 	    return _stop;
 	  }
 
+	  public void setSession(Map map) {
+	  	  this.sessionMap = map;
+	  }
+		
 	  @Override
 	  public String execute() throws Exception {
+	  	  
+	  	/* Need to check this for testing from  the web */
+		Integer navState = (Integer)sessionMap.get("navState");
+		if (navState == null) {
+			_log.debug("StopsForRouteAction:navState is null");
+		} else {
+			_log.debug("StopsForRouteAction:navState is NOT null, resetting to one");
+			navState = 1;
+			sessionMap.put("navState", new Integer(navState));
+		}
+	  	  
 		  
 		_log.debug("in StopsForRoute with input=" + getInput()); 
 		clearInput();
@@ -78,6 +96,8 @@ public class StopsForRouteAction extends TwilioSupport {
 	    _navigation.setCurrentIndex(0);
 	    _navigation.setSelection(selection);
 	    _navigation.setNames(names);
+	    // Set navigation bean in session
+	    sessionMap.put("navigation", _navigation);
 
 	    if (selection.hasStop()) {
 	      _log.debug("in StopsForRoute with input=" + getInput());

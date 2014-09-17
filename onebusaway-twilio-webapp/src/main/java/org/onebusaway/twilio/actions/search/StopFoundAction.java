@@ -21,7 +21,7 @@ import com.opensymphony.xwork2.util.ValueStack;
 //})
 public class StopFoundAction extends TwilioSupport {
 	private static final long serialVersionUID = 1L;
-	private static Logger _log = LoggerFactory.getLogger(IndexAction.class);
+	private static Logger _log = LoggerFactory.getLogger(StopFoundAction.class);
 	
 	private TextModification _destinationPronunciation;
 
@@ -50,8 +50,11 @@ public class StopFoundAction extends TwilioSupport {
 
 	    addText(_destinationPronunciation.modify(stop.getName()));
 
-	    String direction = _directionPronunciation.modify(stop.getDirection());
-	    addMessage(Messages.DIRECTION_BOUND, direction);
+	    String stopDir = stop.getDirection();
+	    if (stopDir != null && stopDir.length() > 0) {
+	    	String direction = _directionPronunciation.modify(stopDir);
+	    	addMessage(Messages.DIRECTION_BOUND, direction);
+	    }
 
 	    addText(Messages.IS);
 	    addText(stop.getCode());

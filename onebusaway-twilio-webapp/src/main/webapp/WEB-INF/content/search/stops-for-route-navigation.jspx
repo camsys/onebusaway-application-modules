@@ -21,10 +21,7 @@
      xmlns:s="/struts-tags"
      xmlns:wiki="/oba-wiki-tags">
   <jsp:directive.page contentType="application/xml" />
-  <Gather action="search/stops-for-route-navigation">
-    <Say>
-      stops-for-route-navigation.jspx
-    </Say>
+  <Gather action="stops-for-route-navigation">
     <Say>
       ${message}
     </Say>

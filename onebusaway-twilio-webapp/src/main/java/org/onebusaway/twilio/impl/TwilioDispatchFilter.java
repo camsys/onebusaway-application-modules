@@ -31,6 +31,22 @@ public class TwilioDispatchFilter implements Filter {
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException {
     String key = request.getParameter(PHONE_NUMBER_KEY);
+    
+    char c = key.charAt(0);
+    if (!Character.isDigit(c)) {
+    	String tempKey = "";
+    	for (int i=0; i<key.length(); ++i) {
+    		c = key.charAt(0);
+    		if (!Character.isDigit(c)) {
+    			if (tempKey.length() > 0) break;
+    			continue;
+    		}
+    		tempKey += c;
+    	}
+    	key = tempKey;
+    }
+    _log.debug("key: " + key);
+    
     HttpServletRequest httpRequest = (HttpServletRequest) request;
     HttpServletResponse httpResponse = (HttpServletResponse) response;
     

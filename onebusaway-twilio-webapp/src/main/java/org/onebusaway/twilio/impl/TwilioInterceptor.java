@@ -52,8 +52,10 @@ public class TwilioInterceptor extends AbstractInterceptor {
     	}
     	paramString += ", ";
     }
-    paramString = paramString.substring(0, paramString.lastIndexOf(','));
-
+    int idx = paramString.lastIndexOf(',');
+    if (idx >= 0) {
+    	paramString = paramString.substring(0, idx);
+    }
     _log.debug("in with params={" + paramString + "} and session=" + context.getSession());
 
     Object phoneNumber = parameters.get(_phoneNumberParameterName);
@@ -69,8 +71,10 @@ public class TwilioInterceptor extends AbstractInterceptor {
     }
 
     String sessionId = phoneNumber.toString();
+    // Strip off leading '+', if any
+    sessionId = sessionId.replaceFirst("\\+","");
     Map<String, Object> persistentSession = _sessionManager.getContext(sessionId);
-    _log.debug("remapping sesssion to " + persistentSession);
+    _log.debug("remapping sesssionId " + sessionId + " to " + persistentSession);
     Map<String, Object> originalSession = context.getSession();
     context.setSession(persistentSession);
 

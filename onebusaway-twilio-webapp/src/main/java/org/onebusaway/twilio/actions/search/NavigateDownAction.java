@@ -32,20 +32,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.onebusaway.twilio.actions.TwilioSupport;
 
 @Results ({
-	@Result (name="success", location="stops-for-route-navigation", type="redirect")
+	@Result (name="success", location="stops-for-route-navigation", type="chain"),
+	@Result (name="stopFound", location="stop-found", type="chain")
 })
-public class NavigateDownAction extends TwilioSupport {
+public class NavigateDownAction extends TwilioSupport implements SessionAware {
   private static final long serialVersionUID = 1L;
   private static Logger _log = LoggerFactory.getLogger(IndexAction.class);
 
   private StopSelectionService _stopSelectionService;
 
-  private NavigationBean _navigation;
   private Map sessionMap;
+  private NavigationBean _navigation;
 
   private int _index;
 
   private StopBean _stop;
+
+  private static final int DO_ROUTING = 0;
+  private static final int DISPLAY_NAV_DATA = 1;
 
   @Autowired
   public void setStopSelectionService(StopSelectionService stopSelectionService) {
@@ -64,7 +68,7 @@ public class NavigateDownAction extends TwilioSupport {
 	  this.sessionMap = map;
   }
 		
-  public void setIndex(int index) {
+public void setIndex(int index) {
     _index = index;
   }
 
@@ -74,13 +78,23 @@ public class NavigateDownAction extends TwilioSupport {
 
   @Override
   public String execute() throws Exception {
+  	  
+  	 _index = (Integer)sessionMap.get("index");
 
-	_log.debug("in NavigateDownAction with input " + getInput());
-	//Integer navState = (Integer)sessionMap.get("navState");
-	//_log.debug("NavigateDownAction:navState: " + navState);
+	_log.debug("in NavigateDownAction with input: " + getInput() + ", index: " + _index);
+	Integer navState = (Integer)sessionMap.get("navState");
+	_log.debug("NavigateDownAction:navState: " + navState);
 	_log.debug("NavigateDownAction:_index: " + _index);
 	
-    _navigation = new NavigationBean(_navigation);
+	if (_navigation == null) {
+		_log.debug("NavigateDownAction:navigation bean is null");
+		_navigation = (NavigationBean) sessionMap.get("navigation");
+		if (_navigation == null) {
+			_log.debug("NavigateDownAction:navigation bean is still null after sessionMap.get()");
+		}
+	}
+	
+    //_navigation = new NavigationBean(_navigation);
 
     List<Integer> indices = new ArrayList<Integer>(
         _navigation.getSelectionIndices());
@@ -101,7 +115,8 @@ public class NavigateDownAction extends TwilioSupport {
       return "stopFound";
     }
 
-    //sessionMap.put("navState", new Integer(0)); //Get input
+    sessionMap.put("navState", new Integer(DISPLAY_NAV_DATA)); //Get input
+    sessionMap.put("navigation", _navigation);
     return SUCCESS;
   }
 }

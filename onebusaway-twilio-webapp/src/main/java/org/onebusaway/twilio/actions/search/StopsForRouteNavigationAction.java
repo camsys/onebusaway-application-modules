@@ -22,19 +22,23 @@ import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.util.ValueStack;
 
 @Results({
-	@Result(name="navigate-down", location="navigate-down", type="chain")
-//	  @Result(name="success", location="stop-found", type="chain")
+	@Result(name="navigate-down", location="navigate-down", type="chain"),
+	@Result(name="navigate-to", location="navigate-to", type="chain"),
+	@Result (name="stopFound", location="stop-found", type="chain"),
+	@Result(name="stops-for-route-navigation", location="stops-for-route-navigation", type="chain")
+	//	  @Result(name="success", location="stop-found", type="chain")
 })
 public class StopsForRouteNavigationAction extends TwilioSupport implements SessionAware {
 	  private static final long serialVersionUID = 1L;
-	  private static Logger _log = LoggerFactory.getLogger(IndexAction.class);
+	  private static Logger _log = LoggerFactory.getLogger(StopsForRouteNavigationAction.class);
 
 	  private TextModification _destinationPronunciation;
 	  private SessionManager _sessionManager;
 	  private Map sessionMap;
 	  private int index;
+	  private NavigationBean _navigation;
 	  
-	  private static final int GET_INPUT = 0;
+	  private static final int DO_ROUTING = 0;
 	  private static final int DISPLAY_NAV_DATA = 1;
 
 	  @Autowired
@@ -55,9 +59,33 @@ public class StopsForRouteNavigationAction extends TwilioSupport implements Sess
 	  public int getIndex() { return this.index; }
 	  public void setIndex(int index) { this.index = index; }
    
+	  public void setNavigation(NavigationBean navigation) {
+	  	  _navigation = navigation;
+	  }
+
+	  public NavigationBean getNavigation() {
+	  	  return _navigation;
+	  }
+
 	  @Override
 	  public String execute() throws Exception {
 		_log.debug("in StopsForRouteNavigationAction with input=" + getInput());
+		
+		//Get navigation bean from session
+		_navigation = (NavigationBean)sessionMap.get("navigation");
+		index = _navigation.getCurrentIndex();
+		
+		if (_navigation == null) {
+			_log.debug("StopsForRouteNavigationAction 1: _navigation is null"); 
+			_navigation = (NavigationBean)sessionMap.get("navigation");
+			sessionMap.put("navigation", _navigation);
+			if (_navigation == null) {
+				_log.debug("StopsForRouteNavigationAction 1: _navigation is STILL null"); 
+			} else {
+				_log.debug("StopsForRouteNavigationAction 1: _navigation.indices: " + _navigation.getSelectionIndices());
+				_log.debug("StopsForRouteNavigationAction 1: _navigation.stops: " + _navigation.getStopsForRoute());
+			}
+		}
 		
 		Integer navState = (Integer)sessionMap.get("navState");
 		if (navState == null) {
@@ -67,19 +95,61 @@ public class StopsForRouteNavigationAction extends TwilioSupport implements Sess
 		
 		
 		//if (getInput() != null) {
-		if (navState == 1) {
+		if (navState == DISPLAY_NAV_DATA) {
 			//buildPredictedArrivals(result.getArrivalsAndDepartures());
 			buildStopsList();
 			_log.debug("in StopsForRouteNavigationAction with input " + getInput()); 
 			
-			clearInput();
-			sessionMap.put("navState", new Integer(GET_INPUT));
-			return SUCCESS;
+			//clearInput();
+			sessionMap.put("navState", new Integer(DO_ROUTING));
+			sessionMap.put("navigation", _navigation);
+			setNextAction("stops-for-route-navigation");
+			//return "stops-for-route-navigation";
+			return INPUT;
+		} else {	// Process input and route to the appropriate action.
+			_log.debug("StopsForRouteNavigationAction: DO_ROUTING for index: " + index); 
+			//sessionMap.put("navState", new Integer(DISPLAY_NAV_DATA));
+			//sessionMap.put("navigation", _navigation);
+			if (_navigation == null) {
+				_log.debug("StopsForRouteNavigationAction 2: _navigation is null"); 
+				_navigation = (NavigationBean)sessionMap.get("navigation");
+				if (_navigation == null) {
+					_log.debug("StopsForRouteNavigationAction 2: _navigation is STILL null"); 
+				} else {
+					_log.debug("StopsForRouteNavigationAction 2: _navigation.indices: " + _navigation.getSelectionIndices());
+					_log.debug("StopsForRouteNavigationAction 2: _navigation.stops: " + _navigation.getStopsForRoute());
+				}
+			}
+			sessionMap.put("navigation", _navigation);
+			String keysPressed = getInput();
+			if (keysPressed.equals("1")) {
+				_log.debug("Chaining to transfer-down, index = " + index);
+				sessionMap.put("index", index);
+				return "navigate-down";
+			} else if (keysPressed.equals("4")) {
+				index++;
+				_log.debug("Chaining to transfer-to, index = " + index);
+				sessionMap.put("index", index);
+				return "navigate-to";
+			} else if (keysPressed.equals("7")) {
+				index += 10;
+				_log.debug("Chaining to transfer-to, index = " + index);
+				sessionMap.put("index", index);
+				return "navigate-to";
+			} else if (keysPressed.equals("6")) {
+				index--;
+				_log.debug("Chaining to transfer-to, index = " + index);
+				sessionMap.put("index", index);
+				return "navigate-to";
+			} else if (keysPressed.equals("9")) {
+				index -= 10;
+				_log.debug("Chaining to transfer-to, index = " + index);
+				sessionMap.put("index", index);
+				return "navigate-to";
+			} else return INPUT;
 			//setNextAction("search/stop-found");
+			//return INPUT;
 		}
-		sessionMap.put("navState", new Integer(DISPLAY_NAV_DATA));
-		return "navigate-down";
-		//return INPUT;
 	}
 	
 	//protected void buildPredictedArrivals(List<ArrivalAndDepartureBean> arrivals) {
@@ -87,9 +157,11 @@ public class StopsForRouteNavigationAction extends TwilioSupport implements Sess
 		ActionContext context = ActionContext.getContext();
 	    ValueStack vs = context.getValueStack();
 
-	    NavigationBean navigation = (NavigationBean) vs.findValue("navigation");
+	    //NavigationBean navigation = (NavigationBean) vs.findValue("navigation");
+	    NavigationBean navigation = (NavigationBean)sessionMap.get("navigation");
 	    List<NameBean> names = navigation.getNames();
 	    index = navigation.getCurrentIndex();
+	    _log.debug("StopsForRoute.buildStopsList: index: " + index);
 	    if (index < 0)
 	      index = 0;
 
@@ -140,9 +212,10 @@ public class StopsForRouteNavigationAction extends TwilioSupport implements Sess
 	        //action.putParam("navigation", navigation);
 	        //action.putParam("index", index + 1);
 	        //action.setExcludeFromHistory(true);
-	        setNextAction("/search/navigate-to");
+	        //setNextAction("navigate-to");
 	      }
 
+	      sessionMap.put("navigation", navigation);
 	      //addAction("\\*", "/back");
 	    
 	  }

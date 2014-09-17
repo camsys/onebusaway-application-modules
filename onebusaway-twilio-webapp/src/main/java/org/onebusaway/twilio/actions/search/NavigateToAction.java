@@ -15,8 +15,11 @@
  */
 package org.onebusaway.twilio.actions.search;
 
+import java.util.Map;
+
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
+import org.apache.struts2.interceptor.SessionAware;
 import org.onebusaway.twilio.actions.TwilioSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,15 +27,23 @@ import org.slf4j.LoggerFactory;
 @Results({
 	  @Result(name="success", location="stops-for-route-navigation", type="chain")
 })
-public class NavigateToAction extends TwilioSupport {
+public class NavigateToAction extends TwilioSupport implements SessionAware {
 
   private static final long serialVersionUID = 1L;
   private static Logger _log = LoggerFactory.getLogger(IndexAction.class);
 
+  private Map sessionMap;
   private NavigationBean _navigation;
 
   private int _index;
 
+  private static final int DO_ROUTING = 0;
+  private static final int DISPLAY_NAV_DATA = 1;
+
+  public void setSession(Map map) {
+	  this.sessionMap = map;
+  }
+		
   public void setNavigation(NavigationBean navigation) {
     _navigation = navigation;
   }
@@ -47,11 +58,15 @@ public class NavigateToAction extends TwilioSupport {
 
   @Override
   public String execute() throws Exception {
+  	  
+  	_index = (Integer)sessionMap.get("index");
 
   	_log.debug("in NavigateToAction with input: " + getInput() + ", index: " + _index); 
   		
   	_navigation.setCurrentIndex(_index);
 
+    sessionMap.put("navState", new Integer(DISPLAY_NAV_DATA)); //Get input
+    sessionMap.put("navigation", _navigation);
     return SUCCESS;
   }
 
