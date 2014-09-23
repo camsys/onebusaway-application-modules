@@ -102,7 +102,7 @@ public class SessionManagerImpl implements SessionManager {
     private boolean _valid = true;
 
     public synchronized boolean isValidAfterTouch() {
-      _log.debug("isValidAfterTouch");
+      //_log.debug("isValidAfterTouch");
       if (!_valid)
         return false;
       _lastAccess = System.currentTimeMillis();
@@ -110,7 +110,7 @@ public class SessionManagerImpl implements SessionManager {
     }
 
     public synchronized boolean isValidAfterAccessCheck(long minTime) {
-      _log.debug("isValidAfterAccessCheck");
+      //_log.debug("isValidAfterAccessCheck");
       if (_lastAccess < minTime)
         _valid = false;
       return _valid;
@@ -126,7 +126,7 @@ public class SessionManagerImpl implements SessionManager {
   private class SessionCleanup implements Runnable {
 
     public void run() {
-      _log.debug("run");
+      //_log.debug("run");
 
       long minTime = System.currentTimeMillis() - _sessionTimeout * 1000;
 

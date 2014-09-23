@@ -10,7 +10,8 @@ import org.onebusaway.twilio.impl.PhoneArrivalsAndDeparturesModel;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Results({
-  @Result(name="success", location="arrivals-and-departures", type="chain")
+  @Result(name="success", location="arrivals-and-departures", type="chain"),
+  @Result(name="input", location="arrivals-and-departures", type="chain")
 })
 public class ArrivalsAndDeparturesForStopIdAction extends TwilioSupport {
 

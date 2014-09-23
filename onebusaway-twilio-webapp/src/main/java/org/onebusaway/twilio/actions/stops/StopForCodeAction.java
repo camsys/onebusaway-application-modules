@@ -15,7 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Results({
-  @Result(name="success", location="arrivals-and-departures-for-stop-id", type="chain")
+  @Result(name="success", location="arrivals-and-departures-for-stop-id", type="chain"),
+  @Result(name="multipleStopsFound", location="multiple-stops-found", type="chain")
 })
 public class StopForCodeAction extends TwilioSupport {
   

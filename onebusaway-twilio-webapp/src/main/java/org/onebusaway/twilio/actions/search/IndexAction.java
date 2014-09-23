@@ -17,6 +17,7 @@ public class IndexAction extends TwilioSupport {
 	  private static final long serialVersionUID = 1L;
 	  private static Logger _log = LoggerFactory.getLogger(IndexAction.class);
 	  private String _searchCode;
+	  private String _routeName;
 	  
 	  public String getSearchCode() {
 	    return _searchCode;
@@ -24,6 +25,14 @@ public class IndexAction extends TwilioSupport {
 	  
 	  public void setSearchCode(String searchCode) {
 		  _searchCode = searchCode;
+	  }
+	  
+	  public String getRouteName() {
+		  return _routeName;
+	  }
+		  
+	  public void setRouteName(String routeName) {
+		  _routeName = routeName;
 	  }
 	  
 	  @Override
@@ -34,22 +43,18 @@ public class IndexAction extends TwilioSupport {
 	      if ("8".equals(getInput())) {
 	      	clearInput();
 	        return "back";
-	      }
-	      
-	      //addActionWithParameterFromMatch("([1-9][0-9]*)#", "/search/route", "routeName", 1);
+	      }	      
 	      setSearchCode(getInput());
 	      clearInput();
 	      _log.debug("search.IndexAction:searchCode: " + _searchCode);
 	      if (_searchCode.matches("([1-9][0-9]*)")) {
+	    	  _routeName = _searchCode;
 	    	  return "route-for-name";
-	      }
-	      
-	      //_log.debug("forwarding to search");
+	      }	      
 	      return "search-for-code";
 	    } else {
 	      setNextAction("search/index");
-	    }
-	    
+	    }	    
 	    return INPUT;
 	  }
 }

@@ -112,6 +112,7 @@ public void setIndex(int index) {
 
     if (selection.hasStop()) {
       _stop = selection.getStop();
+      sessionMap.put("navState", new Integer(DISPLAY_NAV_DATA));
       return "stopFound";
     }
 
