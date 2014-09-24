@@ -8,7 +8,8 @@ import org.slf4j.LoggerFactory;
 @Results({
   @Result(name="help", location="help", type="redirectAction"),
   @Result(name="stops-index", location="stops/index", type="redirectAction", params={"From", "${phoneNumber}"}),
-  @Result(name="search-index", location="search/index", type="redirectAction", params={"From", "${phoneNumber}"})
+  @Result(name="search-index", location="search/index", type="redirectAction", params={"From", "${phoneNumber}"}),
+  @Result(name="bookmarks-index", location="bookmarks/index", type="redirectAction", params={"From", "${phoneNumber}"})
 })
 public class IndexAction extends TwilioSupport {
 
@@ -32,9 +33,12 @@ public class IndexAction extends TwilioSupport {
     if ("0".equals(getInput())) {
       clearNextAction();
       return "help";
-    } else if ("3".equals(getInput())) {
+    } else if ("2".equals(getInput())) {
       clearNextAction();
       return "stops-index";
+    } else if ("3".equals(getInput())) {
+      clearNextAction();
+      return "bookmarks-index";
     } else if ("6".equals(getInput())) {
     	clearNextAction();
     	return "search-index";
