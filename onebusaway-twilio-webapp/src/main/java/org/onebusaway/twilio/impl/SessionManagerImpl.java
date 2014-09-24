@@ -88,6 +88,9 @@ public class SessionManagerImpl implements SessionManager {
       ContextEntry entry = new ContextEntry();
       ContextEntry existingEntry = _contextEntriesByKey.putIfAbsent(key, entry);
       entry = (existingEntry == null) ? entry : existingEntry;
+      if (!entry.getContext().containsKey("twilioCreationTime")) {
+        entry.getContext().put("twilioCreationTime", System.currentTimeMillis());
+      }
       if (entry.isValidAfterTouch())
         return entry;
     }

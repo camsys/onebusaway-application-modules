@@ -52,6 +52,7 @@ public class TwilioDispatchFilter implements Filter {
     
     // if we've seen this user before
     if (_sessionManager.hasContext(key)) {
+      _log.debug("found session=" + _sessionManager.getContext(key));
       // redirect to last known location
       Map<String, Object> context = _sessionManager.getContext(key);
       String nextAction = (String) context.get(NEXT_ACTION);

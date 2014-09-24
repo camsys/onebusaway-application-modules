@@ -103,7 +103,7 @@ public class StopsForRouteNavigationAction extends TwilioSupport implements Sess
 			//clearInput();
 			sessionMap.put("navState", new Integer(DO_ROUTING));
 			sessionMap.put("navigation", _navigation);
-			setNextAction("stops-for-route-navigation");
+			setNextAction("search/stops-for-route-navigation");
 			//return "stops-for-route-navigation";
 			return INPUT;
 		} else {	// Process input and route to the appropriate action.
