@@ -25,6 +25,9 @@ import com.opensymphony.xwork2.util.ValueStack;
 //  @Result(name="arrivals-and-departures", location="arrivals-and-departures-for-stop-id", type="chain",
   @Result(name="arrivals-and-departures", type="chain",
   	  params={"namespace", "/stops", "actionName", "arrivals-and-departures-for-stop-id"}),
+  @Result(name="bookmark-stop", type="chain",
+      params={"namespace", "/bookmarks", "actionName", "bookmark-stop"}),
+  	  
 //  @Result(name="arrivals-and-departures", location="/stops/arrivals-and-departures-for-stop-id", type="chain"),
 //	  @Result(name="success", location="stops-for-route-navigation", type="chain")
 })
@@ -37,8 +40,9 @@ public class StopFoundAction extends TwilioSupport implements SessionAware {
 	private TextModification _directionPronunciation;
 	private Map sessionMap;
 	  
-	private static final int DO_ROUTING = 0;
-	private static final int DISPLAY_DATA = 1;
+
+	
+	
 
 	public List<String> getStopIds() {
 		return _stopIds;
@@ -64,12 +68,12 @@ public class StopFoundAction extends TwilioSupport implements SessionAware {
 	public String execute() throws Exception {
 		Integer navState = (Integer)sessionMap.get("navState");
 		if (navState == null) {
-			navState = DISPLAY_DATA;
+			navState = DISPLAY_DATA_NAV;
 		}
 		_log.debug("StopsForRouteNavigationAction:navState: " + navState);
 
 
-		if (navState == DISPLAY_DATA) {
+		if (navState == DISPLAY_DATA_NAV) {
 	
 			ActionContext context = ActionContext.getContext();
 			ValueStack vs = context.getValueStack();	
@@ -107,13 +111,17 @@ public class StopFoundAction extends TwilioSupport implements SessionAware {
 	
 			addMessage(Messages.TO_REPEAT);
 			
-			sessionMap.put("navState", new Integer(DO_ROUTING));			  
+			sessionMap.put("navState", new Integer(DO_ROUTING_NAV));			  
 			return SUCCESS;
 		} else {
 			if ("1".equals(getInput())) {
 				StopBean stop = (StopBean)sessionMap.get("stop");
 				_stopIds = Arrays.asList(stop.getId());
 				return "arrivals-and-departures";
+			} else if ("2".equals(getInput())) {
+			  StopBean stop = (StopBean)sessionMap.get("stop");
+        _stopIds = Arrays.asList(stop.getId());
+        return "bookmark-stop";
 			}
 			return SUCCESS;
 		}

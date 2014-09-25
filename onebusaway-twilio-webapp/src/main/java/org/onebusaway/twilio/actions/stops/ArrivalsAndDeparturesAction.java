@@ -1,11 +1,17 @@
 package org.onebusaway.twilio.actions.stops;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Actions;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.convention.annotation.Results;
+import org.apache.struts2.interceptor.SessionAware;
 import org.onebusaway.presentation.client.RoutePresenter;
 import org.onebusaway.presentation.impl.AgencyPresenter;
 import org.onebusaway.presentation.impl.ArrivalAndDepartureComparator;
@@ -13,6 +19,7 @@ import org.onebusaway.presentation.services.text.TextModification;
 import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.RouteBean;
+import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopsWithArrivalsAndDeparturesBean;
 import org.onebusaway.transit_data.model.TransitDataConstants;
 import org.onebusaway.transit_data.model.trips.TripBean;
@@ -27,6 +34,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.util.ValueStack;
 
+@Results({
+@Result(name="bookmark-stop", type="chain",
+    params={"namespace", "/bookmarks", "actionName", "bookmark-stop"})
+})
+
 public class ArrivalsAndDeparturesAction extends TwilioSupport {
 
   private static Logger _log = LoggerFactory.getLogger(ArrivalsAndDeparturesAction.class);
@@ -35,6 +47,8 @@ public class ArrivalsAndDeparturesAction extends TwilioSupport {
 
   private TextModification _destinationPronunciation;
 
+  private List<StopBean> _stops = new ArrayList<StopBean>();
+  
   @Autowired
   public void setDestinationPronunciation(
       @Qualifier("destinationPronunciation") TextModification destinationPronunciation) {
@@ -46,17 +60,51 @@ public class ArrivalsAndDeparturesAction extends TwilioSupport {
       @Qualifier("routeNumberPronunciation") TextModification routeNumberPronunciation) {
     _routeNumberPronunciation = routeNumberPronunciation;
   }
+
+  public void setStops(List<StopBean> stops) {
+    _stops.addAll(stops);
+  }
+
+  public List<StopBean> getStops() {
+    return _stops;
+  }
+
+
   
   @Override
   public String execute() throws Exception {
-    _log.debug("in!");
-    ActionContext context = ActionContext.getContext();
-    ValueStack valueStack = context.getValueStack();
-    PhoneArrivalsAndDeparturesModel model = (PhoneArrivalsAndDeparturesModel) valueStack.findValue("model");
-    StopsWithArrivalsAndDeparturesBean result = model.getResult();
+    _log.debug("in execute with input=" + this.getInput());
+    Integer navState = (Integer)sessionMap.get("navState");
+    if (navState == null) {
+      navState = DISPLAY_DATA_NAV;
+    }
 
-    buildPredictedArrivals(result.getArrivalsAndDepartures());
-    return SUCCESS;
+    if (navState == DISPLAY_DATA_NAV) {
+      // display results
+      ActionContext context = ActionContext.getContext();
+      ValueStack valueStack = context.getValueStack();
+      PhoneArrivalsAndDeparturesModel model = (PhoneArrivalsAndDeparturesModel) valueStack.findValue("model");
+      StopsWithArrivalsAndDeparturesBean result = model.getResult();
+
+      buildPredictedArrivals(result.getArrivalsAndDepartures());
+      setNextAction("stops/arrivals-and-departures");
+      _log.debug("setting navState, have stopIds=" + model.getStopIds());
+      sessionMap.put("navState", new Integer(DO_ROUTING_NAV));
+      sessionMap.put("stopIds", model.getStopIds());
+      sessionMap.put("stops", result.getStops());
+      return SUCCESS;
+    }
+    // navigation options after rendering a stop
+    
+    if ("2".equals(getInput())) {
+      setStops((List<StopBean>)sessionMap.get("stops"));
+      clearNavState();
+      return "bookmark-stop";
+    }
+    // we didn't understand
+    _log.debug("unexpected input=" + getInput());
+    setNextAction("stops/index");
+    return INPUT;
   }
   
   
@@ -138,4 +186,5 @@ public class ArrivalsAndDeparturesAction extends TwilioSupport {
       }
     }
   }
+
 }

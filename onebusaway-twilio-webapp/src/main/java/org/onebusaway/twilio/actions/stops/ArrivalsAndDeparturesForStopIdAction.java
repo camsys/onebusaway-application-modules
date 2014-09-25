@@ -7,14 +7,18 @@ import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.twilio.actions.TwilioSupport;
 import org.onebusaway.twilio.impl.PhoneArrivalsAndDeparturesModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Results({
   @Result(name="success", location="arrivals-and-departures", type="chain"),
-  @Result(name="input", location="arrivals-and-departures", type="chain")
+  @Result(name="input", location="index", type="redirectAction")
 })
 public class ArrivalsAndDeparturesForStopIdAction extends TwilioSupport {
 
+  private static Logger _log = LoggerFactory.getLogger(ArrivalsAndDeparturesForStopIdAction.class);
+  
   private PhoneArrivalsAndDeparturesModel _model;
 
   @Autowired
@@ -35,15 +39,17 @@ public class ArrivalsAndDeparturesForStopIdAction extends TwilioSupport {
   }
 
   public String execute() throws Exception {
-
-    if (_model.isMissingData())
+    _log.debug("in execute with stops=" + _model.getStopIds());
+    if (_model.isMissingData()) {
+      _log.warn("missing execpted data");
       return INPUT;
+    }
 
     _model.process();
 
     logUserInteraction("stopIds", _model.getStopIds(), "routeIds",
         _model.getRouteFilter());
-
+    
     return SUCCESS;
   }
 }

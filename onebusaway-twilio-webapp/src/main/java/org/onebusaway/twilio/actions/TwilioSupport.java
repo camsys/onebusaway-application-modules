@@ -6,10 +6,14 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.apache.struts2.interceptor.ParameterAware;
+import org.apache.struts2.interceptor.SessionAware;
 import org.onebusaway.geospatial.model.CoordinateBounds;
+import org.onebusaway.presentation.services.CurrentUserAware;
 import org.onebusaway.presentation.services.ServiceAreaService;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.twilio.actions.stops.StopForCodeAction;
+import org.onebusaway.users.client.model.UserBean;
+import org.onebusaway.users.services.CurrentUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,18 +23,25 @@ import com.opensymphony.xwork2.ActionSupport;
 import com.opensymphony.xwork2.util.LocalizedTextUtil;
 import com.opensymphony.xwork2.util.ValueStack;
 
-public class TwilioSupport extends ActionSupport implements ParameterAware {
+public class TwilioSupport extends ActionSupport implements ParameterAware, CurrentUserAware, SessionAware {
 
+  public static final String PREVIOUS_MENU_ITEM = "9";
+  public static final String REPEAT_MENU_ITEM = "8";
   public static final String INPUT_KEY = "Digits";
   public static final String PHONE_NUMBER_KEY = "From";
   public static final String NEEDS_DEFAULT_SEARCH_LOCATION = "needsDefaultSearchLocation";
+  protected static final int DISPLAY_DATA_NAV = 0;
+  protected static final int DO_ROUTING_NAV = 1;
+  
   private static Logger _log = LoggerFactory.getLogger(StopForCodeAction.class);
   
   protected TransitDataService _transitDataService;
+  protected CurrentUserService _currentUserService;
   private ServiceAreaService _serviceAreaService;
   private Map<String, String[]> _parameters;
   private StringBuffer _message = new StringBuffer();
-  
+  protected UserBean _currentUser;
+  protected Map sessionMap;
   
   protected void addText(String txt) {
     _log.debug(txt);
@@ -78,6 +89,11 @@ public class TwilioSupport extends ActionSupport implements ParameterAware {
   @Override
   public void setParameters(Map<String, String[]> arg0) {
     _parameters = arg0;
+  }
+  
+  @Override
+  public void setSession(Map map) {
+    this.sessionMap = map;
   }
   
   public String getInput() {
@@ -137,4 +153,23 @@ public class TwilioSupport extends ActionSupport implements ParameterAware {
 	  text += ")";
 	  _log.info(text);
   }
+  
+  @Autowired
+  public void setCurrentUserService(CurrentUserService userDataService) {
+    _currentUserService = userDataService;
+  }
+
+  @Override
+  public void setCurrentUser(UserBean currentUser) {
+    _currentUser = currentUser;
+  }
+
+  public UserBean getCurrentUser() {
+    return _currentUser;
+  }
+
+  protected void clearNavState() {
+    sessionMap.remove("navState");
+  }
+
 }

@@ -1,78 +1,48 @@
 package org.onebusaway.twilio.actions.bookmarks;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import org.onebusaway.collections.MappingLibrary;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.presentation.model.BookmarkWithStopsBean;
 import org.onebusaway.twilio.actions.Messages;
-import org.onebusaway.twilio.actions.TwilioSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.opensymphony.xwork2.ActionContext;
-import com.opensymphony.xwork2.util.ValueStack;
-
-public class IndexAction extends TwilioSupport {
+@Results({
+  @Result(name="arrival-and-departure-for-stop-id", type="chain",
+      params={"namespace", "/stops", "actionName", "arrivals-and-departures-for-stop-id"})
+})
+public class IndexAction extends AbstractBookmarkAction {
 
   private static Logger _log = LoggerFactory.getLogger(IndexAction.class);
   
   @Override
   public String execute() throws Exception {
-    _log.debug("in execute! with input=" + getInput());
+    _log.debug("in bookmark execute! with input=" + getInput());
     
-    
-    if ("3".equals(getInput())) {
+
+    // if we have input, assume its the index of the bookmark
+    if (getInput() != null) {
       clearNextAction();
-      // TODO
-      return INPUT;
+      setSelection();
+      return "arrival-and-departure-for-stop-id";
     }
     
-    // no input, looks for book marks
-    ActionContext context = ActionContext.getContext();
-    ValueStack stack = context.getValueStack();
-    List<BookmarkWithStopsBean> bookmarks = (List<BookmarkWithStopsBean>) stack.findValue("bookmarks");
+    // no input, look for bookmarks
+    List<BookmarkWithStopsBean> bookmarks = _bookmarkPresentationService.getBookmarksWithStops(_currentUser.getBookmarks());
+    logUserInteraction();
+
 
     if (bookmarks == null || bookmarks.isEmpty()) {
-      _log.debug("no bookmarks found");
       addMessage(Messages.BOOKMARKS_EMPTY);
       addMessage(Messages.HOW_TO_GO_BACK);
       addMessage(Messages.TO_REPEAT);
-
     } else {
-      populateBookmarks(bookmarks);
+      populateBookmarks(bookmarks, Messages.FOR);
     }
     
+    setNextAction("bookmarks/index");
     return INPUT;
   }
 
-  private void populateBookmarks(List<BookmarkWithStopsBean> bookmarks) {
-    int index = 1;
-    for (BookmarkWithStopsBean bookmark : bookmarks) {
-      _log.debug("found bookmark=" + bookmark);
-      String toPress = Integer.toString(index);
-
-      addMessage(Messages.FOR);
-// TODO
-//      AgiActionName stopAction = addAction(toPress,
-//          "/stop/arrivalsAndDeparturesForStopId");
-
-      List<String> stopIds = MappingLibrary.map(bookmark.getStops(), "id");
-      Set<String> routeIds = new HashSet<String>(MappingLibrary.map(
-          bookmark.getRoutes(), "id", String.class));
-// TODO
-//      stopAction.putParam("stopIds", stopIds);
-//      stopAction.putParam("routeIds", routeIds);
-//
-//      addBookmarkDescription(bookmark);
-
-      addMessage(Messages.PLEASE_PRESS);
-      addText(toPress);
-
-      index++;
-    }
-
-    
-  }
 }
