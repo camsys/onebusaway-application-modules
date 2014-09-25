@@ -62,7 +62,7 @@
 
 	<!-- HEY! -->
 	<welcome-file-list>
-		<welcome-file>index.jspx</welcome-file>
+		<welcome-file>welcome.jspx</welcome-file>
 	</welcome-file-list>
 
 </web-app>

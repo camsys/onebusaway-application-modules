@@ -26,10 +26,10 @@ public class DeleteBookmarkAction extends AbstractBookmarkAction {
     
     Integer navState = (Integer)sessionMap.get("navState");
     if (navState == null) {
-      navState = DISPLAY_DATA_NAV;
+      navState = DISPLAY_DATA;
     }
 
-    if (navState == DISPLAY_DATA_NAV) {
+    if (navState == DISPLAY_DATA) {
       
       int bookmarkSize = _currentUser.getBookmarks().size();
       int bookmarkId = _currentUser.getBookmarks().get(_index).getId();
@@ -44,7 +44,7 @@ public class DeleteBookmarkAction extends AbstractBookmarkAction {
       } else {
         addMessage(Messages.BOOKMARK_DELETED);
       }
-      sessionMap.put("navState", DO_ROUTING_NAV);
+      sessionMap.put("navState", DO_ROUTING);
       setNextAction("bookmarks/delete-bookmark");
       return INPUT;
      }

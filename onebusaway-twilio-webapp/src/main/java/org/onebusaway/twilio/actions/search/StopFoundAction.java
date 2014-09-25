@@ -40,10 +40,6 @@ public class StopFoundAction extends TwilioSupport implements SessionAware {
 	private TextModification _directionPronunciation;
 	private Map sessionMap;
 	  
-
-	
-	
-
 	public List<String> getStopIds() {
 		return _stopIds;
 	}
@@ -68,12 +64,12 @@ public class StopFoundAction extends TwilioSupport implements SessionAware {
 	public String execute() throws Exception {
 		Integer navState = (Integer)sessionMap.get("navState");
 		if (navState == null) {
-			navState = DISPLAY_DATA_NAV;
+			navState = DISPLAY_DATA;
 		}
 		_log.debug("StopsForRouteNavigationAction:navState: " + navState);
 
 
-		if (navState == DISPLAY_DATA_NAV) {
+		if (navState == DISPLAY_DATA) {
 	
 			ActionContext context = ActionContext.getContext();
 			ValueStack vs = context.getValueStack();	
@@ -111,7 +107,7 @@ public class StopFoundAction extends TwilioSupport implements SessionAware {
 	
 			addMessage(Messages.TO_REPEAT);
 			
-			sessionMap.put("navState", new Integer(DO_ROUTING_NAV));			  
+			sessionMap.put("navState", new Integer(DO_ROUTING));			  
 			return SUCCESS;
 		} else {
 			if ("1".equals(getInput())) {

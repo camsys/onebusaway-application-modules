@@ -37,9 +37,6 @@ public class NavigateToAction extends TwilioSupport implements SessionAware {
 
   private int _index;
 
-  private static final int DO_ROUTING = 0;
-  private static final int DISPLAY_NAV_DATA = 1;
-
   public void setSession(Map map) {
 	  this.sessionMap = map;
   }
@@ -65,7 +62,7 @@ public class NavigateToAction extends TwilioSupport implements SessionAware {
   		
   	_navigation.setCurrentIndex(_index);
 
-    sessionMap.put("navState", new Integer(DISPLAY_NAV_DATA)); //Get input
+    sessionMap.put("navState", new Integer(DISPLAY_DATA)); //Get input
     sessionMap.put("navigation", _navigation);
     return SUCCESS;
   }

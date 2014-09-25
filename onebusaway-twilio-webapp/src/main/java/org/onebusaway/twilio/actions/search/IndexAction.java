@@ -40,7 +40,7 @@ public class IndexAction extends TwilioSupport {
 	    _log.debug("in search index with input=" + getInput());
 	    
 	    if (getInput() != null) {
-	      if ("8".equals(getInput())) {
+	      if ("*".equals(getInput())) {
 	      	clearInput();
 	        return "back";
 	      }	      

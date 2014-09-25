@@ -48,9 +48,6 @@ public class NavigateDownAction extends TwilioSupport implements SessionAware {
 
   private StopBean _stop;
 
-  private static final int DO_ROUTING = 0;
-  private static final int DISPLAY_NAV_DATA = 1;
-
   @Autowired
   public void setStopSelectionService(StopSelectionService stopSelectionService) {
     _stopSelectionService = stopSelectionService;
@@ -112,11 +109,11 @@ public void setIndex(int index) {
 
     if (selection.hasStop()) {
       _stop = selection.getStop();
-      sessionMap.put("navState", new Integer(DISPLAY_NAV_DATA));
+      sessionMap.put("navState", new Integer(DISPLAY_DATA));
       return "stopFound";
     }
 
-    sessionMap.put("navState", new Integer(DISPLAY_NAV_DATA)); //Get input
+    sessionMap.put("navState", new Integer(DISPLAY_DATA)); //Get input
     sessionMap.put("navigation", _navigation);
     return SUCCESS;
   }

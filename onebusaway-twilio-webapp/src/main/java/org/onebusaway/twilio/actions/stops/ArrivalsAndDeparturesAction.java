@@ -76,10 +76,10 @@ public class ArrivalsAndDeparturesAction extends TwilioSupport {
     _log.debug("in execute with input=" + this.getInput());
     Integer navState = (Integer)sessionMap.get("navState");
     if (navState == null) {
-      navState = DISPLAY_DATA_NAV;
+      navState = DISPLAY_DATA;
     }
 
-    if (navState == DISPLAY_DATA_NAV) {
+    if (navState == DISPLAY_DATA) {
       // display results
       ActionContext context = ActionContext.getContext();
       ValueStack valueStack = context.getValueStack();
@@ -89,7 +89,7 @@ public class ArrivalsAndDeparturesAction extends TwilioSupport {
       buildPredictedArrivals(result.getArrivalsAndDepartures());
       setNextAction("stops/arrivals-and-departures");
       _log.debug("setting navState, have stopIds=" + model.getStopIds());
-      sessionMap.put("navState", new Integer(DO_ROUTING_NAV));
+      sessionMap.put("navState", new Integer(DO_ROUTING));
       sessionMap.put("stopIds", model.getStopIds());
       sessionMap.put("stops", result.getStops());
       return SUCCESS;

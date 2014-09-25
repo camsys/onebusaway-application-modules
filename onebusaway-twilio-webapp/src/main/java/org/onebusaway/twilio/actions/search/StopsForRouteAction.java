@@ -74,13 +74,13 @@ public class StopsForRouteAction extends TwilioSupport implements SessionAware {
 		if (navState == null) {
 			_log.debug("StopsForRouteAction:navState is null");
 		} else {
-			_log.debug("StopsForRouteAction:navState is NOT null, resetting to one");
-			navState = 1;
+			_log.debug("StopsForRouteAction:navState is NOT null, resetting to DISPLAY_DATA");
+			navState = DISPLAY_DATA;
 			sessionMap.put("navState", new Integer(navState));
 		}
 	  	  
 		  
-		_log.debug("in StopsForRoute with input=" + getInput()); 
+		_log.debug("in StopsForRoute with input: " + getInput() + " route.getId: " + _route.getId()); 
 		clearInput();
 
 	    StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(_route.getId());

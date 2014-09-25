@@ -30,8 +30,8 @@ public class TwilioSupport extends ActionSupport implements ParameterAware, Curr
   public static final String INPUT_KEY = "Digits";
   public static final String PHONE_NUMBER_KEY = "From";
   public static final String NEEDS_DEFAULT_SEARCH_LOCATION = "needsDefaultSearchLocation";
-  protected static final int DISPLAY_DATA_NAV = 0;
-  protected static final int DO_ROUTING_NAV = 1;
+  protected static final int DISPLAY_DATA = 0;
+  protected static final int DO_ROUTING = 1;
   
   private static Logger _log = LoggerFactory.getLogger(StopForCodeAction.class);
   

@@ -38,9 +38,6 @@ public class StopsForRouteNavigationAction extends TwilioSupport implements Sess
 	  private int index;
 	  private NavigationBean _navigation;
 	  
-	  private static final int DO_ROUTING = 0;
-	  private static final int DISPLAY_NAV_DATA = 1;
-
 	  @Autowired
 	  public void setDestinationPronunciation(
 	      @Qualifier("destinationPronunciation") TextModification destinationPronunciation) {
@@ -89,13 +86,13 @@ public class StopsForRouteNavigationAction extends TwilioSupport implements Sess
 		
 		Integer navState = (Integer)sessionMap.get("navState");
 		if (navState == null) {
-			navState = DISPLAY_NAV_DATA;
+			navState = DISPLAY_DATA;
 		}
 		_log.debug("StopsForRouteNavigationAction:navState: " + navState);
 		
 		
 		//if (getInput() != null) {
-		if (navState == DISPLAY_NAV_DATA) {
+		if (navState == DISPLAY_DATA) {
 			//buildPredictedArrivals(result.getArrivalsAndDepartures());
 			buildStopsList();
 			_log.debug("in StopsForRouteNavigationAction with input " + getInput()); 
@@ -108,7 +105,7 @@ public class StopsForRouteNavigationAction extends TwilioSupport implements Sess
 			return INPUT;
 		} else {	// Process input and route to the appropriate action.
 			_log.debug("StopsForRouteNavigationAction: DO_ROUTING for index: " + index); 
-			//sessionMap.put("navState", new Integer(DISPLAY_NAV_DATA));
+			//sessionMap.put("navState", new Integer(DISPLAY_DATA));
 			//sessionMap.put("navigation", _navigation);
 			if (_navigation == null) {
 				_log.debug("StopsForRouteNavigationAction 2: _navigation is null"); 

@@ -15,17 +15,14 @@
     limitations under the License.
 
 -->
-
 <Response xmlns:jsp="http://java.sun.com/JSP/Page"
       xmlns:c="http://java.sun.com/jsp/jstl/core"
      xmlns:s="/struts-tags"
      xmlns:wiki="/oba-wiki-tags">
-<jsp:directive.page contentType="application/xml" />
+  <jsp:directive.page contentType="application/xml" />
   <Gather numDigits="1">
     <Say>
-      ${message}
+    	Where is your bus... let's find out.  If you are a first time user, or need help, please press zero.
     </Say>
-    <Pause length="1">
-    </Pause>
   </Gather>
 </Response>

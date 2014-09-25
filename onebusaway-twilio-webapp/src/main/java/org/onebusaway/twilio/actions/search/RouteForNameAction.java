@@ -1,9 +1,11 @@
 package org.onebusaway.twilio.actions.search;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
+import org.apache.struts2.interceptor.SessionAware;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.RoutesBean;
@@ -17,13 +19,14 @@ import org.slf4j.LoggerFactory;
 	  @Result(name="success", location="stops-for-route", type="chain"),
 	  @Result(name="multipleRoutesFound", location="multiple-routes-found", type="chain")
 })
-public class RouteForNameAction extends TwilioSupport {
+public class RouteForNameAction extends TwilioSupport implements SessionAware {
 	  private static final long serialVersionUID = 1L;
 	  private static Logger _log = LoggerFactory.getLogger(IndexAction.class);
 
 	  private String _routeName;
 	  private RouteBean _route;
 	  private List<RouteBean> _routes;
+	  private Map sessionMap;
 	  
 	  public void setRouteName(String routeName) {
 	    _routeName = routeName;
@@ -41,6 +44,10 @@ public class RouteForNameAction extends TwilioSupport {
 	    return _routes;
 	  }
 	  
+	  public void setSession(Map map) {
+	  	  this.sessionMap = map;
+	  }
+		
 	  public String execute() throws Exception {
 	    _log.debug("in RouteForName with routeName " + _routeName); 
 		  
@@ -62,6 +69,7 @@ public class RouteForNameAction extends TwilioSupport {
 	    
 	    RoutesBean routesBean = _transitDataService.getRoutes(routesQuery);
 	    List<RouteBean> routes = routesBean.getRoutes();
+	    sessionMap.put("navState", new Integer(DISPLAY_DATA));	      
 	    
 	    logUserInteraction("route", _routeName);
 
