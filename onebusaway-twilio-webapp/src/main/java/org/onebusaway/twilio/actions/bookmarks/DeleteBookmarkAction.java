@@ -30,7 +30,6 @@ public class DeleteBookmarkAction extends AbstractBookmarkAction {
     }
 
     if (navState == DISPLAY_DATA) {
-      
       int bookmarkSize = _currentUser.getBookmarks().size();
       int bookmarkId = _currentUser.getBookmarks().get(_index).getId();
       _log.info("deleting index=" + _index + " of " + bookmarkSize + " with id=" + bookmarkId);

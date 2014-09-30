@@ -9,6 +9,7 @@ import org.onebusaway.twilio.actions.Messages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 @Results({
+  @Result(name="back", type="redirectAction", params={"namespace", "/", "actionName", "index"}),
   @Result(name="arrival-and-departure-for-stop-id", type="chain",
       params={"namespace", "/stops", "actionName", "arrivals-and-departures-for-stop-id"})
 })
@@ -20,8 +21,13 @@ public class IndexAction extends AbstractBookmarkAction {
   public String execute() throws Exception {
     _log.debug("in bookmark execute! with input=" + getInput());
     
+    // Check for "back" action
+    if (PREVIOUS_MENU_ITEM.equals(getInput())) {
+      return "back";
+    }
 
-    // if we have input, assume its the index of the bookmark
+    
+    // if we have input (other than "back"), assume its the index of the bookmark
     if (getInput() != null) {
       clearNextAction();
       setSelection();

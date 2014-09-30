@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import com.opensymphony.xwork2.ActionContext;
 
 @Results({
-  @Result(name="back", location="index", type="redirectAction"),
+  @Result(name="back", type="redirectAction", params={"namespace", "/", "actionName", "index"}),
   @Result(name="stop-for-code", location="stop-for-code", type="chain")
   })
 public class IndexAction extends TwilioSupport {
@@ -30,7 +30,7 @@ public class IndexAction extends TwilioSupport {
     _log.debug("in stops index with input=" + getInput());
     
     if (getInput() != null) {
-      if ("8".equals(getInput())) {
+      if (PREVIOUS_MENU_ITEM.equals(getInput())) {
         return "back";
       }
       setStopCode(getInput());

@@ -25,7 +25,8 @@ import com.opensymphony.xwork2.util.ValueStack;
 	@Result(name="navigate-down", location="navigate-down", type="chain"),
 	@Result(name="navigate-to", location="navigate-to", type="chain"),
 	@Result (name="stopFound", location="stop-found", type="chain"),
-	@Result(name="stops-for-route-navigation", location="stops-for-route-navigation", type="chain")
+	@Result(name="stops-for-route-navigation", location="stops-for-route-navigation", type="chain"),
+  @Result(name="back", location="index", type="chain")
 	//	  @Result(name="success", location="stop-found", type="chain")
 })
 public class StopsForRouteNavigationAction extends TwilioSupport implements SessionAware {
@@ -118,8 +119,12 @@ public class StopsForRouteNavigationAction extends TwilioSupport implements Sess
 				}
 			}
 			sessionMap.put("navigation", _navigation);
-			String keysPressed = getInput();
-			if (keysPressed.equals("1")) {
+      if (PREVIOUS_MENU_ITEM.equals(getInput())) {
+        return "back";
+      }	      
+      
+			String keysPressed = getInput();      
+			if (keysPressed.equals("1")) {         
 				_log.debug("Chaining to transfer-down, index = " + index);
 				sessionMap.put("index", index);
 				return "navigate-down";

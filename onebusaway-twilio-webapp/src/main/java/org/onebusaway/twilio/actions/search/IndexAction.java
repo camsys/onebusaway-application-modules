@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Results({
-	  @Result(name="back", location="index", type="redirectAction"),
+	  @Result(name="back", type="redirectAction", params={"namespace", "/", "actionName", "index"}),
 	  @Result(name="route-for-name", location="route-for-name", type="chain"),
 	  @Result(name="search-for-code", location="stop-for-code", type="chain")
 	  })
@@ -40,12 +40,10 @@ public class IndexAction extends TwilioSupport {
 	    _log.debug("in search index with input=" + getInput());
 	    
 	    if (getInput() != null) {
-	      if ("*".equals(getInput())) {
-	      	clearInput();
+	      if (PREVIOUS_MENU_ITEM.equals(getInput())) {
 	        return "back";
 	      }	      
 	      setSearchCode(getInput());
-	      clearInput();
 	      _log.debug("search.IndexAction:searchCode: " + _searchCode);
 	      if (_searchCode.matches("([1-9][0-9]*)")) {
 	    	  _routeName = _searchCode;

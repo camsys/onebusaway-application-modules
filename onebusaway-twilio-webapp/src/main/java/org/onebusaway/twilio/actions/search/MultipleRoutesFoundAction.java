@@ -98,7 +98,7 @@ public class MultipleRoutesFoundAction extends TwilioSupport implements SessionA
 		} else {	// Do the routing, matching the key pressed with the correct route bean.
 			_log.debug("Handling selection of choice of routes.");
 			// Handle "back" request ('*' key pressed)
-			if ("*".equals(getInput())) {
+			if (PREVIOUS_MENU_ITEM.equals(getInput())) {
 				return "back";
 			}
 			int key = Integer.parseInt(getInput());

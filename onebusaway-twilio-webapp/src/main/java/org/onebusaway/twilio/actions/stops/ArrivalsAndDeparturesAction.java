@@ -35,8 +35,9 @@ import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.util.ValueStack;
 
 @Results({
-@Result(name="bookmark-stop", type="chain",
-    params={"namespace", "/bookmarks", "actionName", "bookmark-stop"})
+    @Result(name="bookmark-stop", type="chain",
+      params={"namespace", "/bookmarks", "actionName", "bookmark-stop"}),
+	  @Result(name="back", location="index", type="chain")
 })
 
 public class ArrivalsAndDeparturesAction extends TwilioSupport {
@@ -100,7 +101,9 @@ public class ArrivalsAndDeparturesAction extends TwilioSupport {
       setStops((List<StopBean>)sessionMap.get("stops"));
       clearNavState();
       return "bookmark-stop";
-    }
+    } else if (PREVIOUS_MENU_ITEM.equals(getInput())) {
+      return "back";
+    }	      
     // we didn't understand
     _log.debug("unexpected input=" + getInput());
     setNextAction("stops/index");

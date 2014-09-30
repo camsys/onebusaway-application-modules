@@ -26,9 +26,7 @@
       Please enter your stop number, followed by the pound sign.
     </Say>
     <Say>
-      If you wish to return to the previous menu, please press eight.</Say>
-    <Say>
-      to repeat, please press nine.
+      If you wish to return to the previous menu, please press star.
     </Say>
   </Gather>
 </Response>

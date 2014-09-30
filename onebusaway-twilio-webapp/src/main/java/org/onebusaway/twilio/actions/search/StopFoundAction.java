@@ -23,6 +23,7 @@ import com.opensymphony.xwork2.util.ValueStack;
 //@ResultPath("/stops")
 @Results({
 //  @Result(name="arrivals-and-departures", location="arrivals-and-departures-for-stop-id", type="chain",
+	  @Result(name="back", location="index", type="chain"),
   @Result(name="arrivals-and-departures", type="chain",
   	  params={"namespace", "/stops", "actionName", "arrivals-and-departures-for-stop-id"}),
   @Result(name="bookmark-stop", type="chain",
@@ -110,7 +111,9 @@ public class StopFoundAction extends TwilioSupport implements SessionAware {
 			sessionMap.put("navState", new Integer(DO_ROUTING));			  
 			return SUCCESS;
 		} else {
-			if ("1".equals(getInput())) {
+      if (PREVIOUS_MENU_ITEM.equals(getInput())) {
+        return "back";
+      } else if ("1".equals(getInput())) {
 				StopBean stop = (StopBean)sessionMap.get("stop");
 				_stopIds = Arrays.asList(stop.getId());
 				return "arrivals-and-departures";

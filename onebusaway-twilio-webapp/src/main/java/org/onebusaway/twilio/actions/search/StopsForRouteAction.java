@@ -21,8 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Results({
-	  @Result(name="success", location="stops-for-route-navigation", type="chain")
-	  //@Result(name="success", location="stops-for-route-navigation", type="redirect")
+  @Result(name="success", location="stops-for-route-navigation", type="chain"),
+	@Result (name="stopFound", location="stop-found", type="chain")
 })
 public class StopsForRouteAction extends TwilioSupport implements SessionAware {
 	  private static final long serialVersionUID = 1L;

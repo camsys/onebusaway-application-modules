@@ -26,6 +26,7 @@ public class TwilioDispatchFilter implements Filter {
   private static final String PHONE_NUMBER_KEY = "From";
   private static final String NEXT_ACTION = "twilio.nextAction";
   private static final String INDEX_ACTION = "index";
+  private static final String WELCOME_ACTION = "welcome";
 
   
   @Override
@@ -63,9 +64,9 @@ public class TwilioDispatchFilter implements Filter {
       } 
     }
 
-    _log.debug("fall through forwarding to " + INDEX_ACTION);
+    _log.debug("fall through forwarding to " + WELCOME_ACTION);
     // redirect to welcome page
-    httpResponse.sendRedirect(format(httpRequest, INDEX_ACTION));
+    httpResponse.sendRedirect(format(httpRequest, WELCOME_ACTION));
   }
 
   private String format(HttpServletRequest request, String nextAction) {
