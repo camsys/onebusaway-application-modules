@@ -25,6 +25,10 @@
     <Say>
       ${message}
     </Say>
+    <Say>
+    	To repeat this message, please press  8.
+    	If you wish to return to the previous menu, please press star.
+    </Say>
     <Pause length="1">
     </Pause>
   </Gather>

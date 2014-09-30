@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2011 Brian Ferris <bdferris@onebusaway.org>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.onebusaway.twilio.actions.stops;
 
 import java.util.ArrayList;
@@ -37,7 +52,10 @@ import com.opensymphony.xwork2.util.ValueStack;
 @Results({
     @Result(name="bookmark-stop", type="chain",
       params={"namespace", "/bookmarks", "actionName", "bookmark-stop"}),
-	  @Result(name="back", location="index", type="chain")
+	  //@Result(name="back", location="index", type="chain")
+    @Result(name="back", location="index", type="redirectAction", params={"From", "${phoneNumber}"}),
+    @Result(name="repeat", location="arrivals-and-departures", type="chain")
+
 })
 
 public class ArrivalsAndDeparturesAction extends TwilioSupport {
@@ -97,13 +115,15 @@ public class ArrivalsAndDeparturesAction extends TwilioSupport {
     }
     // navigation options after rendering a stop
     
+    sessionMap.put("navState", new Integer(DISPLAY_DATA));
     if ("2".equals(getInput())) {
       setStops((List<StopBean>)sessionMap.get("stops"));
-      clearNavState();
       return "bookmark-stop";
     } else if (PREVIOUS_MENU_ITEM.equals(getInput())) {
       return "back";
-    }	      
+    }	else if ("8".equals(getInput())) {
+      return "repeat";
+    }
     // we didn't understand
     _log.debug("unexpected input=" + getInput());
     setNextAction("stops/index");
@@ -131,7 +151,7 @@ public class ArrivalsAndDeparturesAction extends TwilioSupport {
 
       String headsign = trip.getTripHeadsign();
       if (headsign != null) {
-        addMessage(Messages.TO);
+        //addMessage(Messages.TO);
 
         String destination = _destinationPronunciation.modify(headsign);
         addText(destination);
