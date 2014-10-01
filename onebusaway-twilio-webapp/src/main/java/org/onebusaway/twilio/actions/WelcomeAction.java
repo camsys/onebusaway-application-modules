@@ -60,7 +60,9 @@ public class WelcomeAction extends TwilioSupport implements SessionAware {
     _log.debug("execute - navState: " + navState);
     // Added the welcomeJustDisplayed flag for the case where a user hangs up with navState = DO_ROUTING, and
     // then calls again before the session times out.
-		if (navState == null || !((String)sessionMap.get("welcomeJustDisplayed")).equals("true")) {
+    String welcomeJustDisplayed = (String)sessionMap.get("welcomeJustDisplayed");
+    _log.debug("execute - welcomeJustDisplayed: " + welcomeJustDisplayed);
+		if (navState == null || welcomeJustDisplayed == null || welcomeJustDisplayed.equals("false")) {
 			navState = DISPLAY_DATA;
 		}
 

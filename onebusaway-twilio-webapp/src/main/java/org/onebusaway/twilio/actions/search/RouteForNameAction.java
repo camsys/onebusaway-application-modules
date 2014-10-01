@@ -26,13 +26,15 @@ import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.RoutesBean;
 import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.SearchQueryBean.EQueryType;
+import org.onebusaway.twilio.actions.Messages;
 import org.onebusaway.twilio.actions.TwilioSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Results({
 	  @Result(name="success", location="stops-for-route", type="chain"),
-	  @Result(name="multipleRoutesFound", location="multiple-routes-found", type="chain")
+	  @Result(name="multipleRoutesFound", location="multiple-routes-found", type="chain"),
+    @Result(name="noRoutesFound", type="redirectAction", params={"From", "${phoneNumber}", "namespace", "/", "actionName", "message-and-back"})
 })
 public class RouteForNameAction extends TwilioSupport implements SessionAware {
 	  private static final long serialVersionUID = 1L;
@@ -89,6 +91,8 @@ public class RouteForNameAction extends TwilioSupport implements SessionAware {
 	    logUserInteraction("route", _routeName);
 
 	    if (routes.size() == 0) {
+        sessionMap.put("messageFromAction", getText(Messages.NO_ROUTES_WERE_FOUND));
+        sessionMap.put("backAction", "search-index");
 	      return "noRoutesFound";
 	    } else if (routes.size() == 1 ) {
 	      _route = routes.get(0);

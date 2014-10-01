@@ -15,15 +15,14 @@
     limitations under the License.
 
 -->
-
 <Response xmlns:jsp="http://java.sun.com/JSP/Page"
       xmlns:c="http://java.sun.com/jsp/jstl/core"
      xmlns:s="/struts-tags"
      xmlns:wiki="/oba-wiki-tags">
   <jsp:directive.page contentType="application/xml" />
-  <Gather>
+  <Gather numDigits="1">
     <Say>
-      Note that this menu item has changed.  Listen further for more instructions or skip ahead by entering the number of a route servicing your stop, followed by the pound sign.  When navigating the set of stops for a route, you can move back and forward with the 4 and 6 keys, or skip back and forward even further with the 7 and 9 keys.
+      ${message}
     </Say>
     <Say>
       If you wish to return to the previous menu, please press star.

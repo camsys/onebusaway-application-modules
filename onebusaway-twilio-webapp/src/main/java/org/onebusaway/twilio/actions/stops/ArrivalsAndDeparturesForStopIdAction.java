@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Results({
-  @Result(name="success", location="arrivals-and-departures", type="chain"),
+  @Result(name="success", location="arrivals-and-departures", type="redirectAction", params={"From", "${phoneNumber}"}),
   @Result(name="input", location="index", type="redirectAction")
 })
 public class ArrivalsAndDeparturesForStopIdAction extends TwilioSupport {
@@ -65,6 +65,7 @@ public class ArrivalsAndDeparturesForStopIdAction extends TwilioSupport {
     logUserInteraction("stopIds", _model.getStopIds(), "routeIds",
         _model.getRouteFilter());
     
+    sessionMap.put("_model", _model);
     return SUCCESS;
   }
 }

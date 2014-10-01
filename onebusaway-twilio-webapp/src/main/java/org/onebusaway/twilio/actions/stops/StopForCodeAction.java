@@ -17,24 +17,29 @@ package org.onebusaway.twilio.actions.stops;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
+import org.apache.struts2.interceptor.SessionAware;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.model.SearchQueryBean.EQueryType;
+import org.onebusaway.twilio.actions.Messages;
 import org.onebusaway.twilio.actions.TwilioSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Results({
   @Result(name="success", location="arrivals-and-departures-for-stop-id", type="chain"),
-  @Result(name="multipleStopsFound", location="multiple-stops-found", type="chain")
+  @Result(name="multipleStopsFound", location="multiple-stops-found", type="chain"),
+  @Result(name="noStopsFound", type="redirectAction", params={"From", "${phoneNumber}", "namespace", "/", "actionName", "message-and-back"})
 })
-public class StopForCodeAction extends TwilioSupport {
+public class StopForCodeAction extends TwilioSupport implements SessionAware {
   
+  private Map sessionMap;
   private static Logger _log = LoggerFactory.getLogger(StopForCodeAction.class);
   private String _stopCode;
 
@@ -53,8 +58,12 @@ public class StopForCodeAction extends TwilioSupport {
   public List<StopBean> getStops() {
     return _stops;
   }
-
-  public String execute() throws Exception {
+                              
+  public void setSession(Map map) {
+	  this.sessionMap = map;
+	}
+		
+public String execute() throws Exception {
     _log.info("in stop for code");
     CoordinateBounds bounds = getDefaultSearchArea();
     if (bounds == null)
@@ -77,6 +86,8 @@ public class StopForCodeAction extends TwilioSupport {
     logUserInteraction("query", _stopCode);
 
     if (_stops.size() == 0) {
+      sessionMap.put("messageFromAction", getText(Messages.NO_STOPS_WERE_FOUND));
+      sessionMap.put("backAction", "stops-index");
       return "noStopsFound";
     } else if (_stops.size() == 1) {
       StopBean stop = _stops.get(0);

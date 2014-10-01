@@ -51,8 +51,7 @@ import com.opensymphony.xwork2.util.ValueStack;
 
 @Results({
     @Result(name="bookmark-stop", type="chain",
-      params={"namespace", "/bookmarks", "actionName", "bookmark-stop"}),
-	  //@Result(name="back", location="index", type="chain")
+      params={"From", "${phoneNumber}", "namespace", "/bookmarks", "actionName", "bookmark-stop"}),
     @Result(name="back", location="index", type="redirectAction", params={"From", "${phoneNumber}"}),
     @Result(name="repeat", location="arrivals-and-departures", type="chain")
 
@@ -100,9 +99,10 @@ public class ArrivalsAndDeparturesAction extends TwilioSupport {
 
     if (navState == DISPLAY_DATA) {
       // display results
-      ActionContext context = ActionContext.getContext();
-      ValueStack valueStack = context.getValueStack();
-      PhoneArrivalsAndDeparturesModel model = (PhoneArrivalsAndDeparturesModel) valueStack.findValue("model");
+      //ActionContext context = ActionContext.getContext();
+      //ValueStack valueStack = context.getValueStack();
+      //PhoneArrivalsAndDeparturesModel model = (PhoneArrivalsAndDeparturesModel) valueStack.findValue("model");
+      PhoneArrivalsAndDeparturesModel model = (PhoneArrivalsAndDeparturesModel) sessionMap.get("_model");
       StopsWithArrivalsAndDeparturesBean result = model.getResult();
 
       buildPredictedArrivals(result.getArrivalsAndDepartures());
@@ -116,11 +116,14 @@ public class ArrivalsAndDeparturesAction extends TwilioSupport {
     // navigation options after rendering a stop
     
     sessionMap.put("navState", new Integer(DISPLAY_DATA));
+    _log.debug("getInput(): " + getInput());
     if ("2".equals(getInput())) {
       setStops((List<StopBean>)sessionMap.get("stops"));
       return "bookmark-stop";
     } else if (PREVIOUS_MENU_ITEM.equals(getInput())) {
       return "back";
+    }	else if ("2".equals(getInput())) {
+      return "bookmark-stop";
     }	else if ("8".equals(getInput())) {
       return "repeat";
     }
@@ -208,6 +211,7 @@ public class ArrivalsAndDeparturesAction extends TwilioSupport {
         addText(",");
       }
     }
+    addMessage(Messages.STOP_FOUND_BOOKMARK_THIS_LOCATION);
   }
 
 }
