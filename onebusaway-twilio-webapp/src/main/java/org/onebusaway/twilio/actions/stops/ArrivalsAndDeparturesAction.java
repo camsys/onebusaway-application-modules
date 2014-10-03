@@ -117,12 +117,10 @@ public class ArrivalsAndDeparturesAction extends TwilioSupport {
     
     sessionMap.put("navState", new Integer(DISPLAY_DATA));
     _log.debug("getInput(): " + getInput());
-    if ("2".equals(getInput())) {
-      setStops((List<StopBean>)sessionMap.get("stops"));
-      return "bookmark-stop";
-    } else if (PREVIOUS_MENU_ITEM.equals(getInput())) {
+    if (PREVIOUS_MENU_ITEM.equals(getInput())) {
       return "back";
     }	else if ("2".equals(getInput())) {
+      setStops((List<StopBean>)sessionMap.get("stops"));
       return "bookmark-stop";
     }	else if ("8".equals(getInput())) {
       return "repeat";

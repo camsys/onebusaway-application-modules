@@ -20,12 +20,12 @@
      xmlns:s="/struts-tags"
      xmlns:wiki="/oba-wiki-tags">
   <jsp:directive.page contentType="application/xml" />
-  <Gather>
+  <Gather numDigits="1">
     <Say>
         ${message}
     </Say>
-  </Gather>
     <Say>
         Press 1 to continue.
     </Say>
+  </Gather>
 </Response>
