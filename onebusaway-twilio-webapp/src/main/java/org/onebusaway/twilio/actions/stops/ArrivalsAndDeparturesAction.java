@@ -99,9 +99,6 @@ public class ArrivalsAndDeparturesAction extends TwilioSupport {
 
     if (navState == DISPLAY_DATA) {
       // display results
-      //ActionContext context = ActionContext.getContext();
-      //ValueStack valueStack = context.getValueStack();
-      //PhoneArrivalsAndDeparturesModel model = (PhoneArrivalsAndDeparturesModel) valueStack.findValue("model");
       PhoneArrivalsAndDeparturesModel model = (PhoneArrivalsAndDeparturesModel) sessionMap.get("_model");
       StopsWithArrivalsAndDeparturesBean result = model.getResult();
 
@@ -121,6 +118,7 @@ public class ArrivalsAndDeparturesAction extends TwilioSupport {
       return "back";
     }	else if ("2".equals(getInput())) {
       setStops((List<StopBean>)sessionMap.get("stops"));
+      setNextAction("bookmarks/bookmark-stop");
       return "bookmark-stop";
     }	else if ("8".equals(getInput())) {
       return "repeat";
@@ -149,13 +147,16 @@ public class ArrivalsAndDeparturesAction extends TwilioSupport {
 
       String routeNumber = RoutePresenter.getNameForRoute(route);
       addText(_routeNumberPronunciation.modify(routeNumber));
+      addText(", ");
 
       String headsign = trip.getTripHeadsign();
       if (headsign != null) {
         //addMessage(Messages.TO);
 
         String destination = _destinationPronunciation.modify(headsign);
+        destination = destination.replaceAll("\\&", "and");
         addText(destination);
+        addText(", ");
       }
 
       if (TransitDataConstants.STATUS_CANCELLED.equals(adb.getStatus())) {
@@ -191,8 +192,10 @@ public class ArrivalsAndDeparturesAction extends TwilioSupport {
         }
       }
 
-      if (TransitDataConstants.STATUS_REROUTE.equals(adb.getStatus()))
+      if (TransitDataConstants.STATUS_REROUTE.equals(adb.getStatus())) {
         addText("but is currently on adverse weather re-route.");
+      }
+      addText(". ");
     }
 
     addMessage(Messages.ARRIVAL_INFO_DISCLAIMER);

@@ -69,21 +69,11 @@ public class TwilioSupport extends ActionSupport implements ParameterAware, Curr
   }
   
   protected void addMessage(String msg, Object... args) {
-  	  // _operations.add(new MessageOperation(message, args));
-	ActionContext context = ActionContext.getContext();
-	Locale locale = context.getLocale();
-      ValueStack valueStack = context.getValueStack();
-      String text = LocalizedTextUtil.findText(
-      	  TwilioSupport.this.getClass(), msg, locale, msg,
-          args, valueStack);
-      //    AbstractAgiTemplate.this.getClass(), msg, locale, msg,
-      //return _textToSpeechFactory.getAudio(opts, text, ALL_DIGITS);
-  	  
-  	  
-    _log.error("todo: discarding additonal args");
+    ActionContext context = ActionContext.getContext();
+    Locale locale = context.getLocale();
+    ValueStack valueStack = context.getValueStack();
+    String text = LocalizedTextUtil.findText(TwilioSupport.this.getClass(), msg, locale, msg, args, valueStack);
     _log.debug("message: " + text);
-    //_message.append(getText(msg));
-    //_message.append(" " + getText(msg) + " ");
     _message.append(" " + text + " ");
     _log.debug(getText(msg));
   }

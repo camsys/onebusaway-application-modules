@@ -100,9 +100,11 @@ public abstract class AbstractBookmarkAction extends TwilioSupport {
       Set<String> routeIds = new HashSet<String>(MappingLibrary.map(
           bookmark.getRoutes(), "id", String.class));
       addBookmarkDescription(bookmark);
+      addText(", ");
 
       addMessage(Messages.PLEASE_PRESS);
       addText(toPress);
+      addText(". ");
 
       index++;
     }
@@ -113,10 +115,13 @@ public abstract class AbstractBookmarkAction extends TwilioSupport {
 
     String name = bookmark.getName();
     
-    if (name == null || name.length() == 0)
+    if (name == null || name.length() == 0) {
       name = _bookmarkPresentationService.getNameForStops(bookmark.getStops());
-
-    addText(_destinationPronunciation.modify(name));
+    }
+    
+    String destination = _destinationPronunciation.modify(name);
+    destination = destination.replaceAll("\\&", "and");
+    addText(destination);
   }
 
   protected void setSelection() {

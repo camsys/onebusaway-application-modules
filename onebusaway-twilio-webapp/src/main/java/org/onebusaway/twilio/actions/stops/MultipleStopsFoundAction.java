@@ -53,15 +53,17 @@ public class MultipleStopsFoundAction extends TwilioSupport {
       
       addMessage(Messages.FOR);
       
-      addText(_destinationPronunciation.modify(stop.getName()));
+      String destination = _destinationPronunciation.modify(stop.getName());
+      destination = destination.replaceAll("\\&", "and");      
+      addText(destination);
+      addText(", ");
       
       addMessage(Messages.PLEASE_PRESS);
       
       String key = Integer.toString(index++);
       addText(key);
-      //AgiActionName action = addAction(key,"/stop/arrivalsAndDeparturesForStopId");
-      //action.putParam("stopIds",Arrays.asList(stop.getId()));
-    }
+      addText(". ");
+   }
 
     addMessage(Messages.HOW_TO_GO_BACK);
     //addAction("\\*", "/back");

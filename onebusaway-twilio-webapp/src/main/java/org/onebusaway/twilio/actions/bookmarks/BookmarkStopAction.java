@@ -78,7 +78,7 @@ public class BookmarkStopAction extends TwilioSupport {
         + " and stopIds=" + _stopIds
         + " and user=" + _currentUser);
     
-    if (PREVIOUS_MENU_ITEM.equals(getInput())) {
+    if (PREVIOUS_MENU_ITEM.equals(getInput()) || "9".equals(getInput())) {
       clearNextAction();
       return "index";
     }

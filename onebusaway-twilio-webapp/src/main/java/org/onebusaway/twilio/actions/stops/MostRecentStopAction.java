@@ -30,7 +30,7 @@ import com.opensymphony.xwork2.ActionContext;
 
 @Results({
   @Result(name="back", type="redirectAction", params={"From", "${phoneNumber}", "namespace", "/", "actionName", "index"}),
-  @Result(name="success", location="arrivalsAndDeparturesForStopId", type="chain")
+  @Result(name="success", location="arrivals-and-departures-for-stop-id", type="chain")
 })
 public class MostRecentStopAction extends TwilioSupport implements SessionAware {
 
@@ -61,6 +61,7 @@ public class MostRecentStopAction extends TwilioSupport implements SessionAware 
     _stopIds = _currentUser.getLastSelectedStopIds();
 
     if (_stopIds == null || _stopIds.isEmpty()) {
+      _log.debug("stopIds is null or empty");
       sessionMap.put("navState", DO_ROUTING);
       return INPUT;
     }
