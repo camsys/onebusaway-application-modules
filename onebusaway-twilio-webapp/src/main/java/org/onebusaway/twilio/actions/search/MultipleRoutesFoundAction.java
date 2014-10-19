@@ -36,13 +36,13 @@ import com.opensymphony.xwork2.util.ValueStack;
 
 @Results({
 	  @Result(name="back", location="index", type="chain"),
-	  @Result(name="route-selected", location="stops-for-route", type="chain")
+	  @Result(name="route-selected", location="stops-for-route", type="redirectAction", params={"From", "${phoneNumber}"}),
+    @Result(name="repeat", location="multiple-routes-found", type="chain")
 })
-public class MultipleRoutesFoundAction extends TwilioSupport implements SessionAware {
+public class MultipleRoutesFoundAction extends TwilioSupport {
       private static final long serialVersionUID = 1L;
 	  private TextModification _routeNumberPronunciation;
 	  private static Logger _log = LoggerFactory.getLogger(MultipleRoutesFoundAction.class);
-	  private Map sessionMap;
 	  private RouteBean _route;
 	  
 	  @Autowired
@@ -51,10 +51,6 @@ public class MultipleRoutesFoundAction extends TwilioSupport implements SessionA
 	    _routeNumberPronunciation = routeNumberPronunciation;
 	  }
 
-	  public void setSession(Map map) {
-	  	  this.sessionMap = map;
-	  }
-		
 	  public void setRoute(RouteBean route) {
 	    _route = route;
 	  }
@@ -71,10 +67,18 @@ public class MultipleRoutesFoundAction extends TwilioSupport implements SessionA
 		}
 		_log.debug("MultipleRoutesFound, navState: " + navState);
 
-		if (navState == DISPLAY_DATA) {		
+		if (navState == DISPLAY_DATA) {
 			ActionContext context = ActionContext.getContext();
 			ValueStack vs = context.getValueStack();
 			List<RouteBean> routes = (List<RouteBean>) vs.findValue("routes");
+			if (routes != null) {    // First time through, 'routes' was in ValueStack
+			  _log.debug("Adding routes to sessionMap");
+			  sessionMap.put("routes", routes);
+			} else {        // Message is being repeated, so new Valuestack.  Get data from session instead.
+			  _log.debug("Attempting to get routes from sessionMap");
+			  routes = (List<RouteBean>) sessionMap.get("routes");
+      }
+      _log.debug("routes: " + routes);
 			
 			int index = 1;
 			
@@ -89,14 +93,17 @@ public class MultipleRoutesFoundAction extends TwilioSupport implements SessionA
 			  
 			  String routeNumber = route.getShortName();
 			  addText(_routeNumberPronunciation.modify(routeNumber));
+			  addText(", ");
 			  
 			  addMessage(Messages.OPERATED_BY);
 			  addText(route.getAgency().getName());
+			  addText(", ");
 			  
 			  addMessage(Messages.PLEASE_PRESS);
 			  
 			  String key = Integer.toString(index++);
 			  addText(key);
+			  addText(". ");
 			  
 			  keyMapping.put(new Integer(index-1), route);
 			}
@@ -107,20 +114,31 @@ public class MultipleRoutesFoundAction extends TwilioSupport implements SessionA
 			addMessage(Messages.TO_REPEAT);
 			
 			sessionMap.put("keyMapping", keyMapping);
+			sessionMap.put("routes", routes);
+			
 			navState = DO_ROUTING;
 			sessionMap.put("navState", navState);
 			setNextAction("search/multiple-routes-found");
 		} else {	// Do the routing, matching the key pressed with the correct route bean.
 			_log.debug("Handling selection of choice of routes.");
+			
+			
+			navState = DISPLAY_DATA;
+			sessionMap.put("navState", navState);
+			sessionMap.put("route", _route);
+			
 			// Handle "back" request ('*' key pressed)
 			if (PREVIOUS_MENU_ITEM.equals(getInput())) {
 				return "back";
 			}
+			if (REPEAT_MENU_ITEM.equals(getInput())) {
+        return "repeat";
+      }
+
 			int key = Integer.parseInt(getInput());
 			Map<Integer, RouteBean> keyMapping = (Map<Integer, RouteBean>)sessionMap.get("keyMapping");
 			_route = (RouteBean)keyMapping.get(key);
-			navState = DISPLAY_DATA;
-			sessionMap.put("navState", navState);
+			sessionMap.put("route", _route);
 
 			_log.debug("Key " + key + " entered for route: " + _route.getId());
 			return "route-selected";

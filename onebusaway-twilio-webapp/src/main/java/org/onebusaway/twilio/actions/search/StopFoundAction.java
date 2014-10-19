@@ -82,15 +82,15 @@ public class StopFoundAction extends TwilioSupport implements SessionAware {
 		if (navState == null) {
 			navState = DISPLAY_DATA;
 		}
-		_log.debug("StopsForRouteNavigationAction:navState: " + navState);
+		_log.debug("StopFoundAction:navState: " + navState);
 
 
 		if (navState == DISPLAY_DATA) {
 	
-			ActionContext context = ActionContext.getContext();
-			ValueStack vs = context.getValueStack();	
-			StopBean stop = (StopBean) vs.findValue("stop");
-			sessionMap.put("stop", stop);
+			//ActionContext context = ActionContext.getContext();
+			//ValueStack vs = context.getValueStack();	
+			//StopBean stop = (StopBean) vs.findValue("stop");
+			StopBean stop = (StopBean)sessionMap.get("stop");
 			
 			addMessage(Messages.THE_STOP_NUMBER_FOR);
 	
@@ -102,8 +102,9 @@ public class StopFoundAction extends TwilioSupport implements SessionAware {
 				addMessage(Messages.DIRECTION_BOUND, direction);
 			}
 	
-			addText(Messages.IS);
+			addText(" " + Messages.IS + " ");
 			addText(stop.getCode());
+			addText(". ");
 	
 			addMessage(Messages.STOP_FOUND_ARRIVAL_INFO);
 			//AgiActionName arrivalInfoAction = addAction("1", "/stop/arrivalsAndDeparturesForStopId");
@@ -126,6 +127,7 @@ public class StopFoundAction extends TwilioSupport implements SessionAware {
 			sessionMap.put("navState", new Integer(DO_ROUTING));			  
 			return SUCCESS;
 		} else {
+		  sessionMap.put("navState", new Integer(DISPLAY_DATA));
       if (PREVIOUS_MENU_ITEM.equals(getInput())) {
         return "back";
       } else if ("1".equals(getInput())) {

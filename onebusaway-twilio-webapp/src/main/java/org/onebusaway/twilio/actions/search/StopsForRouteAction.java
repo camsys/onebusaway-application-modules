@@ -36,10 +36,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Results({
-  @Result(name="success", location="stops-for-route-navigation", type="chain"),
+  @Result(name="success", location="stops-for-route-navigation", type="redirectAction", params={"From", "${phoneNumber}"}),
 	@Result (name="stopFound", location="stop-found", type="chain")
 })
-public class StopsForRouteAction extends TwilioSupport implements SessionAware {
+public class StopsForRouteAction extends TwilioSupport {
 	  private static final long serialVersionUID = 1L;
 	  private static Logger _log = LoggerFactory.getLogger(IndexAction.class);
 
@@ -50,7 +50,6 @@ public class StopsForRouteAction extends TwilioSupport implements SessionAware {
 	  private NavigationBean _navigation;
 
 	  private StopBean _stop;
-	  private Map sessionMap;
 
 	  @Autowired
 	  public void setStopSelectionService(StopSelectionService stopSelectionService) {
@@ -77,23 +76,25 @@ public class StopsForRouteAction extends TwilioSupport implements SessionAware {
 	    return _stop;
 	  }
 
-	  public void setSession(Map map) {
-	  	  this.sessionMap = map;
-	  }
-		
 	  @Override
 	  public String execute() throws Exception {
 	  	  
 	  	/* Need to check this for testing from  the web */
 		Integer navState = (Integer)sessionMap.get("navState");
-		if (navState == null) {
-			_log.debug("StopsForRouteAction:navState is null");
-		} else {
-			_log.debug("StopsForRouteAction:navState is NOT null, resetting to DISPLAY_DATA");
+			_log.debug("navState: " + navState);
+		//if (navState == null) {
+		//	_log.debug("StopsForRouteAction:navState is null");
+		//} else {
+		//	_log.debug("StopsForRouteAction:navState is NOT null, resetting to DISPLAY_DATA");
 			navState = DISPLAY_DATA;
 			sessionMap.put("navState", new Integer(navState));
-		}
-	  	  
+		//}
+	 
+	  _log.debug("_route initially: " + _route);
+    if (_route == null) {
+      _route = (RouteBean)sessionMap.get("route");
+    }
+	  _log.debug("_route after checking sessionMap: " + _route);
 		  
 		_log.debug("in StopsForRoute with input: " + getInput() + " route.getId: " + _route.getId()); 
 		clearInput();

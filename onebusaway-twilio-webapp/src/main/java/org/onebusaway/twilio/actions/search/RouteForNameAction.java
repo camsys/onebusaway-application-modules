@@ -33,7 +33,8 @@ import org.slf4j.LoggerFactory;
 
 @Results({
 	  @Result(name="success", location="stops-for-route", type="chain"),
-	  @Result(name="multipleRoutesFound", location="multiple-routes-found", type="chain"),
+	  //@Result(name="multipleRoutesFound", location="multiple-routes-found", type="chain"),
+	  @Result(name="multipleRoutesFound", location="multiple-routes-found", type="redirectAction", params={"From", "${phoneNumber}"}),
     @Result(name="noRoutesFound", type="redirectAction", params={"From", "${phoneNumber}", "namespace", "/", "actionName", "message-and-back"})
 })
 public class RouteForNameAction extends TwilioSupport implements SessionAware {
@@ -43,7 +44,7 @@ public class RouteForNameAction extends TwilioSupport implements SessionAware {
 	  private String _routeName;
 	  private RouteBean _route;
 	  private List<RouteBean> _routes;
-	  private Map sessionMap;
+	  //private Map sessionMap;
 	  
 	  public void setRouteName(String routeName) {
 	    _routeName = routeName;
@@ -61,9 +62,9 @@ public class RouteForNameAction extends TwilioSupport implements SessionAware {
 	    return _routes;
 	  }
 	  
-	  public void setSession(Map map) {
-	  	  this.sessionMap = map;
-	  }
+	  //public void setSession(Map map) {
+	  //	  this.sessionMap = map;
+	  //}
 		
 	  public String execute() throws Exception {
 	    _log.debug("in RouteForName with routeName " + _routeName); 
@@ -99,6 +100,7 @@ public class RouteForNameAction extends TwilioSupport implements SessionAware {
 	      return SUCCESS;
 	    } else {
 	      _routes = routes;
+	      sessionMap.put("routes", _routes);
 	      return "multipleRoutesFound";
 	    }
 	  }

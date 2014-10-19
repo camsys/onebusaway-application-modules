@@ -25,9 +25,8 @@ import org.slf4j.LoggerFactory;
 
 @Results({
   @Result(name="back", type="redirectAction", params={"namespace", "/", "actionName", "index"}),
-	@Result(name="stops-index", location="stops/index", type="chain"),
-  @Result(name="stops-index", location="stops/index", type="chain"),
-  @Result(name="search-index", location="search/index", type="chain")
+  @Result(name="stops-index", location="stops/index", type="redirectAction"),
+  @Result(name="search-index", location="search/index", type="redirectAction")
 })
 public class FindYourStopAction extends TwilioSupport implements SessionAware {
 

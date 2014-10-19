@@ -33,15 +33,16 @@ import org.onebusaway.twilio.actions.TwilioSupport;
 
 @Results ({
 	@Result (name="success", location="stops-for-route-navigation", type="chain"),
-	@Result (name="stopFound", location="stop-found", type="chain")
+	@Result (name="stopFound", location="stop-found", type="redirectAction", params={"From", "${phoneNumber}"})
 })
-public class NavigateDownAction extends TwilioSupport implements SessionAware {
+//public class NavigateDownAction extends TwilioSupport implements SessionAware {
+public class NavigateDownAction extends TwilioSupport {
   private static final long serialVersionUID = 1L;
   private static Logger _log = LoggerFactory.getLogger(IndexAction.class);
 
   private StopSelectionService _stopSelectionService;
 
-  private Map sessionMap;
+  //private Map sessionMap;
   private NavigationBean _navigation;
 
   private int _index;
@@ -61,9 +62,9 @@ public class NavigateDownAction extends TwilioSupport implements SessionAware {
     return _navigation;
   }
 
-  public void setSession(Map map) {
-	  this.sessionMap = map;
-  }
+  //public void setSession(Map map) {
+	//  this.sessionMap = map;
+  //}
 		
 public void setIndex(int index) {
     _index = index;
@@ -76,7 +77,7 @@ public void setIndex(int index) {
   @Override
   public String execute() throws Exception {
   	  
-  	 _index = (Integer)sessionMap.get("index");
+  	 //_index = (Integer)sessionMap.get("index");
 
 	_log.debug("in NavigateDownAction with input: " + getInput() + ", index: " + _index);
 	Integer navState = (Integer)sessionMap.get("navState");
@@ -110,6 +111,7 @@ public void setIndex(int index) {
     if (selection.hasStop()) {
       _stop = selection.getStop();
       sessionMap.put("navState", new Integer(DISPLAY_DATA));
+      sessionMap.put("stop", _stop);
       return "stopFound";
     }
 

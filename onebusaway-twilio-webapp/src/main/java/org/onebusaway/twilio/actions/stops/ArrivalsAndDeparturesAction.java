@@ -93,6 +93,7 @@ public class ArrivalsAndDeparturesAction extends TwilioSupport {
   public String execute() throws Exception {
     _log.debug("in execute with input=" + this.getInput());
     Integer navState = (Integer)sessionMap.get("navState");
+    _log.debug("navState: " + navState);
     if (navState == null) {
       navState = DISPLAY_DATA;
     }

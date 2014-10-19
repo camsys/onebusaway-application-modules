@@ -48,7 +48,7 @@
                 <interceptor-ref name="twilio-session"/>
                 <interceptor-ref name="defaultStack">
                     <param name="modelDriven.refreshModelBeforeResult">true</param>
-                    <param name="params.excludeParams">^action:.*,^method:.*,ApiVersion,Direction,\w*Sid\b,\bCall\w*,\bFrom\w*,\bTo\w*</param>
+                    <param name="params.excludeParams">^action:.*,^method:.*,ApiVersion,Direction,\w*Sid\b,\bCall\w*,\bTo\w*</param>
                 </interceptor-ref>
 <!--                 <interceptor-ref name="configuration"/> -->
 <!--                 <interceptor-ref name="is-setup" /> -->

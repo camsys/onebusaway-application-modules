@@ -23,7 +23,7 @@
   <Gather numDigits="1">
     <Say>
 	    Your stop number is typically located on the stop post or on the posted schedule.  To enter the stop number, please press one.
-	    If your stop is missing its posted schedule, or if you are not at the stop. you can search for stops by bus route.  To search for a stop by route number, please press two.
+	    If your stop is missing its posted schedule or if you are not at the stop you can search for stops by bus route.  To search for a stop by route number, please press two.
 	    If you wish to return to the previous menu, please press star.
     </Say>
   </Gather>

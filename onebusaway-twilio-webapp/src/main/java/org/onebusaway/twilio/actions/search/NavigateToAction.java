@@ -21,25 +21,34 @@ import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
 import org.apache.struts2.interceptor.SessionAware;
 import org.onebusaway.twilio.actions.TwilioSupport;
+import org.onebusaway.twilio.services.SessionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Results({
 	  @Result(name="success", location="stops-for-route-navigation", type="chain")
 })
 public class NavigateToAction extends TwilioSupport implements SessionAware {
+//public class NavigateToAction extends TwilioSupport {
 
   private static final long serialVersionUID = 1L;
   private static Logger _log = LoggerFactory.getLogger(IndexAction.class);
 
-  private Map sessionMap;
+ // private Map sessionMap;
+	private SessionManager _sessionManager;
   private NavigationBean _navigation;
 
   private int _index;
 
-  public void setSession(Map map) {
-	  this.sessionMap = map;
-  }
+	@Autowired
+  public void setSessionManager(SessionManager sessionManager) {
+		_sessionManager = sessionManager;
+	}
+	  	  
+  //public void setSession(Map map) {
+	//  this.sessionMap = map;
+  //}
 		
   public void setNavigation(NavigationBean navigation) {
     _navigation = navigation;
@@ -56,7 +65,7 @@ public class NavigateToAction extends TwilioSupport implements SessionAware {
   @Override
   public String execute() throws Exception {
   	  
-  	_index = (Integer)sessionMap.get("index");
+  	//_index = (Integer)sessionMap.get("index");
 
   	_log.debug("in NavigateToAction with input: " + getInput() + ", index: " + _index); 
   		
