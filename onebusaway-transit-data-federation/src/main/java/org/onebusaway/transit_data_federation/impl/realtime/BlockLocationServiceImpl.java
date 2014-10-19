@@ -295,8 +295,11 @@ public class BlockLocationServiceImpl implements BlockLocationService,
           record, instance);
 
       if (!record.isScheduleDeviationSet()) {
+        _log.debug("calculating schedule deviation for vehicle=" + record.getVehicleId());
         int deviation = (int) ((record.getTimeOfRecord() - record.getServiceDate()) / 1000 - scheduledBlockLocation.getScheduledTime());
         record.setScheduleDeviation(deviation);
+      } else {
+        _log.debug("found schedule deviation for vehicle=" + record.getVehicleId());
       }
 
       ScheduleDeviationSamples samples = _realTimeHistoryService.sampleScheduleDeviationsForVehicle(

@@ -187,7 +187,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   @PostConstruct
   public void start() {
     if (_agencyIds.isEmpty()) {
-      _log.info("no agency ids specified for GtfsRealtimeSource, so defaulting to full agency id set");
+      _log.debug("no agency ids specified for GtfsRealtimeSource, so defaulting to full agency id set");
       List<String> agencyIds = _agencyService.getAllAgencyIds();
       _agencyIds.addAll(agencyIds);
       if (_agencyIds.size() > 3) {
@@ -223,7 +223,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   }
 
   public void refresh() throws IOException {
-	_log.info("refreshing " + _tripUpdatesUrl);
+	_log.debug("refreshing " + _tripUpdatesUrl);
     FeedMessage tripUpdates = readOrReturnDefault(_tripUpdatesUrl);
     FeedMessage vehiclePositions = readOrReturnDefault(_vehiclePositionsUrl);
     FeedMessage alerts = readOrReturnDefault(_alertsUrl);
@@ -258,21 +258,21 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
       List<CombinedTripUpdatesAndVehiclePosition> updates) {
 
     Set<AgencyAndId> seenVehicles = new HashSet<AgencyAndId>();
-    _log.info("in combinedUpdates with "+ updates.size() + " updates");
+    _log.debug("in combinedUpdates with "+ updates.size() + " updates");
     for (CombinedTripUpdatesAndVehiclePosition update : updates) {
       VehicleLocationRecord record = _tripsLibrary.createVehicleLocationRecordForUpdate(result, update);
-      _log.info("record=" + record + " for updates=" + update);
+      _log.debug("record=" + record + " for updates=" + update);
       if (record != null) {
         if (record.getTripId() != null) {
           result.addUnmatchedTripId(record.getTripId().toString());
         }
         AgencyAndId vehicleId = record.getVehicleId();
-        _log.info("tripId=" + record.getTripId() + ", vehicleId=" + vehicleId);
+        _log.debug("tripId=" + record.getTripId() + ", vehicleId=" + vehicleId + ", block=" + record.getBlockId());
         seenVehicles.add(vehicleId);
         Date timestamp = new Date(record.getTimeOfRecord());
         Date prev = _lastVehicleUpdate.get(vehicleId);
         if (prev == null || prev.before(timestamp)) {
-          _log.error("update for vehicleId=" + vehicleId);
+          _log.debug("update for vehicleId=" + vehicleId);
           _vehicleLocationListener.handleVehicleLocationRecord(record);
           _lastVehicleUpdate.put(vehicleId, timestamp);
         }
