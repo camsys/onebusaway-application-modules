@@ -38,11 +38,14 @@ import com.opensymphony.xwork2.util.ValueStack;
 //@ResultPath("/stops")
 @Results({
 //  @Result(name="arrivals-and-departures", location="arrivals-and-departures-for-stop-id", type="chain",
-	  @Result(name="back", location="index", type="chain"),
   @Result(name="arrivals-and-departures", type="chain",
   	  params={"namespace", "/stops", "actionName", "arrivals-and-departures-for-stop-id"}),
   @Result(name="bookmark-stop", type="chain",
       params={"namespace", "/bookmarks", "actionName", "bookmark-stop"}),
+  @Result(name="home", type="redirectAction", 
+      params={"namespace", "/", "actionName", "index"}),
+	@Result(name="back", location="index", type="redirectAction", params={"From", "${phoneNumber}"}),
+	@Result(name="repeat", location="stop-found", type="chain")
   	  
 //  @Result(name="arrivals-and-departures", location="/stops/arrivals-and-departures-for-stop-id", type="chain"),
 //	  @Result(name="success", location="stops-for-route-navigation", type="chain")
@@ -128,6 +131,39 @@ public class StopFoundAction extends TwilioSupport implements SessionAware {
 			return SUCCESS;
 		} else {
 		  sessionMap.put("navState", new Integer(DISPLAY_DATA));
+			int key=0;
+			// Convert keysPressed to an int to accomodate Java 6, which can't handle Strings in a switch statement.
+			if (getInput().contains("*")) {
+			    key = -1;
+			} else {
+			  key = Integer.valueOf(getInput());
+			}
+			switch(key) {
+			  case -1:
+			    return "back";
+			  case 1:
+		        StopBean stop = (StopBean)sessionMap.get("stop");
+		        _stopIds = Arrays.asList(stop.getId());
+		        return "arrivals-and-departures";
+			  case 2:
+		        stop = (StopBean)sessionMap.get("stop");
+	           _stopIds = Arrays.asList(stop.getId());
+	            return "bookmark-stop";
+			  case 3:
+			    return "home";
+			  case 8:
+			    return "repeat";
+			  case 0:
+			  case 4:
+			  case 5:
+			  case 6:
+			  case 7:
+			  case 9:
+			  default:
+			    return "repeat";
+			}
+		  
+		  /*****
       if (PREVIOUS_MENU_ITEM.equals(getInput())) {
         return "back";
       } else if ("1".equals(getInput())) {
@@ -139,7 +175,7 @@ public class StopFoundAction extends TwilioSupport implements SessionAware {
         _stopIds = Arrays.asList(stop.getId());
         return "bookmark-stop";
 			}
-			return SUCCESS;
+			*****/
 		}
 	}
 }
