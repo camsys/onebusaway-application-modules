@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 @Results({
   @Result(name="success", location="arrivals-and-departures-for-stop-id", type="chain"),
-  @Result(name="multipleStopsFound", location="multiple-stops-found", type="chain"),
+  @Result(name="multipleStopsFound", location="multiple-stops-found", type="redirectAction", params={"From", "${phoneNumber}"}),
   @Result(name="noStopsFound", type="redirectAction", params={"From", "${phoneNumber}", "namespace", "/", "actionName", "message-and-back"})
 })
 public class StopForCodeAction extends TwilioSupport implements SessionAware {
@@ -94,6 +94,7 @@ public String execute() throws Exception {
       _stopIds = Arrays.asList(stop.getId());
       return SUCCESS;
     } else {
+      sessionMap.put("stops", _stops);
       return "multipleStopsFound";
     }
   }
