@@ -20,9 +20,10 @@
      xmlns:s="/struts-tags"
      xmlns:wiki="/oba-wiki-tags">
   <jsp:directive.page contentType="application/xml" />
-  <Gather>
+  <Gather timeout="1">
     <Say>
         ${message}
     </Say>
+    <jsp:directive.include file="enter-hash-or-hangup.jspx"/>
   </Gather>
 </Response>

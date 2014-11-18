@@ -14,17 +14,14 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 
--->
-
-<Response xmlns:jsp="http://java.sun.com/JSP/Page"
-      xmlns:c="http://java.sun.com/jsp/jstl/core"
-     xmlns:s="/struts-tags"
-     xmlns:wiki="/oba-wiki-tags">
-  <jsp:directive.page contentType="application/xml" />
-  <Gather numDigits="1" timeout="1">
+--> 
+<jsp:root version="2.0" xmlns:jsp="http://java.sun.com/JSP/Page" >
+    <Pause length="5" />
     <Say>
-      ${message}
+      Please enter your selection, followed by the pound key.  Otherwise, the call will hang up in 5 seconds.
     </Say>
-    <jsp:directive.include file="../enter-or-hangup.jspx"/>
-  </Gather>
-</Response>
+    <Pause length="5" />
+     <Say>
+      Thank you for calling.  Goodbye.
+    </Say>
+ </jsp:root>
