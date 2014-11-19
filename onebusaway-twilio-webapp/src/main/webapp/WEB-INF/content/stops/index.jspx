@@ -21,12 +21,13 @@
      xmlns:s="/struts-tags"
      xmlns:wiki="/oba-wiki-tags">
   <jsp:directive.page contentType="application/xml" />
-  <Gather>
+  <Gather timeout="1">
     <Say>
       Please enter your stop number, followed by the pound sign.
     </Say>
     <Say>
       If you wish to return to the previous menu, please press star.
     </Say>
+    <jsp:directive.include file="../enter-hash-or-hangup.jspx"/>
   </Gather>
 </Response>

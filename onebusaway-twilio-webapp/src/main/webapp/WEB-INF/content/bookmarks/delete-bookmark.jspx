@@ -25,7 +25,16 @@
         ${message}
     </Say>
     <Say>
-        Press 1 to continue.
+        Press any key to continue.
     </Say>
+    <Pause length="5" />
+    <Say>
+      Please press any key to continue.  Otherwise, this call will hang up in 5 seconds.
+    </Say>
+    <Pause length="5" />
+     <Say>
+      Thank you for calling.  Goodbye.
+    </Say>
+    <Pause length="1" />
   </Gather>
 </Response>
