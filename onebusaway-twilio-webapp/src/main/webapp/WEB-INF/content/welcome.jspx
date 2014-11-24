@@ -20,9 +20,10 @@
      xmlns:s="/struts-tags"
      xmlns:wiki="/oba-wiki-tags">
   <jsp:directive.page contentType="application/xml" />
-  <Gather numDigits="1">
+  <Gather numDigits="1" timeout="1">
     <Say>
     	Where is your bus... let's find out.  If you are a first time user, or need help, please press zero.
     </Say>
+    <jsp:include page="enter-or-hangup.jspx"/>
   </Gather>
 </Response>

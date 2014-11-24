@@ -20,12 +20,21 @@
      xmlns:s="/struts-tags"
      xmlns:wiki="/oba-wiki-tags">
   <jsp:directive.page contentType="application/xml" />
-  <Gather numDigits="1">
+  <Gather numDigits="1" timeout="1" action="/onebusaway-twilio-webapp/bookmarks/delete-bookmark.action">
     <Say>
         ${message}
     </Say>
     <Say>
-        Press 1 to continue.
+        Press any key to continue.
     </Say>
+    <Pause length="5" />
+    <Say>
+      Please press any key to continue.  Otherwise, this call will hang up in 5 seconds.
+    </Say>
+    <Pause length="5" />
+     <Say>
+      Thank you for calling.  Goodbye.
+    </Say>
+    <Pause length="1" />
   </Gather>
 </Response>

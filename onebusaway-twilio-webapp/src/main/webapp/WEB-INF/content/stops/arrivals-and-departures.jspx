@@ -21,7 +21,7 @@
      xmlns:s="/struts-tags"
      xmlns:wiki="/oba-wiki-tags">
 <jsp:directive.page contentType="application/xml" />
-  <Gather numDigits="1">
+  <Gather numDigits="1" timeout="1">
     <Say>
       ${message}
     </Say>
@@ -29,7 +29,6 @@
     	To repeat this message, please press  8.
     	If you wish to return to the previous menu, please press star.
     </Say>
-    <Pause length="1">
-    </Pause>
+    <jsp:directive.include file="../enter-repeat-or-hangup.jspx"/>
   </Gather>
 </Response>
