@@ -19,6 +19,12 @@
     </dependency>
     <dependency>
       <groupId>org.onebusaway</groupId>
+      <artifactId>onebusaway-twilio-webapp</artifactId>
+      <version>${project.version}</version>
+      <type>war</type>
+    </dependency>    
+    <dependency>
+      <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-phone-webapp</artifactId>
       <version>${project.version}</version>
       <type>war</type>
@@ -58,6 +64,7 @@
               <descriptors>
                 <descriptor>src/main/assembly/assembly-api-only.xml</descriptor>
                 <descriptor>src/main/assembly/assembly-full.xml</descriptor>
+                <descriptor>src/main/assembly/assembly-full-twilio.xml</descriptor>
                 <descriptor>src/main/assembly/assembly-ui-only.xml</descriptor>
               </descriptors>
             </configuration>
