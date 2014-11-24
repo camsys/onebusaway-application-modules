@@ -20,7 +20,7 @@
      xmlns:s="/struts-tags"
      xmlns:wiki="/oba-wiki-tags">
   <jsp:directive.page contentType="application/xml" />
-  <Gather numDigits="1" action="/onebusaway-twilio-webapp/bookmarks/bookmark-stop.action">
+  <Gather numDigits="1" >
     <Say>
         ${message}
     </Say>

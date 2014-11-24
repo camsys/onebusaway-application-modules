@@ -28,13 +28,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Results ({
 	@Result (name="registration", location="/registration", type="chain"),
 	@Result (name="repeat", location="welcome", type="redirectAction", params={"From", "${phoneNumber}"}),
-  @Result(name="help", location="index", type="redirectAction", params={"From", "${phoneNumber}"}),
-  @Result(name="stops-index", location="stops/index", type="redirectAction", params={"From", "${phoneNumber}"}),
-  @Result(name="find-your-stop", location="find-your-stop", type="redirectAction", params={"From", "${phoneNumber}"}),
-  @Result(name="bookmarks-index", location="bookmarks/index", type="redirectAction", params={"From", "${phoneNumber}"}),
-  @Result(name="bookmarks-manage", location="bookmarks/manage", type="redirectAction", params={"From", "${phoneNumber}"}),
-  @Result(name="most-recent-stop", location="stops/most-recent-stop", type="redirectAction", params={"From", "${phoneNumber}"}),
-  @Result(name="search-index", location="search/index", type="redirectAction", params={"From", "${phoneNumber}"})
+  @Result(name="help", location="index", type="redirectAction", params={"namespace", "/twml", "From", "${phoneNumber}"}),
+  @Result(name="stops-index", location="stops/index", type="redirectAction", params={/*"namespace", "/twml", */"From", "${phoneNumber}"}),
+  @Result(name="find-your-stop", location="find-your-stop", type="redirectAction", params={"namespace", "/twml", "From", "${phoneNumber}"}),
+  @Result(name="bookmarks-index", location="bookmarks/index", type="redirectAction", params={"namespace", "/twml", "From", "${phoneNumber}"}),
+  @Result(name="bookmarks-manage", location="bookmarks/manage", type="redirectAction", params={"namespace", "/twml", "From", "${phoneNumber}"}),
+  @Result(name="most-recent-stop", location="stops/most-recent-stop", type="redirectAction", params={"namespace", "/twml", "From", "${phoneNumber}"}),
+  @Result(name="search-index", location="search/index", type="redirectAction", params={"namespace", "/twml", "From", "${phoneNumber}"})
 })
 public class WelcomeAction extends TwilioSupport implements SessionAware {
   
@@ -55,6 +55,7 @@ public class WelcomeAction extends TwilioSupport implements SessionAware {
 		
   @Override
   public String execute() {
+	  _log.debug("SAB in WelcomeAction");
     logUserInteraction();
     Integer navState = (Integer)sessionMap.get("navState");
     _log.debug("execute - navState: " + navState);
