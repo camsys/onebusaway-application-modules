@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 @Results({
   @Result(name="index", type="redirectAction",
-      params={"namespace", "/bookmarks", "actionName", "index"})
+      params={"namespace", "/twml/bookmarks", "actionName", "index"})
 })
 public class DeleteBookmarkAction extends AbstractBookmarkAction {
   

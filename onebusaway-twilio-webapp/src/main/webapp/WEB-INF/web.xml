@@ -38,7 +38,7 @@
 
 	<filter-mapping>
 		<filter-name>twilioDispatch</filter-name>
-		<url-pattern>/voice</url-pattern>
+		<url-pattern>/twml/voice</url-pattern>
 	</filter-mapping>
 	<filter-mapping>
 		<filter-name>struts2</filter-name>

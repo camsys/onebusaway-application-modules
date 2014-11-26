@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import com.opensymphony.xwork2.ActionContext;
 
 @Results({
-  @Result(name="back", type="redirectAction", params={"namespace", "/", "actionName", "index"}),
+  @Result(name="back", type="redirectAction", params={"namespace", "/twml", "actionName", "index"}),
   @Result(name="stop-for-code", location="stop-for-code", type="chain")
   })
 public class IndexAction extends TwilioSupport {
@@ -42,7 +42,7 @@ public class IndexAction extends TwilioSupport {
   
   @Override
   public String execute() throws Exception {
-    _log.debug("in stops index with input=" + getInput());
+    _log.debug("SAB in stops index with input=" + getInput());
     
     if (getInput() != null) {
       if (PREVIOUS_MENU_ITEM.equals(getInput())) {

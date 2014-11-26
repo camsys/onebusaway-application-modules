@@ -33,9 +33,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 @Results({
   @Result(name="bookmarks-index", type="redirectAction",
-      params={"namespace", "/bookmarks", "actionName", "index"}),
+      params={"namespace", "/twml/bookmarks", "actionName", "index"}),
   @Result(name="index", type="redirectAction",
-      params={"namespace", "/", "actionName", "index"})
+      params={"namespace", "/twml", "actionName", "index"})
 })
 public class BookmarkStopAction extends TwilioSupport {
 

@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Results({
-  @Result(name="registration", location="registration", type="redirectAction"),
+  @Result(name="registration", location="registration", type="redirectAction", params={"namespace", "/twml"}),
   @Result(name="help", location="index", type="redirectAction", params={"From", "${phoneNumber}"}),
   @Result(name="stops-index", location="stops/index", type="redirectAction", params={"From", "${phoneNumber}"}),
   @Result(name="find-your-stop", location="find-your-stop", type="redirectAction", params={"From", "${phoneNumber}"}),

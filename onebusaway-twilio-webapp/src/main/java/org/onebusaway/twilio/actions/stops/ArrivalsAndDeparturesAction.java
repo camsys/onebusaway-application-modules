@@ -51,8 +51,8 @@ import com.opensymphony.xwork2.util.ValueStack;
 
 @Results({
     @Result(name="bookmark-stop", type="chain",
-      params={"From", "${phoneNumber}", "namespace", "/bookmarks", "actionName", "bookmark-stop"}),
-    @Result(name="back", location="index", type="redirectAction", params={"From", "${phoneNumber}"}),
+      params={"From", "${phoneNumber}", "namespace", "/twml/bookmarks", "actionName", "bookmark-stop"}),
+    @Result(name="back", location="index", type="redirectAction", params={"namespace", "/twml", "From", "${phoneNumber}"}),
     @Result(name="repeat", location="arrivals-and-departures", type="chain")
 
 })
@@ -91,7 +91,7 @@ public class ArrivalsAndDeparturesAction extends TwilioSupport {
   
   @Override
   public String execute() throws Exception {
-    _log.debug("in execute with input=" + this.getInput());
+    _log.debug("SAB in execute with input=" + this.getInput());
     Integer navState = (Integer)sessionMap.get("navState");
     _log.debug("navState: " + navState);
     if (navState == null) {

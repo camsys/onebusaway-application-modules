@@ -33,7 +33,7 @@ import org.onebusaway.twilio.actions.TwilioSupport;
 
 @Results ({
 	@Result (name="success", location="stops-for-route-navigation", type="chain"),
-	@Result (name="stopFound", location="stop-found", type="redirectAction", params={"From", "${phoneNumber}"})
+	@Result (name="stopFound", location="stop-found", type="redirectAction", params={"namespace", "/twml", "From", "${phoneNumber}"})
 })
 //public class NavigateDownAction extends TwilioSupport implements SessionAware {
 public class NavigateDownAction extends TwilioSupport {

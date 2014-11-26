@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
 import com.opensymphony.xwork2.ActionContext;
 
 @Results({
-  @Result(name="back", type="redirectAction", params={"From", "${phoneNumber}", "namespace", "/", "actionName", "index"}),
+  @Result(name="back", type="redirectAction", params={"From", "${phoneNumber}", "namespace", "/twml", "actionName", "index"}),
   @Result(name="success", location="arrivals-and-departures-for-stop-id", type="chain")
 })
 public class MostRecentStopAction extends TwilioSupport implements SessionAware {

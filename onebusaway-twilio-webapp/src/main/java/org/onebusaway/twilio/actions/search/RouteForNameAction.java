@@ -34,8 +34,8 @@ import org.slf4j.LoggerFactory;
 @Results({
 	  @Result(name="success", location="stops-for-route", type="chain"),
 	  //@Result(name="multipleRoutesFound", location="multiple-routes-found", type="chain"),
-	  @Result(name="multipleRoutesFound", location="multiple-routes-found", type="redirectAction", params={"From", "${phoneNumber}"}),
-    @Result(name="noRoutesFound", type="redirectAction", params={"From", "${phoneNumber}", "namespace", "/", "actionName", "message-and-back"})
+	  @Result(name="multipleRoutesFound", location="multiple-routes-found", type="redirectAction", params={"namespace", "/twml", "From", "${phoneNumber}"}),
+    @Result(name="noRoutesFound", type="redirectAction", params={"From", "${phoneNumber}", "namespace", "/twml", "actionName", "message-and-back"})
 })
 public class RouteForNameAction extends TwilioSupport implements SessionAware {
 	  private static final long serialVersionUID = 1L;

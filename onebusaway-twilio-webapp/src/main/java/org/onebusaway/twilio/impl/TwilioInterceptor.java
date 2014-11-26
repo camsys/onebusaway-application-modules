@@ -22,7 +22,7 @@ import java.util.Map.Entry;
 
 import org.apache.struts2.interceptor.SessionAware;
 import org.onebusaway.presentation.impl.users.XWorkRequestAttributes;
-import org.onebusaway.twilio.services.SessionManager;
+import org.onebusaway.twilio.services.TwilioSessionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,7 @@ public class TwilioInterceptor extends AbstractInterceptor {
 
   private static Logger _log = LoggerFactory.getLogger(TwilioInterceptor.class);
         
-  private SessionManager _sessionManager;
+  private TwilioSessionManager _sessionManager;
   private String _phoneNumberParameterName = "From";
   
   public void setPhoneNumberParameterName(String phoneNumberParameterName) {
@@ -45,7 +45,7 @@ public class TwilioInterceptor extends AbstractInterceptor {
   }
   
   @Autowired
-  public void setSessionManager(SessionManager sessionManager) {
+  public void setSessionManager(TwilioSessionManager sessionManager) {
     _sessionManager = sessionManager;
   }
 

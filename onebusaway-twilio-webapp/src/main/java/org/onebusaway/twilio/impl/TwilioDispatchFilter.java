@@ -27,7 +27,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.onebusaway.twilio.services.SessionManager;
+import org.onebusaway.twilio.services.TwilioSessionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +37,7 @@ public class TwilioDispatchFilter implements Filter {
   
   private static Logger _log = LoggerFactory.getLogger(TwilioDispatchFilter.class);
   
-  private SessionManager _sessionManager = null;
+  private TwilioSessionManager _sessionManager = null;
   private static final String PHONE_NUMBER_KEY = "From";
   private static final String NEXT_ACTION = "twilio.nextAction";
   private static final String INDEX_ACTION = "index";
@@ -47,6 +47,8 @@ public class TwilioDispatchFilter implements Filter {
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException {
     String key = request.getParameter(PHONE_NUMBER_KEY);
+    if (key == null)
+    	throw new IOException("missing required PHONE_NUMBER_KEY param \"" + PHONE_NUMBER_KEY + "\"");
     
     char c = key.charAt(0);
     if (!Character.isDigit(c)) {
@@ -97,7 +99,7 @@ public class TwilioDispatchFilter implements Filter {
 
   @Override
   public void init(FilterConfig config) throws ServletException {
-    _sessionManager = (SessionManager) config.getServletContext().getAttribute("twilioSessionManager");
+    _sessionManager = (TwilioSessionManager) config.getServletContext().getAttribute("twilioSessionManager");
   }
 
   @Override

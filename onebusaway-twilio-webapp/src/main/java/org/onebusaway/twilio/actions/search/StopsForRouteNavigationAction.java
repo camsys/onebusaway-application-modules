@@ -25,7 +25,7 @@ import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.NameBean;
 import org.onebusaway.twilio.actions.Messages;
 import org.onebusaway.twilio.actions.TwilioSupport;
-import org.onebusaway.twilio.services.SessionManager;
+import org.onebusaway.twilio.services.TwilioSessionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,9 +38,9 @@ import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.util.ValueStack;
 
 @Results({
-	@Result(name="navigate-down", location="navigate-down", type="chain", params={"From", "${phoneNumber}", "index", "${index}"}),
+	@Result(name="navigate-down", location="navigate-down", type="chain", params={"namespace", "/twml", "From", "${phoneNumber}", "index", "${index}"}),
   //@Result(name="navigate-down", location="navigate-down", type="chain"),    
-	@Result(name="navigate-to", location="navigate-to", type="chain", params={"From", "${phoneNumber}", "index", "${index}"}),
+	@Result(name="navigate-to", location="navigate-to", type="chain", params={"namespace", "/twml", "From", "${phoneNumber}", "index", "${index}"}),
   //@Result(name="navigate-to", location="navigate-to", type="chain"),
 	@Result(name="stops-for-route-navigation", location="stops-for-route-navigation", type="chain"),
   @Result(name="back", location="index", type="chain")
@@ -51,7 +51,7 @@ public class StopsForRouteNavigationAction extends TwilioSupport implements Sess
 	  private static Logger _log = LoggerFactory.getLogger(StopsForRouteNavigationAction.class);
 
 	  private TextModification _destinationPronunciation;
-	  private SessionManager _sessionManager;
+	  private TwilioSessionManager _sessionManager;
 	  //private Map sessionMap;
 	  private int index;
 	  private NavigationBean _navigation;
@@ -63,7 +63,7 @@ public class StopsForRouteNavigationAction extends TwilioSupport implements Sess
 	  }
 	  
 	  @Autowired
-	  public void setSessionManager(SessionManager sessionManager) {
+	  public void setSessionManager(TwilioSessionManager sessionManager) {
 		_sessionManager = sessionManager;
 	  }
 	  	  

@@ -15,10 +15,13 @@
  */
 package org.onebusaway.api.model.transit;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.Set;
 
 import org.onebusaway.api.impl.MaxCountSupport;
@@ -170,6 +173,11 @@ public class BeanFactoryV2 {
     return entry(getStopsForRoute(result, includePolylines));
   }
 
+//  public EntryWithReferencesBean<ConfigV2Bean> getResponse(
+//      BundleMetadata result) {
+//    return entry(getConfig(result));
+//  }
+  
   public ListWithReferencesBean<AgencyWithCoverageV2Bean> getResponse(
       List<AgencyWithCoverageBean> beans) {
     List<AgencyWithCoverageV2Bean> list = new ArrayList<AgencyWithCoverageV2Bean>();
@@ -301,6 +309,17 @@ public class BeanFactoryV2 {
     return bean;
   }
 
+//  public ConfigV2Bean getConfig(BundleMetadata meta) {
+//    ConfigV2Bean bean = new ConfigV2Bean();
+//    bean.setGitProperties(getGitProperties());
+//    if (meta == null) return bean;
+//    bean.setId(meta.getId());
+//    bean.setName(meta.getName());
+//    bean.setServiceDateFrom(meta.getServiceDateFrom());
+//    bean.setServiceDateTo(meta.getServiceDateTo());
+//    return bean;
+//  }
+  
   public StopV2Bean getStop(StopBean stop) {
     StopV2Bean bean = new StopV2Bean();
     bean.setCode(stop.getCode());
@@ -1159,5 +1178,18 @@ public class BeanFactoryV2 {
     }
 
     return true;
+  }
+  
+  private Properties getGitProperties(){
+	  Properties properties = new Properties();
+	  try {
+		  InputStream inputStream = getClass().getClassLoader().getResourceAsStream("git.properties");
+		  if (inputStream != null) {
+			  properties.load(inputStream);
+		  }
+		  return properties;
+	  } catch (IOException ioe) {
+		  return null;
+	  }
   }
 }

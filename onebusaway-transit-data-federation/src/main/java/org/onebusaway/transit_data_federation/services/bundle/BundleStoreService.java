@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 HART (Hillsborough Area Regional Transit) 
+ * Copyright (C) 2011 Brian Ferris <bdferris@onebusaway.org>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.twilio.services;
+package org.onebusaway.transit_data_federation.services.bundle;
 
-import java.util.Map;
+import org.onebusaway.transit_data_federation.model.bundle.BundleItem;
 
-public interface TwilioSessionManager {
-  public Map<String, Object> getContext(String sessionId);
+import java.util.List;
 
-  boolean hasContext(String key);
+/**
+ * Sources of bundles--local or Http-backed.
+ * 
+ * @author jmaki
+ *
+ */
+public interface BundleStoreService {
+  
+  public List<BundleItem> getBundles() throws Exception;
+  
+  public boolean isLegacyBundle();
+  
 }
+

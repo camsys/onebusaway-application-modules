@@ -39,12 +39,12 @@ import com.opensymphony.xwork2.util.ValueStack;
 @Results({
 //  @Result(name="arrivals-and-departures", location="arrivals-and-departures-for-stop-id", type="chain",
   @Result(name="arrivals-and-departures", type="chain",
-  	  params={"namespace", "/stops", "actionName", "arrivals-and-departures-for-stop-id"}),
+  	  params={"namespace", "/twml/stops", "actionName", "arrivals-and-departures-for-stop-id"}),
   @Result(name="bookmark-stop", type="chain",
-      params={"namespace", "/bookmarks", "actionName", "bookmark-stop"}),
+      params={"namespace", "/twml/bookmarks", "actionName", "bookmark-stop"}),
   @Result(name="home", type="redirectAction", 
-      params={"namespace", "/", "actionName", "index"}),
-	@Result(name="back", location="index", type="redirectAction", params={"From", "${phoneNumber}"}),
+      params={"namespace", "/twml", "actionName", "index"}),
+	@Result(name="back", location="index", type="redirectAction", params={"namespace", "/twml", "From", "${phoneNumber}"}),
 	@Result(name="repeat", location="stop-found", type="chain")
   	  
 //  @Result(name="arrivals-and-departures", location="/stops/arrivals-and-departures-for-stop-id", type="chain"),

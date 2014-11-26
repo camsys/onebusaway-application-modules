@@ -26,14 +26,14 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.onebusaway.twilio.services.SessionManager;
+import org.onebusaway.twilio.services.TwilioSessionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SessionManagerImpl implements SessionManager {
-  private static Logger _log = LoggerFactory.getLogger(SessionManagerImpl.class);
+public class TwilioSessionManagerImpl implements TwilioSessionManager {
+  private static Logger _log = LoggerFactory.getLogger(TwilioSessionManagerImpl.class);
 
   private ConcurrentHashMap<String, ContextEntry> _contextEntriesByKey = new ConcurrentHashMap<String, ContextEntry>();
 
@@ -78,7 +78,7 @@ public class SessionManagerImpl implements SessionManager {
   }
 
   /****
-   * {@link SessionManager} Interface
+   * {@link TwilioSessionManager} Interface
    ****/
 
   @Override

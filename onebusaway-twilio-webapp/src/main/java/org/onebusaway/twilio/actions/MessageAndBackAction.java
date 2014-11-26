@@ -39,9 +39,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Results({
-  @Result(name="back", type="redirectAction", params={"namespace", "/", "actionName", "index"}),
-	@Result(name="stops-index", location="stops/index", type="redirectAction"),
-  @Result(name="search-index", location="search/index", type="redirectAction")
+  @Result(name="back", type="redirectAction", params={"namespace", "/twml", "actionName", "index"}),
+	@Result(name="stops-index", location="stops/index", type="redirectAction", params={"namespace", "/twml"}),
+  @Result(name="search-index", location="search/index", type="redirectAction", params={"namespace", "/twml"})
 })
 public class MessageAndBackAction extends TwilioSupport implements SessionAware {
 

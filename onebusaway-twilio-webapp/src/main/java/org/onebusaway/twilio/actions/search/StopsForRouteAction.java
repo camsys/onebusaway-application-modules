@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Results({
-  @Result(name="success", location="stops-for-route-navigation", type="redirectAction", params={"From", "${phoneNumber}"}),
+  @Result(name="success", location="stops-for-route-navigation", type="redirectAction", params={"namespace", "/twml", "From", "${phoneNumber}"}),
 	@Result (name="stopFound", location="stop-found", type="chain")
 })
 public class StopsForRouteAction extends TwilioSupport {

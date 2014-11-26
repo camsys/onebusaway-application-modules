@@ -28,7 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 @Results({
   @Result(name="success", location="arrivals-and-departures", type="redirectAction", params={"From", "${phoneNumber}"}),
-  @Result(name="input", location="index", type="redirectAction")
+  @Result(name="input", location="index", type="redirectAction", params={"namespace", "/twml"})
 })
 public class ArrivalsAndDeparturesForStopIdAction extends TwilioSupport {
 
@@ -54,7 +54,7 @@ public class ArrivalsAndDeparturesForStopIdAction extends TwilioSupport {
   }
 
   public String execute() throws Exception {
-    _log.debug("in execute with stops=" + _model.getStopIds());
+    _log.debug("SAB in execute with stops=" + _model.getStopIds());
     if (_model.isMissingData()) {
       _log.warn("missing execpted data");
       return INPUT;
@@ -66,6 +66,7 @@ public class ArrivalsAndDeparturesForStopIdAction extends TwilioSupport {
         _model.getRouteFilter());
     
     sessionMap.put("_model", _model);
+    _log.debug("SAB SUCESS");
     return SUCCESS;
   }
 }

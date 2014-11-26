@@ -21,8 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Results({
-  @Result(name="stops-index", location="stops/index", type="redirectAction", params={"From", "${phoneNumber}"}),
-  @Result(name="search-index", location="search/index", type="redirectAction", params={"From", "${phoneNumber}"})
+  @Result(name="stops-index", location="stops/index", type="redirectAction", params={"namespace", "/twml", "From", "${phoneNumber}"}),
+  @Result(name="search-index", location="search/index", type="redirectAction", params={"namespace", "/twml", "From", "${phoneNumber}"})
 })
 public class HelpAction extends TwilioSupport {
 

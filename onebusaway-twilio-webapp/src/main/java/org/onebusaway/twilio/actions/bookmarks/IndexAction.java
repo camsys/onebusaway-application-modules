@@ -24,9 +24,9 @@ import org.onebusaway.twilio.actions.Messages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 @Results({
-  @Result(name="back", type="redirectAction", params={"namespace", "/", "actionName", "index"}),
+  @Result(name="back", type="redirectAction", params={"namespace", "/twml", "actionName", "index"}),
   @Result(name="arrival-and-departure-for-stop-id", type="chain",
-      params={"From", "${phoneNumber}", "namespace", "/stops", "actionName", "arrivals-and-departures-for-stop-id"})
+      params={"From", "${phoneNumber}", "namespace", "/twml/stops", "actionName", "arrivals-and-departures-for-stop-id"})
 })
 public class IndexAction extends AbstractBookmarkAction {
 

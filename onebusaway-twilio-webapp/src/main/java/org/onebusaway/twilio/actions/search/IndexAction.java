@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Results({
-	  @Result(name="back", type="redirectAction", params={"namespace", "/", "actionName", "index"}),
+	  @Result(name="back", type="redirectAction", params={"namespace", "/twml", "actionName", "index"}),
 	  @Result(name="route-for-name", location="route-for-name", type="chain"),
 	  @Result(name="search-for-code", location="stop-for-code", type="chain")
 	  })

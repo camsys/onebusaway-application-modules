@@ -36,7 +36,7 @@ import com.opensymphony.xwork2.util.ValueStack;
 
 @Results({
 	  @Result(name="back", location="index", type="chain"),
-	  @Result(name="route-selected", location="stops-for-route", type="redirectAction", params={"From", "${phoneNumber}"}),
+	  @Result(name="route-selected", location="stops-for-route", type="redirectAction", params={"namespace", "/twml", "From", "${phoneNumber}"}),
     @Result(name="repeat", location="multiple-routes-found", type="chain")
 })
 public class MultipleRoutesFoundAction extends TwilioSupport {

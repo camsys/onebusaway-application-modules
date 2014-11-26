@@ -32,9 +32,9 @@ import com.opensymphony.xwork2.util.ValueStack;
 
 @Results({
   @Result(name="delete-bookmark", type="chain",
-      params={"namespace", "/bookmarks", "actionName", "delete-bookmark"}),
+      params={"namespace", "/twml/bookmarks", "actionName", "delete-bookmark"}),
   @Result(name="home", type="redirectAction",
-      params={"namespace", "/", "actionName", "index"})
+      params={"namespace", "/twml", "actionName", "index"})
 })
 public class ManageAction extends AbstractBookmarkAction {
   

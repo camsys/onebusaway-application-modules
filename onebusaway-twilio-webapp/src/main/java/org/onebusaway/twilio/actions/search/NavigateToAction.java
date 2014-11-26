@@ -21,7 +21,7 @@ import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
 import org.apache.struts2.interceptor.SessionAware;
 import org.onebusaway.twilio.actions.TwilioSupport;
-import org.onebusaway.twilio.services.SessionManager;
+import org.onebusaway.twilio.services.TwilioSessionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,13 +36,13 @@ public class NavigateToAction extends TwilioSupport implements SessionAware {
   private static Logger _log = LoggerFactory.getLogger(IndexAction.class);
 
  // private Map sessionMap;
-	private SessionManager _sessionManager;
+	private TwilioSessionManager _sessionManager;
   private NavigationBean _navigation;
 
   private int _index;
 
 	@Autowired
-  public void setSessionManager(SessionManager sessionManager) {
+  public void setSessionManager(TwilioSessionManager sessionManager) {
 		_sessionManager = sessionManager;
 	}
 	  	  

@@ -29,5 +29,5 @@
   <constant name="struts.action.excludePattern" value="/services/.*,/api/.*" />
   <constant name="struts.enable.DynamicMethodInvocation" value="true" />
   <constant name="struts.devMode" value="true" />
-  <include file="struts-twilio-webapp.xml"/>
+  <include file="struts-onebusaway-twilio-webapp.xml"/>
 </struts>
