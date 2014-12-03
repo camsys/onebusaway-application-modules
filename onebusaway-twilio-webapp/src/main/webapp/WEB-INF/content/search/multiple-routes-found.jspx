@@ -21,10 +21,11 @@
      xmlns:s="/struts-tags"
      xmlns:wiki="/oba-wiki-tags">
 <jsp:directive.page contentType="application/xml" />
-  <Gather numDigits="1" timeout="1">
+  <Gather numDigits="1">
     <Say>
       ${message}
     </Say>
-    <jsp:directive.include file="../enter-repeat-or-hangup.jspx"/>
+    <Pause length="1">
+    </Pause>
   </Gather>
 </Response>

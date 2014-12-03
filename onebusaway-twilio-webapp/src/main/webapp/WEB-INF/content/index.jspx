@@ -20,7 +20,7 @@
      xmlns:s="/struts-tags"
      xmlns:wiki="/oba-wiki-tags">
   <jsp:directive.page contentType="application/xml" />
-  <Gather numDigits="1" timeout="1">
+  <Gather numDigits="1">
     <Say>
     	Welcome.  Our system let's you access real-time bus arrival information over the phone.  When you first call the system, you are asked to enter your stop number, followed by the pound sign.  Once you've entered your stop number, this system will list scheduled bus arrivals and departures at your stop.
 		To enter a stop number, please press one.
@@ -32,6 +32,5 @@
 		To repeat, please press  eight.
 		If you need help, please press zero.	
     </Say>
-    <jsp:directive.include file="enter-repeat-or-hangup.jspx"/>
   </Gather>
 </Response>

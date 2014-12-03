@@ -94,7 +94,6 @@ public class WelcomeAction extends TwilioSupport implements SessionAware {
 				case 4: return "bookmarks-manage";
 				case 5: return "most-recent-stop";
 				case 6: return "search-index";
-				case 8: return "repeat";
 				default: return "help";
 			}
 		}
