@@ -144,11 +144,6 @@ class GtfsRealtimeTripLibrary {
     public VehicleLocationRecord createVehicleLocationRecordForUpdate(MonitoredResult result,
         CombinedTripUpdatesAndVehiclePosition update) {
 
-    return createVehicleLocationRecordForUpdate(null, update);
-  }    
-    
-    public VehicleLocationRecord createVehicleLocationRecordForUpdate(MonitoredResult result,
-        CombinedTripUpdatesAndVehiclePosition update) {
 
     VehicleLocationRecord record = new VehicleLocationRecord();
     record.setTimeOfRecord(currentTime());
@@ -160,7 +155,7 @@ class GtfsRealtimeTripLibrary {
     applyTripUpdatesToRecord(result, blockDescriptor, update.tripUpdates, record);
 
     if (update.vehiclePosition != null) {
-      applyVehiclePositionToRecord(result, update.vehiclePosition, record);
+      applyVehiclePositionToRecord(update.vehiclePosition, record);
     }
 
     /**
@@ -387,7 +382,7 @@ class GtfsRealtimeTripLibrary {
           }
 
           for (StopTimeUpdate stopTimeUpdate : tripUpdate.getStopTimeUpdateList()) {
-            BlockStopTimeEntry blockStopTime = getBlockStopTimeForStopTimeUpdate(result,
+            BlockStopTimeEntry blockStopTime = getBlockStopTimeForStopTimeUpdate(
                 tripUpdate, stopTimeUpdate, blockTrip.getStopTimes(),
                 instance.getServiceDate());
             if (blockStopTime == null)
@@ -417,7 +412,7 @@ class GtfsRealtimeTripLibrary {
     }
   }
 
-  private BlockStopTimeEntry getBlockStopTimeForStopTimeUpdate(MonitoredResult result,
+  private BlockStopTimeEntry getBlockStopTimeForStopTimeUpdate(
       TripUpdate tripUpdate, StopTimeUpdate stopTimeUpdate,
       List<BlockStopTimeEntry> stopTimes, long serviceDate) {
 
@@ -426,26 +421,18 @@ class GtfsRealtimeTripLibrary {
       if (0 <= stopSequence && stopSequence < stopTimes.size()) {
         BlockStopTimeEntry blockStopTime = stopTimes.get(stopSequence);
         if (!stopTimeUpdate.hasStopId()) {
-          if (result != null) {
-            result.addMatchedStopId(blockStopTime.getStopTime().getStop().getId().getId());
-          }
           return blockStopTime;
         }
         if (blockStopTime.getStopTime().getStop().getId().getId().equals(
             stopTimeUpdate.getStopId())) {
-          if (result != null) {
-            result.addMatchedStopId(blockStopTime.getStopTime().getStop().getId().getId());
-          }
           return blockStopTime;
         }
         // The stop sequence and stop id didn't match, so we fall through to
         // match by stop id if possible
-        // we do not log this as it still may match later
 
       } else {
         _log.warn("StopTimeSequence is out of bounds: stopSequence="
             + stopSequence + " tripUpdate=\n" + tripUpdate);
-        // sadly we can't report an invalid stop sequence -- we need a stopId
       }
     }
 
@@ -464,16 +451,10 @@ class GtfsRealtimeTripLibrary {
           bestMatches.add(arrivalDelta, blockStopTime);
         }
       }
-      if (!bestMatches.isEmpty()) {
-        if (result != null) {
-          result.addMatchedStopId(stopTimeUpdate.getStopId());
-        }
+      if (!bestMatches.isEmpty())
         return bestMatches.getMinElement();
-      }
     }
-    if (result != null) {
-      result.addUnmatchedStopId(stopTimeUpdate.getStopId());
-    }
+
     return null;
   }
 
@@ -482,19 +463,21 @@ class GtfsRealtimeTripLibrary {
     long t = currentTime();
     if (stopTimeUpdate.hasArrival()) {
       StopTimeEvent arrival = stopTimeUpdate.getArrival();
+      if (arrival.hasTime()) {
+        return (int) (arrival.getTime() - serviceDate / 1000);
+      }
       if (arrival.hasDelay()) {
         return (int) ((t - serviceDate) / 1000 - arrival.getDelay());
       }
-      if (arrival.hasTime())
-        return (int) (arrival.getTime() - serviceDate / 1000);
     }
     if (stopTimeUpdate.hasDeparture()) {
       StopTimeEvent departure = stopTimeUpdate.getDeparture();
+      if (departure.hasTime()) {
+        return (int) (departure.getTime() - serviceDate / 1000);
+      }
       if (departure.hasDelay()) {
         return (int) ((t - serviceDate) / 1000 - departure.getDelay());
       }
-      if (departure.hasTime())
-        return (int) (departure.getTime() - serviceDate / 1000);
     }
     throw new IllegalStateException(
         "expected at least an arrival or departure time or delay for update: "
@@ -541,15 +524,11 @@ class GtfsRealtimeTripLibrary {
     }
   }
 
-  private void applyVehiclePositionToRecord(MonitoredResult result,
-      VehiclePosition vehiclePosition,
+  private void applyVehiclePositionToRecord(VehiclePosition vehiclePosition,
       VehicleLocationRecord record) {
     Position position = vehiclePosition.getPosition();
     record.setCurrentLocationLat(position.getLatitude());
     record.setCurrentLocationLon(position.getLongitude());
-    if (result != null) {
-      result.addLatLon(position.getLatitude(), position.getLongitude());
-    }
   }
 
   private long currentTime() {

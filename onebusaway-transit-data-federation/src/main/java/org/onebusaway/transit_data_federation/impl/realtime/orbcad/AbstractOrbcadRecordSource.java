@@ -389,7 +389,6 @@ public abstract class AbstractOrbcadRecordSource implements MonitoredDataSource 
       if (record.hasLat() && record.hasLon()) {
         message.setCurrentLocationLat(record.getLat());
         message.setCurrentLocationLon(record.getLon());
-        _currentResult.addLatLon(record.getLat(), record.getLon());
       }
 
       int effectiveScheduleTime = (int) (record.getTime() - blockInstance.getServiceDate() / 1000);
