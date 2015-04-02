@@ -289,7 +289,7 @@ class GtfsRealtimeTripLibrary {
         vehicleId = update.vehiclePosition.getVehicle().getId();
       }
 
-      if (vehicleId != null) {
+      if (vehicleId != null && update.block != null) {
         update.block.setVehicleId(vehicleId);
       }
     }
@@ -318,9 +318,13 @@ class GtfsRealtimeTripLibrary {
 
     BlockDescriptor blockDescriptor = update.block;
 
-    record.setBlockId(blockDescriptor.getBlockInstance().getBlock().getBlock().getId());
+    if (update.block != null) {
+      record.setBlockId(blockDescriptor.getBlockInstance().getBlock().getBlock().getId());
+    }
 
-    applyTripUpdatesToRecord(result, blockDescriptor, update.tripUpdates, record);
+    if (blockDescriptor != null && update.tripUpdates != null) {
+        applyTripUpdatesToRecord(result, blockDescriptor, update.tripUpdates, record);
+    }
 
     if (update.vehiclePosition != null) {
       applyVehiclePositionToRecord(result, update.vehiclePosition, record);
@@ -334,13 +338,13 @@ class GtfsRealtimeTripLibrary {
     if (result != null) {
       if (record.getTripId() != null) {
         result.addMatchedTripId(record.getTripId().toString());
-      } else {
+      } else if (record.getBlockId() != null) {
         // we don't have a tripId, use the BlockId instead
         result.addMatchedTripId(record.getBlockId().toString());
       }
     }
     
-    if (blockDescriptor.getVehicleId() != null) {
+    if (blockDescriptor != null && blockDescriptor.getVehicleId() != null) {
       String agencyId = record.getBlockId().getAgencyId();
       record.setVehicleId(new AgencyAndId(agencyId,
           blockDescriptor.getVehicleId()));
