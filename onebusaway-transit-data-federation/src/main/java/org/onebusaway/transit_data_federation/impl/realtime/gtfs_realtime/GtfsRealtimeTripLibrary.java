@@ -125,6 +125,7 @@ class GtfsRealtimeTripLibrary {
 
     for (FeedEntity fe : tripUpdateMessage.getEntityList()) {
       if (!fe.hasTripUpdate()) {
+        _log.warn("no trip update");
         continue;
       }
 
@@ -133,7 +134,7 @@ class GtfsRealtimeTripLibrary {
       if (tu.hasVehicle() && tu.getVehicle().hasId()) {
         // Trip update has a vehicle ID - index by vehicle ID
         String vehicleId = tu.getVehicle().getId();
-
+        _log.debug("update for vehicle=" + vehicleId);
         if (!tripUpdatesByVehicleId.containsKey(vehicleId)) {
           tripUpdatesByVehicleId.put(vehicleId, tu);
         } else {
@@ -150,6 +151,7 @@ class GtfsRealtimeTripLibrary {
 
         }
       } else {
+        _log.error("missing vehicleId, looking for block");
         /*
          * Trip update does not have a vehicle ID - index by TripDescriptor
          * (includes start date and time).
@@ -237,6 +239,7 @@ class GtfsRealtimeTripLibrary {
     // Remove multiple vehicles where multiple anonymous vehicles are present in
     // a block
     for (BlockDescriptor bd : badAnonymousVehiclePositions) {
+      _log.debug("removing " + bd);;
       anonymousVehiclePositionsByBlock.remove(bd);
     }
 

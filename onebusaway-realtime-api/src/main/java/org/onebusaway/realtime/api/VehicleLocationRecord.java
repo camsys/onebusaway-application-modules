@@ -295,7 +295,7 @@ public class VehicleLocationRecord implements Serializable {
     if (serviceDate != 0)
       b.append(" serviceDate=").append(serviceDate);
     if (timeOfRecord != 0)
-      b.append(" time=").append(timeOfRecord);
+      b.append(" time=").append(new java.util.Date(timeOfRecord));
     if (vehicleId != null)
       b.append(" vehicleId=").append(vehicleId);
     if (isScheduleDeviationSet())
