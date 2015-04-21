@@ -77,7 +77,12 @@ public class BlockStopTimeEntryImpl implements BlockStopTimeEntry {
   public boolean hasNextStop() {
     return hasNextStop;
   }
-
+  
+  @Override
+  public BlockStopTimeEntry getPreviousStop() {
+    return trip.getBlockConfiguration().getStopTimes().get(blockSequence);
+  }
+  
   @Override
   public BlockStopTimeEntry getNextStop() {
     return trip.getBlockConfiguration().getStopTimes().get(blockSequence + 1);
