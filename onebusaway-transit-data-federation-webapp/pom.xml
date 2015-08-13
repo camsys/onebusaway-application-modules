@@ -23,11 +23,6 @@
       <artifactId>onebusaway-siri-core</artifactId>
       <version>${onebusaway-siri-version}</version>
     </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.17</version>
-        </dependency>
     <!-- RMI-like service for wiring up services between VMs -->
     <dependency>
       <groupId>com.caucho</groupId>

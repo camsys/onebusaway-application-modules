@@ -26,6 +26,9 @@ import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -33,6 +36,8 @@ import java.util.List;
 
 public class SiriUtils {
 
+  private static Logger _log = LoggerFactory.getLogger(SiriUtils.class);
+	
   public static String getIdWithoutAgency(String id) {
     int startIndex = id.indexOf('_') + 1;
     id = id.substring(startIndex);
@@ -128,6 +133,9 @@ public class SiriUtils {
     monitoredVehicleJourney.LineRef = getIdWithoutAgency(route.getId());
     monitoredVehicleJourney.DirectionRef = tripBean.getDirectionId();
     monitoredVehicleJourney.PublishedLineName = tripBean.getTripHeadsign();
+    if (monitoredVehicleJourney.PublishedLineName  == null) {
+    	_log.warn("publishedLineName is null!");
+    }
 
     monitoredVehicleJourney.FramedVehicleJourneyRef = new FramedVehicleJourneyRef();
     monitoredVehicleJourney.VehicleRef = vehicleId;
