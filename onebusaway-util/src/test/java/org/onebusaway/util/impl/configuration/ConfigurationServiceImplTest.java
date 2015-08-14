@@ -33,6 +33,10 @@ public class ConfigurationServiceImplTest {
   @InjectMocks
   private ConfigurationServiceImpl service;
 
+  @Test
+  public void noop()  {
+  }
+
   /*@Before
   public void setupApiLibrary() throws Exception {
     RestApiLibrary ral = new RestApiLibrary("localhost", null, "api");    
