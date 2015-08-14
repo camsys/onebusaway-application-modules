@@ -1,16 +1,13 @@
 package org.onebusaway.util.impl.configuration;
 
-
-import org.onebusaway.container.refresh.RefreshService;
-//import org.onebusaway.util.impl.configuration.ConfigurationServiceClientTDMImpl;
-import org.onebusaway.util.impl.configuration.ConfigurationServiceImpl;
-import org.onebusaway.util.rest.RestApiLibrary;
-import org.onebusaway.util.services.configuration.ConfigurationServiceClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.onebusaway.container.refresh.RefreshService;
+import org.onebusaway.util.rest.RestApiLibrary;
+import org.onebusaway.util.services.configuration.ConfigurationServiceClient;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConfigurationServiceImplTest {
@@ -32,7 +29,6 @@ public class ConfigurationServiceImplTest {
   public void testNoOp() throws Exception {
       // TODO
   }
-
   /*@Before
   public void setupApiLibrary() throws Exception {
     RestApiLibrary ral = new RestApiLibrary("localhost", null, "api");    

@@ -226,6 +226,17 @@ OBA.Sign = function() {
 			stopElement.find(".alerts").hide();
 			stopElement.find(".arrivals").width("100%");
 		} else {
+			// make sure we have a valid alert before showing
+			var found = false;
+			jQuery.each(applicableSituations, function(situationId, situation) {
+				if (typeof situation.Affects.VehicleJourneys != "undefined") {
+					if (journey.LineRef in routeInfo && jQuery.inArray(journey.LineRef, existingSigns) < 0) {
+						found = true;
+					}
+				}
+			});
+			if (!found) return;
+			
 			stopElement.find(".alerts").show();
 			stopElement.find(".arrivals").width("70%");
 
@@ -302,12 +313,12 @@ OBA.Sign = function() {
 					} else {
 						var scheduledSpan = jQuery("<span></span>")
 						.addClass("bus-id")
-						.text(" (Scheduled)");
+						.text("(scheduled) ");
 
 						jQuery('<td colspan="2"></td>')
 						.addClass("distance")
 						.text(vehicleInfo.timePrediction)
-						.append(scheduledSpan)
+						.prepend(scheduledSpan)
 						.appendTo(row);
 						
 					}
@@ -390,6 +401,7 @@ OBA.Sign = function() {
 			//hideError();
 
 			var situationsById = {};
+			if (json == null) return;
 			if(typeof json.Siri.ServiceDelivery.SituationExchangeDelivery !== 'undefined' && json.Siri.ServiceDelivery.SituationExchangeDelivery.length > 0) {
 				jQuery.each(json.Siri.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement, function(_, situationElement) {
 					situationsById[situationElement.SituationNumber] = situationElement;
