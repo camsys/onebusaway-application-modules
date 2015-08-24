@@ -203,7 +203,7 @@ OBA.Sign = function() {
 					'<div class="name"><h1>' + stopInfo[stopId].name + '</h1></div>' + 
 					' <div class="stop-id"><h2>Stop #' + stopId.id + '</h2></div>' +
 				'</div>' + 
-				'<div class="arrivals"><table></table></div>' +
+				'<div class="arrivals"><div class="arrivals_scroller"><table></table></div></div>' +
 				'<div class="alerts"><div class="alerts_header"><h2>Service Change Notices</h2></div><div id="stop' + stopId.id + '" class="scroller"></div></div>' +
 			'</div>').addClass("slide");
 		
@@ -394,8 +394,9 @@ OBA.Sign = function() {
 		}
 
 		var stopElement = getNewElementForStop(stopId);
-
-		var params = { OperatorRef: stopId.agency, MonitoringRef: stopId.id, StopMonitoringDetailLevel: "normal" };
+		var emptyAlerts = true;
+		
+		var params = { OperatorRef: stopId.agency, MonitoringRef: stopId.id, StopMonitoringDetailLevel: "normal", MinimumStopVisitsPerLine: 3 };
 		jQuery.getJSON(obaApiBaseUrl + OBA.Config.siriSMUrl, params, function(json) {	
 			//updateTimestamp(OBA.Util.ISO8601StringToDate(json.Siri.ServiceDelivery.ResponseTimestamp));
 			//hideError();
@@ -432,6 +433,7 @@ OBA.Sign = function() {
 				jQuery.each(journey.SituationRef, function(_, situationRef) {
 					if(typeof situationsById[situationRef.SituationSimpleRef] !== 'undefined') {
 						applicableSituations[situationRef.SituationSimpleRef] = situationsById[situationRef.SituationSimpleRef];
+						emptyAlerts = false;
 					}
 				});
 				
@@ -456,7 +458,7 @@ OBA.Sign = function() {
 			var oldContent = jQuery("#content");
 			
 			var newContent = jQuery('<div id="content"></div>');
-			stopElement.appendTo(newContent);
+				stopElement.appendTo(newContent);
 			jQuery("body").prepend(newContent);
 			
 			if (stopIdsToRequest.length < 2) {
@@ -497,6 +499,26 @@ OBA.Sign = function() {
 						customClass: 'alerts_body',
 						orientation: 'vertical',
 						pauseOnHover: false,
+						autoMode: 'loop',
+						frameRate: 20,
+						speed: 2
+					});
+				}
+				
+				var arrivalsHeight = 0;
+				var alerts = stopElement.find(".arrivals");
+				jQuery.each(alerts, function(_, arrival) {
+					arrivalsHeight += jQuery(arrival).height();
+				});
+
+				
+				if (arrivalsHeight < stopElement.find(".arrivals_scroller").height()) {
+					// scroll the arrivals
+					stopElement.find(".arrivals_scroller").simplyScroll({
+						customClass: 'arrivals_body',
+						orientation: 'vertical',
+						pauseOnHover: false,
+						autoMode: 'loop',
 						frameRate: 20,
 						speed: 2
 					});

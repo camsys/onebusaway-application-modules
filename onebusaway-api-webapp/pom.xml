@@ -29,15 +29,26 @@
     </dependency>
     <dependency>
       <groupId>org.onebusaway</groupId>
+      <artifactId>onebusaway-transit-data-federation</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-presentation</artifactId>
       <version>${project.version}</version>
     </dependency>
-
+    
     <!-- This is the original SIRI API implementation that we hope to eventually move away from -->
     <dependency>
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-siri-api</artifactId>
       <version>1.0.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.onebusaway</groupId>
+      <artifactId>onebusaway-siri-core</artifactId>
+      <version>${onebusaway-siri-version}</version>
     </dependency>
 
     <!-- For GTFS-realtime support -->
@@ -115,6 +126,13 @@
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
+	<dependency>
+		<groupId>org.tuckey</groupId>
+		<artifactId>urlrewritefilter</artifactId>
+		<version>3.2.0</version>
+		<type>jar</type>
+		<scope>compile</scope>
+	</dependency>
   </dependencies>
 
   <build>
@@ -123,7 +141,7 @@
 	  <plugin>
 		<groupId>pl.project13.maven</groupId>
 		<artifactId>git-commit-id-plugin</artifactId>
-		<version>2.1.2</version>
+		<version>2.1.15</version>
 		<executions>
 		  <execution>
 		    <goals>

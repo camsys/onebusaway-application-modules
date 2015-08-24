@@ -28,7 +28,11 @@
   <import resource="classpath:org/onebusaway/transit_data_federation/application-context-services.xml" />
 
    <bean id="httpServiceClient" class="org.onebusaway.transit_data_federation.util.HttpServiceClientImpl" >
+<<<<<<< HEAD
       <constructor-arg type="java.lang.String" value="admin.staging.obast.org"/>
+=======
+      <constructor-arg type="java.lang.String" value="admin.staging.obahart.org"/>
+>>>>>>> 5d73d6ae6c8d769aa87bd65ca0ab1df60997dccf
       <constructor-arg type="java.lang.Integer" value="9999" />
       <constructor-arg type="java.lang.String" value="/api/" />
     </bean>

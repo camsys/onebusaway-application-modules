@@ -233,25 +233,21 @@ public class RealtimeServiceImpl implements RealtimeService {
     List<MonitoredStopVisitStructure> output = new ArrayList<MonitoredStopVisitStructure>();
     boolean hasRealtimeData = true;
     
+    /*List<ArrivalAndDepartureBean> arrivalAndDepartures = getArrivalsAndDeparturesForStop(stopId, currentTime);
+    Collections.sort(arrivalAndDepartures, new SiriSupport.SortByTime());*/
+    
     for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(stopId, currentTime)) {
+      
       TripStatusBean statusBeanForCurrentTrip = adBean.getTripStatus();
       TripBean tripBeanForAd = adBean.getTrip();
-
-      if(statusBeanForCurrentTrip == null)
-    	  continue;
       
-      if(!_presentationService.include(adBean, statusBeanForCurrentTrip))
-          continue;
-      
-      /*if(!_presentationService.include(statusBeanForCurrentTrip) || !_presentationService.include(adBean, statusBeanForCurrentTrip))
-          continue;*/
-
       long lastUpdatedTime = statusBeanForCurrentTrip.getLastUpdateTime();
       
-      if(!_presentationService.include(statusBeanForCurrentTrip)){
+      if(!_presentationService.include(statusBeanForCurrentTrip) || !_presentationService.include(adBean, statusBeanForCurrentTrip)){
     	  hasRealtimeData = false;
 		  lastUpdatedTime = getTime();
 	  }
+      
 
       MonitoredStopVisitStructure stopVisit = new MonitoredStopVisitStructure();
       stopVisit.setRecordedAtTime(new Date(lastUpdatedTime));
@@ -268,16 +264,17 @@ public class RealtimeServiceImpl implements RealtimeService {
     }
     
     Collections.sort(output, new Comparator<MonitoredStopVisitStructure>() {
-      public int compare(MonitoredStopVisitStructure arg0, MonitoredStopVisitStructure arg1) {
-        try {
-          SiriExtensionWrapper wrapper0 = (SiriExtensionWrapper)arg0.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getAny();
-          SiriExtensionWrapper wrapper1 = (SiriExtensionWrapper)arg1.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getAny();
-          return wrapper0.getDistances().getDistanceFromCall().compareTo(wrapper1.getDistances().getDistanceFromCall());
-        } catch(Exception e) {
-          return -1;
+        public int compare(MonitoredStopVisitStructure arg0, MonitoredStopVisitStructure arg1) {
+          try {
+            Date expectedArrival0 = arg0.getMonitoredVehicleJourney().getMonitoredCall().getExpectedArrivalTime();
+    		Date expectedArrival1 = arg1.getMonitoredVehicleJourney().getMonitoredCall().getExpectedArrivalTime();
+            return expectedArrival0.compareTo(expectedArrival1);
+          } catch(Exception e) {
+            return -1;
+          }
         }
-      }
-    });
+      });
+    
     
     return output;
   }
@@ -419,8 +416,8 @@ public class RealtimeServiceImpl implements RealtimeService {
   private List<ArrivalAndDepartureBean> getArrivalsAndDeparturesForStop(String stopId, long currentTime) {
     ArrivalsAndDeparturesQueryBean query = new ArrivalsAndDeparturesQueryBean();
     query.setTime(currentTime);
-    query.setMinutesBefore(5 * 60);
-    query.setMinutesAfter(5 * 60);
+    query.setMinutesBefore(1);
+    query.setMinutesAfter(2 * 60);
     
     StopWithArrivalsAndDeparturesBean stopWithArrivalsAndDepartures =
       _transitDataService.getStopWithArrivalsAndDepartures(stopId, query);

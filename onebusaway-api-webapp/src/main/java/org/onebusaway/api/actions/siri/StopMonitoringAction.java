@@ -212,11 +212,8 @@ public class StopMonitoringAction extends ApiActionSupport
       MonitoredVehicleJourneyStructure journey = visit.getMonitoredVehicleJourney();
 
       AgencyAndId thisRouteId = AgencyAndIdLibrary.convertFromString(journey.getLineRef().getValue());
-      String thisDirectionId = null;
-      if (journey.getDirectionRef() !=  null) {
-    	  thisDirectionId = journey.getDirectionRef().getValue();
-      }
-      
+      String thisDirectionId = journey.getDirectionRef().getValue();
+
       // user filtering
       if (routeIds.size() > 0 && !routeIds.contains(thisRouteId))
         continue;

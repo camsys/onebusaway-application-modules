@@ -219,7 +219,16 @@
 	color: rgb(100,100,100);
 }
 
+<<<<<<< HEAD
 #bustime .popup a.alert-link {
+=======
+#bustime .popup .scheduleAlert {
+	margin-top: 3px;
+	margin-bottom: 3px;
+}
+
+#bustime .popup a.alert-link, #bustime .popup .scheduleAlert{
+>>>>>>> 5d73d6ae6c8d769aa87bd65ca0ab1df60997dccf
 	color: rgb(225,0,0);
 	background: url("img/alert_icon.png");
 	background-position: 0 100%;
