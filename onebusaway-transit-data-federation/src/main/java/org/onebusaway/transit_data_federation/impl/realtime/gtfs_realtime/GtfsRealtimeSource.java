@@ -296,6 +296,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
         it.remove();
       }
     }
+    _log.info("active vehicles=" + seenVehicles.size() + " for updates=" + updates.size());
   }
 
   private void handleAlerts(FeedMessage alerts) {

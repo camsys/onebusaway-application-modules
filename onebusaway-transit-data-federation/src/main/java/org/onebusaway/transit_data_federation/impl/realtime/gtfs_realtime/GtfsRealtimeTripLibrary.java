@@ -21,6 +21,7 @@ import org.onebusaway.collections.MappingLibrary;
 import org.onebusaway.collections.Min;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
+import org.onebusaway.gtfs.serialization.mappings.InvalidStopTimeException;
 import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
@@ -316,6 +317,7 @@ class GtfsRealtimeTripLibrary {
     record.setTimeOfRecord(currentTime());
 
     BlockDescriptor blockDescriptor = update.block;
+    if (update.block == null) return null;
 
     record.setBlockId(blockDescriptor.getBlockInstance().getBlock().getBlock().getId());
 
@@ -389,7 +391,7 @@ class GtfsRealtimeTripLibrary {
     BlockInstance instance;
     
     BlockEntry block = tripEntry.getBlock();
-    if (trip.hasStartDate()) {
+    if (trip.hasStartDate() && ! "0".equals(trip.getStartDate())) {
     	try {
     		serviceDate = ServiceDate.parseString(trip.getStartDate());
     	} catch (ParseException ex) {
@@ -433,9 +435,15 @@ class GtfsRealtimeTripLibrary {
     BlockDescriptor blockDescriptor = new BlockDescriptor();
     blockDescriptor.setBlockInstance(instance);
     blockDescriptor.setStartDate(serviceDate);
-    if (trip.hasStartTime()) {
-    	int tripStartTime = StopTimeFieldMappingFactory.getStringAsSeconds(trip.getStartTime());
-    	int blockStartTime = getBlockStartTimeForTripStartTime(instance,
+    int tripStartTime = 0;
+    int blockStartTime = 0;
+    if (trip.hasStartTime() && !"0".equals(trip.getStartTime())) {
+    	try {
+    		tripStartTime = StopTimeFieldMappingFactory.getStringAsSeconds(trip.getStartTime());
+    	} catch (InvalidStopTimeException iste) {
+    		_log.error("invalid stopTime of " + trip.getStartTime() + " for trip " + trip);
+    	}
+    	blockStartTime = getBlockStartTimeForTripStartTime(instance,
     			tripEntry.getId(), tripStartTime);
     	
     	blockDescriptor.setStartTime(blockStartTime);
@@ -535,7 +543,7 @@ class GtfsRealtimeTripLibrary {
         // match by stop id if possible
 
       } else {
-        _log.warn("StopTimeSequence is out of bounds: stopSequence="
+        _log.debug("StopTimeSequence is out of bounds: stopSequence="
             + stopSequence + " tripUpdate=\n" + tripUpdate);
       }
     }
