@@ -105,7 +105,9 @@ class GtfsRealtimeEntitySource {
       if (trip != null)
         return trip;
     }
-
+    
+    _log.warn("trip not found in configured agencies: " + tripId + " (" + _agencyIds + ")");
+    
     try {
       AgencyAndId id = AgencyAndId.convertFromString(tripId);
       TripEntry trip = _transitGraphDao.getTripEntryForId(id);

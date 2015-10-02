@@ -8,7 +8,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
     <bean id="dataSource"
           class="org.springframework.jndi.JndiObjectFactoryBean">
       <property name="jndiName"
-                value="java:comp/env/jdbc/hartDB"/>   
+                value="java:comp/env/jdbc/appDB"/>   
       <property name="lookupOnStartup"
                 value="true"/>   
       <property name="cache"
@@ -23,29 +23,66 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
       <property name="order" value="-2" />
       <property name="properties">
           <props>
-              <prop key="bundlePath">/var/lib/obanyc/oba-hart-bundle</prop>
+              <prop key="bundlePath">/var/lib/oba/wmata/bundle</prop>
          </props>
       </property>
     </bean>
     
-    <bean class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
-    <property name="tripUpdatesUrl" value="http://realtime.prod.obahart.org:8088/trip-updates" />
-    <property name="vehiclePositionsUrl" value="http://realtime.prod.obahart.org:8088/vehicle-positions" />
-    <property name="refreshInterval" value="30" />
-    <property name="agencyId" value="Hillsborough Area Regional Transit" />
+<!--     <bean class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource"> -->
+<!--     <property name="tripUpdatesUrl" value="http://realtime.prod.obahart.org:8088/trip-updates" /> -->
+<!--     <property name="vehiclePositionsUrl" value="http://realtime.prod.obahart.org:8088/vehicle-positions" /> -->
+<!--     <property name="refreshInterval" value="30" /> -->
+<!--     <property name="agencyId" value="Hillsborough Area Regional Transit" /> -->
+<!--   	</bean> -->
+
+	<bean class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
+    	<property name="tripUpdatesUrl" value="http://localhost:8080/api/v1/key/8a3273b0/agency/1/command/gtfs-rt/tripUpdates" />
+    	<property name="vehiclePositionsUrl" value="http://localhost:8080/api/v1/key/8a3273b0/agency/1/command/gtfs-rt/vehiclePositions" />
+    	<property name="refreshInterval" value="30" />	
+<!--     	<property name="agencyId" value="2" /> -->
+    	<property name="agencyIds" >
+    		<list>
+    			<value>2</value>
+    			<value>1</value>
+    		</list>
+    	</property>
   	</bean>
+<!--     <bean class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource"> -->
+<!--     	<property name="tripUpdatesUrl" value="http://gtfsrt.dev.wmata.obaweb.org:8080/api/v1/key/8a3273b0/agency/1/command/gtfs-rt/tripUpdates" /> -->
+<!--     	<property name="vehiclePositionsUrl" value="http://gtfsrt.dev.wmata.obaweb.org:8080/api/v1/key/8a3273b0/agency/1/command/gtfs-rt/vehiclePositions" /> -->
+<!--     	<property name="refreshInterval" value="30" /> -->
+<!--     	<property name="agencyIds" > -->
+<!--     		<list> -->
+<!--     			<value>1</value> -->
+<!--     			<value>2</value> -->
+<!--       			<value>MET</value> -->
+<!--     			<value>DC</value> -->
+    			
+<!--     		</list> -->
+<!--     	</property> -->
+<!--   	</bean> -->
+        
     
-    
+<!--     <bean id="httpServiceClient" class="org.onebusaway.transit_data_federation.util.HttpServiceClientImpl" > -->
+<!--       <constructor-arg type="java.lang.String" value="admin.staging.obahart.org"/> -->
+<!--       <constructor-arg type="java.lang.Integer" value="9999" /> -->
+<!--       <constructor-arg type="java.lang.String" value="/api/" /> -->
+<!--     </bean> -->
+<!--     <bean id="httpServiceClient" class="org.onebusaway.transit_data_federation.util.HttpServiceClientImpl" > -->
+<!--       <constructor-arg type="java.lang.String" value="localhost"/> -->
+<!--       <constructor-arg type="java.lang.Integer" value="9999" /> -->
+<!--       <constructor-arg type="java.lang.String" value="/api/" /> -->
+<!--     </bean> -->
+
     <bean id="httpServiceClient" class="org.onebusaway.transit_data_federation.util.HttpServiceClientImpl" >
-      <constructor-arg type="java.lang.String" value="admin.staging.obahart.org"/>
-      <constructor-arg type="java.lang.Integer" value="9999" />
+      <constructor-arg type="java.lang.String" value="admin.dev.wmata.obaweb.org"/>
+      <constructor-arg type="java.lang.Integer" value="8080" />
       <constructor-arg type="java.lang.String" value="/api/" />
     </bean>
-    
+
     <bean id="refreshService" class="org.onebusaway.container.refresh.RefreshServiceImpl" />
-    
     <bean id="bundleManagementService" class="org.onebusaway.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
       <property name="bundleStoreRoot" value="${bundlePath}" />
-      <property name="standaloneMode" value="true" />
+      <property name="standaloneMode" value="false" />
     </bean>
 </beans>

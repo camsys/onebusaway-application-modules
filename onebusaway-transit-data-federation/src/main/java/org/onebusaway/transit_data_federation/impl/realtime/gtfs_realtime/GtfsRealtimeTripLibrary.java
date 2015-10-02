@@ -220,11 +220,13 @@ class GtfsRealtimeTripLibrary {
           trip, true);
       totalTrips++;
       if (blockDescriptor == null) {
+    	_log.debug("no block for trip " + trip.getTripId());
         unknownTrips++;
         continue;
       }
 
       if (!hasDelayValue(tripUpdate)) {
+    	  _log.error("no delay value for trip " + trip.getTripId());
         continue;
       }
 
@@ -232,7 +234,7 @@ class GtfsRealtimeTripLibrary {
     }
 
     if (unknownTrips > 0) {
-      _log.warn("unknown/total trips= {}/{}", 
+      _log.warn("(1) unknown/total trips= {}/{}", 
           unknownTrips, totalTrips);
     }
 
