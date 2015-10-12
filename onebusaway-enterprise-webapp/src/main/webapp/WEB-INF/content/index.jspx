@@ -134,12 +134,12 @@
 		  		</div>	  	
 		  			
 		   	  	<ul>
-		   	  		<s:url var="url" namespace="/m" action="index"/>
+		   	  		<s:url var="url" namespace="/" action="m"/>
 					<li id="link_mobile" aria-label="Text only version"><a href="${url}">Text / Mobile</a></li>
 		    	  	
 					<s:url var="url" namespace="/wiki" action="About"/>
 					<li id="link_about"><a href="${url}">About</a></li>
-		
+					
 					<s:url var="url" namespace="/wiki" action="ContactUs"/>
 					<li id="link_contact"><a href="${url}">Contact</a></li>
 		 			    
@@ -203,10 +203,10 @@
 			</s:if>
 	
 			<!-- Include the Google ad -->
-			<c:import url="includes/ad.jspx" />
+			<!-- <c:import url="includes/ad.jspx" /> -->
 		
 		</div>
-		<div class="container clear"><!-- jspx --></div>
+		<!-- <div class="container clear">jspx</div> -->
 	  	<s:url var="url" value="/css/img/google_logo.png"></s:url>
 		<div id="google_translate_element">Google Translate <img id="icon" src="${url}" /></div>
     </div>
@@ -231,7 +231,7 @@
 			    	<p>using:</p>
 			    </li>
 			    <li id="wizard-col3">
-			    	<s:url var="url" namespace="/wiki/Help" action="MobileOverview"/>
+			    	<s:url var="url" namespace="/" action="m"/>
 			    	<a href="${url}" target="_new">
 			    		<p>Mobile Web</p>
 			    		<a rel="popover"><div id="smartphone_img">&amp;nbsp;</div></a>
