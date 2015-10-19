@@ -35,6 +35,7 @@ import java.util.Map;
 
 
 
+
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -53,6 +54,7 @@ import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import com.google.transit.realtime.GtfsRealtime.Position;
 import com.google.transit.realtime.GtfsRealtime.TimeRange;
 import com.google.transit.realtime.GtfsRealtime.TripDescriptor;
+import com.google.transit.realtime.GtfsRealtime.TripDescriptor.ScheduleRelationship;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate.StopTimeEvent;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate.StopTimeUpdate;
@@ -296,7 +298,8 @@ public class FeedServiceImpl implements FeedService {
         TripDescriptor td = buildTripDescriptor(trip);
 				tu.setTrip(td);
 				FeedEntity.Builder entity = FeedEntity.newBuilder();
-				entity.setId((String)trip.get("TripId"));
+			// Use VehicleId for entity Id since that is unique per trip
+				entity.setId((String)trip.get("VehicleId"));  
 				entity.setTripUpdate(tu);
 				feedMessageBuilder.addEntity(entity);
 			}
@@ -369,7 +372,7 @@ public class FeedServiceImpl implements FeedService {
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss.SSSXXX");
             Date parsedDate = df.parse(arrival);
             StopTimeEvent.Builder ste = StopTimeEvent.newBuilder();
-            ste.setTime(parsedDate.getTime());
+            ste.setTime(parsedDate.getTime()/1000);
 
             String stopId = (String) stopTimeUpdate.get("StopId");
             if (stopId != null) {
@@ -421,6 +424,7 @@ public class FeedServiceImpl implements FeedService {
     }   
     
     td.setTripId(tripId);
+    td.setScheduleRelationship(ScheduleRelationship.UNSCHEDULED);
     td.setRouteId(LINK_ROUTE_ID);
     
     return td.build();
