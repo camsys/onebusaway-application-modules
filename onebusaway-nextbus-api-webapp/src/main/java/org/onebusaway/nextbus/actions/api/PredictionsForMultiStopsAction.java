@@ -29,6 +29,7 @@ import org.onebusaway.nextbus.model.nextbus.BodyError;
 import org.onebusaway.nextbus.model.transiTime.Prediction;
 import org.onebusaway.nextbus.model.transiTime.Predictions;
 import org.onebusaway.nextbus.model.transiTime.PredictionsDirection;
+import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
 
@@ -108,8 +109,10 @@ public class PredictionsForMultiStopsAction extends NextBusApiBase implements
 
   }
   
-  private void modifyJSONObject(List<Predictions> predictions){
+  private void modifyJSONObject(List<Predictions> predictions) {
+    AgencyBean agencyBean = _transitDataService.getAgency(agencyId);
     for (Predictions prediction : predictions) {
+      prediction.setAgencyTitle(agencyBean.getName());
       for (PredictionsDirection direction : prediction.getDest()) {
         for (Prediction dirPrediction : direction.getPred()) {
           dirPrediction.setDirTag(direction.getDir());
