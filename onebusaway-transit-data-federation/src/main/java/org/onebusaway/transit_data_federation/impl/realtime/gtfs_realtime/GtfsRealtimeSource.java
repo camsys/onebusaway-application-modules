@@ -15,28 +15,19 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
+import com.google.protobuf.ExtensionRegistry;
+import com.google.transit.realtime.GtfsRealtime.Alert;
+import com.google.transit.realtime.GtfsRealtime.FeedEntity;
+import com.google.transit.realtime.GtfsRealtime.FeedHeader;
+import com.google.transit.realtime.GtfsRealtime.FeedMessage;
+import com.google.transit.realtime.GtfsRealtimeConstants;
+import com.google.transit.realtime.GtfsRealtimeOneBusAway;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
+import org.onebusaway.transit_data.model.service_alerts.ECause;
+import org.onebusaway.transit_data.model.service_alerts.ESeverity;
+import org.onebusaway.transit_data_federation.impl.service_alerts.*;
 import org.onebusaway.transit_data_federation.services.AgencyService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts;
@@ -47,14 +38,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.protobuf.ExtensionRegistry;
-import com.google.transit.realtime.GtfsRealtime.Alert;
-import com.google.transit.realtime.GtfsRealtime.FeedEntity;
-import com.google.transit.realtime.GtfsRealtime.FeedHeader;
-import com.google.transit.realtime.GtfsRealtime.FeedMessage;
-import com.google.transit.realtime.GtfsRealtime.TripUpdate;
-import com.google.transit.realtime.GtfsRealtimeConstants;
-import com.google.transit.realtime.GtfsRealtimeOneBusAway;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class GtfsRealtimeSource implements MonitoredDataSource {
 
@@ -316,11 +308,150 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
         ServiceAlert existingAlert = _alertsById.get(id);
         if (existingAlert == null || !existingAlert.equals(serviceAlert)) {
           _alertsById.put(id, serviceAlert);
-          _serviceAlertService.createOrUpdateServiceAlert(serviceAlertBuilder,
-              _agencyIds.get(0));
+
+          ServiceAlertRecord serviceAlertRecord = new ServiceAlertRecord();
+          serviceAlertRecord.setAgencyId(_agencyIds.get(0));
+          serviceAlertRecord.setActiveWindows(new ArrayList<ServiceAlertTimeRange>());
+          if(serviceAlert.getActiveWindowList() != null){
+            for(ServiceAlerts.TimeRange timeRange : serviceAlert.getActiveWindowList()){
+              ServiceAlertTimeRange serviceAlertTimeRange = new ServiceAlertTimeRange();
+              serviceAlertTimeRange.setFrom(timeRange.getStart());
+              serviceAlertTimeRange.setTo(timeRange.getEnd());
+              serviceAlertRecord.getActiveWindows().add(serviceAlertTimeRange);
+            }
+          }
+
+          serviceAlertRecord.setAllAffects(new ArrayList<ServiceAlertsSituationAffectsClause>());
+          if(serviceAlert.getAffectsList() != null){
+            for(ServiceAlerts.Affects affects : serviceAlertBuilder.getAffectsList()){
+              ServiceAlertsSituationAffectsClause serviceAlertsSituationAffectsClause = new ServiceAlertsSituationAffectsClause();
+              serviceAlertsSituationAffectsClause.setAgencyId(affects.getAgencyId());
+              serviceAlertsSituationAffectsClause.setApplicationId(affects.getApplicationId());
+              serviceAlertsSituationAffectsClause.setDirectionId(affects.getDirectionId());
+              serviceAlertsSituationAffectsClause.setRouteId(affects.getRouteId().getId());
+              serviceAlertsSituationAffectsClause.setStopId(affects.getTripId().getId());
+              serviceAlertsSituationAffectsClause.setTripId(affects.getTripId().getId());
+              serviceAlertRecord.getAllAffects().add(serviceAlertsSituationAffectsClause);
+            }
+          }
+
+          serviceAlertRecord.setCause(getECause(serviceAlert.getCause()));
+          serviceAlertRecord.setConsequences(new ArrayList<ServiceAlertSituationConsequenceClause>());
+          if(serviceAlert.getConsequenceList() != null){
+            for(ServiceAlerts.Consequence consequence : serviceAlert.getConsequenceList()){
+              ServiceAlertSituationConsequenceClause serviceAlertSituationConsequenceClause = new ServiceAlertSituationConsequenceClause();
+              serviceAlertSituationConsequenceClause.setDetourPath(consequence.getDetourPath());
+              serviceAlertSituationConsequenceClause.setDetourStopIds(new ArrayList<String>());
+              if(consequence.getDetourStopIdsList() != null){
+                for(ServiceAlerts.Id stopId : consequence.getDetourStopIdsList()){
+                  serviceAlertSituationConsequenceClause.getDetourStopIds().add(stopId.getId());
+                }
+              }
+              serviceAlertRecord.getConsequences().add(serviceAlertSituationConsequenceClause);
+            }
+          }
+
+          serviceAlertRecord.setCreationTime(serviceAlert.getCreationTime());
+          serviceAlertRecord.setDescriptions(
+              new ArrayList<ServiceAlertLocalizedString>());
+          if(serviceAlert.getDescription() != null){
+            for(ServiceAlerts.TranslatedString.Translation translation : serviceAlert.getDescription().getTranslationList()){
+              ServiceAlertLocalizedString string = new ServiceAlertLocalizedString();
+              string.setValue(translation.getText());
+              string.setLanguage(translation.getLanguage());
+              serviceAlertRecord.getDescriptions().add(string);
+            }
+          }
+
+          serviceAlertRecord.setModifiedTime(serviceAlert.getModifiedTime());
+          serviceAlertRecord.setPublicationWindows(new ArrayList<ServiceAlertTimeRange>());
+
+          serviceAlertRecord.setServiceAlertId(serviceAlert.getId().getId());
+          serviceAlertRecord.setSeverity(getESeverity(serviceAlert.getSeverity()));
+          serviceAlertRecord.setSource(serviceAlert.getSource());
+
+          serviceAlertRecord.setSummaries(new ArrayList<ServiceAlertLocalizedString>());
+          if(serviceAlert.getSummary() != null){
+            for(ServiceAlerts.TranslatedString.Translation translation : serviceAlert.getSummary().getTranslationList()){
+              ServiceAlertLocalizedString string = new ServiceAlertLocalizedString();
+              string.setValue(translation.getText());
+              string.setLanguage(translation.getLanguage());
+              serviceAlertRecord.getSummaries().add(string);
+            }
+          }
+
+          serviceAlertRecord.setUrls(new ArrayList<ServiceAlertLocalizedString>());
+          if(serviceAlert.getUrl() != null){
+            for(ServiceAlerts.TranslatedString.Translation translation : serviceAlert.getUrl().getTranslationList()){
+              ServiceAlertLocalizedString string = new ServiceAlertLocalizedString();
+              string.setValue(translation.getText());
+              string.setLanguage(translation.getLanguage());
+              serviceAlertRecord.getUrls().add(string);
+            }
+          }
+
+          _serviceAlertService.createOrUpdateServiceAlert(serviceAlertRecord);
         }
       }
     }
+  }
+
+  private ESeverity getESeverity(ServiceAlert.Severity severity){
+    if(severity == ServiceAlert.Severity.NO_IMPACT)
+      return ESeverity.NO_IMPACT;
+    if(severity == ServiceAlert.Severity.NORMAL)
+      return ESeverity.NORMAL;
+    if(severity == ServiceAlert.Severity.SEVERE)
+      return ESeverity.SEVERE;
+    if(severity == ServiceAlert.Severity.SLIGHT)
+      return ESeverity.SLIGHT;
+    if(severity == ServiceAlert.Severity.UNKNOWN)
+      return ESeverity.UNKNOWN;
+    if(severity == ServiceAlert.Severity.VERY_SEVERE)
+      return ESeverity.VERY_SEVERE;
+    if(severity == ServiceAlert.Severity.VERY_SLIGHT)
+      return ESeverity.VERY_SLIGHT;
+    return ESeverity.UNKNOWN;
+  }
+
+  private ECause getECause(ServiceAlert.Cause cause){
+    if(cause == ServiceAlert.Cause.UNKNOWN_CAUSE){
+      return ECause.UNKNOWN_CAUSE;
+    }
+    if(cause == ServiceAlert.Cause.OTHER_CAUSE){
+      return ECause.OTHER_CAUSE;
+    }
+    if(cause == ServiceAlert.Cause.TECHNICAL_PROBLEM){
+      return ECause.TECHNICAL_PROBLEM;
+    }
+    if(cause == ServiceAlert.Cause.STRIKE){
+      return ECause.STRIKE;
+    }
+    if(cause == ServiceAlert.Cause.DEMONSTRATION){
+      return ECause.DEMONSTRATION;
+    }
+    if(cause == ServiceAlert.Cause.ACCIDENT){
+      return ECause.ACCIDENT;
+    }
+    if(cause == ServiceAlert.Cause.HOLIDAY){
+      return ECause.HOLIDAY;
+    }
+    if(cause == ServiceAlert.Cause.WEATHER){
+      return ECause.WEATHER;
+    }
+    if(cause == ServiceAlert.Cause.MAINTENANCE){
+      return ECause.MAINTENANCE;
+    }
+    if(cause == ServiceAlert.Cause.CONSTRUCTION){
+      return ECause.CONSTRUCTION;
+    }
+    if(cause == ServiceAlert.Cause.POLICE_ACTIVITY){
+      return ECause.POLICE_ACTIVITY;
+    }
+    if(cause == ServiceAlert.Cause.MEDICAL_EMERGENCY){
+      return ECause.MEDICAL_EMERGENCY;
+    }
+    return ECause.UNKNOWN_CAUSE;
   }
 
   private AgencyAndId createId(String id) {

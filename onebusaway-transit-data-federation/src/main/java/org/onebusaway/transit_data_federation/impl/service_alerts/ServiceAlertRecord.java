@@ -15,20 +15,16 @@
  */
 package org.onebusaway.transit_data_federation.impl.service_alerts;
 
-import java.util.List;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Lob;
-import javax.persistence.Table;
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Index;
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.ServiceAlert;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.onebusaway.transit_data.model.service_alerts.ECause;
+import org.onebusaway.transit_data.model.service_alerts.ESeverity;
+
+import javax.persistence.*;
+import java.util.List;
+
 /**
  * A Service Alert record is a database-serializable record that captures the
  * real-time service alerts from different agencies on a particular route.
@@ -40,157 +36,174 @@ import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAle
  */
 @Entity
 @Table(name = "transit_data_service_alerts_records")
-@org.hibernate.annotations.Table(appliesTo = "transit_data_service_alerts_records", indexes = {
-	    @Index(name = "service_alert_idx", columnNames = {
-	    		"id","service_alert_id", "service_alert", "last_modified"})})
-	@org.hibernate.annotations.Entity(mutable = true)
-	@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class ServiceAlertRecord {
-	
 
-  public ServiceAlertRecord(String serviceAlertId, ServiceAlert serviceAlert, AgencyAndId agencyId, long lastModified) {
-    super();
-    this.serviceAlertId = serviceAlertId;
-    this.serviceAlert = serviceAlert;
-    this.agencyId = agencyId;
-    this.lastModified = lastModified;
-  }
+  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER, mappedBy = "serviceAlertRecord")
+  @Fetch(value = FetchMode.SUBSELECT)
+  private List<ServiceAlertTimeRange> activeWindows;
 
-  public ServiceAlertRecord(String serviceAlertId, ServiceAlert serviceAlert, AgencyAndId agencyId) {
-		super();
-		this.serviceAlertId = serviceAlertId;
-		this.serviceAlert = serviceAlert;
-		this.agencyId = agencyId;
-		this.lastModified = System.currentTimeMillis();
-	}
-	
-	public ServiceAlertRecord() {		
-		this.serviceAlertId = null;
-		this.serviceAlert = null;
-		this.agencyId = null;
-		this.lastModified = System.currentTimeMillis();
-	}
+  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER, mappedBy = "serviceAlertRecord")
+  @Fetch(value = FetchMode.SUBSELECT)
+  private List<ServiceAlertTimeRange> publicationWindows;
+
+  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER, mappedBy = "serviceAlertRecord")
+  @Fetch(value = FetchMode.SUBSELECT)
+  private List<ServiceAlertLocalizedString> summaries;
+
+  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER, mappedBy = "serviceAlertRecord")
+  @Fetch(value = FetchMode.SUBSELECT)
+  private List<ServiceAlertLocalizedString> descriptions;
+
+  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER, mappedBy = "serviceAlertRecord")
+  @Fetch(value = FetchMode.SUBSELECT)
+  private List<ServiceAlertLocalizedString> urls;
+
+  @OneToMany(cascade = {CascadeType.ALL}, mappedBy = "serviceAlertRecord", fetch = FetchType.EAGER)
+  @Fetch(value = FetchMode.SUBSELECT)
+  private List<ServiceAlertsSituationAffectsClause> allAffects;
+
+  @OneToMany(cascade = {CascadeType.ALL}, mappedBy = "serviceAlertRecord", fetch = FetchType.EAGER)
+  @Fetch(value = FetchMode.SUBSELECT)
+  private List<ServiceAlertSituationConsequenceClause> consequences;
+
+  @Enumerated(EnumType.STRING)
+  private ESeverity severity;
+
+  @Enumerated(EnumType.STRING)
+  private ECause cause;
+
+  private String source;
 
 	@Id
 	@GeneratedValue
 	private final int id = 0;
-	
-	@Column(nullable = false, name="agency_id", length = 255)
-	@Lob
-	private AgencyAndId agencyId;
-	
+
+  private String agencyId;
+
 	@Column(nullable = false, name="service_alert_id", length = 255)
 	private String serviceAlertId;
-	
-	@Column(nullable = false, name="service_alert")
-	@Lob
-	private ServiceAlert serviceAlert;	
 
-	// the column is nullable for backwards comparability, but it will return 0 internally
-	@Column(nullable = true, name="last_modified")
-	private Long lastModified = 0l;
-	
-	public String getServiceAlertId() {
-		return serviceAlertId;
-	}
+  private Long creationTime;
 
-	public void setServiceAlertId(String serviceAlertId) {
-		this.serviceAlertId = serviceAlertId;
-	}
+  private Long modifiedTime;
 
-  public ServiceAlert getServiceAlert() {
-		return serviceAlert;
-	}
-
-	public void setServiceAlert(ServiceAlert serviceAlert) {
-		this.serviceAlert = serviceAlert;
-	}
-
-  /**
-	 * @return the agencyId
-	 */
-	public AgencyAndId getAgencyId() {
-		return agencyId;
-	}
-
-	/**
-	 * @param agencyId the agencyId to set
-	 */
-	public void setAgencyId(AgencyAndId agencyId) {
-		this.agencyId = agencyId;
-	}
-
-  public int getId() {
-		return id;
-	}
-
-	public void setLastModified(long lastModified) {
-	  this.lastModified = lastModified;
-	}
-	
-  public long getLastModified() {
-    if (lastModified == null) return 0;
-    return lastModified;
+  public Long getModifiedTime() {
+    return modifiedTime;
   }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "ServiceAlertRecord [id=" + id + ", agencyId=" + agencyId
-				+ ", serviceAlertId=" + serviceAlertId + ", serviceAlert="
-				+ serviceAlert + "]";
-	}
+  public void setModifiedTime(long modifiedTime) {
+    this.modifiedTime = modifiedTime;
+  }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((agencyId == null) ? 0 : agencyId.hashCode());
-		result = prime * result + id;
-		result = prime * result
-				+ ((serviceAlert == null) ? 0 : serviceAlert.hashCode());
-		result = prime * result
-				+ ((serviceAlertId == null) ? 0 : serviceAlertId.hashCode());
-		return result;
-	}
+  public List<ServiceAlertTimeRange> getActiveWindows() {
+    return activeWindows;
+  }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		ServiceAlertRecord other = (ServiceAlertRecord) obj;
-		if (agencyId == null) {
-			if (other.agencyId != null)
-				return false;
-		} else if (!agencyId.equals(other.agencyId))
-			return false;
-		if (id != other.id)
-			return false;
-		if (serviceAlert == null) {
-			if (other.serviceAlert != null)
-				return false;
-		} else if (!serviceAlert.equals(other.serviceAlert))
-			return false;
-		if (serviceAlertId == null) {
-			if (other.serviceAlertId != null)
-				return false;
-		} else if (!serviceAlertId.equals(other.serviceAlertId))
-			return false;
-		return true;
-	}	
-	
+  public void setActiveWindows(List<ServiceAlertTimeRange> activeWindows) {
+    this.activeWindows = activeWindows;
+  }
+
+  public List<ServiceAlertTimeRange> getPublicationWindows() {
+    return publicationWindows;
+  }
+
+  public void setPublicationWindows(
+      List<ServiceAlertTimeRange> publicationWindows) {
+    this.publicationWindows = publicationWindows;
+  }
+
+  public List<ServiceAlertLocalizedString> getSummaries() {
+    return summaries;
+  }
+
+  public void setSummaries(List<ServiceAlertLocalizedString> summaries) {
+    this.summaries = summaries;
+  }
+
+  public List<ServiceAlertLocalizedString> getDescriptions() {
+    return descriptions;
+  }
+
+  public void setDescriptions(List<ServiceAlertLocalizedString> descriptions) {
+    this.descriptions = descriptions;
+  }
+
+  public List<ServiceAlertLocalizedString> getUrls() {
+    return urls;
+  }
+
+  public void setUrls(List<ServiceAlertLocalizedString> urls) {
+    this.urls = urls;
+  }
+
+  public List<ServiceAlertsSituationAffectsClause> getAllAffects() {
+    return allAffects;
+  }
+
+  public void setAllAffects(
+      List<ServiceAlertsSituationAffectsClause> allAffects) {
+    this.allAffects = allAffects;
+  }
+
+  public List<ServiceAlertSituationConsequenceClause> getConsequences() {
+    return consequences;
+  }
+
+  public void setConsequences(
+      List<ServiceAlertSituationConsequenceClause> consequences) {
+    this.consequences = consequences;
+  }
+
+  public ESeverity getSeverity() {
+    return severity;
+  }
+
+  public void setSeverity(ESeverity severity) {
+    this.severity = severity;
+  }
+
+  public ECause getCause() {
+    return cause;
+  }
+
+  public void setCause(ECause cause) {
+    this.cause = cause;
+  }
+
+  public String getSource() {
+    return source;
+  }
+
+  public void setSource(String source) {
+    this.source = source;
+  }
+
+  public int getId() {
+    return id;
+  }
+
+  public String getAgencyId() {
+    return agencyId;
+  }
+
+  public void setAgencyId(String agencyId) {
+    this.agencyId = agencyId;
+  }
+
+  public String getServiceAlertId() {
+    return serviceAlertId;
+  }
+
+  public void setServiceAlertId(String serviceAlertId) {
+    this.serviceAlertId = serviceAlertId;
+  }
+
+  public long getCreationTime() {
+    return creationTime;
+  }
+
+  public void setCreationTime(long creationTime) {
+    this.creationTime = creationTime;
+  }
 }

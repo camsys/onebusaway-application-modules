@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*
 package org.onebusaway.transit_data_federation.impl.service_alerts;
 
 import static org.junit.Assert.assertEquals;
@@ -276,9 +277,11 @@ public class ServiceAlertsServiceImplTest extends AbstractTransactionalJUnit4Spr
   @Test
   public void testGetServiceAlertsForStopCall() {
 
-    /**
+    */
+/**
      * These alerts should match
-     */
+     *//*
+
     ServiceAlert.Builder builder1 = ServiceAlert.newBuilder();
     Affects.Builder affects1 = Affects.newBuilder();
     affects1.setStopId(ServiceAlertLibrary.id("1", "10020"));
@@ -309,9 +312,11 @@ public class ServiceAlertsServiceImplTest extends AbstractTransactionalJUnit4Spr
     ServiceAlert serviceAlert4 = _service.createOrUpdateServiceAlert(builder4,
         "1");
 
-    /**
+    */
+/**
      * These alerts shouldn't match
-     */
+     *//*
+
     ServiceAlert.Builder builder5 = ServiceAlert.newBuilder();
     Affects.Builder affects5 = Affects.newBuilder();
     affects5.setStopId(ServiceAlertLibrary.id("1", "10021"));
@@ -390,9 +395,11 @@ public class ServiceAlertsServiceImplTest extends AbstractTransactionalJUnit4Spr
   @Test
   public void testGetServiceAlertsForVehicleJourney() {
 
-    /**
+    */
+/**
      * These alerts should match
-     */
+     *//*
+
     ServiceAlert.Builder builder2 = ServiceAlert.newBuilder();
     Affects.Builder affects2 = Affects.newBuilder();
     affects2.setTripId(ServiceAlertLibrary.id("1", "TripA"));
@@ -415,9 +422,11 @@ public class ServiceAlertsServiceImplTest extends AbstractTransactionalJUnit4Spr
     ServiceAlert serviceAlert4 = _service.createOrUpdateServiceAlert(builder4,
         "1");
 
-    /**
+    */
+/**
      * These alerts shouldn't match
-     */
+     *//*
+
     ServiceAlert.Builder builder1 = ServiceAlert.newBuilder();
     Affects.Builder affects1 = Affects.newBuilder();
     affects1.setStopId(ServiceAlertLibrary.id("1", "10020"));
@@ -679,4 +688,4 @@ public class ServiceAlertsServiceImplTest extends AbstractTransactionalJUnit4Spr
     assertEquals(0, alerts.size());
 
   }
-}
+}*/
