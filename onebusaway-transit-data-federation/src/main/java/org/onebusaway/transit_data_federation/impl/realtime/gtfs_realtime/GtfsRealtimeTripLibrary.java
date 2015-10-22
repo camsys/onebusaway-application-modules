@@ -125,6 +125,7 @@ class GtfsRealtimeTripLibrary {
 
     for (FeedEntity fe : tripUpdateMessage.getEntityList()) {
       if (!fe.hasTripUpdate()) {
+    	_log.debug("discarding trip update without trip");
         continue;
       }
 
@@ -175,6 +176,7 @@ class GtfsRealtimeTripLibrary {
 
     for (FeedEntity fe : vehiclePositionsMessage.getEntityList()) {
       if (!fe.hasVehicle()) {
+    	_log.debug("tossing fe with no vehilce:", fe.getId());
         continue;
       }
 
@@ -314,7 +316,7 @@ class GtfsRealtimeTripLibrary {
 
 
     VehicleLocationRecord record = new VehicleLocationRecord();
-    record.setTimeOfRecord(currentTime());
+    record.setTimeOfRecord(currentTime()); // TODO this should really come from the feed if possible
 
     BlockDescriptor blockDescriptor = update.block;
     if (update.block == null) return null;

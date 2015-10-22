@@ -32,6 +32,8 @@ import org.onebusaway.transit_data_federation.services.realtime.VehicleStatusSer
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +41,8 @@ import org.springframework.stereotype.Component;
 class VehicleStatusServiceImpl implements VehicleLocationListener,
     VehicleStatusService {
 
+  private static final Logger _log = LoggerFactory.getLogger(VehicleStatusServiceImpl.class);
+	
   private ConcurrentHashMap<AgencyAndId, VehicleLocationRecord> _vehicleRecordsById = new ConcurrentHashMap<AgencyAndId, VehicleLocationRecord>();
 
   private TransitGraphDao _transitGraphDao;
@@ -71,8 +75,10 @@ class VehicleStatusServiceImpl implements VehicleLocationListener,
   @Override
   public void handleVehicleLocationRecord(VehicleLocationRecord record) {
 	  record.setPhase(EVehiclePhase.IN_PROGRESS);
-    if (record.getTimeOfRecord() == 0)
+    if (record.getTimeOfRecord() == 0) {
+    	_log.error("missing time of record for vehicle " + record.getVehicleId());
       throw new IllegalArgumentException("you must specify a record time");
+    }
 
     if( record.getVehicleId() != null)
       _vehicleRecordsById.put(record.getVehicleId(), record);
@@ -91,12 +97,15 @@ class VehicleStatusServiceImpl implements VehicleLocationListener,
     }
 
     // TODO : Maybe not require service date?
-    if (blockId != null && record.getServiceDate() != 0)
+    if (blockId != null && record.getServiceDate() != 0) {
       _blockVehicleLocationService.handleVehicleLocationRecord(record);
 
     // if vehicle has no block or has lost it, remove it from the block VLS.
-    else {
+    } else {
+      _log.debug("rejecting vehicle " + record.getVehicleId());
+      
       if(record.getVehicleId() != null) {
+    	_log.debug("resetting vehicle " + record.getVehicleId());
         _blockVehicleLocationService.resetVehicleLocation(record.getVehicleId());
       }
     }

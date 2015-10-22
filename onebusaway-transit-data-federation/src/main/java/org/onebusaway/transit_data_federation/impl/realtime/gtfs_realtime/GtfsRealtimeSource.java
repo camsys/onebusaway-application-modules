@@ -277,6 +277,8 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
         if (prev == null || prev.before(timestamp)) {
           _vehicleLocationListener.handleVehicleLocationRecord(record);
           _lastVehicleUpdate.put(vehicleId, timestamp);
+        } else {
+        _log.debug("discarding vehicle record " + vehicleId + " due to timestamp");
         }
       }
     }
