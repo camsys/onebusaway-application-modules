@@ -31,8 +31,10 @@ class AffectsTripKeyFactory implements AffectsKeyFactory<AgencyAndId> {
     Set<AgencyAndId> tripIds = new HashSet<AgencyAndId>();
 
     for (ServiceAlertsSituationAffectsClause affects : serviceAlert.getAllAffects()) {
+        if (affects.getTripId() != null)
+            System.out.println("trip");
       if (affects.getTripId() != null
-          && !(affects.getAgencyId() != null || affects.getDirectionId() != null
+          && !(affects.getDirectionId() != null
               || affects.getRouteId() != null || affects.getStopId() != null)) {
         AgencyAndId tripId = ServiceAlertLibrary.agencyAndId(serviceAlert.getAgencyId(), affects.getTripId());
         tripIds.add(tripId);

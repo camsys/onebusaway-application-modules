@@ -20,7 +20,8 @@ import org.hibernate.annotations.CollectionOfElements;
 import org.onebusaway.transit_data.model.service_alerts.EEffect;
 
 import javax.persistence.*;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "transit_data_service_alerts_situation_consequence")
@@ -38,7 +39,7 @@ public class ServiceAlertSituationConsequenceClause {
   @CollectionOfElements(
       targetElement = java.lang.String.class
   )
-  private List<String> detourStopIds;
+  private Set<String> detourStopIds = new HashSet<String>();
 
   @ManyToOne
   private ServiceAlertRecord serviceAlertRecord;
@@ -67,11 +68,11 @@ public class ServiceAlertSituationConsequenceClause {
     this.detourPath = detourPath;
   }
 
-  public List<String> getDetourStopIds() {
+  public Set<String> getDetourStopIds() {
     return detourStopIds;
   }
 
-  public void setDetourStopIds(List<String> detourStopIds) {
+  public void setDetourStopIds(Set<String> detourStopIds) {
     this.detourStopIds = detourStopIds;
   }
 

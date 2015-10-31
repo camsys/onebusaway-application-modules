@@ -32,7 +32,7 @@ class AffectsRouteKeyFactory implements AffectsKeyFactory<AgencyAndId> {
 
     for (ServiceAlertsSituationAffectsClause affects : serviceAlert.getAllAffects()) {
       if (affects.getRouteId() != null
-          && !(affects.getAgencyId()  != null || affects.getDirectionId()  != null
+          && !(affects.getDirectionId()  != null
               || affects.getStopId() != null || affects.getTripId() != null)) {
         AgencyAndId routeId = ServiceAlertLibrary.agencyAndId(serviceAlert.getAgencyId(), affects.getRouteId());
         routeIds.add(routeId);

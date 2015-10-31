@@ -17,13 +17,12 @@ package org.onebusaway.transit_data_federation.impl.service_alerts;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.onebusaway.transit_data.model.service_alerts.ECause;
 import org.onebusaway.transit_data.model.service_alerts.ESeverity;
 
 import javax.persistence.*;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A Service Alert record is a database-serializable record that captures the
@@ -39,33 +38,31 @@ import java.util.List;
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class ServiceAlertRecord {
 
-  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER, mappedBy = "serviceAlertRecord")
-  @Fetch(value = FetchMode.SUBSELECT)
-  private List<ServiceAlertTimeRange> activeWindows;
+  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
+  @JoinColumn(name="servicealert_active_window_id", referencedColumnName="id")
+  private Set<ServiceAlertTimeRange> activeWindows = new HashSet<ServiceAlertTimeRange>();
 
-  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER, mappedBy = "serviceAlertRecord")
-  @Fetch(value = FetchMode.SUBSELECT)
-  private List<ServiceAlertTimeRange> publicationWindows;
+  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
+  @JoinColumn(name="servicealert_publication_window_id", referencedColumnName="id")
+  private Set<ServiceAlertTimeRange> publicationWindows = new HashSet<ServiceAlertTimeRange>();
 
-  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER, mappedBy = "serviceAlertRecord")
-  @Fetch(value = FetchMode.SUBSELECT)
-  private List<ServiceAlertLocalizedString> summaries;
+  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
+  @JoinColumn(name="servicealert_summary_id", referencedColumnName="id")
+  private Set<ServiceAlertLocalizedString> summaries = new HashSet<ServiceAlertLocalizedString>();
 
-  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER, mappedBy = "serviceAlertRecord")
-  @Fetch(value = FetchMode.SUBSELECT)
-  private List<ServiceAlertLocalizedString> descriptions;
+  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
+  @JoinColumn(name="servicealert_description_id", referencedColumnName="id")
+  private Set<ServiceAlertLocalizedString> descriptions = new HashSet<ServiceAlertLocalizedString>();
 
-  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER, mappedBy = "serviceAlertRecord")
-  @Fetch(value = FetchMode.SUBSELECT)
-  private List<ServiceAlertLocalizedString> urls;
-
-  @OneToMany(cascade = {CascadeType.ALL}, mappedBy = "serviceAlertRecord", fetch = FetchType.EAGER)
-  @Fetch(value = FetchMode.SUBSELECT)
-  private List<ServiceAlertsSituationAffectsClause> allAffects;
+  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
+  @JoinColumn(name="servicealert_url_id", referencedColumnName="id")
+  private Set<ServiceAlertLocalizedString> urls = new HashSet<ServiceAlertLocalizedString>();
 
   @OneToMany(cascade = {CascadeType.ALL}, mappedBy = "serviceAlertRecord", fetch = FetchType.EAGER)
-  @Fetch(value = FetchMode.SUBSELECT)
-  private List<ServiceAlertSituationConsequenceClause> consequences;
+  private Set<ServiceAlertsSituationAffectsClause> allAffects = new HashSet<ServiceAlertsSituationAffectsClause>();
+
+  @OneToMany(cascade = {CascadeType.ALL}, mappedBy = "serviceAlertRecord", fetch = FetchType.EAGER)
+  private Set<ServiceAlertSituationConsequenceClause> consequences = new HashSet<ServiceAlertSituationConsequenceClause>();
 
   @Enumerated(EnumType.STRING)
   private ESeverity severity;
@@ -84,9 +81,9 @@ public class ServiceAlertRecord {
 	@Column(nullable = false, name="service_alert_id", length = 255)
 	private String serviceAlertId;
 
-  private Long creationTime;
+  private Long creationTime = 0l;
 
-  private Long modifiedTime;
+  private Long modifiedTime = 0l;
 
   public Long getModifiedTime() {
     return modifiedTime;
@@ -96,62 +93,62 @@ public class ServiceAlertRecord {
     this.modifiedTime = modifiedTime;
   }
 
-  public List<ServiceAlertTimeRange> getActiveWindows() {
+  public Set<ServiceAlertTimeRange> getActiveWindows() {
     return activeWindows;
   }
 
-  public void setActiveWindows(List<ServiceAlertTimeRange> activeWindows) {
+  public void setActiveWindows(Set<ServiceAlertTimeRange> activeWindows) {
     this.activeWindows = activeWindows;
   }
 
-  public List<ServiceAlertTimeRange> getPublicationWindows() {
+  public Set<ServiceAlertTimeRange> getPublicationWindows() {
     return publicationWindows;
   }
 
   public void setPublicationWindows(
-      List<ServiceAlertTimeRange> publicationWindows) {
+      Set<ServiceAlertTimeRange> publicationWindows) {
     this.publicationWindows = publicationWindows;
   }
 
-  public List<ServiceAlertLocalizedString> getSummaries() {
+  public Set<ServiceAlertLocalizedString> getSummaries() {
     return summaries;
   }
 
-  public void setSummaries(List<ServiceAlertLocalizedString> summaries) {
+  public void setSummaries(Set<ServiceAlertLocalizedString> summaries) {
     this.summaries = summaries;
   }
 
-  public List<ServiceAlertLocalizedString> getDescriptions() {
+  public Set<ServiceAlertLocalizedString> getDescriptions() {
     return descriptions;
   }
 
-  public void setDescriptions(List<ServiceAlertLocalizedString> descriptions) {
+  public void setDescriptions(Set<ServiceAlertLocalizedString> descriptions) {
     this.descriptions = descriptions;
   }
 
-  public List<ServiceAlertLocalizedString> getUrls() {
+  public Set<ServiceAlertLocalizedString> getUrls() {
     return urls;
   }
 
-  public void setUrls(List<ServiceAlertLocalizedString> urls) {
+  public void setUrls(Set<ServiceAlertLocalizedString> urls) {
     this.urls = urls;
   }
 
-  public List<ServiceAlertsSituationAffectsClause> getAllAffects() {
+  public Set<ServiceAlertsSituationAffectsClause> getAllAffects() {
     return allAffects;
   }
 
   public void setAllAffects(
-      List<ServiceAlertsSituationAffectsClause> allAffects) {
+      Set<ServiceAlertsSituationAffectsClause> allAffects) {
     this.allAffects = allAffects;
   }
 
-  public List<ServiceAlertSituationConsequenceClause> getConsequences() {
+  public Set<ServiceAlertSituationConsequenceClause> getConsequences() {
     return consequences;
   }
 
   public void setConsequences(
-      List<ServiceAlertSituationConsequenceClause> consequences) {
+      Set<ServiceAlertSituationConsequenceClause> consequences) {
     this.consequences = consequences;
   }
 

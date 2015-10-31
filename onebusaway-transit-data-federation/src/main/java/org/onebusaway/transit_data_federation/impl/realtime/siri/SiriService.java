@@ -51,6 +51,7 @@ import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
 import javax.xml.datatype.Duration;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 @Component
@@ -314,13 +315,13 @@ public class SiriService {
 
     ServiceAlertLocalizedString summary = translation(ptSituation.getSummary());
     if(serviceAlert.getSummaries() == null)
-      serviceAlert.setSummaries(new ArrayList<ServiceAlertLocalizedString>());
+      serviceAlert.setSummaries(new HashSet<ServiceAlertLocalizedString>());
     if (summary != null)
       serviceAlert.getSummaries().add(summary);
 
     ServiceAlertLocalizedString description = translation(ptSituation.getDescription());
     if(serviceAlert.getDescriptions() == null)
-      serviceAlert.setDescriptions(new ArrayList<ServiceAlertLocalizedString>());
+      serviceAlert.setDescriptions(new HashSet<ServiceAlertLocalizedString>());
     if (description != null)
       serviceAlert.getDescriptions().add(description);
   }
@@ -338,12 +339,12 @@ public class SiriService {
       HalfOpenTimestampRangeStructure window = ptSituation.getPublicationWindow();
       ServiceAlertTimeRange range = new ServiceAlertTimeRange();
       if (window.getStartTime() != null)
-        range.setFrom(window.getStartTime().getTime());
+        range.setFromValue(window.getStartTime().getTime());
       if (window.getEndTime() != null)
-        range.setTo(window.getEndTime().getTime());
+        range.setToValue(window.getEndTime().getTime());
       if(serviceAlert.getActiveWindows() == null)
-        serviceAlert.setActiveWindows(new ArrayList<ServiceAlertTimeRange>());
-      if (range.getFrom() != null || range.getTo() != null)
+        serviceAlert.setActiveWindows(new HashSet<ServiceAlertTimeRange>());
+      if (range.getFromValue() != null || range.getToValue() != null)
         serviceAlert.getActiveWindows().add(range);
     }
   }
@@ -433,7 +434,7 @@ public class SiriService {
         ServiceAlertsSituationAffectsClause affects = new ServiceAlertsSituationAffectsClause();
         affects.setAgencyId(agencyId);
         if(serviceAlert.getAllAffects() == null)
-          serviceAlert.setAllAffects(new ArrayList<ServiceAlertsSituationAffectsClause>());
+          serviceAlert.setAllAffects(new HashSet<ServiceAlertsSituationAffectsClause>());
         serviceAlert.getAllAffects().add(affects);
       }
     }
@@ -452,7 +453,7 @@ public class SiriService {
         affects.setStopId(stopId.getId());
         affects.setAgencyId(stopId.getAgencyId());
         if(serviceAlert.getAllAffects() == null)
-          serviceAlert.setAllAffects(new ArrayList<ServiceAlertsSituationAffectsClause>());
+          serviceAlert.setAllAffects(new HashSet<ServiceAlertsSituationAffectsClause>());
         serviceAlert.getAllAffects().add(affects);
       }
     }
@@ -482,7 +483,7 @@ public class SiriService {
             && !CollectionsLibrary.isEmpty(stopRefs.getCall());
 
         if(serviceAlert.getAllAffects() == null)
-          serviceAlert.setAllAffects(new ArrayList<ServiceAlertsSituationAffectsClause>());
+          serviceAlert.setAllAffects(new HashSet<ServiceAlertsSituationAffectsClause>());
         if (!(hasTripRefs || hasStopRefs)) {
           if (affects.getRouteId() != null)
             serviceAlert.getAllAffects().add(affects);
@@ -528,7 +529,7 @@ public class SiriService {
 
           List<AffectedApplicationStructure> apps = applications.getAffectedApplication();
           if(serviceAlert.getAllAffects() == null)
-            serviceAlert.setAllAffects(new ArrayList<ServiceAlertsSituationAffectsClause>());
+            serviceAlert.setAllAffects(new HashSet<ServiceAlertsSituationAffectsClause>());
           for (AffectedApplicationStructure sApp : apps) {
             ServiceAlertsSituationAffectsClause affects = new ServiceAlertsSituationAffectsClause();
             affects.setApplicationId(sApp.getApiKey());
@@ -561,7 +562,7 @@ public class SiriService {
         }
       }
       if(serviceAlert.getConsequences() == null)
-        serviceAlert.setConsequences(new ArrayList<ServiceAlertSituationConsequenceClause>());
+        serviceAlert.setConsequences(new HashSet<ServiceAlertSituationConsequenceClause>());
       if (builder.getDetourPath() != null || builder.getEffect() != null)
         serviceAlert.getConsequences().add(builder);
     }

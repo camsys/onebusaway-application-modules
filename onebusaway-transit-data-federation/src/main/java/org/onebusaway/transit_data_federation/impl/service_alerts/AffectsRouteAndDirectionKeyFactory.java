@@ -34,7 +34,7 @@ class AffectsRouteAndDirectionKeyFactory implements
     for (ServiceAlertsSituationAffectsClause affects : serviceAlert.getAllAffects()) {
       if (affects.getRouteId() != null
           && affects.getDirectionId() != null
-          && !(affects.getAgencyId() != null || affects.getStopId() != null || affects.getTripId() != null)) {
+          && !(affects.getStopId() != null || affects.getTripId() != null)) {
         AgencyAndId routeId = ServiceAlertLibrary.agencyAndId(serviceAlert.getAgencyId(), affects.getRouteId());
         RouteAndDirectionRef ref = new RouteAndDirectionRef(routeId,
             affects.getDirectionId());

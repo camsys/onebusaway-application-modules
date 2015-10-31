@@ -311,17 +311,17 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
 
           ServiceAlertRecord serviceAlertRecord = new ServiceAlertRecord();
           serviceAlertRecord.setAgencyId(_agencyIds.get(0));
-          serviceAlertRecord.setActiveWindows(new ArrayList<ServiceAlertTimeRange>());
+          serviceAlertRecord.setActiveWindows(new HashSet<ServiceAlertTimeRange>());
           if(serviceAlert.getActiveWindowList() != null){
             for(ServiceAlerts.TimeRange timeRange : serviceAlert.getActiveWindowList()){
               ServiceAlertTimeRange serviceAlertTimeRange = new ServiceAlertTimeRange();
-              serviceAlertTimeRange.setFrom(timeRange.getStart());
-              serviceAlertTimeRange.setTo(timeRange.getEnd());
-              serviceAlertRecord.getActiveWindows().add(serviceAlertTimeRange);
+              serviceAlertTimeRange.setFromValue(timeRange.getStart());
+              serviceAlertTimeRange.setToValue(timeRange.getEnd());
+                serviceAlertRecord.getActiveWindows().add(serviceAlertTimeRange);
             }
           }
 
-          serviceAlertRecord.setAllAffects(new ArrayList<ServiceAlertsSituationAffectsClause>());
+          serviceAlertRecord.setAllAffects(new HashSet<ServiceAlertsSituationAffectsClause>());
           if(serviceAlert.getAffectsList() != null){
             for(ServiceAlerts.Affects affects : serviceAlertBuilder.getAffectsList()){
               ServiceAlertsSituationAffectsClause serviceAlertsSituationAffectsClause = new ServiceAlertsSituationAffectsClause();
@@ -336,12 +336,12 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
           }
 
           serviceAlertRecord.setCause(getECause(serviceAlert.getCause()));
-          serviceAlertRecord.setConsequences(new ArrayList<ServiceAlertSituationConsequenceClause>());
+          serviceAlertRecord.setConsequences(new HashSet<ServiceAlertSituationConsequenceClause>());
           if(serviceAlert.getConsequenceList() != null){
             for(ServiceAlerts.Consequence consequence : serviceAlert.getConsequenceList()){
               ServiceAlertSituationConsequenceClause serviceAlertSituationConsequenceClause = new ServiceAlertSituationConsequenceClause();
               serviceAlertSituationConsequenceClause.setDetourPath(consequence.getDetourPath());
-              serviceAlertSituationConsequenceClause.setDetourStopIds(new ArrayList<String>());
+              serviceAlertSituationConsequenceClause.setDetourStopIds(new HashSet<String>());
               if(consequence.getDetourStopIdsList() != null){
                 for(ServiceAlerts.Id stopId : consequence.getDetourStopIdsList()){
                   serviceAlertSituationConsequenceClause.getDetourStopIds().add(stopId.getId());
@@ -353,7 +353,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
 
           serviceAlertRecord.setCreationTime(serviceAlert.getCreationTime());
           serviceAlertRecord.setDescriptions(
-              new ArrayList<ServiceAlertLocalizedString>());
+              new HashSet<ServiceAlertLocalizedString>());
           if(serviceAlert.getDescription() != null){
             for(ServiceAlerts.TranslatedString.Translation translation : serviceAlert.getDescription().getTranslationList()){
               ServiceAlertLocalizedString string = new ServiceAlertLocalizedString();
@@ -364,13 +364,13 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
           }
 
           serviceAlertRecord.setModifiedTime(serviceAlert.getModifiedTime());
-          serviceAlertRecord.setPublicationWindows(new ArrayList<ServiceAlertTimeRange>());
+          serviceAlertRecord.setPublicationWindows(new HashSet<ServiceAlertTimeRange>());
 
           serviceAlertRecord.setServiceAlertId(serviceAlert.getId().getId());
           serviceAlertRecord.setSeverity(getESeverity(serviceAlert.getSeverity()));
           serviceAlertRecord.setSource(serviceAlert.getSource());
 
-          serviceAlertRecord.setSummaries(new ArrayList<ServiceAlertLocalizedString>());
+          serviceAlertRecord.setSummaries(new HashSet<ServiceAlertLocalizedString>());
           if(serviceAlert.getSummary() != null){
             for(ServiceAlerts.TranslatedString.Translation translation : serviceAlert.getSummary().getTranslationList()){
               ServiceAlertLocalizedString string = new ServiceAlertLocalizedString();
@@ -380,7 +380,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
             }
           }
 
-          serviceAlertRecord.setUrls(new ArrayList<ServiceAlertLocalizedString>());
+          serviceAlertRecord.setUrls(new HashSet<ServiceAlertLocalizedString>());
           if(serviceAlert.getUrl() != null){
             for(ServiceAlerts.TranslatedString.Translation translation : serviceAlert.getUrl().getTranslationList()){
               ServiceAlertLocalizedString string = new ServiceAlertLocalizedString();

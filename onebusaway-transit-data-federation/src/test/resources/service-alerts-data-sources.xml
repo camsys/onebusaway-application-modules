@@ -21,15 +21,39 @@
         <property name="password" value="" />
     </bean>
 
-    <bean id="httpServiceClient" class="org.onebusaway.transit_data_federation.util.HttpServiceClientImpl" >
-      <constructor-arg type="java.lang.String" value="localhost"/>
-      <constructor-arg type="java.lang.Integer" value="80" />
-      <constructor-arg type="java.lang.String" value="/api/" />
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="annotatedClasses">
+            <list>
+                <value>org.onebusaway.transit_data_federation.impl.realtime.BlockLocationRecord</value>
+                <value>org.onebusaway.transit_data_federation.impl.realtime.history.ScheduleDeviationHistory</value>
+                <value>org.onebusaway.transit_data_federation.impl.reporting.StopProblemReportRecord</value>
+                <value>org.onebusaway.transit_data_federation.impl.reporting.TripProblemReportRecord</value>
+                <value>org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertTimeRange</value>
+                <value>org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertRecord</value>
+                <value>org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertLocalizedString</value>
+                <value>org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertsSituationAffectsClause</value>
+                <value>org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertSituationConsequenceClause</value>
+            </list>
+        </property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.connection.pool_size">1</prop>
+                <prop key="hibernate.current_session_context_class">thread</prop>
+                <prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>
+                <prop key="hibernate.cache.use_second_level_cache">false</prop>
+                <prop key="hibernate.cache.use_query_cache">false</prop>
+                <prop key="hibernate.show_sql">false</prop>
+                <prop key="hibernate.hbm2ddl.auto">update</prop>
+                <prop key="hibernate.jdbc.batch_size">1000</prop>
+                <prop key="hibernate.order_inserts">false</prop>
+                <prop key="hibernate.order_updates">false</prop>
+            </props>
+        </property>
     </bean>
-    
-    <bean id="bundleManagementService" class="org.onebusaway.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
-      <property name="bundleStoreRoot" value="/var/lib/obanyc/oba-hart-bundle" />
-      <property name="standaloneMode" value="true" />
+
+    <bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory" />
     </bean>
-    <bean id="refreshService" class="org.onebusaway.container.refresh.RefreshServiceImpl" />
+
 </beans>

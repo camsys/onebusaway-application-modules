@@ -97,7 +97,7 @@ class ServiceAlertsServiceImpl implements ServiceAlertsService {
 
 		long lastModified = System.currentTimeMillis();
 		if (serviceAlertRecord.getCreationTime() < 1l)
-      serviceAlertRecord.setCreationTime(lastModified);
+        serviceAlertRecord.setCreationTime(lastModified);
 
 		updateReferences(serviceAlertRecord);
 		saveDBServiceAlerts(serviceAlertRecord, lastModified);
@@ -476,8 +476,8 @@ class ServiceAlertsServiceImpl implements ServiceAlertsService {
 		if (time == -1 || serviceAlert.getPublicationWindows().size() == 0)
 			return true;
 		for (ServiceAlertTimeRange publicationWindow : serviceAlert.getPublicationWindows()) {
-			if ((publicationWindow.getFrom() == null || publicationWindow.getTo() <= time)
-					&& (publicationWindow.getTo() == null || publicationWindow.getTo() >= time)) {
+			if ((publicationWindow.getFromValue() == null || publicationWindow.getToValue() <= time)
+					&& (publicationWindow.getToValue() == null || publicationWindow.getToValue() >= time)) {
 				return true;
 			}
 		}
@@ -565,17 +565,13 @@ class ServiceAlertsServiceImpl implements ServiceAlertsService {
 	private synchronized void saveDBServiceAlerts(ServiceAlertRecord alert, Long lastModified) {
 		if (lastModified == null) lastModified = System.currentTimeMillis();
 		
-		ServiceAlertRecord record = getServiceAlertRecordByAlertId(alert.getAgencyId(), alert.getServiceAlertId());
-		if(record == null) {
-			record = new ServiceAlertRecord(); 
+		ServiceAlertRecord persistedAlert = getServiceAlertRecordByAlertId(alert.getAgencyId(), alert.getServiceAlertId());
+		if(persistedAlert != null) {
+			alert.setCreationTime(persistedAlert.getCreationTime());
 		}
-		
-		record.setServiceAlertId(alert.getServiceAlertId());
-		record.setAgencyId(alert.getServiceAlertId());
-		record.setModifiedTime(lastModified); // we need to assume its changed, as we don't track the affects clause
-    _log.info("Saving Service Alert to DataBase:" + record.getServiceAlertId());
-
-		_persister.saveOrUpdate(record);
+        alert.setModifiedTime(lastModified); // we need to assume its changed, as we don't track the affects clause
+        _log.info("Saving Service Alert to DataBase:" + alert.getServiceAlertId());
+		_persister.saveOrUpdate(alert);
 	}
 
 	/**

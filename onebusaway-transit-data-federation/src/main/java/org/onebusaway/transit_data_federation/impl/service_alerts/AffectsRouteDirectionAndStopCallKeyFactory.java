@@ -35,7 +35,7 @@ class AffectsRouteDirectionAndStopCallKeyFactory implements
     for (ServiceAlertsSituationAffectsClause affects : serviceAlert.getAllAffects()) {
       if (affects.getRouteId() != null && affects.getDirectionId() != null
           && affects.getStopId() != null
-          && !(affects.getAgencyId() != null || affects.getTripId() != null)) {
+          && !(affects.getTripId() != null)) {
 
         AgencyAndId routeId = ServiceAlertLibrary.agencyAndId(serviceAlert.getAgencyId(), affects.getRouteId());
         String directionId = affects.getDirectionId();

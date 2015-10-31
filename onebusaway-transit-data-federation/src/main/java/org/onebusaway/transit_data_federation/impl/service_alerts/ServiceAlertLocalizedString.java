@@ -30,7 +30,8 @@ public class ServiceAlertLocalizedString {
   private int id = 0;
   private String language;
   private String value;
-  @ManyToOne
+  //@ManyToOne
+    @Transient
   private ServiceAlertRecord serviceAlertRecord;
 
   public ServiceAlertRecord getServiceAlertRecord() {

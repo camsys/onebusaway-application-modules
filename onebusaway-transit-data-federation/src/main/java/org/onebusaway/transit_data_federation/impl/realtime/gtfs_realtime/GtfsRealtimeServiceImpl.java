@@ -196,10 +196,10 @@ class GtfsRealtimeServiceImpl implements GtfsRealtimeService {
 
       for (ServiceAlertTimeRange range : serviceAlert.getActiveWindows()) {
         com.google.transit.realtime.GtfsRealtime.TimeRange.Builder timeRange = com.google.transit.realtime.GtfsRealtime.TimeRange.newBuilder();
-        if (range.getFrom() != null)
-          timeRange.setStart(range.getFrom());
-        if (range.getTo() != null)
-          timeRange.setEnd(range.getTo());
+        if (range.getFromValue() != null)
+          timeRange.setStart(range.getFromValue());
+        if (range.getToValue() != null)
+          timeRange.setEnd(range.getToValue());
         alert.addActivePeriod(timeRange);
       }
 

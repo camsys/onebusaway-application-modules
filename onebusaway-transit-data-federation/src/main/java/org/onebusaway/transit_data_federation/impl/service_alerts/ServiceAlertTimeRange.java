@@ -7,7 +7,7 @@
  *
  *         http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
+ * Unless required by applicable law or agreed toValue in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -27,9 +27,9 @@ public class ServiceAlertTimeRange {
 
 	@Id
 	@GeneratedValue
-	private final Integer id = 0;
-  private Long from;
-  private Long to;
+  private final Integer id = 0;
+  private Long fromValue;
+  private Long toValue;
 
   @ManyToOne
   private ServiceAlertRecord serviceAlertRecord;
@@ -46,19 +46,19 @@ public class ServiceAlertTimeRange {
     return id;
   }
 
-  public Long getFrom() {
-    return from;
+  public Long getFromValue() {
+    return fromValue;
   }
 
-  public void setFrom(Long from) {
-    this.from = from;
+  public void setFromValue(Long fromValue) {
+    this.fromValue = fromValue;
   }
 
-  public Long getTo() {
-    return to;
+  public Long getToValue() {
+    return toValue;
   }
 
-  public void setTo(Long to) {
-    this.to = to;
+  public void setToValue(Long toValue) {
+    this.toValue = toValue;
   }
 }
