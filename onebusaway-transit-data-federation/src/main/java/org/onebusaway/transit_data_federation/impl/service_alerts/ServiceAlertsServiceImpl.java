@@ -332,7 +332,7 @@ class ServiceAlertsServiceImpl implements ServiceAlertsService {
 		return alerts;
 	}
 
-	/****
+    /****
 	 * Private Methods
 	 ****/
 
@@ -563,15 +563,13 @@ class ServiceAlertsServiceImpl implements ServiceAlertsService {
 	// this is admittedly slow performing, but it is only called on an update
 	// of a single service alert
 	private synchronized void saveDBServiceAlerts(ServiceAlertRecord alert, Long lastModified) {
-		if (lastModified == null) lastModified = System.currentTimeMillis();
-		
-		ServiceAlertRecord persistedAlert = getServiceAlertRecordByAlertId(alert.getAgencyId(), alert.getServiceAlertId());
-		if(persistedAlert != null) {
-			alert.setCreationTime(persistedAlert.getCreationTime());
-		}
+        if (lastModified == null) lastModified = System.currentTimeMillis();
         alert.setModifiedTime(lastModified); // we need to assume its changed, as we don't track the affects clause
+        ServiceAlertRecord persistedServiceAlertRecord = _persister.getServiceAlertRecordByAlertId(alert.getAgencyId(), alert.getServiceAlertId());
+        if(persistedServiceAlertRecord != null)
+            alert.setId(persistedServiceAlertRecord.getId());
         _log.info("Saving Service Alert to DataBase:" + alert.getServiceAlertId());
-		_persister.saveOrUpdate(alert);
+        _persister.saveOrUpdate(alert);
 	}
 
 	/**

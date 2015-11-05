@@ -38,30 +38,51 @@ import java.util.Set;
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class ServiceAlertRecord {
 
-  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
+  @OneToMany(cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
+  @org.hibernate.annotations.Cascade({org.hibernate.annotations.CascadeType.DELETE_ORPHAN,
+            org.hibernate.annotations.CascadeType.PERSIST,
+            org.hibernate.annotations.CascadeType.SAVE_UPDATE})
   @JoinColumn(name="servicealert_active_window_id", referencedColumnName="id")
   private Set<ServiceAlertTimeRange> activeWindows = new HashSet<ServiceAlertTimeRange>();
 
-  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
+  @OneToMany(cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
+  @org.hibernate.annotations.Cascade({org.hibernate.annotations.CascadeType.DELETE_ORPHAN,
+            org.hibernate.annotations.CascadeType.PERSIST,
+            org.hibernate.annotations.CascadeType.SAVE_UPDATE})
   @JoinColumn(name="servicealert_publication_window_id", referencedColumnName="id")
   private Set<ServiceAlertTimeRange> publicationWindows = new HashSet<ServiceAlertTimeRange>();
 
-  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
+  @OneToMany(cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
+  @org.hibernate.annotations.Cascade({org.hibernate.annotations.CascadeType.DELETE_ORPHAN,
+            org.hibernate.annotations.CascadeType.PERSIST,
+            org.hibernate.annotations.CascadeType.SAVE_UPDATE})
   @JoinColumn(name="servicealert_summary_id", referencedColumnName="id")
   private Set<ServiceAlertLocalizedString> summaries = new HashSet<ServiceAlertLocalizedString>();
 
-  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
+  @OneToMany(cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
+  @org.hibernate.annotations.Cascade({org.hibernate.annotations.CascadeType.DELETE_ORPHAN,
+            org.hibernate.annotations.CascadeType.PERSIST,
+            org.hibernate.annotations.CascadeType.SAVE_UPDATE})
   @JoinColumn(name="servicealert_description_id", referencedColumnName="id")
   private Set<ServiceAlertLocalizedString> descriptions = new HashSet<ServiceAlertLocalizedString>();
 
-  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
+  @OneToMany(cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
+  @org.hibernate.annotations.Cascade({org.hibernate.annotations.CascadeType.DELETE_ORPHAN,
+          org.hibernate.annotations.CascadeType.PERSIST,
+          org.hibernate.annotations.CascadeType.SAVE_UPDATE})
   @JoinColumn(name="servicealert_url_id", referencedColumnName="id")
   private Set<ServiceAlertLocalizedString> urls = new HashSet<ServiceAlertLocalizedString>();
 
-  @OneToMany(cascade = {CascadeType.ALL}, mappedBy = "serviceAlertRecord", fetch = FetchType.EAGER)
+  @OneToMany(cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
+  @org.hibernate.annotations.Cascade({org.hibernate.annotations.CascadeType.DELETE_ORPHAN,
+          org.hibernate.annotations.CascadeType.PERSIST,
+          org.hibernate.annotations.CascadeType.SAVE_UPDATE})
+  @JoinColumn(name="serviceAlertRecord_id", referencedColumnName="id")
   private Set<ServiceAlertsSituationAffectsClause> allAffects = new HashSet<ServiceAlertsSituationAffectsClause>();
 
-  @OneToMany(cascade = {CascadeType.ALL}, mappedBy = "serviceAlertRecord", fetch = FetchType.EAGER)
+  @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
+  @org.hibernate.annotations.Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
+  @JoinColumn(name="serviceAlertRecord_id", referencedColumnName="id")
   private Set<ServiceAlertSituationConsequenceClause> consequences = new HashSet<ServiceAlertSituationConsequenceClause>();
 
   @Enumerated(EnumType.STRING)
@@ -72,9 +93,9 @@ public class ServiceAlertRecord {
 
   private String source;
 
-	@Id
-	@GeneratedValue
-	private final int id = 0;
+  @Id
+  @GeneratedValue
+  private int id = 0;
 
   private String agencyId;
 
@@ -84,6 +105,8 @@ public class ServiceAlertRecord {
   private Long creationTime = 0l;
 
   private Long modifiedTime = 0l;
+
+
 
   public Long getModifiedTime() {
     return modifiedTime;
@@ -176,10 +199,6 @@ public class ServiceAlertRecord {
     this.source = source;
   }
 
-  public int getId() {
-    return id;
-  }
-
   public String getAgencyId() {
     return agencyId;
   }
@@ -202,5 +221,13 @@ public class ServiceAlertRecord {
 
   public void setCreationTime(long creationTime) {
     this.creationTime = creationTime;
+  }
+
+  public int getId() {
+    return id;
+  }
+
+  public void setId(int id) {
+      this.id = id;
   }
 }

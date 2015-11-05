@@ -192,22 +192,37 @@ class ServiceAlertsBeanServiceImpl implements ServiceAlertsBeanService {
      * Text descriptions
      */
     serviceAlertRecord.setSummaries(new HashSet<ServiceAlertLocalizedString>());
-    for(NaturalLanguageStringBean summary : bean.getSummaries()){
-      ServiceAlertLocalizedString string = new ServiceAlertLocalizedString();
-      string.setLanguage(summary.getLang());
-      string.setValue(summary.getValue());
-      string.setServiceAlertRecord(serviceAlertRecord);
-      serviceAlertRecord.getSummaries().add(string);
+    if(bean.getSummaries() != null){
+        for(NaturalLanguageStringBean summary : bean.getSummaries()){
+            ServiceAlertLocalizedString string = new ServiceAlertLocalizedString();
+            string.setLanguage(summary.getLang());
+            string.setValue(summary.getValue());
+            string.setServiceAlertRecord(serviceAlertRecord);
+            serviceAlertRecord.getSummaries().add(string);
+        }
     }
 
     serviceAlertRecord.setDescriptions(new HashSet<ServiceAlertLocalizedString>());
-    for(NaturalLanguageStringBean summary : bean.getDescriptions()){
-      ServiceAlertLocalizedString string = new ServiceAlertLocalizedString();
-      string.setLanguage(summary.getLang());
-      string.setValue(summary.getValue());
-      string.setServiceAlertRecord(serviceAlertRecord);
-      serviceAlertRecord.getDescriptions().add(string);
-    }
+      if(bean.getDescriptions() != null){
+          for(NaturalLanguageStringBean summary : bean.getDescriptions()){
+              ServiceAlertLocalizedString string = new ServiceAlertLocalizedString();
+              string.setLanguage(summary.getLang());
+              string.setValue(summary.getValue());
+              string.setServiceAlertRecord(serviceAlertRecord);
+              serviceAlertRecord.getDescriptions().add(string);
+          }
+      }
+
+    serviceAlertRecord.setUrls(new HashSet<ServiceAlertLocalizedString>());
+      if(bean.getUrls() != null){
+          for(NaturalLanguageStringBean url : bean.getUrls()){
+              ServiceAlertLocalizedString string = new ServiceAlertLocalizedString();
+              string.setLanguage(url.getLang());
+              string.setValue(url.getValue());
+              string.setServiceAlertRecord(serviceAlertRecord);
+              serviceAlertRecord.getUrls().add(string);
+          }
+      }
 
     if (bean.getSeverity() != null)
       serviceAlertRecord.setSeverity(bean.getSeverity());
@@ -245,18 +260,15 @@ class ServiceAlertsBeanServiceImpl implements ServiceAlertsBeanService {
       if (affects.getApplicationId() != null)
         bean.setApplicationId(affects.getApplicationId());
       if (affects.getRouteId() != null) {
-        AgencyAndId routeId = ServiceAlertLibrary.agencyAndId(serviceAlert.getAgencyId(), affects.getRouteId());
-        bean.setRouteId(AgencyAndId.convertToString(routeId));
+        bean.setRouteId(affects.getRouteId());
       }
       if (affects.getDirectionId() != null)
         bean.setDirectionId(affects.getDirectionId());
       if (affects.getTripId() != null) {
-        AgencyAndId tripId = ServiceAlertLibrary.agencyAndId(serviceAlert.getAgencyId(), affects.getTripId());
-        bean.setTripId(AgencyAndId.convertToString(tripId));
+        bean.setTripId(affects.getTripId());
       }
       if (affects.getStopId() != null) {
-        AgencyAndId stopId = ServiceAlertLibrary.agencyAndId(serviceAlert.getAgencyId(), affects.getStopId());
-        bean.setStopId(AgencyAndId.convertToString(stopId));
+        bean.setStopId(affects.getStopId());
       }
       if (affects.getApplicationId()  != null)
         bean.setApplicationId(affects.getApplicationId());
