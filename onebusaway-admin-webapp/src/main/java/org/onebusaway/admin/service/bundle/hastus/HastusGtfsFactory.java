@@ -94,6 +94,8 @@ public class HastusGtfsFactory {
   private ServiceDate _calendarStartDate;
 	  
   private ServiceDate _calendarEndDate;
+  
+  private String _shapePrefix;
 
   /**
    * From APTA's set of agency ids
@@ -113,6 +115,10 @@ public class HastusGtfsFactory {
   private Date _midnight;
   
   private MultiCSVLogger logger;
+  
+  public void setLogger(MultiCSVLogger logger) {
+    this.logger = logger;
+  }
 
   public void setGisInputPath(File gisInputPath) {
     _gisInputPath = gisInputPath;
@@ -129,10 +135,20 @@ public class HastusGtfsFactory {
   public void setModificationsPath(String modificationsPath) {
     _modificationsPath = modificationsPath;
   }
+  
+  public void setShapePrefix(String prefix) {
+    _shapePrefix = prefix;
+  }
+  protected GtfsDaoImpl getDao() {
+    return _dao;
+  }
 
   public void run() throws Exception {
 
-    logger = new MultiCSVLogger();
+    if (logger == null) {
+      //unit tests may inject a logger
+      logger = new MultiCSVLogger();
+    }
     String csvDir = _gtfsOutputPath.toString().replace("_gtfs/29", "s"); // hack to swap directories
     logger.setBasePath(new File(csvDir));
     _log.info("setting up MultiCSVLogger at path " + csvDir);
@@ -158,7 +174,7 @@ public class HastusGtfsFactory {
     _log.info("MultiCSVLogger summarize called");
   }
 
-  private void processAgency() {
+   void processAgency() {
     _agency = new Agency();
     _agency.setId(_agencyId);
     _agency.setLang("en");
@@ -169,7 +185,7 @@ public class HastusGtfsFactory {
     _dao.saveEntity(_agency);
   }
 
-  private void processStops() throws Exception {
+  void processStops() throws Exception {
 
     File stopsShapeFile = new File(_gisInputPath, "CTBusStops.shp");
 
@@ -215,7 +231,7 @@ public class HastusGtfsFactory {
     return stopName;
   }
 
-  private void processRoutesStopSequences() throws Exception {
+  void processRoutesStopSequences() throws Exception {
 
     // File routesShapeFile = new File(_gisInputPath, "ctroutes.shp");
     File routesShapeFile = new File(_gisInputPath, "CTRouteStopSequences.shp");
@@ -238,7 +254,7 @@ public class HastusGtfsFactory {
       if (sequence == null) {
         sequence = new RouteStopSequence();
         _stopSequences.put(id, sequence);
-        _log.info("created stopSequence |" + id + "|");
+        System.out.println("created stopSequence |" + id + "|");
       }
 
       RouteStopSequenceItem item = new RouteStopSequenceItem();
@@ -265,7 +281,7 @@ public class HastusGtfsFactory {
     }
   }
 
-  private void processShapes() {
+  void processShapes() {
     
     logger.header(csv("shapes"), "raw_id,shape_id");
     for (Map.Entry<String, RouteStopSequence> entry : _stopSequences.entrySet()) {
@@ -274,22 +290,30 @@ public class HastusGtfsFactory {
       RouteStopSequence stopSequence = entry.getValue();
 
       AgencyAndId shapeId = id(rawId);
-      logger.log(csv("shapes"), rawId, shapeId);
-      int sequence = 0;
-
-      for (RouteStopSequenceItem item : stopSequence) {
-        MultiLineString mls = (MultiLineString) item.getGeometry();
-        for (int i = 0; i < mls.getNumGeometries(); i++) {
-          LineString ls = (LineString) mls.getGeometryN(i);
-          for (int j = 0; j < ls.getNumPoints(); j++) {
-            Coordinate c = ls.getCoordinateN(j);
-            ShapePoint shapePoint = new ShapePoint();
-            shapePoint.setShapeId(shapeId);
-            shapePoint.setLat(c.y);
-            shapePoint.setLon(c.x);
-            shapePoint.setSequence(sequence);
-            _dao.saveEntity(shapePoint);
-            sequence++;
+      if (_shapePrefix == null ||
+          _shapePrefix != null && rawId.startsWith(_shapePrefix)) {
+  
+        System.out.println("rawId=" + rawId);
+        logger.log(csv("shapes"), rawId, shapeId);
+        int sequence = 0;
+        int mlsCount = 0;
+        for (RouteStopSequenceItem item : stopSequence) {
+          MultiLineString mls = (MultiLineString) item.getGeometry();
+          System.out.println("mls=" + mlsCount);
+          mlsCount++;
+          for (int i = 0; i < mls.getNumGeometries(); i++) {
+            LineString ls = (LineString) mls.getGeometryN(i);
+            for (int j = 0; j < ls.getNumPoints(); j++) {
+              Coordinate c = ls.getCoordinateN(j);
+              ShapePoint shapePoint = new ShapePoint();
+              shapePoint.setShapeId(shapeId);
+              shapePoint.setLat(c.y);
+              shapePoint.setLon(c.x);
+              System.out.println("seq=" + sequence + " " + c.y + ", " + c.x);
+              shapePoint.setSequence(sequence);
+              _dao.saveEntity(shapePoint);
+              sequence++;
+            }
           }
         }
       }

@@ -37,16 +37,16 @@ public class ShapefileLibrary {
   public static FeatureCollection<SimpleFeatureType, SimpleFeature> loadShapeFile(
       File path) throws Exception {
   
-    _log.info("loading shapefile " + path.toURI());
+    System.out.println("loading shapefile " + path.toURI());
     ShapefileDataStore dataStore = new ShapefileDataStore(path.toURI().toURL());
-    _log.info("loaded!");
+    System.out.println("loaded!");
     
     String typeNames[] = dataStore.getTypeNames();
     String typeName = typeNames[0];
   
     FeatureSource<SimpleFeatureType, SimpleFeature> featureSource = dataStore.getFeatureSource(typeName);
     CoordinateReferenceSystem sourceCRS = featureSource.getInfo().getCRS();
-    _log.info("using sourceCRS=" + sourceCRS + " for typeName=" + typeName);
+    System.out.println("using sourceCRS=" + sourceCRS + " for typeName=" + typeName);
   
     Hints hints = new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER,
         Boolean.TRUE);
