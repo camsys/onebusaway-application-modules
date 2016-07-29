@@ -254,7 +254,7 @@ public class HastusGtfsFactory {
       if (sequence == null) {
         sequence = new RouteStopSequence();
         _stopSequences.put(id, sequence);
-        System.out.println("created stopSequence |" + id + "|");
+//        System.out.println("created stopSequence |" + id + "|");
       }
 
       RouteStopSequenceItem item = new RouteStopSequenceItem();
@@ -299,7 +299,7 @@ public class HastusGtfsFactory {
         int mlsCount = 0;
         for (RouteStopSequenceItem item : stopSequence) {
           MultiLineString mls = (MultiLineString) item.getGeometry();
-          System.out.println("mls=" + mlsCount);
+//          System.out.println("mls=" + mlsCount);
           mlsCount++;
           for (int i = 0; i < mls.getNumGeometries(); i++) {
             LineString ls = (LineString) mls.getGeometryN(i);
@@ -309,7 +309,8 @@ public class HastusGtfsFactory {
               shapePoint.setShapeId(shapeId);
               shapePoint.setLat(c.y);
               shapePoint.setLon(c.x);
-              System.out.println("seq=" + sequence + " " + c.y + ", " + c.x);
+              if (sequence >= 477 && sequence <= 479)
+                System.out.println("seq=("+ mlsCount + ")" + sequence + " " + c.y + ", " + c.x + ", " + mls.toText());
               shapePoint.setSequence(sequence);
               _dao.saveEntity(shapePoint);
               sequence++;

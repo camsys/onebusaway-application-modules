@@ -38,7 +38,7 @@ public class HastusGtfsFactoryTest {
     factory.processShapes();
     
     for (ShapePoint sp : factory.getDao().getAllShapePoints()) {
-      System.out.println(sp.getId() + ":" + sp.getLat() + ", " + sp.getLon());
+//      System.out.println(sp.getId() + ":" + sp.getLat() + ", " + sp.getLon());
       if (sp.getId().equals(479)) {
         if (sp.getLat() == 47.83824600070492) {
           if (sp.getLon() == -122.27300100106018) {
