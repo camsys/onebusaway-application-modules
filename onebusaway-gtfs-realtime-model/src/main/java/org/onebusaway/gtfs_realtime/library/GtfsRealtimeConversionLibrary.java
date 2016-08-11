@@ -15,6 +15,7 @@
  */
 package org.onebusaway.gtfs_realtime.library;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -38,7 +39,8 @@ public class GtfsRealtimeConversionLibrary {
   private static final Logger _log = LoggerFactory.getLogger(GtfsRealtimeConversionLibrary.class);
   
   public static List<TripUpdateModel> readTripUpdates(FeedMessage tripUpdates) {
-    return new TripUpdateConvertor().readAll(tripUpdates);
+//    return new TripUpdateConvertor().readAll(tripUpdates);
+    return new ArrayList<TripUpdateModel>();
   }
   
   public static List<VehiclePositionModel> readVehiclePositions(FeedMessage vehiclePositions) {

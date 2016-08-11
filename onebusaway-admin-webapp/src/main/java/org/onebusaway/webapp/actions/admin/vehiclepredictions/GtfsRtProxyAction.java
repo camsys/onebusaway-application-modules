@@ -41,12 +41,12 @@ public class GtfsRtProxyAction extends OneBusAwayNYCAdminActionSupport {
 
   private Logger _log = LoggerFactory.getLogger(GtfsRtProxyAction.class);
   
-  private static final ExtensionRegistry _registry = ExtensionRegistry.newInstance();
-
-  static {
-    _registry.add(GtfsRealtimeOneBusAway.obaFeedEntity);
-    _registry.add(GtfsRealtimeOneBusAway.obaTripUpdate);
-  }
+//  private static final ExtensionRegistry _registry = ExtensionRegistry.newInstance();
+//
+//  static {
+//    _registry.add(GtfsRealtimeOneBusAway.obaFeedEntity);
+//    _registry.add(GtfsRealtimeOneBusAway.obaTripUpdate);
+//  }
   
  // @Autowired
   //private ConfigurationService _configurationService;
@@ -61,7 +61,7 @@ public class GtfsRtProxyAction extends OneBusAwayNYCAdminActionSupport {
       HttpGet request = new HttpGet(getGtfsRtPath());
       CloseableHttpResponse response = httpclient.execute(request);
       InputStream is = response.getEntity().getContent();
-      FeedMessage message = FeedMessage.parseFrom(is, _registry);
+      FeedMessage message = FeedMessage.parseFrom(is/*, _registry*/);
       List<TripUpdateModel> updates = GtfsRealtimeConversionLibrary.readTripUpdates(message);
       
       for (TripUpdateModel tu : updates) {
@@ -84,7 +84,8 @@ public class GtfsRtProxyAction extends OneBusAwayNYCAdminActionSupport {
 
   private String getGtfsRtPath() {
     //return _configurationService.getConfigurationValueAsString("admin.link.service.path", "/services/tss_lab/GetOnScheduleTrains?TimeInterval=5");
-    return "http://admin.staging.obast.org:9999/sc/trip-updates";
+//    return "http://admin.staging.obast.org:9999/sc/trip-updates";
+    return "http://localhost:9998/sc/trip-updates";
   }
 
   public String getType() {
