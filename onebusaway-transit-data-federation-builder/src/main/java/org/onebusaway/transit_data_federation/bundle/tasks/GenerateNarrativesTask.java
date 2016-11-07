@@ -100,8 +100,7 @@ public class GenerateNarrativesTask implements Runnable {
 
   private double _stopDirectionStandardDeviationThreshold = 0.7;
   
-  private LoggingIntervalUtil _logIntervals = new LoggingIntervalUtil();
-
+  
   @Autowired
   public void setBundle(FederatedTransitDataBundle bundle) {
     _bundle = bundle;
@@ -217,7 +216,7 @@ public class GenerateNarrativesTask implements Runnable {
     List<AgencyAndId> shapeIds = _gtfsDao.getAllShapeIds();
     int shapeSize = shapeIds.size();
     _log.info("shapes to process=" + shapeSize);
-    int logInterval = _logIntervals.getAppropriateLoggingInterval(shapeSize) * 10;
+    int logInterval = LoggingIntervalUtil.getAppropriateLoggingInterval(shapeSize) * 10;
     int index = 0;
 
     for (AgencyAndId shapeId : shapeIds) {
@@ -237,7 +236,7 @@ public class GenerateNarrativesTask implements Runnable {
 
     Collection<Stop> allStops = _gtfsDao.getAllStops();
     Map<AgencyAndId, Stop> stopsById = MappingLibrary.mapToValue(allStops, "id");
-    int logInterval = _logIntervals.getAppropriateLoggingInterval(allStops.size());
+    int logInterval = LoggingIntervalUtil.getAppropriateLoggingInterval(allStops.size());
 
     for (StopEntry stopEntry : _transitGraphDao.getAllStops()) {
 
@@ -265,7 +264,7 @@ public class GenerateNarrativesTask implements Runnable {
 
     int tripIndex = 0;
     Collection<Trip> trips = _gtfsDao.getAllTrips();
-    int logInterval = _logIntervals.getAppropriateLoggingInterval(trips.size());
+    int logInterval = LoggingIntervalUtil.getAppropriateLoggingInterval(trips.size());
 
     for (Trip trip : trips) {
 
