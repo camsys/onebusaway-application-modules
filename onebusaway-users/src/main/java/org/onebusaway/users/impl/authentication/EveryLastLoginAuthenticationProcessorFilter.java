@@ -29,11 +29,11 @@ import org.onebusaway.users.services.CurrentUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.authentication.AbstractProcessingFilter;
+import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 
 @SuppressWarnings("deprecation")
 public class EveryLastLoginAuthenticationProcessorFilter extends
-    AbstractProcessingFilter {
+        AbstractAuthenticationProcessingFilter {
 
   protected EveryLastLoginAuthenticationProcessorFilter(
       String defaultFilterProcessesUrl) {

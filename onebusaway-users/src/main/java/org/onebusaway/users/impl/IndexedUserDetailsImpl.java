@@ -24,6 +24,7 @@ import org.onebusaway.users.services.StandardAuthoritiesService;
 
 import org.springframework.security.core.GrantedAuthority;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 
@@ -37,8 +38,8 @@ public class IndexedUserDetailsImpl extends
   public IndexedUserDetailsImpl(StandardAuthoritiesService authoritiesService,
       UserIndex userIndex) {
     super(userIndex.getId().toString(), userIndex.getCredentials(), true, true,
-        true, true, getGrantedAuthoritiesForUser(authoritiesService,
-            userIndex.getUser()));
+        true, true, Arrays.asList(getGrantedAuthoritiesForUser(authoritiesService,
+            userIndex.getUser())));
 
     _userIndexKey = userIndex.getId();
   }
