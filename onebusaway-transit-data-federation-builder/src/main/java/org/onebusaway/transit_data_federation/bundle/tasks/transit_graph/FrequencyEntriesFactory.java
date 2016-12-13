@@ -37,6 +37,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfig
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.FrequencyEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
+import org.onebusaway.transit_data_federation.util.LoggingIntervalUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,12 +61,14 @@ public class FrequencyEntriesFactory {
 
     Collection<Frequency> allFrequencies = _gtfsDao.getAllFrequencies();
 
+	int logInterval = LoggingIntervalUtil.getAppropriateLoggingInterval(allFrequencies.size());
+
     int frequencyIndex = 0;
     Map<AgencyAndId, Integer> exactTimesValueByTrip = new HashMap<AgencyAndId, Integer>();
 
     for (Frequency frequency : allFrequencies) {
 
-      if (frequencyIndex % 100 == 0)
+      if (frequencyIndex % logInterval == 0)
         _log.info("frequencies: " + (frequencyIndex++) + "/"
             + allFrequencies.size());
       frequencyIndex++;
