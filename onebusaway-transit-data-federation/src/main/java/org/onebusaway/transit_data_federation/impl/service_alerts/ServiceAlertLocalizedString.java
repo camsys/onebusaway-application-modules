@@ -29,7 +29,10 @@ public class ServiceAlertLocalizedString {
   @GeneratedValue
   private int id = 0;
   private String language;
+
+  @Column(length = 1024)
   private String value;
+
   //@ManyToOne
     @Transient
   private ServiceAlertRecord serviceAlertRecord;
