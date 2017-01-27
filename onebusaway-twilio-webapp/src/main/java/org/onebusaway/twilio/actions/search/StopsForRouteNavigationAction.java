@@ -50,7 +50,7 @@ public class StopsForRouteNavigationAction extends TwilioSupport implements Sess
 
 	  private TextModification _destinationPronunciation;
 	  private SessionManager _sessionManager;
-	  private Map sessionMap;
+	  //private Map sessionMap;
 	  private int index;
 	  private NavigationBean _navigation;
 	  
@@ -65,9 +65,9 @@ public class StopsForRouteNavigationAction extends TwilioSupport implements Sess
 		_sessionManager = sessionManager;
 	  }
 	  	  
-	  public void setSession(Map map) {
-	  	  this.sessionMap = map;
-	  }
+	  //public void setSession(Map map) {
+	  //	  this.sessionMap = map;
+	  //}
 		
 	  public int getIndex() { return this.index; }
 	  public void setIndex(int index) { this.index = index; }

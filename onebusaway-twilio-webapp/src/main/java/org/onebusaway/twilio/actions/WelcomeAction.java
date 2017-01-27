@@ -42,16 +42,16 @@ public class WelcomeAction extends TwilioSupport implements SessionAware {
 	private static Logger _log = LoggerFactory.getLogger(WelcomeAction.class);
     
 	private CurrentUserService _currentUserService;
-	private Map sessionMap;
+	//private Map sessionMap;
 	    
   @Autowired
   public void setCurrentUserService(CurrentUserService currentUserService) {
     _currentUserService = currentUserService;
   }
   
-	public void setSession(Map map) {
-	  this.sessionMap = map;
-	}
+	//public void setSession(Map map) {
+	//  this.sessionMap = map;
+	//}
 		
   @Override
   public String execute() {

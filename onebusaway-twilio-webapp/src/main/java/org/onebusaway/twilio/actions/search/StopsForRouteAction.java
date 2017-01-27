@@ -50,7 +50,7 @@ public class StopsForRouteAction extends TwilioSupport implements SessionAware {
 	  private NavigationBean _navigation;
 
 	  private StopBean _stop;
-	  private Map sessionMap;
+	  //private Map sessionMap;
 
 	  @Autowired
 	  public void setStopSelectionService(StopSelectionService stopSelectionService) {
@@ -77,9 +77,9 @@ public class StopsForRouteAction extends TwilioSupport implements SessionAware {
 	    return _stop;
 	  }
 
-	  public void setSession(Map map) {
-	  	  this.sessionMap = map;
-	  }
+	  //public void setSession(Map map) {
+	  //	  this.sessionMap = map;
+	  //}
 		
 	  @Override
 	  public String execute() throws Exception {

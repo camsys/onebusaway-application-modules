@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 })
 public class StopForCodeAction extends TwilioSupport implements SessionAware {
   
-  private Map sessionMap;
+  //private Map sessionMap;
   private static Logger _log = LoggerFactory.getLogger(StopForCodeAction.class);
   private String _stopCode;
 
@@ -59,9 +59,9 @@ public class StopForCodeAction extends TwilioSupport implements SessionAware {
     return _stops;
   }
                               
-  public void setSession(Map map) {
-	  this.sessionMap = map;
-	}
+  //public void setSession(Map map) {
+	//  this.sessionMap = map;
+	//}
 		
 public String execute() throws Exception {
     _log.info("in stop for code");

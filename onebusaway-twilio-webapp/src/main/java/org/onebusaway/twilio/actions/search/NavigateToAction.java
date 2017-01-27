@@ -32,14 +32,14 @@ public class NavigateToAction extends TwilioSupport implements SessionAware {
   private static final long serialVersionUID = 1L;
   private static Logger _log = LoggerFactory.getLogger(IndexAction.class);
 
-  private Map sessionMap;
+  //private Map sessionMap;
   private NavigationBean _navigation;
 
   private int _index;
 
-  public void setSession(Map map) {
-	  this.sessionMap = map;
-  }
+  //public void setSession(Map map) {
+	//  this.sessionMap = map;
+  //}
 		
   public void setNavigation(NavigationBean navigation) {
     _navigation = navigation;

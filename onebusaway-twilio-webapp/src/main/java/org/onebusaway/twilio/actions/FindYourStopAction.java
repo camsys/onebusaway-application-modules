@@ -34,11 +34,11 @@ public class FindYourStopAction extends TwilioSupport implements SessionAware {
   private static final long serialVersionUID = 1L;
   private static Logger _log = LoggerFactory.getLogger(FindYourStopAction.class);
   
-	private Map sessionMap;
+	//private Map sessionMap;
 	
-	public void setSession(Map map) {
-	  this.sessionMap = map;
-	}
+	//public void setSession(Map map) {
+	//  this.sessionMap = map;
+	//}
 		
   @Override
   public String execute() throws Exception {

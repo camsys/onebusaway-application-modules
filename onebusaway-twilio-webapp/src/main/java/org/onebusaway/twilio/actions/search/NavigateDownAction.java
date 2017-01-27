@@ -41,7 +41,7 @@ public class NavigateDownAction extends TwilioSupport implements SessionAware {
 
   private StopSelectionService _stopSelectionService;
 
-  private Map sessionMap;
+  //private Map sessionMap;
   private NavigationBean _navigation;
 
   private int _index;
@@ -61,9 +61,9 @@ public class NavigateDownAction extends TwilioSupport implements SessionAware {
     return _navigation;
   }
 
-  public void setSession(Map map) {
-	  this.sessionMap = map;
-  }
+  //public void setSession(Map map) {
+	//  this.sessionMap = map;
+  //}
 		
 public void setIndex(int index) {
     _index = index;
@@ -108,8 +108,12 @@ public void setIndex(int index) {
     _navigation.setNames(names);
 
     if (selection.hasStop()) {
-      _stop = selection.getStop();
-      sessionMap.put("navState", new Integer(DISPLAY_DATA));
+      _stop = selection.getStop();  
+      if (sessionMap.containsKey("stop")) {
+        sessionMap.put("navState", new Integer(DO_ROUTING));
+      } else {
+        sessionMap.put("navState", new Integer(DISPLAY_DATA));
+      }
       return "stopFound";
     }
 

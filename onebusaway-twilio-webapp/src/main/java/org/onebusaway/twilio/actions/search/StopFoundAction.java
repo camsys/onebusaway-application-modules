@@ -54,7 +54,7 @@ public class StopFoundAction extends TwilioSupport implements SessionAware {
 	private List<String> _stopIds;
 	private TextModification _destinationPronunciation;
 	private TextModification _directionPronunciation;
-	private Map sessionMap;
+	//private Map sessionMap;
 	  
 	public List<String> getStopIds() {
 		return _stopIds;
@@ -72,9 +72,9 @@ public class StopFoundAction extends TwilioSupport implements SessionAware {
 		_directionPronunciation = directionPronunciation;
 	}
 
-	public void setSession(Map map) {
-	  this.sessionMap = map;
-	}
+	//public void setSession(Map map) {
+	//  this.sessionMap = map;
+	//}
 
 	@Override
 	public String execute() throws Exception {

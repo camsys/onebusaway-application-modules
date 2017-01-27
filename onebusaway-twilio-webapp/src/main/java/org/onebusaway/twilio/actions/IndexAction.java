@@ -41,7 +41,7 @@ public class IndexAction extends TwilioSupport implements SessionAware {
   private String digits;
   private String from;
   
-  private Map sessionMap;
+  //private Map sessionMap;
   
   public void setDigits(String digits) {
 	  this.digits = digits;
@@ -50,9 +50,9 @@ public class IndexAction extends TwilioSupport implements SessionAware {
 	  this.from = from;
   }
   
-  public void setSession(Map map) {
-    this.sessionMap = map;
-  }
+  //public void setSession(Map map) {
+  //  this.sessionMap = map;
+  //}
   
   @Override
   public String execute() throws Exception {

@@ -36,7 +36,7 @@ public class MostRecentStopAction extends TwilioSupport implements SessionAware 
 
   private static final long serialVersionUID = 1L;
 	private static Logger _log = LoggerFactory.getLogger(MostRecentStopAction.class);
-	private Map sessionMap;
+	//private Map sessionMap;
 
   private List<String> _stopIds;
 
@@ -44,9 +44,9 @@ public class MostRecentStopAction extends TwilioSupport implements SessionAware 
     return _stopIds;
   }
 
-	public void setSession(Map map) {
-	  this.sessionMap = map;
-	}
+	//public void setSession(Map map) {
+	//  this.sessionMap = map;
+	//}
 		
   @Override
   public String execute() throws Exception {

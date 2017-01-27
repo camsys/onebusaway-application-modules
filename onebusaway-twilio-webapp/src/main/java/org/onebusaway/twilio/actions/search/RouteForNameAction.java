@@ -43,7 +43,7 @@ public class RouteForNameAction extends TwilioSupport implements SessionAware {
 	  private String _routeName;
 	  private RouteBean _route;
 	  private List<RouteBean> _routes;
-	  private Map sessionMap;
+	  //private Map sessionMap;
 	  
 	  public void setRouteName(String routeName) {
 	    _routeName = routeName;
@@ -61,9 +61,9 @@ public class RouteForNameAction extends TwilioSupport implements SessionAware {
 	    return _routes;
 	  }
 	  
-	  public void setSession(Map map) {
-	  	  this.sessionMap = map;
-	  }
+	  //public void setSession(Map map) {
+	  //	  this.sessionMap = map;
+	  //}
 		
 	  public String execute() throws Exception {
 	    _log.debug("in RouteForName with routeName " + _routeName); 

@@ -42,7 +42,7 @@ public class MultipleRoutesFoundAction extends TwilioSupport implements SessionA
       private static final long serialVersionUID = 1L;
 	  private TextModification _routeNumberPronunciation;
 	  private static Logger _log = LoggerFactory.getLogger(MultipleRoutesFoundAction.class);
-	  private Map sessionMap;
+	  //private Map sessionMap;
 	  private RouteBean _route;
 	  
 	  @Autowired
@@ -51,9 +51,9 @@ public class MultipleRoutesFoundAction extends TwilioSupport implements SessionA
 	    _routeNumberPronunciation = routeNumberPronunciation;
 	  }
 
-	  public void setSession(Map map) {
-	  	  this.sessionMap = map;
-	  }
+	  //public void setSession(Map map) {
+	  //	  this.sessionMap = map;
+	  //}
 		
 	  public void setRoute(RouteBean route) {
 	    _route = route;
