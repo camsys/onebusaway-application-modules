@@ -38,6 +38,7 @@ public class HttpUtil {
   
   public JsonObject getJsonObject(String uri, int timeoutSeconds) throws MalformedURLException,
       IOException {
+    uri = uri.replace("|", "%7C");
     URL url = new URL(uri);
     HttpURLConnection request = (HttpURLConnection) url.openConnection();
     //request.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
