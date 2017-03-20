@@ -136,7 +136,7 @@ public class PredictionsAction extends NextBusApiBase implements
 
       } catch (Exception e) {
         body.getErrors().add(new BodyError("No valid results found."));
-        _log.error(e.getMessage());
+        _log.error(e.getMessage(), e);
       }
     }
 

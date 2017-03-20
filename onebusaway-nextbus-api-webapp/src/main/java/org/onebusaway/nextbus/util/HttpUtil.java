@@ -25,23 +25,31 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 public class HttpUtil {
 
+  private static Logger _log = LoggerFactory.getLogger(HttpUtil.class);
+  
   public JsonObject getJsonObject(String uri, int timeoutSeconds) throws MalformedURLException,
       IOException {
     URL url = new URL(uri);
     HttpURLConnection request = (HttpURLConnection) url.openConnection();
-    
+    //request.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+
+    request.setRequestProperty("Accept", "application/json");
+    _log.info("setting accept header");
     if (timeoutSeconds > 0) {
       request.setConnectTimeout(timeoutSeconds * 1000);
       request.setReadTimeout(timeoutSeconds * 1000);
     }
     request.connect();
-
+    try {
     // Convert to a JSON object to print data
     JsonParser jp = new JsonParser(); // from gson
     JsonElement root = jp.parse(new InputStreamReader(
@@ -51,5 +59,17 @@ public class HttpUtil {
     // an
     // object.
     return rootobj;
+    } catch (Throwable t) {
+      _log.error("exception reading content", t);
+      
+      
+      BufferedReader rd = new BufferedReader(new InputStreamReader(request.getErrorStream()));
+      StringBuffer result = new StringBuffer();
+      String line = "";
+      while ((line = rd.readLine()) != null)
+          result.append(line);
+      _log.error("content=" + result);
+      throw (t);
+    }
   }
 }
