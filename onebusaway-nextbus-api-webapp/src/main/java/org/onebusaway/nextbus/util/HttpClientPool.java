@@ -96,7 +96,6 @@ public class HttpClientPool {
 			}
 		}
 
-		@PreDestroy
 		public void shutdown() throws InterruptedException, IOException {
 			_log.trace("Shutting down client pool");
 			// Signal the stop to the thread.
@@ -112,7 +111,8 @@ public class HttpClientPool {
 		}
 
 	}
-
+	
+	@PreDestroy
 	public void shutdown() throws InterruptedException, IOException {
 		// Shutdown the monitor.
 		monitor.shutdown();
