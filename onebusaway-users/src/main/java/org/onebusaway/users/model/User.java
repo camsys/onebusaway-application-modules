@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -103,7 +102,6 @@ public class User extends IdentityBean<Integer> {
 
   private Date lastAccessTime;
 
-  @Column(columnDefinition="BIT")
   private boolean temporary;
 
   @Lob
