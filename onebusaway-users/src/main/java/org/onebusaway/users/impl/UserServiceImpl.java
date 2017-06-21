@@ -206,7 +206,6 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @Transactional
   public void deleteUser(User user) {
     _userDao.deleteUser(user);
   }
@@ -222,7 +221,6 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @Transactional
   public void enableAdminRoleForUser(User user, boolean onlyIfNoOtherAdmins) {
 
     UserRole adminRole = _authoritiesService.getUserRoleForName(StandardAuthoritiesService.ADMINISTRATOR);
@@ -239,7 +237,6 @@ public class UserServiceImpl implements UserService {
       _userDao.saveOrUpdateUser(user);
   }
 
-  @Transactional
   public void disableAdminRoleForUser(User user, boolean onlyIfOtherAdmins) {
 
     UserRole adminRole = _authoritiesService.getUserRoleForName(StandardAuthoritiesService.ADMINISTRATOR);
@@ -257,13 +254,11 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @Transactional
   public List<String> getUserIndexKeyValuesForKeyType(String keyType) {
     return _userDao.getUserIndexKeyValuesForKeyType(keyType);
   }
 
   @Override
-  @Transactional
   public UserIndex getOrCreateUserForIndexKey(UserIndexKey key,
       String credentials, boolean isAnonymous) {
 
@@ -311,7 +306,6 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @Transactional
   public UserIndex addUserIndexToUser(User user, UserIndexKey key,
       String credentials) {
     UserIndex index = new UserIndex();
@@ -324,7 +318,6 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @Transactional
   public void removeUserIndexForUser(User user, UserIndexKey key) {
     for (UserIndex index : user.getUserIndices()) {
       if (index.getId().equals(key)) {
@@ -359,7 +352,6 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @Transactional
   public void mergeUsers(User sourceUser, User targetUser) {
 
     if (sourceUser.equals(targetUser))
@@ -405,7 +397,6 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @Transactional
   public UserIndex completePhoneNumberRegistration(UserIndex userIndex,
       String registrationCode) {
 
@@ -500,7 +491,6 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @Transactional(readOnly=true)
   public long getNumberOfStaleUsers() {
     Calendar c = Calendar.getInstance();
     c.add(Calendar.MONTH, -1);
@@ -550,7 +540,6 @@ public class UserServiceImpl implements UserService {
    * 
    * @param lastAccessTime
    */
-  @Transactional
   private void deleteStaleUsers(Date lastAccessTime) {
 
     while (true) {

@@ -31,7 +31,6 @@ import org.onebusaway.users.services.UserPropertiesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 public class UserPropertiesServiceV1Impl implements UserPropertiesService {
 
@@ -92,7 +91,6 @@ public class UserPropertiesServiceV1Impl implements UserPropertiesService {
   }
 
   @Override
-  @Transactional
   public void setRememberUserPreferencesEnabled(User user,
       boolean rememberPreferencesEnabled) {
     UserPropertiesV1 properties = getProperties(user);
@@ -103,7 +101,6 @@ public class UserPropertiesServiceV1Impl implements UserPropertiesService {
   }
 
   @Override
-  @Transactional
   public void setDefaultLocation(User user, String locationName, double lat,
       double lon) {
 
@@ -125,7 +122,6 @@ public class UserPropertiesServiceV1Impl implements UserPropertiesService {
   }
 
   @Override
-  @Transactional
   public int addStopBookmark(User user, String name, List<String> stopIds,
       RouteFilter filter) {
 
@@ -142,7 +138,6 @@ public class UserPropertiesServiceV1Impl implements UserPropertiesService {
   }
 
   @Override
-  @Transactional
   public void updateStopBookmark(User user, int id, String name,
       List<String> stopIds, RouteFilter routeFilter) {
 
@@ -159,7 +154,6 @@ public class UserPropertiesServiceV1Impl implements UserPropertiesService {
   }
 
   @Override
-  @Transactional
   public void deleteStopBookmarks(User user, int index) {
     UserPropertiesV1 properties = getProperties(user);
 
@@ -176,7 +170,6 @@ public class UserPropertiesServiceV1Impl implements UserPropertiesService {
   }
 
   @Override
-  @Transactional
   public void setLastSelectedStopIds(User user, List<String> stopIds) {
 
     if (stopIds.isEmpty())
@@ -196,7 +189,6 @@ public class UserPropertiesServiceV1Impl implements UserPropertiesService {
   }
 
   @Override
-  @Transactional
   public void resetUser(User user) {
     user.setProperties(new UserPropertiesV1());
     _userDao.saveOrUpdateUser(user);

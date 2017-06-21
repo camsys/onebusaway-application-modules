@@ -33,7 +33,7 @@ public class DatabaseBlockLocationArchiveSource implements
 
   @SuppressWarnings("unchecked")
   @Override
-  @Transactional(readOnly=true)
+  @Transactional
   public List<BlockLocationArchiveRecord> getRecordsForTrip(AgencyAndId tripId) {
 	final String stringQuery = "from BlockLocationArchiveRecord where tripId=:tripId";
     return _sessionFactory.getCurrentSession()

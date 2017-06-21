@@ -70,7 +70,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Implementation for {@link BlockLocationService}. Keeps a recent cache of
@@ -962,7 +961,6 @@ public class BlockLocationServiceImpl implements BlockLocationService,
   private class PredictionWriter implements Runnable {
 
     @Override
-    @Transactional
     public void run() {
 
       try {
@@ -1004,7 +1002,6 @@ public class BlockLocationServiceImpl implements BlockLocationService,
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<BlockLocationRecord> getRecordsFromDao(long fromTime,
         long toTime) {
       BlockConfigurationEntry blockConfig = _blockInstance.getBlock();
@@ -1028,7 +1025,7 @@ public class BlockLocationServiceImpl implements BlockLocationService,
         return Collections.emptyList();
       return Arrays.asList(elementsForVehicleId);
     }
-    @Transactional(readOnly=true)
+
     public List<BlockLocationRecord> getRecordsFromDao(long fromTime,
         long toTime) {
       return _blockLocationRecordDao.getBlockLocationRecordsForVehicleAndTimeRange(

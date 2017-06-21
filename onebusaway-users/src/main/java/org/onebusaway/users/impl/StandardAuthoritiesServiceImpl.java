@@ -50,7 +50,6 @@ class StandardAuthoritiesServiceImpl implements StandardAuthoritiesService {
       createStandardAuthority(auth);
   }
 
-
   private GrantedAuthority createStandardAuthority(final String name) {
 
     assert !_standardAuthoritiesMap.containsKey(name);
