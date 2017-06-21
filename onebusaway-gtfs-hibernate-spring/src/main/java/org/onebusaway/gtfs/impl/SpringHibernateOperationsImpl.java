@@ -20,18 +20,16 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.onebusaway.gtfs.services.HibernateOperation;
 import org.onebusaway.gtfs.services.HibernateOperations;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
-import org.springframework.transaction.annotation.Transactional;
 
 public class SpringHibernateOperationsImpl implements HibernateOperations {
-  
-  private SessionFactory _sessionFactory;
+
+  private HibernateTemplate _ops;
 
   public SpringHibernateOperationsImpl() {
 
@@ -42,79 +40,68 @@ public class SpringHibernateOperationsImpl implements HibernateOperations {
   }
 
   public void setSessionFactory(SessionFactory sessionFactory) {
-	  _sessionFactory = sessionFactory;
+    _ops = new HibernateTemplate(sessionFactory);
   }
 
   @Override
   public SessionFactory getSessionFactory() {
-    return _sessionFactory;
+    return _ops.getSessionFactory();
   }
 
   @Override
-  @Deprecated
   public Object execute(final HibernateOperation callback) {
-    return null;
+    return _ops.execute(new HibernateCallback<Object>() {
+      @Override
+      public Object doInHibernate(Session session) throws HibernateException,
+          SQLException {
+        return callback.doInHibernate(session);
+      }
+    });
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  @Transactional
   public <T> List<T> find(String queryString) {
-    return getSession().createQuery(queryString).list();
+    return _ops.find(queryString);
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  @Transactional
   public <T> List<T> findByNamedQuery(String namedQuery) {
-    return getSession().getNamedQuery(namedQuery).list();
+    return _ops.findByNamedQuery(namedQuery);
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  @Transactional
   public <T> List<T> findByNamedQueryAndNamedParam(String namedQuery,
       String paramName, Object paramValue) {
-    return getSession().getNamedQuery(namedQuery).setParameter(paramName, paramValue).list();
+    return _ops.findByNamedQueryAndNamedParam(namedQuery, paramName, paramValue);
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  @Transactional
   public <T> List<T> findByNamedQueryAndNamedParams(String namedQuery,
       String[] paramNames, Object[] values) {
-	Query query = getSession().getNamedQuery(namedQuery);
-    for(int i=0; i < paramNames.length; i++){
-    	query.setParameter(paramNames[i], values[i]);
-    }
-    return query.list();
+    return _ops.findByNamedQueryAndNamedParam(namedQuery, paramNames, values);
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  @Transactional
   public <T> List<T> findWithNamedParam(String queryString, String paramName,
       Object value) {
-    return getSession().createQuery(queryString).setParameter(paramName, value).list();
+    return _ops.findByNamedParam(queryString, paramName, value);
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  @Transactional
   public <T> List<T> findWithNamedParams(String queryString,
       String[] paramNames, Object[] values) {
-    Query query = getSession().createQuery(queryString);
-    for(int i=0; i < paramNames.length; i++){
-    	query.setParameter(paramNames[i], values[i]);
-    }
-    return query.list();
+    return _ops.findByNamedParam(queryString, paramNames, values);
   }
 
-  @SuppressWarnings("unchecked")
   @Override
-  @Transactional
   public <T> T get(Class<T> entityType, Serializable id) {
-    return (T) getSession().get(entityType, id);
+    return (T) _ops.get(entityType, id);
   }
 
   /****
@@ -122,35 +109,28 @@ public class SpringHibernateOperationsImpl implements HibernateOperations {
    ****/
 
   @Override
-  @Transactional
   public void update(Object entity) {
-	  getSession().update(entity);
+    _ops.update(entity);
   }
 
   @Override
-  @Transactional
   public void save(Object entity) {
-    getSession().save(entity);
+    _ops.save(entity);
   }
 
   @Override
-  @Transactional
   public void saveOrUpdate(Object entity) {
-    getSession().saveOrUpdate(entity);
+    _ops.saveOrUpdate(entity);
   }
 
   @Override
-  @Transactional
   public <T> void removeEntity(T entity) {
-    getSession().delete(entity);
+    _ops.delete(entity);
   }
 
   @Override
-  @Transactional
   public <T> void clearAllEntitiesForType(Class<T> type) {
-	 String stringQuery = "DELETE FROM " + type.getName();
-	 Query query = getSession().createQuery(stringQuery);
-	 query.executeUpdate();
+    _ops.bulkUpdate("DELETE FROM " + type.getName());
   }
 
   @Override
@@ -165,10 +145,6 @@ public class SpringHibernateOperationsImpl implements HibernateOperations {
 
   @Override
   public void flush() {
-	  getSession().flush();
-  }
-  
-  private Session getSession(){
-	  return _sessionFactory.getCurrentSession();
+    _ops.flush();
   }
 }
