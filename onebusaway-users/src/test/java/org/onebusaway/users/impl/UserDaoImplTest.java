@@ -27,45 +27,45 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.ServiceRegistryBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.onebusaway.users.model.User;
 import org.onebusaway.users.model.UserIndex;
 import org.onebusaway.users.model.UserIndexKey;
 import org.onebusaway.users.model.UserPropertiesV1;
 import org.onebusaway.users.model.UserRole;
 import org.onebusaway.users.model.properties.UserPropertiesV2;
-import org.onebusaway.users.services.UserDao;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.transaction.TransactionConfiguration;
-import org.springframework.transaction.annotation.Transactional;
 
-@ContextConfiguration(locations = "classpath:org/onebusaway/users/application-context-test.xml")
-@RunWith(SpringJUnit4ClassRunner.class)
 public class UserDaoImplTest {
-  
-  @Autowired
+
   private SessionFactory _sessionFactory;
-  
-  @Autowired
-  private UserDao _dao;
+
+  private UserDaoImpl _dao;
 
   @Before
   public void setup() throws IOException {
+
+    Configuration config = new AnnotationConfiguration();
+    config = config.configure("org/onebusaway/users/hibernate-configuration.xml");
+    _sessionFactory = config.buildSessionFactory();
+
+    _dao = new UserDaoImpl();
+    _dao.setSessionFactory(_sessionFactory);
+  }
+
+  @After
+  public void teardown() {
+    if (_sessionFactory != null)
+      _sessionFactory.close();
   }
 
   @Test
-  @Transactional
-  public void test() {	
+  public void test() {
+
     assertEquals(0, _dao.getNumberOfUserRoles());
 
     UserRole adminRole = new UserRole("admin");
@@ -108,7 +108,6 @@ public class UserDaoImplTest {
   }
 
   @Test
-  @Transactional
   public void testGetNumberOfUsers() {
 
     assertEquals(0, _dao.getNumberOfUsers());
@@ -131,7 +130,6 @@ public class UserDaoImplTest {
   }
   
   @Test
-  @Transactional
   public void testGetNumberOfStaleUsers() {
     
     Calendar c = Calendar.getInstance();
@@ -168,7 +166,6 @@ public class UserDaoImplTest {
   }
 
   @Test
-  @Transactional
   public void testGetAllUserIds() {
 
     Set<Integer> ids = new HashSet<Integer>();
@@ -200,7 +197,6 @@ public class UserDaoImplTest {
   }
 
   @Test
-  @Transactional
   public void deleteUser() {
 
     UserRole userRole = new UserRole("user");
@@ -235,7 +231,6 @@ public class UserDaoImplTest {
   }
 
   @Test
-  @Transactional
   public void testTransitionUserIndex() {
 
     User userA = new User();

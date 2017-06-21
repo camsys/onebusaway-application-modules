@@ -18,7 +18,6 @@ package org.onebusaway.users.impl;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.hibernate.HibernateException;
@@ -31,25 +30,28 @@ import org.onebusaway.users.model.UserIndexKey;
 import org.onebusaway.users.model.UserRole;
 import org.onebusaway.users.services.UserDao;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.hibernate3.HibernateCallback;
+import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
 class UserDaoImpl implements UserDao {
 
-  private SessionFactory _sessionFactory;
+  private HibernateTemplate _template;
 
   @Autowired
   public void setSessionFactory(SessionFactory sessionFactory) {
-	  _sessionFactory = sessionFactory;
+    _template = new HibernateTemplate(sessionFactory);
+  }
+
+  public HibernateTemplate getHibernateTemplate() {
+    return _template;
   }
 
   @Override
-  @Transactional
   public int getNumberOfUsers() {
-	  _sessionFactory.openSession();
-	Query query = getSession().getNamedQuery("numberOfUsers");
-    List<?> values = query.list();
+    List<?> values = _template.findByNamedQuery("numberOfUsers");
     if (values == null || values.size() == 0)
       return 0;
     Number v = (Number) values.get(0);
@@ -58,27 +60,29 @@ class UserDaoImpl implements UserDao {
 
   @SuppressWarnings("unchecked")
   @Override
-  @Transactional
   public List<Integer> getAllUserIds() {
-	  _sessionFactory.openSession();
-    return getSession().createQuery("SELECT user.id FROM User user").list();
+    return _template.find("SELECT user.id FROM User user");
   }
 
   @Override
-  @Transactional
   public List<Integer> getAllUserIdsInRange(final int firstResult,
       final int maxResults) {
-	  _sessionFactory.openSession();
-        Query query = getSession().createQuery("SELECT user.id FROM User user");
+    return _template.execute(new HibernateCallback<List<Integer>>() {
+      @SuppressWarnings("unchecked")
+      @Override
+      public List<Integer> doInHibernate(Session session)
+          throws HibernateException, SQLException {
+        Query query = session.createQuery("SELECT user.id FROM User user");
         query.setFirstResult(firstResult);
         query.setMaxResults(maxResults);
         return query.list();
+      }
+    });
   }
   
   @Override
-  @Transactional
   public long getNumberOfStaleUsers(Date lastAccessTime) {
-    List<?> values = getSession().getNamedQuery("numberOfStaleUsers").setTimestamp("lastAccessTime", lastAccessTime).list();
+    List<?> values = _template.findByNamedQueryAndNamedParam("numberOfStaleUsers", "lastAccessTime", lastAccessTime);
     if (values == null || values.size() == 0)
       return 0;
     Number v = (Number) values.get(0);
@@ -87,49 +91,48 @@ class UserDaoImpl implements UserDao {
   }
   
   @Override
-  @Transactional
   public List<Integer> getStaleUserIdsInRange(final Date lastAccessTime, final int firstResult, final int maxResults) {
-        Query query = getSession().createQuery("SELECT user.id FROM User user WHERE lastAccessTime < :lastAccessTime");
+    return _template.execute(new HibernateCallback<List<Integer>>() {
+      @SuppressWarnings("unchecked")
+      @Override
+      public List<Integer> doInHibernate(Session session)
+          throws HibernateException, SQLException {
+        Query query = session.createQuery("SELECT user.id FROM User user WHERE lastAccessTime < :lastAccessTime");
         query.setFirstResult(firstResult);
         query.setMaxResults(maxResults);
         query.setTimestamp("lastAccessTime", lastAccessTime);
         return query.list();
-       
+      }
+    });  
   }
 
   @Override
-  @Transactional
   public User getUserForId(int id) {
-    return (User) getSession().get(User.class, id);
+    return (User) _template.get(User.class, id);
   }
-  
-  @Override
+
   @Transactional
+  @Override
   public void saveOrUpdateUser(User user) {
-	getSession().saveOrUpdate(user);
+    _template.saveOrUpdate(user);
   }
 
   @Override
-  @Transactional
   public void saveOrUpdateUsers(User... users) {
-	Session session = getSession();
     List<User> list = new ArrayList<User>(users.length);
-    
-    for (Iterator<User> it = list.iterator(); it.hasNext();) {
-    	session.saveOrUpdate(it.next());
-	}
+    for (User user : users)
+      list.add(user);
+    _template.saveOrUpdateAll(list);
   }
 
   @Override
-  @Transactional
   public void deleteUser(User user) {
-    getSession().delete(user);
+    _template.delete(user);
   }
 
   @Override
-  @Transactional
   public int getNumberOfUserRoles() {
-    List<?> values = getSession().getNamedQuery("numberOfUserRoles").list();
+    List<?> values = _template.findByNamedQuery("numberOfUserRoles");
     if (values == null || values.size() == 0)
       return 0;
     Number v = (Number) values.get(0);
@@ -137,11 +140,9 @@ class UserDaoImpl implements UserDao {
   }
 
   @Override
-  @Transactional
   public int getNumberOfUsersWithRole(UserRole role) {
-	Query query = getSession().getNamedQuery("numberOfUsersWithRole");
-	query.setParameter("role", role);
-    List<?> values = query.list();
+    List<?> values = _template.findByNamedQueryAndNamedParam(
+        "numberOfUsersWithRole", "role", role);
     if (values == null || values.size() == 0)
       return 0;
     Number v = (Number) values.get(0);
@@ -149,47 +150,36 @@ class UserDaoImpl implements UserDao {
   }
 
   @Override
-  @Transactional
   public UserRole getUserRoleForName(String name) {
-    return (UserRole) getSession().get(UserRole.class, name);
+    return (UserRole) _template.get(UserRole.class, name);
   }
 
   @Override
   public void saveOrUpdateUserRole(UserRole userRole) {
-	  getSession().saveOrUpdate(userRole);
+    _template.saveOrUpdate(userRole);
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  @Transactional
   public List<String> getUserIndexKeyValuesForKeyType(String keyType) {
-	  
-	  return getSession()
-			  .getNamedQuery("userIndexKeyValuesForKeyType")
-			  .setString("type", keyType)
-			  .list();
+    return _template.findByNamedQueryAndNamedParam(
+        "userIndexKeyValuesForKeyType", "type", keyType);
   }
 
   @Transactional
   @Override
   public UserIndex getUserIndexForId(UserIndexKey key) {
-    return (UserIndex) getSession().get(UserIndex.class, key);
+    return (UserIndex) _template.get(UserIndex.class, key);
   }
 
   @Override
-  @Transactional
   public void saveOrUpdateUserIndex(UserIndex userIndex) {
-	  getSession().saveOrUpdate(userIndex);
+    _template.saveOrUpdate(userIndex);
   }
 
   @Override
-  @Transactional
   public void deleteUserIndex(UserIndex index) {
-    getSession().delete(index);
-  }
-  
-  private Session getSession(){
-	  return _sessionFactory.getCurrentSession();
+    _template.delete(index);
   }
 
 }
