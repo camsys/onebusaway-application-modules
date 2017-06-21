@@ -16,7 +16,6 @@
  */
 package org.onebusaway.transit_data_federation.impl.reporting;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

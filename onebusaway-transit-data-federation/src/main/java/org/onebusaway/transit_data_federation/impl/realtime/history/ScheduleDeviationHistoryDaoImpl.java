@@ -15,22 +15,20 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.history;
 
-import java.util.Iterator;
 import java.util.List;
 
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.services.realtime.ScheduleDeviationHistoryDao;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class ScheduleDeviationHistoryDaoImpl implements
     ScheduleDeviationHistoryDao {
-  
-  private SessionFactory _sessionFactory;
+
+  private HibernateTemplate _template;
 
   /**
    * Note we are requesting the "mutable" {@link SessionFactory}, aka the one we
@@ -40,33 +38,23 @@ public class ScheduleDeviationHistoryDaoImpl implements
    */
   @Autowired
   public void setSessionFactory(SessionFactory sessionFactory) {
-    _sessionFactory = sessionFactory;
+    _template = new HibernateTemplate(sessionFactory);
   }
 
   @Override
-  @Transactional
   public void saveScheduleDeviationHistory(ScheduleDeviationHistory record) {
-	  getSession().save(record);
+    _template.save(record);
   }
 
   @Override
-  @Transactional
   public void saveScheduleDeviationHistory(
       List<ScheduleDeviationHistory> records) {
-	  Session session = getSession();
-	  for (Iterator<ScheduleDeviationHistory> it = records.iterator(); it.hasNext();) {
-    	session.saveOrUpdate(it.next());
-	  }
+    _template.saveOrUpdateAll(records);
   }
 
   @Override
-  @Transactional
   public ScheduleDeviationHistory getScheduleDeviationHistoryForTripId(
       AgencyAndId tripId) {
-    return (ScheduleDeviationHistory) getSession().get(ScheduleDeviationHistory.class, tripId);
-  }
-  
-  private Session getSession(){
-	  return _sessionFactory.getCurrentSession();
+    return _template.get(ScheduleDeviationHistory.class, tripId);
   }
 }
