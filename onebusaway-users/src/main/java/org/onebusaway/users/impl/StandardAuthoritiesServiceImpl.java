@@ -43,6 +43,7 @@ class StandardAuthoritiesServiceImpl implements StandardAuthoritiesService {
     _userDao = userDao;
   }
 
+  @Transactional(readOnly = false)
   @PostConstruct
   public void bootstrap() {
     for (final String auth : STANDARD_AUTHORITIES)

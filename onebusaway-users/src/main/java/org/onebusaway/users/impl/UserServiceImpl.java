@@ -130,32 +130,27 @@ public class UserServiceImpl implements UserService {
    ****/
 
   @Override
-  @Transactional(readOnly=true)
   public int getNumberOfUsers() {
     return _userDao.getNumberOfUsers();
   }
 
   @Override
-  @Transactional
   public List<Integer> getAllUserIds() {
     return _userDao.getAllUserIds();
   }
 
   @Override
-  @Transactional(readOnly=true)
   public List<Integer> getAllUserIdsInRange(int offset, int limit) {
     return _userDao.getAllUserIdsInRange(offset, limit);
   }
 
   @Override
-  @Transactional(readOnly=true)
   public int getNumberOfAdmins() {
     UserRole admin = _authoritiesService.getAdministratorRole();
     return _userDao.getNumberOfUsersWithRole(admin);
   }
 
   @Override
-  @Transactional(readOnly=true)
   public User getUserForId(int userId) {
     return _userDao.getUserForId(userId);
   }
@@ -262,7 +257,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @Transactional(readOnly=true)
+  @Transactional
   public List<String> getUserIndexKeyValuesForKeyType(String keyType) {
     return _userDao.getUserIndexKeyValuesForKeyType(keyType);
   }
@@ -301,7 +296,6 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @Transactional
   public UserIndex getOrCreateUserForUsernameAndPassword(String username,
       String password) {
 	
@@ -312,7 +306,6 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @Transactional(readOnly=true)
   public UserIndex getUserIndexForId(UserIndexKey key) {
     return _userDao.getUserIndexForId(key);
   }
@@ -345,14 +338,12 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @Transactional
   public void setCredentialsForUserIndex(UserIndex userIndex, String credentials) {
     userIndex.setCredentials(credentials);
     _userDao.saveOrUpdateUserIndex(userIndex);
   }
 
   @Override
-  @Transactional
   public void setPasswordForUsernameUserIndex(UserIndex userIndex,
       String password) {
 	
