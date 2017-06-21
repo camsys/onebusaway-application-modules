@@ -23,11 +23,8 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 
-import net.sf.ehcache.ObjectExistsException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Support class providing functionality for caching the output of arbitrary
@@ -42,8 +39,6 @@ import org.slf4j.LoggerFactory;
  * @see CacheableMethodKeyFactoryManager
  */
 public class CacheableMethodManager {
-
-  private static Logger _log = LoggerFactory.getLogger(CacheableMethodManager.class);
 
   private ConcurrentHashMap<String, CacheEntry> _entries = new ConcurrentHashMap<String, CacheEntry>();
 
@@ -132,32 +127,16 @@ public class CacheableMethodManager {
         cache = createCache(pjp, name);
         if (cache == null) {
           if(!_cacheManager.cacheExists(name))
-            try {
-              _cacheManager.addCache(name);
-            } catch (ObjectExistsException oee) {
-                _log.error("Cache already exists: " + name);
-            }
+        	  _cacheManager.addCache(name);
           cache = _cacheManager.getCache(name);
         } else {
-          try {
-            _cacheManager.addCache(cache);
-          } catch (ObjectExistsException oee) {
-            _log.error("Cache already exists: " + name);
-          }
+          _cacheManager.addCache(cache);
         }
       }
-      synchronized (_entries) {
-        entry = new CacheEntry(keyFactory, valueSerializable, cache);
-        if (_entries.containsKey(name)) {
-          // another thread beat us here, discard
-          _log.warn("concurrent attempt to create cache = " + name);
-        } else {
-          _entries.put(name, entry);
-        }
-      }
+      entry = new CacheEntry(keyFactory, valueSerializable, cache);
+      _entries.put(name, entry);
     }
-    // here we return not what we created, but what made it into the cache map
-    return _entries.get(name);
+    return entry;
   }
 
   private boolean isValueSerializable(ProceedingJoinPoint pjp, Method method) {
