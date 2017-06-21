@@ -50,7 +50,6 @@ import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
 @ContextConfiguration(locations = "classpath:org/onebusaway/users/application-context-test.xml")
-@TransactionConfiguration(transactionManager="transactionManager", defaultRollback=true)
 @RunWith(SpringJUnit4ClassRunner.class)
 public class UserDaoImplTest {
   
