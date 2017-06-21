@@ -40,7 +40,7 @@ import org.hibernate.cfg.Settings;
  * 
  */
 public class EhCacheRegionFactory extends
-	org.hibernate.cache.ehcache.EhCacheRegionFactory {
+    net.sf.ehcache.hibernate.EhCacheRegionFactory {
 
   private static CacheManager staticCacheManagerInstance;
 
