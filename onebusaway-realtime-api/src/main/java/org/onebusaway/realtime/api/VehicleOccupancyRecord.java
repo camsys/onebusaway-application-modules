@@ -17,13 +17,14 @@ package org.onebusaway.realtime.api;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Represents information provided by Automatic Passenger Counter (APC)
  * systems.
  */
-public class VehicleOccupancyRecord {
+public class VehicleOccupancyRecord implements Serializable {
 
     private AgencyAndId vehicleId;
     private Date timestamp;
