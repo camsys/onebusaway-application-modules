@@ -40,6 +40,10 @@ public class Debug extends OneBusAwayEnterpriseActionSupport {
       return _configurationService.getConfigurationValueAsString("display.googleMapsClientId", "");    
     }
 
+	public String getGoogleMapsApiKey() {
+		return _configurationService.getConfigurationValueAsString("display.googleMapsApiKey", "");
+	}
+
 	@Override
 	  public String execute() throws Exception {
 	    ActionContext context = ActionContext.getContext();
