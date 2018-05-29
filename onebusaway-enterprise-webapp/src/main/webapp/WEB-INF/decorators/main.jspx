@@ -94,7 +94,7 @@
 </s:url>
 <script type="text/javascript" src="${url}">
 <!-- //prevent jspx minimization -->
-	
+
 </script>
 
 <decorator:head />
@@ -104,11 +104,8 @@
 	<div id="mainbox">
 		<div id="topbar">
 			<div id="branding">
-				<a href="${link}">
-					<s:url var="url" value="/css/img/agency_logo.png"></s:url>
-					<img src="${url}" alt="Agency logo" />
-				</a>
-
+				<s:set var="link" value="getText('main.agency.link')" />
+				<a href="${link}" id="agency-logo"/>
 			</div>
 
 			<div id="search">
@@ -132,13 +129,13 @@
 			<div id="bottombar">
 				<div class="bottombox" id="google_translate_element_bottom">
 					<span>Google Translate</span>
-					<s:set var="link" value="getText('main.agency.link')" />
-					<s:url var="url" value="/css/img/google_logo.png"></s:url>
+					<s:url var="url" value="/css/img/google_logo.png" />
 					<img id="icon" src="${url}" />
 				</div>
 				<div class="bottombox">
 					<s:set var="link" value="getText('main.privacypolicy.link')" />
-					<a href="${link}"> <span id="privacy-policy" alt="Privacy">Privacy</span>
+					<a href="${link}">
+						<span id="privacy-policy" alt="Privacy">Privacy</span>
 					</a>
 				</div>
 			</div>
@@ -146,7 +143,7 @@
 			<!-- End Content -->
 		</div>
 
-		<div class="container clear"></div>
+		<div class="container clear" />
 		
 	</div>
 	<!-- close mainbox -->
