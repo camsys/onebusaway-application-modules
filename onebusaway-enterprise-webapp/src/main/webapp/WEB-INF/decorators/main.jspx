@@ -106,6 +106,8 @@
 			<div id="branding">
 				<s:set var="link" value="getText('main.agency.link')" />
 				<a href="${link}" id="agency-logo"/>
+				<!-- this is a hack until we find out why the last anchor in this div is duplicated !-->
+				<a style="display: none"/>
 			</div>
 
 			<div id="search">
