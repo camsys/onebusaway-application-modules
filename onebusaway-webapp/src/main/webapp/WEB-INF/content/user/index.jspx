@@ -22,7 +22,7 @@
 <title>User Info</title>
 	<jsp:element name="script">
 		<jsp:attribute name="type">text/javascript</jsp:attribute>
-		<jsp:attribute name="src">http://maps.google.com/maps/api/js?key=<s:property value="#configuration.googleMapsApiKey"/></jsp:attribute>
+		<jsp:attribute name="src">http://maps.google.com/maps?file=api&amp;v=3&amp;key=<s:property value="#configuration.googleMapsApiKey"/></jsp:attribute>
 		<jsp:text></jsp:text>
 	</jsp:element>
 	<script type="text/javascript"
