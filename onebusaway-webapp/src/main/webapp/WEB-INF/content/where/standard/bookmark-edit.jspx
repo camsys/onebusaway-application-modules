@@ -23,12 +23,12 @@
 	<title>Bookmark</title>
 	<jsp:element name="script">
 		<jsp:attribute name="type">text/javascript</jsp:attribute>
-		<jsp:attribute name="src">http://maps.google.com/maps?file=api&amp;v=3&amp;key=<s:property value="#configuration.googleMapsApiKey"/></jsp:attribute>
+		<jsp:attribute name="src">http://maps.google.com/maps/api/js?key=<s:property value="#configuration.googleMapsApiKey"/></jsp:attribute>
 		<jsp:text></jsp:text>
 	</jsp:element>
 	<jsp:element name="script">
 		<jsp:attribute name="type">text/javascript</jsp:attribute>
-		<jsp:attribute name="src">http://www.google.com/uds/api?file=uds.js&amp;v=3&amp;gwt=1&amp;key=<s:property value="#configuration.googleMapsApiKey"/></jsp:attribute>
+		<jsp:attribute name="src">http://www.google.com/uds/api?file=uds.js&amp;v=1.0&amp;gwt=1&amp;key=<s:property value="#configuration.googleMapsApiKey"/></jsp:attribute>
 		<jsp:text></jsp:text>
 	</jsp:element>
 	<script type="text/javascript"
