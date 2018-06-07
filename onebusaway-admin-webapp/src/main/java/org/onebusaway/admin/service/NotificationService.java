@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015 Cambridge Systematics
+ * Copyright (C) 2017 Cambridge Systematics, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.nextbus.util;
+package org.onebusaway.admin.service;
 
 import java.io.IOException;
 
-import com.google.transit.realtime.GtfsRealtime;
-import org.apache.http.client.ClientProtocolException;
+/**
+ * Abstract notifications such as tweets.
+ */
+public interface NotificationService {
 
-import com.google.gson.JsonObject;
-
-public interface HttpUtil {
-	JsonObject getJsonObject(String uri, int timeout) throws ClientProtocolException, IOException;
-	GtfsRealtime.FeedMessage getFeedMessage(final String urlString, int timeoutSeconds) throws ClientProtocolException, IOException;
-	String getEncodedUrl(String url);
+    public String tweet(String message) throws IOException;
 }
