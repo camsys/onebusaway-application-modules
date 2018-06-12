@@ -49,6 +49,7 @@ import org.onebusaway.transit_data_federation.services.reporting.UserReportingSe
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
+import org.onebusaway.util.SystemTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -393,6 +394,36 @@ public class TransitDataServiceTemplateImpl implements TransitDataServiceTemplat
   public VehicleLocationRecordBean getVehiclePositionForVehicleId(String vehicleId) {
     AgencyAndId id = convertAgencyAndId(vehicleId);
     return _vehicleStatusBeanService.getVehiclePositionForVehicleId(id);
+  }
+
+  // TODO - Refactor this!!
+  public ListBean<VehicleLocationRecordBean>  getVehiclePositionsForRoute(String routeId) {
+
+    TripsForRouteQueryBean query = new TripsForRouteQueryBean();
+    query.setRouteId(routeId);
+    query.setTime(SystemTime.currentTimeMillis());
+
+    TripDetailsInclusionBean inclusionBean = new TripDetailsInclusionBean();
+    inclusionBean.setIncludeTripBean(true);
+    inclusionBean.setIncludeTripStatus(true);
+    query.setInclusion(inclusionBean);
+    ListBean<TripDetailsBean> trips = getTripsForRoute(query);
+
+    List<VehicleLocationRecordBean> vehicleLocationRecords = new ArrayList<VehicleLocationRecordBean>();
+
+    for (TripDetailsBean tripDetails : trips.getList()) {
+
+      TripStatusBean tripStatus = tripDetails.getStatus();
+      // filter out interlined routes
+      if (routeId == null
+              || tripDetails.getStatus() == null
+              || !tripDetails.getStatus().getActiveTrip().getRoute().getId().equals(routeId)
+              ||  tripDetails.getStatus().getVehicleId() == null)
+        continue;
+      String vehicleId = tripDetails.getStatus().getVehicleId();
+      vehicleLocationRecords.add(getVehiclePositionForVehicleId(vehicleId));
+    }
+    return new ListBean<VehicleLocationRecordBean>(vehicleLocationRecords, false);
   }
 
     //@Override

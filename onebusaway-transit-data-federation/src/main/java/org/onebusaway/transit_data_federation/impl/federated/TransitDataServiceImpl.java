@@ -326,7 +326,12 @@ public class TransitDataServiceImpl implements TransitDataService {
 
   @Override
   public VehicleLocationRecordBean getVehiclePositionForVehicleId(String vehicleId) {
+    blockUntilBundleIsReady();
     return _transitDataService.getVehiclePositionForVehicleId(vehicleId);
+  }
+  public ListBean<VehicleLocationRecordBean> getVehiclePositionsForRoute(String routeId) {
+    blockUntilBundleIsReady();
+    return _transitDataService.getVehiclePositionsForRoute(routeId);
   }
 
   @Override

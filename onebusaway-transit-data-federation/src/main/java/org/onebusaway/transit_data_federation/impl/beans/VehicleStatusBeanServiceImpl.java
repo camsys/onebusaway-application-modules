@@ -138,6 +138,7 @@ class VehicleStatusBeanServiceImpl implements VehicleStatusBeanService {
     bean.setCurrentOrientation(record.getCurrentOrientation());
     bean.setDistanceAlongBlock(record.getDistanceAlongBlock());
     bean.setScheduleDeviation(record.getScheduleDeviation());
+    bean.setVehicleId(AgencyAndId.convertToString(vehicleId));
     return bean;
   }
 
