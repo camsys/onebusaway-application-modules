@@ -44,6 +44,8 @@ public interface TripPlannerGraph {
 
   public TripEntry getTripEntryForId(AgencyAndId id);
 
+  public boolean deleteTripEntryForId(AgencyAndId id);
+
   public StopEntry getStopEntryForId(AgencyAndId id);
   
   public List<RouteCollectionEntry> getAllRouteCollections();
@@ -53,4 +55,6 @@ public interface TripPlannerGraph {
   public List<RouteEntry> getAllRoutes();
 
   public RouteEntry getRouteForId(AgencyAndId id);
+
+  public boolean deleteStopTime(AgencyAndId tripId, AgencyAndId stopId);
 }
