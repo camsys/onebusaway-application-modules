@@ -445,6 +445,89 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
       _lock.writeLock().unlock();
     }
   }
+
+  public boolean updateStopTime(AgencyAndId tripId, AgencyAndId stopId, int originalArrivalTime, int originalDepartureTime,
+                                int newArrivalTime, int newDepartureTime) {
+    _lock.writeLock().lock();
+    try {
+      TripEntryImpl tripEntry = _tripEntriesById.get(tripId);
+
+      if (tripEntry != null) {
+        for (StopTimeEntry ste : tripEntry.getStopTimes()) {
+          if (ste.getStop().getId().equals(stopId)) {
+            if ((originalArrivalTime < 0 || originalArrivalTime == ste.getArrivalTime())
+                    && originalDepartureTime < 0 || originalDepartureTime == ste.getDepartureTime()) {
+              StopTimeEntryImpl stei = (StopTimeEntryImpl) ste;
+              stei.setArrivalTime(newArrivalTime);
+              stei.setDepartureTime(newDepartureTime);
+              return true;
+            }
+          }
+        }
+      }
+      return false;
+    } finally {
+      _lock.writeLock().unlock();
+    }
+  }
+
+  @Override
+  public boolean insertStopTime(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime,
+                                int shapeDistanceTravelled) {
+    _lock.writeLock().lock();
+
+    try {
+      TripEntryImpl tripEntry = _tripEntriesById.get(tripId);
+      StopTimeEntry found = null;
+      if (tripEntry != null) {
+        for (int i = tripEntry.getStopTimes().size()-1; i>= 0; i--) {
+          StopTimeEntry ste = tripEntry.getStopTimes().get(i);
+          if (shapeDistanceTravelled >= 0) {
+            // we have shape distance, use it to determine insertion position
+            if (shapeDistanceTravelled > ste.getShapeDistTraveled()) {
+              tripEntry.getStopTimes().add(i+1, createStopTimeEntry(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled));
+              return true;
+            }
+          } else if (arrivalTime >= 0) {
+            // try arrivalTime
+            if (arrivalTime > ste.getArrivalTime()) {
+              tripEntry.getStopTimes().add(i+1, createStopTimeEntry(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled));
+              return true;
+            }
+          } else {
+            // use departureTime
+            if (departureTime > ste.getDepartureTime()) {
+              tripEntry.getStopTimes().add(i+1, createStopTimeEntry(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled));
+              return true;
+            }
+          }
+        }
+        // if we are here we have empty stopTimes
+        tripEntry.getStopTimes().add(0, createStopTimeEntry(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled));
+        return true;
+      }
+      return false;
+    } finally {
+     _lock.writeLock().unlock();
+    }
+  }
+
+  private StopTimeEntry createStopTimeEntry(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime, int shapeDistanceTravelled) {
+    StopTimeEntryImpl stei = new StopTimeEntryImpl();
+    stei.setTrip(_tripEntriesById.get(tripId));
+    if (stei.getTrip() == null) {
+      System.out.println("no trip found for " + tripId);
+    }
+    stei.setStop(_stopEntriesById.get(stopId));
+    if (stei.getStop() == null) {
+      System.out.println("no stop found for " + stopId);
+    }
+    stei.setArrivalTime(arrivalTime);
+    stei.setDepartureTime(departureTime);
+    stei.setShapeDistTraveled(shapeDistanceTravelled);
+    return stei;
+  }
+
   @Override
   public BlockEntry getBlockEntryForId(AgencyAndId blockId) {
     _lock.readLock().lock();

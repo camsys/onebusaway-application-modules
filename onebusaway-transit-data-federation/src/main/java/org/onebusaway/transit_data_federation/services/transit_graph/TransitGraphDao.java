@@ -121,4 +121,29 @@ public interface TransitGraphDao {
    * @return true if deltion was successful
    */
   public boolean deleteStopTime(AgencyAndId tripId, AgencyAndId stopId);
+
+  /**
+   * update arrival/departure time for a stop should it exist on the given trip
+   * @param tripId
+   * @param stopId
+   * @param originalArrivalTime -1 for any match, or old value if multiple stops exist on trip for that id
+   * @param originalDepartureTime -1 for any match, or old value if multiple stops exist on trip for that id
+   * @param newArrivalTime
+   * @param newDepartureTime
+   * @return
+   */
+  public boolean updateStopTime(AgencyAndId tripId, AgencyAndId stopId, int originalArrivalTime, int originalDepartureTime,
+                                int newArrivalTime, int newDepartureTime);
+
+  /**
+   * insert a stop time into the list of stop times in the appropriate position based on the shapeDistanceTravelled
+   * or failing that based on arrival/departure time.
+   * @param tripId
+   * @param stopId
+   * @param arrivalTime
+   * @param departureTime
+   * @param shapeDistanceTravelled
+   * @return
+   */
+  public boolean insertStopTime(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime, int shapeDistanceTravelled);
 }
