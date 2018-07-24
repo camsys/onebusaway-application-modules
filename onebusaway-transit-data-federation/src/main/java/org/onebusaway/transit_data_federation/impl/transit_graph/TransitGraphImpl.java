@@ -34,7 +34,9 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.services.serialization.EntryCallback;
 import org.onebusaway.transit_data_federation.services.serialization.EntryIdAndCallback;
 import org.onebusaway.transit_data_federation.services.transit_graph.AgencyEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
@@ -349,6 +351,21 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
   }
 
   @Override
+  public boolean addStopEntry(StopEntryImpl stop) {
+    _lock.writeLock().lock();
+    try {
+      if (_stopEntriesById.containsKey(stop.getId()))
+        return false;
+      _stopEntriesById.put(stop.getId(), stop);
+      _stops.add(stop);
+    } finally {
+      _lock.writeLock().unlock();
+    }
+    return true;
+  }
+
+
+  @Override
   public List<TripEntry> getAllTrips() {
     _lock.readLock().lock();
     try {
@@ -412,6 +429,72 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
   }
 
   @Override
+  public boolean addTripEntry(TripEntryImpl trip) {
+    if (!valid(trip)) return false;
+
+    _lock.writeLock().lock();
+    try {
+      if (_tripEntriesById.containsKey(trip.getId()))
+        return false;
+      _tripEntriesById.put(trip.getId(), trip);
+      _trips.add(trip);
+      // update block
+      _blockEntriesById.put(trip.getBlock().getId(), trip.getBlock());
+      boolean foundBlock = false;
+      for (int i =0; i<_blocks.size(); i++) {
+        BlockEntryImpl bce = _blocks.get(i);
+        if (bce.getId().equals(trip.getBlock().getId())) {
+          foundBlock = true;
+          _blocks.set(i, trip.getBlock());
+        }
+      }
+      if (!foundBlock) {
+        _blocks.add(trip.getBlock());
+      }
+
+      // update route
+      if (trip.getRoute() != null) {
+        if (!_routeEntriesById.containsKey(trip.getRoute().getId())) {
+          _routeEntriesById.put(trip.getRoute().getId(), (RouteEntryImpl) trip.getRoute());
+          _routes.add((RouteEntryImpl) trip.getRoute());
+        }
+        if (!_routeCollectionEntriesById.containsKey(trip.getRoute().getId())) {
+          RouteCollectionEntryImpl rcei = createRouteCollectionForRoute((RouteEntryImpl) trip.getRoute());
+          _routeCollectionEntriesById.put(trip.getRoute().getId(), rcei);
+          _routeCollections.add(rcei);
+        }
+      }
+    } finally {
+      _lock.writeLock().unlock();
+    }
+    return true;
+  }
+
+  // maintain some minimum requirements to keep data structures consistent
+  private boolean valid(TripEntryImpl trip) {
+    if (trip == null) return false;
+    if (trip.getRoute() == null) return false;
+    if (trip.getBlock() == null) return false;
+    if (trip.getBlock().getId() == null || trip.getId() == null) return false;
+    // we need at least one stop time for the block configuration to be valid
+    if (trip.getStopTimes() == null || trip.getStopTimes().isEmpty()) return false;
+    // don't allow orphaned trips that have no calendar
+    if (trip.getServiceId() == null) return false;
+    return true;
+  }
+
+  private RouteCollectionEntryImpl createRouteCollectionForRoute(RouteEntryImpl routeEntry) {
+    RouteCollectionEntryImpl routeCollectionEntry = new RouteCollectionEntryImpl();
+    routeCollectionEntry.setId(routeEntry.getId());
+    ArrayList<RouteEntry> routes = new ArrayList<RouteEntry>();
+    routes.add(routeEntry);
+    routes.trimToSize();
+    routeCollectionEntry.setChildren(routes);
+    routeEntry.setParent(routeCollectionEntry);
+    return routeCollectionEntry;
+  }
+
+  @Override
   public boolean deleteTripEntryForId(AgencyAndId id) {
     _lock.writeLock().lock();
     try {
@@ -430,7 +513,7 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
     try {
       TripEntryImpl tripEntry = _tripEntriesById.get(tripId);
       StopTimeEntry found = null;
-      if (tripEntry != null) {
+      if (tripEntry != null && tripEntry.getStopTimes() != null) {
         for (StopTimeEntry ste : tripEntry.getStopTimes()) {
           if (ste.getStop().getId().equals(stopId)) {
             found = ste;
@@ -438,7 +521,12 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
         }
       }
       if (found != null) {
-        return tripEntry.getStopTimes().remove(found);
+        boolean rc = tripEntry.getStopTimes().remove(found);
+        if (tripEntry.getStopTimes().size() == 0) {
+          // for consistency we null out empty array
+          tripEntry.setStopTimes(null);
+        }
+        return rc;
       }
       return false;
     } finally {
@@ -479,37 +567,84 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
     try {
       TripEntryImpl tripEntry = _tripEntriesById.get(tripId);
       StopTimeEntry found = null;
-      if (tripEntry != null) {
+      if (tripEntry != null && tripEntry.getStopTimes() != null) {
         for (int i = tripEntry.getStopTimes().size()-1; i>= 0; i--) {
           StopTimeEntry ste = tripEntry.getStopTimes().get(i);
           if (shapeDistanceTravelled >= 0) {
             // we have shape distance, use it to determine insertion position
             if (shapeDistanceTravelled > ste.getShapeDistTraveled()) {
               tripEntry.getStopTimes().add(i+1, createStopTimeEntry(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled));
-              return true;
+              return updateBlockStopTimes(tripEntry);
             }
           } else if (arrivalTime >= 0) {
             // try arrivalTime
             if (arrivalTime > ste.getArrivalTime()) {
               tripEntry.getStopTimes().add(i+1, createStopTimeEntry(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled));
-              return true;
+              return updateBlockStopTimes(tripEntry);
             }
           } else {
             // use departureTime
             if (departureTime > ste.getDepartureTime()) {
               tripEntry.getStopTimes().add(i+1, createStopTimeEntry(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled));
-              return true;
+              return updateBlockStopTimes(tripEntry);
             }
           }
         }
-        // if we are here we have empty stopTimes
+      }
+      // if we are here we have empty stopTimes
+      if (tripEntry != null) {
+        if (tripEntry.getStopTimes() == null){
+          tripEntry.setStopTimes(new ArrayList<StopTimeEntry>());
+        }
         tripEntry.getStopTimes().add(0, createStopTimeEntry(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled));
-        return true;
+        return updateBlockStopTimes(tripEntry);
       }
       return false;
     } finally {
      _lock.writeLock().unlock();
     }
+  }
+
+  /**
+   * stop times have changed on the trip, ensure the blockstoptimes are updated
+   *
+   * for each block configuration on trip
+   *   re-generate block configuration
+   *   for each block trip entry
+   *     link trip to block
+   */
+  private boolean updateBlockStopTimes(TripEntryImpl tripEntry) {
+    List<BlockConfigurationEntry> newBlockConfigs = new ArrayList<BlockConfigurationEntry>();
+    for (BlockConfigurationEntry bce : tripEntry.getBlock().getConfigurations()) {
+      BlockConfigurationEntryImpl.Builder builder = BlockConfigurationEntryImpl.builder();
+      builder.setBlock(tripEntry.getBlock());
+
+      builder.setServiceIds(bce.getServiceIds());
+      ArrayList<TripEntry> trips = new ArrayList<TripEntry>();
+      for (BlockTripEntry bte : bce.getTrips()) {
+        if (bte.getTrip().getId().equals(tripEntry.getId())) {
+         // update our trip
+          trips.add(tripEntry);
+        } else {
+          trips.add(bte.getTrip());
+        }
+      }
+      builder.setTrips(trips);
+      builder.setTripGapDistances(new double[trips.size()]);
+      BlockConfigurationEntry blockConfig = builder.create();
+      newBlockConfigs.add(blockConfig);
+    }
+    // now replace existing block configs with our regenerated block configs
+    tripEntry.getBlock().setConfigurations(newBlockConfigs);
+    _blockEntriesById.put(tripEntry.getBlock().getId(), tripEntry.getBlock());
+    for (int i = _blocks.size()-1; i >= 0; i--) {
+      BlockEntryImpl entry = _blocks.get(i);
+      if (entry.getId().equals(tripEntry.getBlock().getId())) {
+        _blocks.set(i, tripEntry.getBlock());
+      }
+    }
+
+    return true;
   }
 
   private StopTimeEntry createStopTimeEntry(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime, int shapeDistanceTravelled) {

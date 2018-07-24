@@ -19,6 +19,8 @@ import java.util.List;
 
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 
 /**
  * Service interface that abstract operations on a transit graph, such as access
@@ -60,6 +62,9 @@ public interface TransitGraphDao {
    * @return a list of stop entries located within in the specified bounds
    */
   public List<StopEntry> getStopsByLocation(CoordinateBounds bounds);
+
+
+  public boolean addStopEntry(StopEntryImpl stopA);
 
   /**
    * @return the list of all block entries in the transit graph
@@ -122,7 +127,9 @@ public interface TransitGraphDao {
    */
   public boolean deleteStopTime(AgencyAndId tripId, AgencyAndId stopId);
 
-  /**
+  public boolean addTripEntry(TripEntryImpl trip);
+
+    /**
    * update arrival/departure time for a stop should it exist on the given trip
    * @param tripId
    * @param stopId
@@ -146,4 +153,6 @@ public interface TransitGraphDao {
    * @return
    */
   public boolean insertStopTime(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime, int shapeDistanceTravelled);
+
+
 }

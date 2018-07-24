@@ -18,8 +18,9 @@ package org.onebusaway.transit_data_federation.services.tripplanner;
 import java.util.List;
 
 import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.gtfs.model.Agency;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.services.transit_graph.AgencyEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
@@ -41,9 +42,13 @@ public interface TripPlannerGraph {
 
   public List<StopEntry> getStopsByLocation(CoordinateBounds bounds);
 
+  public boolean addStopEntry(StopEntryImpl stop);
+
   public BlockEntry getBlockEntryForId(AgencyAndId blockId);
 
   public TripEntry getTripEntryForId(AgencyAndId id);
+
+  public boolean addTripEntry(TripEntryImpl trip);
 
   public boolean deleteTripEntryForId(AgencyAndId id);
 
@@ -63,4 +68,6 @@ public interface TripPlannerGraph {
                                 int newArrivalTime, int newDepartureTime);
 
   public boolean insertStopTime(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime, int shapeDistanceTravelled);
+
+
 }
