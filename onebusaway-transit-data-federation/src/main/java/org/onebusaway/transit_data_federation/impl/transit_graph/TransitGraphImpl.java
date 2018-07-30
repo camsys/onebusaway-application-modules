@@ -464,6 +464,9 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
           _routeCollections.add(rcei);
         }
       }
+      // rebuild block indices
+      updateBlockStopTimes(trip);
+
     } finally {
       _lock.writeLock().unlock();
     }
@@ -615,6 +618,7 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
    */
   private boolean updateBlockStopTimes(TripEntryImpl tripEntry) {
     List<BlockConfigurationEntry> newBlockConfigs = new ArrayList<BlockConfigurationEntry>();
+    if (tripEntry.getBlock() == null || tripEntry.getBlock().getConfigurations() == null) return false;
     for (BlockConfigurationEntry bce : tripEntry.getBlock().getConfigurations()) {
       BlockConfigurationEntryImpl.Builder builder = BlockConfigurationEntryImpl.builder();
       builder.setBlock(tripEntry.getBlock());

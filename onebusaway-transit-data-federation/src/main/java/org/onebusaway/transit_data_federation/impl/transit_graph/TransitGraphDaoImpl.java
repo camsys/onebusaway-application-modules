@@ -18,6 +18,7 @@ package org.onebusaway.transit_data_federation.impl.transit_graph;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -26,15 +27,22 @@ import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.exceptions.NoSuchStopServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
+import org.onebusaway.transit_data_federation.impl.blocks.BlockStopTimeIndicesFactory;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
+import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
 import org.onebusaway.transit_data_federation.services.transit_graph.AgencyEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.transit_data_federation.services.tripplanner.TripPlannerGraph;
@@ -51,6 +59,8 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
   private NarrativeService _narrativeService;
 
+  private ExtendedCalendarService _calendarService;
+
   @Autowired
   public void setBundle(FederatedTransitDataBundle bundle) {
     _bundle = bundle;
@@ -63,6 +73,11 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   @Autowired
   public void setNarrativeService(NarrativeService narrativeService) {
     _narrativeService = narrativeService;
+  }
+
+  @Autowired
+  public void setCalendarService(ExtendedCalendarService calendarService) {
+    _calendarService = calendarService;
   }
 
 
@@ -132,6 +147,7 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
   @Override
   public List<BlockEntry> getAllBlocks() {
+    if (_graph == null) return new ArrayList<BlockEntry>();
     return _graph.getAllBlocks();
   }
 
@@ -187,6 +203,9 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     if (rc && _narrativeService != null) {
        _narrativeService.addTrip(trip);
     }
+    if (rc) {
+      rc = updateBlockStopTime(trip);
+    }
     return rc;
   }
 
@@ -201,5 +220,39 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     return _graph.insertStopTime(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled);
   }
 
+  /**
+   * todo this is a serious performance penalty
+   * todosheldonabrown
+   * this needs to be redesigned to support updates not just completely rebuilding
+   * @param trip
+   * @return
+   */
+  private boolean updateBlockStopTime(TripEntryImpl trip) {
 
+    // clear existing block indices
+    for (BlockEntry block : _graph.getAllBlocks()) {
+      for (BlockConfigurationEntry bce : block.getConfigurations()) {
+        for (BlockStopTimeEntry bste : bce.getStopTimes()) {
+          StopEntryImpl stop = (StopEntryImpl)bste.getStopTime().getStop();
+          stop.getStopTimeIndices().clear();
+        }
+      }
+    }
+
+    BlockStopTimeIndicesFactory factory = new BlockStopTimeIndicesFactory();
+    factory.setVerbose(true);
+    List<BlockStopTimeIndex> indices = factory.createIndices(getAllBlocks());
+
+
+    for (BlockStopTimeIndex index : indices) {
+      StopEntryImpl stop = (StopEntryImpl) index.getStop();
+      stop.addStopTimeIndex(index);
+    }
+
+    return true;
+  }
+
+  public void updateCalendarServiceData(CalendarServiceData data) {
+    _calendarService.setData(data);
+  }
 }

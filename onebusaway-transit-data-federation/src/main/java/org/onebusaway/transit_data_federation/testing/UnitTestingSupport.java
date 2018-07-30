@@ -30,6 +30,8 @@ import java.util.TreeSet;
 
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.ServiceCalendar;
+import org.onebusaway.gtfs.model.ServiceCalendarDate;
 import org.onebusaway.gtfs.model.ShapePoint;
 import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
@@ -479,6 +481,38 @@ public class UnitTestingSupport {
     }
 
     data.putServiceDatesForServiceId(serviceId, serviceDates);
+  }
+
+  public static ServiceCalendar calendar(AgencyAndId serviceId,
+                                        ServiceDate startDate, ServiceDate endDate, String days) {
+
+    if (days.length() != 7)
+      throw new IllegalStateException("invalid days string: " + days);
+
+    ServiceCalendar calendar = new ServiceCalendar();
+
+    calendar.setStartDate(startDate);
+    calendar.setEndDate(endDate);
+    calendar.setServiceId(serviceId);
+
+    calendar.setMonday(days.charAt(0) == '1' ? 1 : 0);
+    calendar.setTuesday(days.charAt(1) == '1' ? 1 : 0);
+    calendar.setWednesday(days.charAt(2) == '1' ? 1 : 0);
+    calendar.setThursday(days.charAt(3) == '1' ? 1 : 0);
+    calendar.setFriday(days.charAt(4) == '1' ? 1 : 0);
+    calendar.setSaturday(days.charAt(5) == '1' ? 1 : 0);
+    calendar.setSunday(days.charAt(5) == '1' ? 1 : 0);
+
+    return calendar;
+  }
+
+  public static ServiceCalendarDate calendarDate(AgencyAndId serviceId,
+                                                  ServiceDate date, int exceptionType) {
+    ServiceCalendarDate calendarDate = new ServiceCalendarDate();
+    calendarDate.setServiceId(serviceId);
+    calendarDate.setDate(date);
+    calendarDate.setExceptionType(exceptionType);
+    return calendarDate;
   }
 
 }
