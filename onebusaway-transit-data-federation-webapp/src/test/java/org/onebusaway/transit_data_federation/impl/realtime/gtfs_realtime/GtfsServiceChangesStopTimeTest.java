@@ -162,6 +162,8 @@ public class GtfsServiceChangesStopTimeTest {
         List<ArrivalAndDepartureBean> arrivalsAndDeparturesByStopId = _arrivalsAndDeparturesBeanService.getArrivalsAndDeparturesByStopId(aid("a"), query);
         assertNotNull(arrivalsAndDeparturesByStopId);
         assertEquals(1, arrivalsAndDeparturesByStopId.size());
+        ArrivalAndDepartureBean ad = arrivalsAndDeparturesByStopId.get(0);
+        assertEquals(aid("tripA").toString(), ad.getTrip().getId());
 
     }
 
