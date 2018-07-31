@@ -542,6 +542,7 @@ public class BlockIndexServiceImpl implements BlockIndexService {
     _blockTripIndicesByBlockId = new HashMap<AgencyAndId, List<BlockTripIndex>>();
     _blockLayoverIndicesByBlockId = new HashMap<AgencyAndId, List<BlockLayoverIndex>>();
     _frequencyBlockTripIndicesByBlockId = new HashMap<AgencyAndId, List<FrequencyBlockTripIndex>>();
+    _blockSequenceIndices = _factory.createSequenceIndices(blocks);
 
     if (refresh) {
       List<BlockTripIndexData> tripData = _factory.createTripData(blocks);
