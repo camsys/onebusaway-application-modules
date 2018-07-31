@@ -142,16 +142,6 @@ public class GtfsServiceChangesStopTimeTest {
     public void testGetArrivalsAndDepartures() {
         addSeedData();
 
-        StopEntry stopEntry = _dao.getStopEntryForId(aid("a"));
-        assertNotNull(stopEntry);
-
-        StopEntryImpl stopEntryImpl = (StopEntryImpl) stopEntry;
-        assertNotNull(stopEntryImpl.getStopTimeIndices());
-        assertEquals(1, stopEntryImpl.getStopTimeIndices().size());
-
-        List<BlockStopTimeIndex> stopTimeIndicesForStop = _blockIndexService.getStopTimeIndicesForStop(stopEntry);
-        assertNotNull(stopTimeIndicesForStop);
-        assertEquals(1, stopTimeIndicesForStop.size());
 
         // now search for that trip
         ArrivalsAndDeparturesQueryBean query = new ArrivalsAndDeparturesQueryBean();
@@ -164,6 +154,30 @@ public class GtfsServiceChangesStopTimeTest {
         assertEquals(1, arrivalsAndDeparturesByStopId.size());
         ArrivalAndDepartureBean ad = arrivalsAndDeparturesByStopId.get(0);
         assertEquals(aid("tripA").toString(), ad.getTrip().getId());
+
+    }
+
+    @Test
+    public void testBlockIndexService() {
+        addSeedData();
+
+        StopEntry stopEntry = _dao.getStopEntryForId(aid("a"));
+        assertNotNull(stopEntry);
+
+        StopEntryImpl stopEntryImpl = (StopEntryImpl) stopEntry;
+        assertNotNull(stopEntryImpl.getStopTimeIndices());
+        assertEquals(1, stopEntryImpl.getStopTimeIndices().size());
+
+        List<BlockStopTimeIndex> stopTimeIndicesForStop = _blockIndexService.getStopTimeIndicesForStop(stopEntry);
+        assertNotNull(stopTimeIndicesForStop);
+        assertEquals(1, stopTimeIndicesForStop.size());
+
+        assertEquals(1, _blockIndexService.getBlockTripIndices().size());
+        assertEquals(0, _blockIndexService.getFrequencyBlockTripIndices().size());
+        // we don't have a layover between two trips
+        assertEquals(0, _blockIndexService.getBlockLayoverIndicesForAgencyId("1").size());
+        assertEquals(1, _blockIndexService.getBlockTripIndicesForAgencyId("1").size());
+        assertEquals(1, _blockIndexService.getBlockTripIndicesForRouteCollectionId(aid("route1")).size());
 
     }
 

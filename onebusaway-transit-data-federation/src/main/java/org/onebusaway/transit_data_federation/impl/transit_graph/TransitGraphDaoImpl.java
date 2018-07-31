@@ -33,6 +33,7 @@ import org.onebusaway.transit_data_federation.impl.blocks.BlockStopTimeIndicesFa
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
+import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
 import org.onebusaway.transit_data_federation.services.transit_graph.AgencyEntry;
@@ -61,6 +62,8 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
   private ExtendedCalendarService _calendarService;
 
+  private BlockIndexService _blockIndexService;
+
   @Autowired
   public void setBundle(FederatedTransitDataBundle bundle) {
     _bundle = bundle;
@@ -80,6 +83,10 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     _calendarService = calendarService;
   }
 
+  @Autowired
+  public void setBlockIndexService(BlockIndexService blockIndexService) {
+    _blockIndexService = blockIndexService;
+  }
 
   @PostConstruct
   @Refreshable(dependsOn = RefreshableResources.TRANSIT_GRAPH)
@@ -107,6 +114,7 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
   @Override
   public List<AgencyEntry> getAllAgencies() {
+    if (_graph == null) return new ArrayList<AgencyEntry>();
     return _graph.getAllAgencies();
   }
 
@@ -117,6 +125,7 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
   @Override
   public List<StopEntry> getAllStops() {
+    if (_graph == null) return new ArrayList<StopEntry>();
     return _graph.getAllStops();
   }
 
@@ -249,6 +258,7 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
       stop.addStopTimeIndex(index);
     }
 
+    _blockIndexService.updateBlockStopTime(trip);
     return true;
   }
 

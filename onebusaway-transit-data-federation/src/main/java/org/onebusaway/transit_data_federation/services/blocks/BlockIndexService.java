@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.onebusaway.collections.tuple.Pair;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 
 /**
@@ -101,7 +102,9 @@ public interface BlockIndexService {
   public List<Pair<FrequencyStopTripIndex>> getFrequencyIndicesBetweenStops(
       StopEntry fromStop, StopEntry toStop);
 
-  /****
+   public void updateBlockStopTime(TripEntryImpl trip);
+
+    /****
    * Block Sequence Indices
    ****/
 
