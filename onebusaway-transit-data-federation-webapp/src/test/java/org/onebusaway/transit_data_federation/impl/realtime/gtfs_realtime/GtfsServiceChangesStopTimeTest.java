@@ -178,6 +178,7 @@ public class GtfsServiceChangesStopTimeTest {
         assertEquals(0, _blockIndexService.getBlockLayoverIndicesForAgencyId("1").size());
         assertEquals(1, _blockIndexService.getBlockTripIndicesForAgencyId("1").size());
         assertEquals(1, _blockIndexService.getBlockTripIndicesForRouteCollectionId(aid("route1")).size());
+        assertEquals(1, _blockIndexService.getAllBlockSequenceIndices().size());
 
     }
 
