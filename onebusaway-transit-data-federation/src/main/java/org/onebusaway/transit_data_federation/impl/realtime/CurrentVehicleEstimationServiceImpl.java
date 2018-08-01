@@ -184,13 +184,6 @@ class CurrentVehicleEstimationServiceImpl implements
       List<CurrentVehicleEstimateBean> beans) {
 
     if (realTimeLocations.isEmpty()) {
-
-      System.out.println(blockInstance.getBlock().getBlock().getId());
-
-      if (blockInstance.getBlock().getBlock().getId().toString().equals(
-          "1_2535404"))
-        System.out.println("  here");
-
       computeCumulativeProbabilityForScheduledBlockLocations(records,
           blockInstance, minProbabilityForConsideration, beans);
 

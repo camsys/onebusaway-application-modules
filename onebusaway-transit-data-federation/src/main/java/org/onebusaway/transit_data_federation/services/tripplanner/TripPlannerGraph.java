@@ -50,7 +50,7 @@ public interface TripPlannerGraph {
 
   public boolean addTripEntry(TripEntryImpl trip);
 
-  public boolean deleteTripEntryForId(AgencyAndId id);
+  public boolean removeTripEntryForId(AgencyAndId id);
 
   public StopEntry getStopEntryForId(AgencyAndId id);
   
@@ -62,7 +62,7 @@ public interface TripPlannerGraph {
 
   public RouteEntry getRouteForId(AgencyAndId id);
 
-  public boolean deleteStopTime(AgencyAndId tripId, AgencyAndId stopId);
+  public boolean removeStopTime(AgencyAndId tripId, AgencyAndId stopId);
 
   public boolean updateStopTime(AgencyAndId tripId, AgencyAndId stopId, int originalArrivalTime, int originalDepartureTime,
                                 int newArrivalTime, int newDepartureTime);

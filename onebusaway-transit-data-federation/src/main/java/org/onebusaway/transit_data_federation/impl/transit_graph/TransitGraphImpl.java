@@ -498,7 +498,7 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
   }
 
   @Override
-  public boolean deleteTripEntryForId(AgencyAndId id) {
+  public boolean removeTripEntryForId(AgencyAndId id) {
     _lock.writeLock().lock();
     try {
       TripEntryImpl tripEntry = _tripEntriesById.get(id);
@@ -511,7 +511,7 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
       _lock.writeLock().unlock();
     }
   }
-  public boolean deleteStopTime(AgencyAndId tripId, AgencyAndId stopId) {
+  public boolean removeStopTime(AgencyAndId tripId, AgencyAndId stopId) {
     _lock.writeLock().lock();
     try {
       TripEntryImpl tripEntry = _tripEntriesById.get(tripId);

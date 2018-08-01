@@ -107,6 +107,9 @@ public class NarrativeServiceImpl implements NarrativeService {
     _provider.addTrip(trip);
   }
 
+  public void removeTrip(TripEntryImpl trip) {
+    _provider.removeTrip(trip);
+  }
   @Override
   public void addStop(StopEntryImpl stop) {
     _provider.addStop(stop);
@@ -115,5 +118,10 @@ public class NarrativeServiceImpl implements NarrativeService {
   @Override
   public void addStopTime(StopTimeEntryImpl stopTime) {
     _provider.addStopTime(stopTime);
+  }
+
+  @Override
+  public boolean addShape(ShapePoints shape) {
+    return _provider.addShape(shape);
   }
 }

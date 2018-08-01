@@ -44,4 +44,6 @@ public interface ShapePointService {
    * @throws IllegalStateException if a shape id could not be found
    */
   public ShapePoints getShapePointsForShapeIds(List<AgencyAndId> shapeIds);
+
+  public boolean addShape(ShapePoints shape);
 }

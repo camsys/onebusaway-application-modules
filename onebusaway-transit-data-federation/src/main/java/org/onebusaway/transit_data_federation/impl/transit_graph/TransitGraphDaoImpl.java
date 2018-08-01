@@ -19,7 +19,9 @@ package org.onebusaway.transit_data_federation.impl.transit_graph;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -30,12 +32,15 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.impl.blocks.BlockStopTimeIndicesFactory;
+import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
+import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
+import org.onebusaway.transit_data_federation.services.shapes.ShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.AgencyEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
@@ -43,7 +48,6 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTi
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.transit_data_federation.services.tripplanner.TripPlannerGraph;
@@ -63,6 +67,10 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   private ExtendedCalendarService _calendarService;
 
   private BlockIndexService _blockIndexService;
+
+  private BlockGeospatialService _blockGeospatialService;
+
+  private ShapePointService _shapePointService;
 
   @Autowired
   public void setBundle(FederatedTransitDataBundle bundle) {
@@ -86,6 +94,17 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   @Autowired
   public void setBlockIndexService(BlockIndexService blockIndexService) {
     _blockIndexService = blockIndexService;
+  }
+
+  @Autowired
+  public void setBlockGeospatialService(
+          BlockGeospatialService blockGeospatialService) {
+    _blockGeospatialService = blockGeospatialService;
+  }
+
+  @Autowired
+  public void setShapePointService(ShapePointService shapePointService) {
+    _shapePointService = shapePointService;
   }
 
   @PostConstruct
@@ -151,7 +170,10 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
   @Override
   public boolean addStopEntry(StopEntryImpl stop) {
-    return _graph.addStopEntry(stop);
+    boolean rc = _graph.addStopEntry(stop);
+    if (rc)
+      rc = _blockGeospatialService.addStop(stop);
+    return rc;
   }
 
   @Override
@@ -197,12 +219,12 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
   @Override
   public boolean deleteTripEntryForId(AgencyAndId id) {
-    return _graph.deleteTripEntryForId(id);
+    return _graph.removeTripEntryForId(id);
   }
 
   @Override
   public boolean deleteStopTime(AgencyAndId tripId, AgencyAndId stopId) {
-    return _graph.deleteStopTime(tripId, stopId);
+    return _graph.removeStopTime(tripId, stopId);
   }
 
   @Override
@@ -215,6 +237,36 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     if (rc) {
       rc = updateBlockStopTime(trip);
     }
+
+    if (rc)
+      rc = _blockGeospatialService.addShape(trip.getShapeId());
+
+    return rc;
+  }
+
+
+  @Override
+  public boolean updateTripEntry(TripEntryImpl trip) {
+    if (_graph.getTripEntryForId(trip.getId()) != null) {
+      removeTripEntry(trip);
+    }
+    return addTripEntry(trip);
+  }
+
+  @Override
+  public boolean removeTripEntry(TripEntryImpl trip) {
+    if (_graph.getTripEntryForId(trip.getId()) == null) {
+      return false;
+    }
+    boolean rc = _graph.removeTripEntryForId(trip.getId());
+    if (rc && _narrativeService != null) {
+      _narrativeService.removeTrip(trip);
+    }
+    if (rc) {
+      rc = updateBlockStopTime(null);
+    }
+    if (rc)
+      rc = _blockGeospatialService.addShape(null);
     return rc;
   }
 
@@ -265,4 +317,19 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   public void updateCalendarServiceData(CalendarServiceData data) {
     _calendarService.setData(data);
   }
+
+  public boolean addShape(ShapePoints shape) {
+    return _shapePointService.addShape(shape);
+  }
+
+  public List<AgencyAndId> getAllReferencedShapeIds() {
+    Set<AgencyAndId> shapeIds = new HashSet<AgencyAndId>();
+    for (TripEntry trip : getAllTrips()) {
+      if (trip.getShapeId() != null) {
+        shapeIds.add(trip.getShapeId());
+      }
+    }
+    return new ArrayList<AgencyAndId>(shapeIds);
+  }
+
 }

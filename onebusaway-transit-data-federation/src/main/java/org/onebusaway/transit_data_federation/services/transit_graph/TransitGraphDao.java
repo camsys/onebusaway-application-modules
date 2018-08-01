@@ -22,6 +22,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.model.ShapePoints;
 
 /**
  * Service interface that abstract operations on a transit graph, such as access
@@ -130,6 +131,10 @@ public interface TransitGraphDao {
 
   public boolean addTripEntry(TripEntryImpl trip);
 
+  public boolean updateTripEntry(TripEntryImpl trip);
+
+  public boolean removeTripEntry(TripEntryImpl trip);
+
     /**
    * update arrival/departure time for a stop should it exist on the given trip
    * @param tripId
@@ -157,4 +162,9 @@ public interface TransitGraphDao {
 
 
   public void updateCalendarServiceData(CalendarServiceData data);
+
+  public boolean addShape(ShapePoints shape);
+
+
+  public List<AgencyAndId> getAllReferencedShapeIds();
 }
