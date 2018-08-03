@@ -43,7 +43,13 @@ class NearbyStopsBeanServiceImpl implements NearbyStopsBeanService {
       GeospatialBeanService geospatialBeanService) {
     _geospatialBeanService = geospatialBeanService;
   }
-  
+
+  public void clearCache() {
+    if (_nearbyStopsCache != null) {
+      _nearbyStopsCache.removeAll();
+    }
+  }
+
   public void setNearbyStopsCache(Cache nearbyStopsCache){
     _nearbyStopsCache = nearbyStopsCache;
   }
@@ -72,7 +78,6 @@ class NearbyStopsBeanServiceImpl implements NearbyStopsBeanService {
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
         stopBean.getLat(), stopBean.getLon(), radius);
     List<AgencyAndId> ids = _geospatialBeanService.getStopsByBounds(bounds);
-
     List<AgencyAndId> excludingSource = new ArrayList<AgencyAndId>();
 
     for (AgencyAndId id : ids) {

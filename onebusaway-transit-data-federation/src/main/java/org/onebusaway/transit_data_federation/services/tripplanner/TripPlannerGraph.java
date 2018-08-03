@@ -44,6 +44,8 @@ public interface TripPlannerGraph {
 
   public boolean addStopEntry(StopEntryImpl stop);
 
+  public boolean removeStopEntry(AgencyAndId stopId);
+
   public BlockEntry getBlockEntryForId(AgencyAndId blockId);
 
   public TripEntry getTripEntryForId(AgencyAndId id);

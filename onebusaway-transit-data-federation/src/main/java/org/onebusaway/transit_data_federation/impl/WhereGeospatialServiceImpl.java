@@ -64,8 +64,10 @@ class WhereGeospatialServiceImpl implements GeospatialBeanService {
       _tree = null;
       return;
     }
-    
-    _tree = new STRtree(stops.size());
+
+    int size = stops.size();
+    if (size == 1) size = 10;
+    _tree = new STRtree(size);
 
     for (StopEntry stop : stops) {
       float x = (float) stop.getStopLon();
@@ -97,6 +99,11 @@ class WhereGeospatialServiceImpl implements GeospatialBeanService {
     TreeVisistor v = new TreeVisistor();
     _tree.query(new Envelope(xMin, xMax, yMin, yMax), v);
     return v.getIdsInRange();
+  }
+
+  public boolean refresh() {
+    initialize();
+    return true;
   }
 
   private class TreeVisistor implements ItemVisitor {

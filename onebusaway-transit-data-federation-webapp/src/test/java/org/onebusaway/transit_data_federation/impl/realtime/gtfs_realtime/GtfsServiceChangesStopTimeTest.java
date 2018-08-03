@@ -33,6 +33,7 @@ import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
+import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
@@ -40,8 +41,11 @@ import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.ShapePointsFactory;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
 import org.onebusaway.transit_data_federation.services.beans.ArrivalsAndDeparturesBeanService;
+import org.onebusaway.transit_data_federation.services.beans.GeospatialBeanService;
+import org.onebusaway.transit_data_federation.services.beans.NearbyStopsBeanService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
@@ -96,6 +100,9 @@ public class GtfsServiceChangesStopTimeTest {
 
     @Autowired
     private BlockGeospatialService _blockGeospatialService;
+
+    @Autowired
+    NearbyStopsBeanService _nearbyStopsBeanService;
 
     private FederatedTransitDataBundle _bundle;
 
@@ -167,6 +174,7 @@ public class GtfsServiceChangesStopTimeTest {
     }
 
     @Test
+    @DirtiesContext
     public void testBlockIndexService() {
         addSeedData();
 
@@ -192,6 +200,7 @@ public class GtfsServiceChangesStopTimeTest {
     }
 
     @Test
+    @DirtiesContext
     public void testBlockGeospatialService() {
         addSeedData();
 
@@ -207,6 +216,28 @@ public class GtfsServiceChangesStopTimeTest {
         assertEquals(1, _dao.getAllReferencedShapeIds().size());
         assertEquals(1, _blockGeospatialService.getBlockSequenceIndexPassingThroughBounds(bounds).size());
 
+    }
+
+    @Test
+    @DirtiesContext
+    public void testNearbyStopsBeanService() {
+        addSeedData();
+
+        CoordinatePoint stopLocation = _dao.getStopEntryForId(aid("a")).getStopLocation();
+
+        CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
+                stopLocation, 1000 /*meters*/);
+
+        StopBean stop = new StopBean();
+        stop.setId(AgencyAndIdLibrary.convertToString(aid("a")));
+        stop.setLat(stopLocation.getLat());
+        stop.setLon(stopLocation.getLon());
+        assertNotNull(_nearbyStopsBeanService.getNearbyStops(stop, 1000));
+        assertEquals(1, _nearbyStopsBeanService.getNearbyStops(stop, 1000).size());
+
+        assertTrue(_dao.removeStopEntry(aid("b")));
+
+        assertEquals(0, _nearbyStopsBeanService.getNearbyStops(stop, 1000).size());
     }
 
     private void addSeedData() {
@@ -230,9 +261,9 @@ public class GtfsServiceChangesStopTimeTest {
         assertFalse(_dao.addTripEntry(tripA));
 
         // add a stop
-        StopEntryImpl stopA = stop("a", 47.5, -122.5);
+        StopEntryImpl stopA = stop("a", 47.50, -122.50);
         assertTrue(_dao.addStopEntry(stopA));
-        StopEntryImpl stopB = stop("b", 47.6, -122.4);
+        StopEntryImpl stopB = stop("b", 47.501, -122.501);
         assertTrue(_dao.addStopEntry(stopB));
 
         stopTime(0, stopA, tripA, time(0, 15), time(0, 17), 35);
@@ -266,13 +297,13 @@ public class GtfsServiceChangesStopTimeTest {
         assertEquals(1, blockCheck.getStopTimeIndices().size());
 
         // add a stop
-        StopEntryImpl stopC = stop("c", 47.6, -122.8);
+        StopEntryImpl stopC = stop("c", 47.52, -122.52);
         assertTrue(_dao.addStopEntry(stopC));
 
         assertEquals(3, _dao.getAllStops().size());
         assertNotNull(_dao.getStopEntryForId(aid("c")));
 
-        StopEntryImpl stopD = stop("d", 47.8, -122.9);
+        StopEntryImpl stopD = stop("d", 47.53, -122.52);
         assertTrue(_dao.addStopEntry(stopD));
 
         // update the calendar info

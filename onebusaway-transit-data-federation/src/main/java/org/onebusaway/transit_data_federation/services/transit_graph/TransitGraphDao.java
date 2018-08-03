@@ -66,8 +66,9 @@ public interface TransitGraphDao {
   public List<StopEntry> getStopsByLocation(CoordinateBounds bounds);
 
 
-  public boolean addStopEntry(StopEntryImpl stopA);
+  public boolean addStopEntry(StopEntryImpl stop);
 
+  public boolean removeStopEntry(AgencyAndId stopId);
   /**
    * @return the list of all block entries in the transit graph
    */

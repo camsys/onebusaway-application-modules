@@ -36,6 +36,8 @@ import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
+import org.onebusaway.transit_data_federation.services.beans.GeospatialBeanService;
+import org.onebusaway.transit_data_federation.services.beans.NearbyStopsBeanService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
@@ -72,6 +74,10 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
   private ShapePointService _shapePointService;
 
+  private NearbyStopsBeanService _nearbyStopsBeanService;
+
+  private GeospatialBeanService _whereGeospatialService;
+
   @Autowired
   public void setBundle(FederatedTransitDataBundle bundle) {
     _bundle = bundle;
@@ -105,6 +111,16 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   @Autowired
   public void setShapePointService(ShapePointService shapePointService) {
     _shapePointService = shapePointService;
+  }
+
+  @Autowired
+  public void setGeospatialBeanService(GeospatialBeanService geospatialBeanService) {
+    _whereGeospatialService = geospatialBeanService;
+  }
+
+  @Autowired
+  public void setNearbyStopsBeanService(NearbyStopsBeanService nearbyStopsBeanService) {
+    _nearbyStopsBeanService = nearbyStopsBeanService;
   }
 
   @PostConstruct
@@ -173,9 +189,28 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     boolean rc = _graph.addStopEntry(stop);
     if (rc)
       rc = _blockGeospatialService.addStop(stop);
+    if (rc)
+      _nearbyStopsBeanService.clearCache();
+
+    if (rc)
+      rc = _whereGeospatialService.refresh();
     return rc;
   }
 
+  @Override
+  public boolean removeStopEntry(AgencyAndId stopId) {
+    if (getStopEntryForId(stopId) != null) {
+      boolean rc = _graph.removeStopEntry(stopId);
+      if (rc)
+        rc = _blockGeospatialService.removeStop(stopId);
+      if (rc)
+         _nearbyStopsBeanService.clearCache();
+      if (rc)
+        rc = _whereGeospatialService.refresh();
+      return rc;
+    }
+    return false;
+  }
   @Override
   public List<BlockEntry> getAllBlocks() {
     if (_graph == null) return new ArrayList<BlockEntry>();
