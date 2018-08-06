@@ -122,10 +122,16 @@ public final class NarrativeProviderImpl implements Serializable {
 
   public void addTrip(TripEntryImpl trip) {
     TripNarrative.Builder builder = TripNarrative.builder();
-    if (_routeCollectionNarratives.containsKey(trip.getRoute().getId())) {
-      // we have a route short name
-      builder.setRouteShortName(_routeCollectionNarratives.get(trip.getRoute().getId()).getShortName());
+    if (!_routeCollectionNarratives.containsKey(trip.getRoute().getId())) {
+      // we need to build a routeCollectionNarrative to represent route short name
+      RouteCollectionNarrative.Builder routeBuilder = RouteCollectionNarrative.builder();
+      routeBuilder.setShortName(trip.getRoute().getId().getId());
+      _routeCollectionNarratives.put(trip.getRoute().getId(), routeBuilder.create());
     }
+
+    // if routeCollection knows of this trip then use that information for TripNarrative
+    builder.setRouteShortName(_routeCollectionNarratives.get(trip.getRoute().getId()).getShortName());
+
     _tripNarratives.put(trip.getId(), builder.create());
 
     for (StopTimeEntry ste: trip.getStopTimes()) {

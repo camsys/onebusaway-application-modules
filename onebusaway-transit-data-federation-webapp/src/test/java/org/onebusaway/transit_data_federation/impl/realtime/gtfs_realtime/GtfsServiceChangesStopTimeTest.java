@@ -44,8 +44,8 @@ import org.onebusaway.transit_data_federation.model.ShapePointsFactory;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
 import org.onebusaway.transit_data_federation.services.beans.ArrivalsAndDeparturesBeanService;
-import org.onebusaway.transit_data_federation.services.beans.GeospatialBeanService;
 import org.onebusaway.transit_data_federation.services.beans.NearbyStopsBeanService;
+import org.onebusaway.transit_data_federation.services.beans.RouteBeanService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
@@ -103,6 +103,9 @@ public class GtfsServiceChangesStopTimeTest {
 
     @Autowired
     NearbyStopsBeanService _nearbyStopsBeanService;
+
+    @Autowired
+    private RouteBeanService _routeBeanService;
 
     private FederatedTransitDataBundle _bundle;
 
@@ -238,6 +241,14 @@ public class GtfsServiceChangesStopTimeTest {
         assertTrue(_dao.removeStopEntry(aid("b")));
 
         assertEquals(0, _nearbyStopsBeanService.getNearbyStops(stop, 1000).size());
+    }
+
+    @Test
+    @DirtiesContext
+    public void testRouteBeanService() {
+        addSeedData();
+        assertNotNull(_routeBeanService.getRouteForId(aid("route1")));
+        assertEquals("1_route1", _routeBeanService.getRouteForId(aid("route1")).getId());
     }
 
     private void addSeedData() {
