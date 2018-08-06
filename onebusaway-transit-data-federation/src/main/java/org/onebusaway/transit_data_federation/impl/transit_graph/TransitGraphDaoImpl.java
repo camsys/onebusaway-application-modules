@@ -158,6 +158,10 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     return _graph.getAgencyForId(id);
   }
 
+  public boolean addAgencyEntry(AgencyEntryImpl agency) {
+    return _graph.addAgencyEntry(agency);
+  }
+
   @Override
   public List<StopEntry> getAllStops() {
     if (_graph == null) return new ArrayList<StopEntry>();
@@ -275,6 +279,23 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
     if (rc)
       rc = _blockGeospatialService.addShape(trip.getShapeId());
+
+    if (rc) {
+      AgencyEntry ae = _graph.getAgencyForId(trip.getId().getAgencyId());
+      RouteCollectionEntry id = _graph.getRouteCollectionForId(trip.getRoute().getId());
+      if (ae == null) {
+        throw new IllegalStateException("Agency not found " + trip.getId().getAgencyId());
+      }
+      if (ae.getRouteCollections() == null) {
+        AgencyEntryImpl aei = (AgencyEntryImpl) ae;
+        aei.setRouteCollections(new ArrayList<RouteCollectionEntry>());
+      }
+      List<RouteCollectionEntry> routeCollectionEntries = new ArrayList<RouteCollectionEntry>(ae.getRouteCollections());
+      if (!routeCollectionEntries.contains(id)) {
+        routeCollectionEntries.add(id);
+        ((AgencyEntryImpl) ae).setRouteCollections(routeCollectionEntries);
+      }
+    }
 
     return rc;
   }

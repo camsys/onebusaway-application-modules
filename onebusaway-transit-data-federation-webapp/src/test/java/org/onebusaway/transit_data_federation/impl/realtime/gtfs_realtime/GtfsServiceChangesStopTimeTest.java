@@ -35,6 +35,7 @@ import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
@@ -46,6 +47,7 @@ import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundl
 import org.onebusaway.transit_data_federation.services.beans.ArrivalsAndDeparturesBeanService;
 import org.onebusaway.transit_data_federation.services.beans.NearbyStopsBeanService;
 import org.onebusaway.transit_data_federation.services.beans.RouteBeanService;
+import org.onebusaway.transit_data_federation.services.beans.RoutesBeanService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
@@ -106,6 +108,9 @@ public class GtfsServiceChangesStopTimeTest {
 
     @Autowired
     private RouteBeanService _routeBeanService;
+
+    @Autowired
+    private RoutesBeanService _routesBeanService;
 
     private FederatedTransitDataBundle _bundle;
 
@@ -251,12 +256,28 @@ public class GtfsServiceChangesStopTimeTest {
         assertEquals("1_route1", _routeBeanService.getRouteForId(aid("route1")).getId());
     }
 
+
+    @Test
+    @DirtiesContext
+    public void testRoutesBeanService() {
+        addSeedData();
+        assertNotNull(_routesBeanService.getRoutesForAgencyId("1"));
+        assertEquals(1, _routesBeanService.getRouteIdsForAgencyId("1").getList().size());
+        assertEquals("1_route1", _routesBeanService.getRouteIdsForAgencyId("1").getList().get(0));
+    }
+
+
     private void addSeedData() {
         assertNotNull(_tds);
         assertNotNull(_dao);
         // confirm empty graph
         assertEquals(0, _dao.getAllStops().size());
         assertEquals(0, _dao.getAllTrips().size());
+
+        // create an agency
+        AgencyEntryImpl aei = new AgencyEntryImpl();
+        aei.setId("1");
+        assertTrue(_dao.addAgencyEntry(aei));
 
         // trips need a block, even if its empty
         // empty blocks have a block_id == trip_id!!!
