@@ -287,7 +287,7 @@ public class GtfsServiceChangesStopTimeTest {
         assertTrue(_dao.addTripEntry(tripB));
         assertNotNull(_dao.getRouteForId(aid("route2")));
         assertNotNull(_dao.getRouteCollectionForId(aid("route2")));
-        //_routesBeanService.refresh();
+
         assertEquals(2, _routesBeanService.getRouteIdsForAgencyId("1").getList().size());
         assertTrue(_routesBeanService.getRouteIdsForAgencyId("1").getList().contains("1_route1"));
         assertTrue(_routesBeanService.getRouteIdsForAgencyId("1").getList().contains("1_route2"));
