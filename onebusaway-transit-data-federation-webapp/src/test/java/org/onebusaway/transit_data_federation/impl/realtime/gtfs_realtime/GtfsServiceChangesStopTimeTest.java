@@ -372,7 +372,7 @@ public class GtfsServiceChangesStopTimeTest {
         assertTrue(_dao.addStopEntry(stopD));
 
         // update the calendar info
-        String[] tripIds = {aid("tripA").toString()};
+        String[] tripIds = {"tripA"};
         addCalendarSeeData(Arrays.asList(tripIds));
 
 
@@ -439,7 +439,7 @@ public class GtfsServiceChangesStopTimeTest {
         Map<String, TimeZone> timeZoneMapByAgencyId = new HashMap<String, TimeZone>();
         TimeZone tz = TimeZone.getTimeZone("America/Los_Angeles");
         assertNotNull(tz);
-        timeZoneMapByAgencyId.put(aid("tripA").getAgencyId(), tz);
+        timeZoneMapByAgencyId.put("tripA", tz);
         CalendarServiceDataFactoryImpl csdfi = new CalendarServiceDataFactoryImpl();
         data = csdfi.updateData(adapt(_dao.getAllAgencies()),
                 calendars,
