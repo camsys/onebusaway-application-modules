@@ -181,7 +181,11 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   }
 
   public boolean addAgencyEntry(AgencyEntryImpl agency) {
-    return _graph.addAgencyEntry(agency);
+    boolean rc = _graph.addAgencyEntry(agency);
+    if (rc) {
+      rc =_narrativeService.addAgency(agency);
+    }
+    return rc;
   }
 
   @Override
