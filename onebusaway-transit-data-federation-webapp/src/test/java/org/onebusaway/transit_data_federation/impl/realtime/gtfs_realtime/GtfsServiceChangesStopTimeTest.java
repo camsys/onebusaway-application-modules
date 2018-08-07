@@ -264,6 +264,33 @@ public class GtfsServiceChangesStopTimeTest {
         assertNotNull(_routesBeanService.getRoutesForAgencyId("1"));
         assertEquals(1, _routesBeanService.getRouteIdsForAgencyId("1").getList().size());
         assertEquals("1_route1", _routesBeanService.getRouteIdsForAgencyId("1").getList().get(0));
+
+        // add a trip with a new route
+        TripEntryImpl tripB = trip("tripB", "sA");
+        // trips need a route
+        RouteEntryImpl route2 = route("route2");
+        tripB.setRoute(route2);
+
+        StopEntryImpl stopA = (StopEntryImpl)_dao.getStopEntryForId(aid("a"));
+        assertNotNull(stopA);
+        StopEntryImpl stopB = (StopEntryImpl)_dao.getStopEntryForId(aid("b"));
+        assertNotNull(stopB);
+        stopTime(10, stopA, tripB, time(10, 15), time(10, 17), 35);
+        stopTime(11, stopB, tripB, time(10, 30), time(10, 31), 95);
+
+        // add to existing block
+        BlockEntryImpl block1 = (BlockEntryImpl) _dao.getBlockEntryForId(aid("tripA"));
+        tripB.setBlock(block1);
+
+        assertEquals(1, _routesBeanService.getRouteIdsForAgencyId("1").getList().size());
+
+        assertTrue(_dao.addTripEntry(tripB));
+        assertNotNull(_dao.getRouteForId(aid("route2")));
+        assertNotNull(_dao.getRouteCollectionForId(aid("route2")));
+        //_routesBeanService.refresh();
+        assertEquals(2, _routesBeanService.getRouteIdsForAgencyId("1").getList().size());
+        assertTrue(_routesBeanService.getRouteIdsForAgencyId("1").getList().contains("1_route1"));
+        assertTrue(_routesBeanService.getRouteIdsForAgencyId("1").getList().contains("1_route2"));
     }
 
 
@@ -293,10 +320,15 @@ public class GtfsServiceChangesStopTimeTest {
         assertFalse(_dao.addTripEntry(tripA));
 
         // add a stop
+        assertNull(_dao.getStopEntryForId(aid("a")));
         StopEntryImpl stopA = stop("a", 47.50, -122.50);
         assertTrue(_dao.addStopEntry(stopA));
+        assertNotNull(_dao.getStopEntryForId(aid("a")));
+
+        assertNull(_dao.getStopEntryForId(aid("b")));
         StopEntryImpl stopB = stop("b", 47.501, -122.501);
         assertTrue(_dao.addStopEntry(stopB));
+        assertNotNull(_dao.getStopEntryForId(aid("b")));
 
         stopTime(0, stopA, tripA, time(0, 15), time(0, 17), 35);
         stopTime(1, stopB, tripA, time(0, 30), time(0, 31), 95);
@@ -322,6 +354,7 @@ public class GtfsServiceChangesStopTimeTest {
         assertEquals(1, _dao.getAllTrips().size());
         assertNotNull(_dao.getTripEntryForId(aid("tripA")));
         assertNotNull(_dao.getAllTrips().get(0));
+        assertNotNull(_dao.getRouteForId(aid("route1")));
 
         assertEquals(aid("tripA"), _dao.getTripEntryForId(aid("tripA")).getId());
 

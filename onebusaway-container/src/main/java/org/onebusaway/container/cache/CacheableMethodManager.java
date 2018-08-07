@@ -88,6 +88,12 @@ public class CacheableMethodManager {
       return element.getObjectValue();
   }
 
+  public boolean flush() throws Throwable {
+    for (CacheEntry cacheEntries : _entries.values()) {
+      cacheEntries.getCache().removeAll();
+    }
+    return true;
+  }
   /***************************************************************************
    * Protected Methods
    * 
