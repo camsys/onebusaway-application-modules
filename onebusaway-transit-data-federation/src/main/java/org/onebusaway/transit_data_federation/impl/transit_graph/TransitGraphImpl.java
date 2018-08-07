@@ -489,6 +489,8 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
           RouteCollectionEntryImpl rcei = createRouteCollectionForRoute((RouteEntryImpl) trip.getRoute());
           _routeCollectionEntriesById.put(trip.getRoute().getId(), rcei);
           _routeCollections.add(rcei);
+          List<RouteCollectionEntry> routeCollections = _agencyEntriesById.get(trip.getRoute().getId().getAgencyId()).getRouteCollections();
+          routeCollections.add(rcei);
         }
       }
       // rebuild block indices

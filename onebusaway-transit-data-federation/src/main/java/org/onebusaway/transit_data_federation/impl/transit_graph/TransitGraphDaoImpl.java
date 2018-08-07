@@ -25,6 +25,7 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.onebusaway.container.cache.CacheableMethodManager;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.exceptions.NoSuchStopServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
@@ -38,6 +39,7 @@ import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
 import org.onebusaway.transit_data_federation.services.beans.GeospatialBeanService;
 import org.onebusaway.transit_data_federation.services.beans.NearbyStopsBeanService;
+import org.onebusaway.transit_data_federation.services.beans.RoutesBeanService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
@@ -54,11 +56,16 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TransitGrap
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.transit_data_federation.model.transit_graph.TransitGraph;
 import org.onebusaway.utility.ObjectSerializationLibrary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TransitGraphDaoImpl implements TransitGraphDao {
+
+  private Logger _log = LoggerFactory.getLogger(TransitGraphDaoImpl.class);
 
   private FederatedTransitDataBundle _bundle;
 
@@ -77,6 +84,16 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   private NearbyStopsBeanService _nearbyStopsBeanService;
 
   private GeospatialBeanService _whereGeospatialService;
+
+  private RoutesBeanService _routesBeanService;
+
+  @Autowired
+  @Qualifier("cacheableMethodManager")
+  private CacheableMethodManager _cacheableMethodManager;
+
+  @Autowired
+  @Qualifier("cacheableAnnotationInterceptor")
+  public CacheableMethodManager _cacheableAnnotationInterceptor;
 
   @Autowired
   public void setBundle(FederatedTransitDataBundle bundle) {
@@ -121,6 +138,11 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   @Autowired
   public void setNearbyStopsBeanService(NearbyStopsBeanService nearbyStopsBeanService) {
     _nearbyStopsBeanService = nearbyStopsBeanService;
+  }
+
+  @Autowired
+  public void setRoutesBeanService(RoutesBeanService routesBeanService) {
+    _routesBeanService = routesBeanService;
   }
 
   @PostConstruct
@@ -281,22 +303,15 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
       rc = _blockGeospatialService.addShape(trip.getShapeId());
 
     if (rc) {
-      AgencyEntry ae = _graph.getAgencyForId(trip.getId().getAgencyId());
-      RouteCollectionEntry id = _graph.getRouteCollectionForId(trip.getRoute().getId());
-      if (ae == null) {
-        throw new IllegalStateException("Agency not found " + trip.getId().getAgencyId());
-      }
-      if (ae.getRouteCollections() == null) {
-        AgencyEntryImpl aei = (AgencyEntryImpl) ae;
-        aei.setRouteCollections(new ArrayList<RouteCollectionEntry>());
-      }
-      List<RouteCollectionEntry> routeCollectionEntries = new ArrayList<RouteCollectionEntry>(ae.getRouteCollections());
-      if (!routeCollectionEntries.contains(id)) {
-        routeCollectionEntries.add(id);
-        ((AgencyEntryImpl) ae).setRouteCollections(routeCollectionEntries);
-      }
+      _routesBeanService.refresh();
     }
 
+    try {
+      _cacheableMethodManager.flush();
+      _cacheableAnnotationInterceptor.flush();
+    } catch (Throwable t) {
+      _log.error("issue flushing cache:", t);
+    }
     return rc;
   }
 
