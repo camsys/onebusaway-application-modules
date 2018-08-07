@@ -21,8 +21,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
@@ -175,4 +177,15 @@ public final class NarrativeProviderImpl implements Serializable {
     return true;
   }
 
+  public boolean addAgency(AgencyEntryImpl agency) {
+    if (_agencyNarratives.get(agency.getId()) == null) {
+      AgencyNarrative.Builder ab = AgencyNarrative.builder();
+      ab.setName(agency.getId());
+      ab.setTimezone(TimeZone.getDefault().getDisplayName());
+      setNarrativeForAgency(agency.getId(), ab.create());
+      return true;
+    }
+    return false;
+
+  }
 }

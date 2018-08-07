@@ -34,6 +34,8 @@ import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
+import org.onebusaway.transit_data.model.trips.TripDetailsBean;
+import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
@@ -48,6 +50,7 @@ import org.onebusaway.transit_data_federation.services.beans.ArrivalsAndDepartur
 import org.onebusaway.transit_data_federation.services.beans.NearbyStopsBeanService;
 import org.onebusaway.transit_data_federation.services.beans.RouteBeanService;
 import org.onebusaway.transit_data_federation.services.beans.RoutesBeanService;
+import org.onebusaway.transit_data_federation.services.beans.TripDetailsBeanService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
@@ -111,6 +114,9 @@ public class GtfsServiceChangesStopTimeTest {
 
     @Autowired
     private RoutesBeanService _routesBeanService;
+
+    @Autowired
+    private TripDetailsBeanService _tripDetailsBeanService;
 
     private FederatedTransitDataBundle _bundle;
 
@@ -293,6 +299,18 @@ public class GtfsServiceChangesStopTimeTest {
         assertTrue(_routesBeanService.getRouteIdsForAgencyId("1").getList().contains("1_route2"));
     }
 
+    @Test
+    @DirtiesContext
+    public void testTripDetailsBeanService() {
+        addSeedData();
+        TripDetailsQueryBean query = new TripDetailsQueryBean();
+        query.setTripId("1_tripA");
+
+        TripDetailsBean tripBean = _tripDetailsBeanService.getTripForId(query);
+        assertNotNull(tripBean);
+        assertNotNull(tripBean.getTrip());
+        assertEquals("1_tripA", tripBean.getTripId());
+    }
 
     private void addSeedData() {
         assertNotNull(_tds);
