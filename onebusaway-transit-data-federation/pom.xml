@@ -111,6 +111,13 @@
       <version>14.0.1</version>
     </dependency>
 
+    <!-- GTFS sometimes -->
+    <dependency>
+      <groupId>com.camsys.transit</groupId>
+      <artifactId>gtfs-servicechange-bindings</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
