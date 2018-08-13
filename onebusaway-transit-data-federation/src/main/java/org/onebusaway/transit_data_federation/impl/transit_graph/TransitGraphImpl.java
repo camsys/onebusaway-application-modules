@@ -463,15 +463,21 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
     try {
       if (_tripEntriesById.containsKey(trip.getId()))
         return false;
+
       _tripEntriesById.put(trip.getId(), trip);
       _trips.add(trip);
       // update block
-      _blockEntriesById.put(trip.getBlock().getId(), trip.getBlock());
+      if (!_blockEntriesById.containsKey(trip.getBlock().getId())) {
+        // new block
+        _blockEntriesById.put(trip.getBlock().getId(), trip.getBlock());
+      }
       boolean foundBlock = false;
+
       for (int i =0; i<_blocks.size(); i++) {
         BlockEntryImpl bce = _blocks.get(i);
         if (bce.getId().equals(trip.getBlock().getId())) {
           foundBlock = true;
+
           _blocks.set(i, trip.getBlock());
         }
       }
@@ -494,7 +500,7 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
         }
       }
       // rebuild block indices
-      updateBlockStopTimes(trip);
+      updateBlockIndices(trip);
 
     } finally {
       _lock.writeLock().unlock();
@@ -606,19 +612,19 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
             // we have shape distance, use it to determine insertion position
             if (shapeDistanceTravelled > ste.getShapeDistTraveled()) {
               tripEntry.getStopTimes().add(i+1, createStopTimeEntry(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled));
-              return updateBlockStopTimes(tripEntry);
+              return updateBlockIndices(tripEntry);
             }
           } else if (arrivalTime >= 0) {
             // try arrivalTime
             if (arrivalTime > ste.getArrivalTime()) {
               tripEntry.getStopTimes().add(i+1, createStopTimeEntry(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled));
-              return updateBlockStopTimes(tripEntry);
+              return updateBlockIndices(tripEntry);
             }
           } else {
             // use departureTime
             if (departureTime > ste.getDepartureTime()) {
               tripEntry.getStopTimes().add(i+1, createStopTimeEntry(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled));
-              return updateBlockStopTimes(tripEntry);
+              return updateBlockIndices(tripEntry);
             }
           }
         }
@@ -629,7 +635,7 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
           tripEntry.setStopTimes(new ArrayList<StopTimeEntry>());
         }
         tripEntry.getStopTimes().add(0, createStopTimeEntry(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled));
-        return updateBlockStopTimes(tripEntry);
+        return updateBlockIndices(tripEntry);
       }
       return false;
     } finally {
@@ -645,25 +651,35 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
    *   for each block trip entry
    *     link trip to block
    */
-  private boolean updateBlockStopTimes(TripEntryImpl tripEntry) {
+  private boolean updateBlockIndices(TripEntryImpl tripEntry) {
     List<BlockConfigurationEntry> newBlockConfigs = new ArrayList<BlockConfigurationEntry>();
     if (tripEntry.getBlock() == null || tripEntry.getBlock().getConfigurations() == null) return false;
     for (BlockConfigurationEntry bce : tripEntry.getBlock().getConfigurations()) {
       BlockConfigurationEntryImpl.Builder builder = BlockConfigurationEntryImpl.builder();
-      builder.setBlock(tripEntry.getBlock());
+      // the builder computes blockTrips
+      builder.setBlock(getBlockEntryForId(tripEntry.getBlock().getId()));
 
       builder.setServiceIds(bce.getServiceIds());
-      ArrayList<TripEntry> trips = new ArrayList<TripEntry>();
+      ArrayList<TripEntry> mergedTrips = new ArrayList<TripEntry>();
+      boolean foundTrip = false;
       for (BlockTripEntry bte : bce.getTrips()) {
-        if (bte.getTrip().getId().equals(tripEntry.getId())) {
-         // update our trip
-          trips.add(tripEntry);
-        } else {
-          trips.add(bte.getTrip());
+        if (bte != null) {
+          if (bte.getTrip() != null) {
+            if (bte.getTrip().getId().equals(tripEntry.getId())) {
+              // update our trip
+              foundTrip = true;
+              mergedTrips.add(tripEntry);
+            } else {
+              mergedTrips.add(bte.getTrip());
+            }
+          }
         }
       }
-      builder.setTrips(trips);
-      builder.setTripGapDistances(new double[trips.size()]);
+      if (!foundTrip) {
+        mergedTrips.add(tripEntry);
+      }
+      builder.setTrips(mergedTrips);
+      builder.setTripGapDistances(new double[mergedTrips.size()]);
       BlockConfigurationEntry blockConfig = builder.create();
       newBlockConfigs.add(blockConfig);
     }

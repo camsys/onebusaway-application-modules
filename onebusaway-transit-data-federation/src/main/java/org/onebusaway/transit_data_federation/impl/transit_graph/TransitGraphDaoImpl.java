@@ -42,13 +42,10 @@ import org.onebusaway.transit_data_federation.services.beans.NearbyStopsBeanServ
 import org.onebusaway.transit_data_federation.services.beans.RoutesBeanService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
 import org.onebusaway.transit_data_federation.services.shapes.ShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.AgencyEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
@@ -299,9 +296,6 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     if (rc && _narrativeService != null) {
        _narrativeService.addTrip(trip);
     }
-    if (rc) {
-      rc = updateBlockStopTime(trip);
-    }
 
     if (rc)
       rc = _blockGeospatialService.addShape(trip.getShapeId());
@@ -316,6 +310,11 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     } catch (Throwable t) {
       _log.error("issue flushing cache:", t);
     }
+
+    if (rc) {
+      rc = updateBlockIndices(trip);
+    }
+
     return rc;
   }
 
@@ -338,7 +337,7 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
       _narrativeService.removeTrip(trip);
     }
     if (rc) {
-      rc = updateBlockStopTime(null);
+      rc = updateBlockIndices(null);
     }
     if (rc)
       rc = _blockGeospatialService.addShape(null);
@@ -363,29 +362,8 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
    * @param trip
    * @return
    */
-  private boolean updateBlockStopTime(TripEntryImpl trip) {
-
-    // clear existing block indices
-    for (BlockEntry block : _graph.getAllBlocks()) {
-      for (BlockConfigurationEntry bce : block.getConfigurations()) {
-        for (BlockStopTimeEntry bste : bce.getStopTimes()) {
-          StopEntryImpl stop = (StopEntryImpl)bste.getStopTime().getStop();
-          stop.getStopTimeIndices().clear();
-        }
-      }
-    }
-
-    BlockStopTimeIndicesFactory factory = new BlockStopTimeIndicesFactory();
-    factory.setVerbose(true);
-    List<BlockStopTimeIndex> indices = factory.createIndices(getAllBlocks());
-
-
-    for (BlockStopTimeIndex index : indices) {
-      StopEntryImpl stop = (StopEntryImpl) index.getStop();
-      stop.addStopTimeIndex(index);
-    }
-
-    _blockIndexService.updateBlockStopTime(trip);
+  private boolean updateBlockIndices(TripEntryImpl trip) {
+    _blockIndexService.updateBlockIndices(trip);
     return true;
   }
 

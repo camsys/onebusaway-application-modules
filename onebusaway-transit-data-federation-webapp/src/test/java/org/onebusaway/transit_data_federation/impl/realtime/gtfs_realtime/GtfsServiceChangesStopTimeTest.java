@@ -260,6 +260,8 @@ public class GtfsServiceChangesStopTimeTest {
         addSeedData();
         assertNotNull(_routeBeanService.getRouteForId(aid("route1")));
         assertEquals("1_route1", _routeBeanService.getRouteForId(aid("route1")).getId());
+        addAnotherRoute();
+        assertEquals("1_route2", _routeBeanService.getRouteForId(aid("route2")).getId());
     }
 
 
@@ -271,28 +273,7 @@ public class GtfsServiceChangesStopTimeTest {
         assertEquals(1, _routesBeanService.getRouteIdsForAgencyId("1").getList().size());
         assertEquals("1_route1", _routesBeanService.getRouteIdsForAgencyId("1").getList().get(0));
 
-        // add a trip with a new route
-        TripEntryImpl tripB = trip("tripB", "sA");
-        // trips need a route
-        RouteEntryImpl route2 = route("route2");
-        tripB.setRoute(route2);
-
-        StopEntryImpl stopA = (StopEntryImpl)_dao.getStopEntryForId(aid("a"));
-        assertNotNull(stopA);
-        StopEntryImpl stopB = (StopEntryImpl)_dao.getStopEntryForId(aid("b"));
-        assertNotNull(stopB);
-        stopTime(10, stopA, tripB, time(10, 15), time(10, 17), 35);
-        stopTime(11, stopB, tripB, time(10, 30), time(10, 31), 95);
-
-        // add to existing block
-        BlockEntryImpl block1 = (BlockEntryImpl) _dao.getBlockEntryForId(aid("tripA"));
-        tripB.setBlock(block1);
-
-        assertEquals(1, _routesBeanService.getRouteIdsForAgencyId("1").getList().size());
-
-        assertTrue(_dao.addTripEntry(tripB));
-        assertNotNull(_dao.getRouteForId(aid("route2")));
-        assertNotNull(_dao.getRouteCollectionForId(aid("route2")));
+        addAnotherRoute();
 
         assertEquals(2, _routesBeanService.getRouteIdsForAgencyId("1").getList().size());
         assertTrue(_routesBeanService.getRouteIdsForAgencyId("1").getList().contains("1_route1"));
@@ -310,6 +291,23 @@ public class GtfsServiceChangesStopTimeTest {
         assertNotNull(tripBean);
         assertNotNull(tripBean.getTrip());
         assertEquals("1_tripA", tripBean.getTripId());
+
+        query.setTripId("1_tripB");
+        assertNull(_tripDetailsBeanService.getTripForId(query));
+        assertEquals(1, _dao.getBlockEntryForId(aid("tripA")).getConfigurations().get(0).getTrips().size());
+        addAnotherRoute();
+
+        assertEquals("tripA", _dao.getTripEntryForId(aid("tripA")).getId().getId());
+        assertEquals("tripB", _dao.getTripEntryForId(aid("tripB")).getId().getId());
+        assertEquals(1, _dao.getTripEntryForId(aid("tripA")).getBlock().getConfigurations().size());
+        assertEquals(1, _dao.getTripEntryForId(aid("tripB")).getBlock().getConfigurations().size());
+        assertEquals(2, _dao.getTripEntryForId(aid("tripB")).getBlock().getConfigurations().get(0).getTrips().size());
+        assertEquals(2, _dao.getBlockEntryForId(aid("tripA")).getConfigurations().get(0).getTrips().size());
+        tripBean = _tripDetailsBeanService.getTripForId(query);
+        assertNotNull(tripBean);
+        assertNotNull(tripBean.getTrip());
+        assertEquals("1_tripB", tripBean.getTripId());
+
     }
 
     private void addSeedData() {
@@ -429,6 +427,34 @@ public class GtfsServiceChangesStopTimeTest {
         assertEquals(1, _dao.getAllReferencedShapeIds().size());
 
     }
+
+    private void addAnotherRoute() {
+        // add a trip with a new route
+        TripEntryImpl tripB = trip("tripB", "sA");
+        // trips need a route
+        RouteEntryImpl route2 = route("route2");
+        tripB.setRoute(route2);
+
+        StopEntryImpl stopA = (StopEntryImpl)_dao.getStopEntryForId(aid("a"));
+        assertNotNull(stopA);
+        StopEntryImpl stopB = (StopEntryImpl)_dao.getStopEntryForId(aid("b"));
+        assertNotNull(stopB);
+        stopTime(10, stopA, tripB, time(10, 15), time(10, 17), 35);
+        stopTime(11, stopB, tripB, time(10, 30), time(10, 31), 95);
+
+        // add to existing block
+        BlockEntryImpl block1 = (BlockEntryImpl) _dao.getBlockEntryForId(aid("tripA"));
+        tripB.setBlock(block1);
+
+
+        assertEquals(1, _routesBeanService.getRouteIdsForAgencyId("1").getList().size());
+
+        assertTrue(_dao.addTripEntry(tripB));
+        assertNotNull(_dao.getRouteForId(aid("route2")));
+        assertNotNull(_dao.getRouteCollectionForId(aid("route2")));
+
+    }
+
     public ShapePoints createShapeFromStops(AgencyAndId shapeId, StopEntryImpl... stops) {
         ShapePointsFactory factory = new ShapePointsFactory();
         factory.setShapeId(shapeId);
