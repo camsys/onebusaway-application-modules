@@ -102,7 +102,7 @@ public interface BlockIndexService {
   public List<Pair<FrequencyStopTripIndex>> getFrequencyIndicesBetweenStops(
       StopEntry fromStop, StopEntry toStop);
 
-   public void updateBlockStopTime(TripEntryImpl trip);
+  public void updateBlockIndices(TripEntryImpl trip);
 
     /****
    * Block Sequence Indices
