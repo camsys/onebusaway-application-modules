@@ -489,6 +489,10 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
         if (!_routeEntriesById.containsKey(trip.getRoute().getId())) {
           _routeEntriesById.put(trip.getRoute().getId(), (RouteEntryImpl) trip.getRoute());
           _routes.add((RouteEntryImpl) trip.getRoute());
+        } else {
+          // Replace with route that has had attributes added
+          RouteEntryImpl route = _routeEntriesById.get(trip.getRoute().getId());
+          trip.setRoute(route);
         }
         if (!_routeCollectionEntriesById.containsKey(trip.getRoute().getId())) {
           RouteCollectionEntryImpl rcei = createRouteCollectionForRoute((RouteEntryImpl) trip.getRoute());
