@@ -28,7 +28,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class GtfsRealtimeEntitySource {
+public class GtfsRealtimeEntitySource {
 
   private static final Logger _log = LoggerFactory.getLogger(GtfsRealtimeEntitySource.class);
 
@@ -85,16 +85,19 @@ class GtfsRealtimeEntitySource {
     return ServiceAlertLibrary.id(id);
   }
 
-  public Id getTripId(String tripId) {
+  public AgencyAndId getObaTripId(String tripId) {
 
     TripEntry trip = getTrip(tripId);
     if (trip != null)
-      return ServiceAlertLibrary.id(trip.getId());
+      return trip.getId();
 
     _log.warn("trip not found with id \"{}\"", tripId);
 
-    AgencyAndId id = new AgencyAndId(_agencyIds.get(0), tripId);
-    return ServiceAlertLibrary.id(id);
+    return new AgencyAndId(_agencyIds.get(0), tripId);
+  }
+
+  public Id getTripId(String tripId) {
+    return ServiceAlertLibrary.id(getObaTripId(tripId));
   }
 
   public TripEntry getTrip(String tripId) {
@@ -117,20 +120,20 @@ class GtfsRealtimeEntitySource {
     return null;
   }
 
-  public Id getStopId(String stopId) {
+  public AgencyAndId getObaStopId(String stopId) {
 
     for (String agencyId : _agencyIds) {
       AgencyAndId id = new AgencyAndId(agencyId, stopId);
       StopEntry stop = _transitGraphDao.getStopEntryForId(id);
       if (stop != null)
-        return ServiceAlertLibrary.id(id);
+        return id;
     }
 
     try {
       AgencyAndId id = AgencyAndId.convertFromString(stopId);
       StopEntry stop = _transitGraphDao.getStopEntryForId(id);
       if (stop != null)
-        return ServiceAlertLibrary.id(id);
+        return id;
     } catch (IllegalArgumentException ex) {
 
     }
@@ -138,6 +141,10 @@ class GtfsRealtimeEntitySource {
     _log.warn("stop not found with id \"{}\"", stopId);
 
     AgencyAndId id = new AgencyAndId(_agencyIds.get(0), stopId);
-    return ServiceAlertLibrary.id(id);
+    return id;
+  }
+
+  public Id getStopId(String stopId) {
+    return ServiceAlertLibrary.id(getObaStopId(stopId));
   }
 }

@@ -18,27 +18,81 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes;
 import com.camsys.transit.servicechange.DateDescriptor;
 import com.camsys.transit.servicechange.EntityDescriptor;
 import com.camsys.transit.servicechange.ServiceChange;
-import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeEntitySource;
+import org.onebusaway.transit_data_federation.services.AgencyService;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     private TransitGraphDao _dao;
 
-    private String _agencyId;
+    private List<String> _agencyIds = new ArrayList<>();
+
+    private AgencyService _agencyService;
+
+    private GtfsRealtimeEntitySource _entitySource;
 
     // for debugging
     private long _time = -1;
 
     private static final Logger _log = LoggerFactory.getLogger(GtfsSometimesHandlerImpl.class);
+
+    @Autowired
+    public void setTransitGraphDao(TransitGraphDao dao) {
+        _dao = dao;
+    }
+
+    @Autowired
+    public void setAgencyService(AgencyService agencyService) {
+        _agencyService = agencyService;
+    }
+
+    public void setAgencyId(String agencyId) {
+        _agencyIds = Collections.singletonList(agencyId);
+    }
+
+    public void setAgencyIds(List<String> agencyIds) {
+        _agencyIds = agencyIds;
+    }
+
+    public void setEntitySource(GtfsRealtimeEntitySource entitySource) {
+        _entitySource = entitySource;
+    }
+
+    public void setTime(long time) {
+        _time = time;
+    }
+
+
+    @PostConstruct
+    public void init() {
+        // Borrowed from GtfsRealtimeSource. TODO - make this behavior reusbale.
+        if (_agencyIds.isEmpty()) {
+            _log.info("no agency ids specified for GtfsSometimesHandlerImpl, so defaulting to full agency id set");
+            List<String> agencyIds = _agencyService.getAllAgencyIds();
+            _agencyIds.addAll(agencyIds);
+            if (_agencyIds.size() > 3) {
+                _log.warn("The default agency id set is quite large (n="
+                        + _agencyIds.size()
+                        + ").  You might consider specifying the applicable agencies for your GtfsSometimesHandlerImpl.");
+            }
+        }
+        _entitySource = new GtfsRealtimeEntitySource();
+        _entitySource.setAgencyIds(_agencyIds);
+        _entitySource.setTransitGraphDao(_dao);
+    }
 
     @Override
     public boolean handleServiceChange(ServiceChange serviceChange) {
@@ -105,15 +159,12 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                     success = false;
                     break;
                 case DELETE:
-                    _dao.deleteStopTime(id(tripId), id(stopId));
+                    success = _dao.deleteStopTime(_entitySource.getObaTripId(tripId),
+                            _entitySource.getObaStopId(stopId));
                     break;
             }
         }
         return success;
-    }
-
-    private AgencyAndId id(String id) {
-        return new AgencyAndId(_agencyId, id);
     }
 
     private long getCurrentTime() {
@@ -125,19 +176,5 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     private LocalDate getCurrentDate() {
         return Instant.ofEpochMilli(getCurrentTime())
                 .atZone(ZoneId.systemDefault()).toLocalDate();
-    }
-
-    @Autowired
-    public void setTransitGraphDao(TransitGraphDao dao) {
-        _dao = dao;
-    }
-
-    @Autowired
-    public void setAgencyId(String agencyId) {
-        _agencyId = agencyId;
-    }
-
-    public void setTime(long time) {
-        _time = time;
     }
 }
