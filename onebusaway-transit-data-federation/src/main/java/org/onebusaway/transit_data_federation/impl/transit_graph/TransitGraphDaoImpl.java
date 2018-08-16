@@ -286,7 +286,13 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
   @Override
   public boolean deleteStopTime(AgencyAndId tripId, AgencyAndId stopId) {
-    return _graph.removeStopTime(tripId, stopId);
+    boolean rc = _graph.removeStopTime(tripId, stopId);
+    if (rc) {
+      TripEntryImpl trip = (TripEntryImpl) getTripEntryForId(tripId);
+      updateBlockIndices(trip);
+    }
+    flushCache();
+    return rc;
   }
 
   @Override
@@ -304,17 +310,11 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
       _routesBeanService.refresh();
     }
 
-    try {
-      _cacheableMethodManager.flush();
-      _cacheableAnnotationInterceptor.flush();
-    } catch (Throwable t) {
-      _log.error("issue flushing cache:", t);
-    }
-
     if (rc) {
       rc = updateBlockIndices(trip);
     }
 
+    flushCache();
     return rc;
   }
 
@@ -383,6 +383,15 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
       }
     }
     return new ArrayList<AgencyAndId>(shapeIds);
+  }
+
+  private void flushCache() {
+    try {
+      _cacheableMethodManager.flush();
+      _cacheableAnnotationInterceptor.flush();
+    } catch (Throwable t) {
+      _log.error("issue flushing cache:", t);
+    }
   }
 
 }
