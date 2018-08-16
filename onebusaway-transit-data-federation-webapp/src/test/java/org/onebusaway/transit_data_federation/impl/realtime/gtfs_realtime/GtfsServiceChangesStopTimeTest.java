@@ -19,6 +19,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.onebusaway.geospatial.model.CoordinateBounds;
@@ -140,10 +141,16 @@ public class GtfsServiceChangesStopTimeTest {
     public void testDeleteStopTimes() {
 
         addSeedData();
+
+        assertTripStopTimesSize(3, "1_tripA");
+
         // remove to catch empty collection bugs
         assertTrue(_dao.deleteStopTime(aid("tripA"), aid("a")));
+        assertTripStopTimesSize(2, "1_tripA");
         assertTrue(_dao.deleteStopTime(aid("tripA"), aid("b")));
+        assertTripStopTimesSize(1, "1_tripA");
         assertTrue(_dao.deleteStopTime(aid("tripA"), aid("c")));
+        // Cannot check stop_times size if 0, because TripDetails lookup won't work (essentially this is an invalid state)
         assertNull(_dao.getTripEntryForId(aid("tripA")).getStopTimes());
         for (TripEntry aTrip : _dao.getAllTrips()) {
             if (aTrip.getId().equals(aid("a"))) {
@@ -155,16 +162,25 @@ public class GtfsServiceChangesStopTimeTest {
         _dao.insertStopTime(aid("tripA"), aid("a"), 30, 90, 25);
         assertNotNull(_dao.getAllTrips().get(0).getStopTimes());
         assertEquals(1, _dao.getAllTrips().get(0).getStopTimes().size());
+        assertTripStopTimesSize(1, "1_tripA");
 
         _dao.insertStopTime(aid("tripA"), aid("b"), 120, 150, 100);
+        assertTripStopTimesSize(2, "1_tripA");
         _dao.insertStopTime(aid("tripA"), aid("c"), 180, 210, 200);
+        assertTripStopTimesSize(3, "1_tripA");
 
         assertEquals(3, _dao.getAllTrips().get(0).getStopTimes().size());
 
         assertNotNull(_tds.getTrip("1_tripA"));
-
-
     }
+
+    private void assertTripStopTimesSize(int nStops, String tripId) {
+        TripDetailsQueryBean query = new TripDetailsQueryBean();
+        query.setTripId(tripId);
+        TripDetailsBean tripBean = _tripDetailsBeanService.getTripForId(query);
+        assertEquals(nStops, tripBean.getSchedule().getStopTimes().size());
+    }
+
 
     @Test
     @Transactional
