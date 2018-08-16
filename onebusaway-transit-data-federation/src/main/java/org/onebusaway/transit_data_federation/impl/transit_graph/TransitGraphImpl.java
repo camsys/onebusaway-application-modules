@@ -545,6 +545,8 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
       _lock.writeLock().unlock();
     }
   }
+
+  @Override
   public boolean removeStopTime(AgencyAndId tripId, AgencyAndId stopId) {
     _lock.writeLock().lock();
     try {
@@ -562,8 +564,11 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
         if (tripEntry.getStopTimes().size() == 0) {
           // for consistency we null out empty array
           tripEntry.setStopTimes(null);
+          return rc;
         }
-        return rc;
+        if (rc) {
+          return updateBlockIndices(tripEntry);
+        }
       }
       return false;
     } finally {
@@ -585,7 +590,7 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
               StopTimeEntryImpl stei = (StopTimeEntryImpl) ste;
               stei.setArrivalTime(newArrivalTime);
               stei.setDepartureTime(newDepartureTime);
-              return true;
+              return updateBlockIndices(tripEntry);
             }
           }
         }
