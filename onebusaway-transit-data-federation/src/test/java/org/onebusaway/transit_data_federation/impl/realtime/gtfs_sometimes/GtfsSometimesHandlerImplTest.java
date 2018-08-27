@@ -18,13 +18,20 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes;
 import com.camsys.transit.servicechange.ServiceChange;
 import com.camsys.transit.servicechange.ServiceChangeType;
 import com.camsys.transit.servicechange.Table;
+import com.camsys.transit.servicechange.field_descriptors.StopTimesFields;
 import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeEntitySource;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -43,6 +50,20 @@ public class GtfsSometimesHandlerImplTest {
     public void setup() {
         dao = mock(TransitGraphDao.class);
         when(dao.deleteStopTime(any(), any())).thenReturn(true);
+        when(dao.insertStopTime(any(), any(), anyInt(), anyInt(), anyInt())).thenReturn(true);
+        when(dao.updateStopTime(any(), any(), anyInt(), anyInt(), anyInt(), anyInt())).thenReturn(true);
+
+        // for alter trip:
+        TripEntryImpl tripA = new TripEntryImpl();
+        tripA.setId(new AgencyAndId("1", "tripA"));
+        StopTimeEntryImpl stopTimeA = new StopTimeEntryImpl();
+        StopEntryImpl stopA = new StopEntryImpl(new AgencyAndId("1", "stopA"), 0d, 0d);
+        stopTimeA.setStop(stopA);
+        stopTimeA.setArrivalTime(LocalTime.of(8, 0, 0).toSecondOfDay());
+        stopTimeA.setDepartureTime(LocalTime.of(8, 0, 0).toSecondOfDay());
+        tripA.setStopTimes(Collections.singletonList(stopTimeA));
+        when(dao.getTripEntryForId(new AgencyAndId("1", "tripA"))).thenReturn(tripA);
+
         handler = new GtfsSometimesHandlerImpl();
         handler.setTransitGraphDao(dao);
         handler.setAgencyId("1");
@@ -64,6 +85,27 @@ public class GtfsSometimesHandlerImplTest {
         verify(dao, times(1)).deleteStopTime(
                 AgencyAndId.convertFromString("1_tripA"),
                 AgencyAndId.convertFromString("1_stopA"));
+    }
+
+    @Test
+    public void deleteStopTimesAffectedFieldCardinalityTest() {
+        ServiceChange change = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.DELETE,
+                Collections.singletonList(stopTimeEntity("tripA", "stopA")),
+                Collections.singletonList(new StopTimesFields()),
+                dateDescriptors(LocalDate.of(2018, 7, 1)));
+        assertFalse(handler.handleServiceChange(change));
+    }
+
+    @Test
+    public void deleteStopTimesDateCardinalityTest() {
+        ServiceChange change = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.DELETE,
+                Collections.singletonList(stopTimeEntity("tripA", "stopA")),
+                null,
+                Collections.emptyList());
+        assertFalse(handler.handleServiceChange(change));
+
     }
 
     @Test
@@ -120,16 +162,83 @@ public class GtfsSometimesHandlerImplTest {
     }
 
     @Test
+    public void addStopTimesAffectedEntityCardinalityTest() {
+        ServiceChange change = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.ADD,
+                Arrays.asList(stopTimeEntity("tripA", "stopA")),
+                stopTimesFieldsList("tripA", LocalTime.of(9, 0, 0), LocalTime.of(9, 0, 0), "stopA", 0),
+                dateDescriptors(LocalDate.of(2018, 6, 1), LocalDate.of(2018, 7, 1)));
+        assertFalse(handler.handleServiceChange(change));
+    }
+
+    @Test
+    public void addStopTimesTestAffectedDateCardinalityTest() {
+        ServiceChange change = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.ADD,
+                null,
+                stopTimesFieldsList("tripA", LocalTime.of(9, 0, 0), LocalTime.of(9, 0, 0), "stopA", 0),
+                Collections.emptyList());
+        assertFalse(handler.handleServiceChange(change));
+    }
+
+    @Test
     public void addStopTimesTest() {
         ServiceChange change = serviceChange(Table.STOP_TIMES,
                 ServiceChangeType.ADD,
-                Collections.singletonList(stopTimeEntity("tripA", "stopA")),
-                null, // TODO
-                dateDescriptors(LocalDate.of(2018, 7, 1)));
+                null,
+                stopTimesFieldsList("tripA", LocalTime.of(9, 0, 0), LocalTime.of(9, 0, 0), "stopA", 0),
+                dateDescriptors(LocalDate.of(2018, 6, 1), LocalDate.of(2018, 7, 1)));
         assertTrue(handler.handleServiceChange(change));
-        verify(dao, times(1)).deleteStopTime(
+        verify(dao, times(1)).insertStopTime(
                 AgencyAndId.convertFromString("1_tripA"),
-                AgencyAndId.convertFromString("1_stopA"));
+                AgencyAndId.convertFromString("1_stopA"),
+                9 * 3600, 9 * 3600, -1);
+    }
+
+    @Test
+    public void alterStopTimesTestAffectedEntityCardinalityTest() {
+        ServiceChange change = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.ALTER,
+                null,
+                stopTimesFieldsList("tripA", LocalTime.of(9, 0, 0), LocalTime.of(9, 0, 0), "stopA", 0),
+                dateDescriptors(LocalDate.of(2018, 6, 1), LocalDate.of(2018, 7, 1)));
+        assertFalse(handler.handleServiceChange(change));
+    }
+
+    @Test
+    public void alterStopTimesTestAffectedFieldCardinalityTest0() {
+        ServiceChange change = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.ALTER,
+                Collections.singletonList(stopTimeEntity("tripA", "stopA")),
+                null,
+                dateDescriptors(LocalDate.of(2018, 6, 1), LocalDate.of(2018, 7, 1)));
+        assertFalse(handler.handleServiceChange(change));
+    }
+
+    @Test
+    public void alterStopTimesTestAffectedFieldCardinalityTest1() {
+        ServiceChange change = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.ALTER,
+                Collections.singletonList(stopTimeEntity("tripA", "stopA")),
+                Arrays.asList(stopTimesFieldDescriptor(null, null, null, null, -1),
+                        stopTimesFieldDescriptor(null, null, null, null, -1)),
+                dateDescriptors(LocalDate.of(2018, 6, 1), LocalDate.of(2018, 7, 1)));
+        assertFalse(handler.handleServiceChange(change));
+    }
+
+    @Test
+    public void alterStopTimesTest() {
+        ServiceChange change = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.ALTER,
+                Collections.singletonList(stopTimeEntity("tripA", "stopA")),
+                stopTimesFieldsList("tripA", LocalTime.of(9, 0, 0), LocalTime.of(9, 0, 0), "stopA", 0),
+                dateDescriptors(LocalDate.of(2018, 6, 1), LocalDate.of(2018, 7, 1)));
+        assertTrue(handler.handleServiceChange(change));
+        verify(dao, times(1)).updateStopTime(
+                AgencyAndId.convertFromString("1_tripA"),
+                AgencyAndId.convertFromString("1_stopA"),
+                8 * 3600, 8 * 3600,
+                9 * 3600, 9 * 3600);
     }
 
     private abstract class MockEntitySource extends GtfsRealtimeEntitySource {

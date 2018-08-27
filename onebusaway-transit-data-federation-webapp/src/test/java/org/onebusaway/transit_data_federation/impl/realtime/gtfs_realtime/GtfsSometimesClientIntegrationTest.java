@@ -61,6 +61,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -186,6 +187,76 @@ public class GtfsSometimesClientIntegrationTest {
         assertEquals(time(16, 10, 20), next.getArrivalTime());
         assertEquals(time(16, 10, 20), next.getDepartureTime());
     }
+
+    @Test
+    @DirtiesContext
+    public void testAddStopTime() {
+        ServiceChange change = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.ADD,
+                null,
+                 stopTimesFieldsList("CA_G8-Weekday-096000_MISC_545",
+                        LocalTime.of(16, 47, 20), LocalTime.of(16, 47, 22),
+                         "200176", 68), // stop_sequence is ignored
+                dateDescriptors(LocalDate.of(2018, 8, 10)));
+        assertTrue(_handler.handleServiceChange(change));
+
+        TripDetailsBean tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
+        assertEquals(72, tripDetails.getSchedule().getStopTimes().size());
+        List<TripStopTimeBean> stopTimes = tripDetails.getSchedule().getStopTimes();
+
+        TripStopTimeBean prev = stopTimes.get(66);
+        assertEquals("MTA_203563", prev.getStop().getId());
+        assertEquals(67, prev.getGtfsSequence());
+        assertEquals(time(16, 47, 0), prev.getArrivalTime());
+        assertEquals(time(16, 47, 0), prev.getDepartureTime());
+
+        TripStopTimeBean added = stopTimes.get(67);
+        assertEquals("MTA_200176", added.getStop().getId());
+        assertEquals(time(16, 47, 20), added.getArrivalTime());
+        assertEquals(time(16, 47, 22), added.getDepartureTime());
+
+        TripStopTimeBean next = stopTimes.get(68);
+        assertEquals("MTA_203564", next.getStop().getId());
+        assertEquals(68, next.getGtfsSequence());
+        assertEquals(time(16, 47, 38), next.getArrivalTime());
+        assertEquals(time(16, 47, 38), next.getDepartureTime());
+    }
+
+    @Test
+    @DirtiesContext
+    public void testAlterStopTime() {
+        ServiceChange change = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.ALTER,
+                Collections.singletonList(stopTimeEntity("CA_G8-Weekday-096000_MISC_545", "203564")),
+                stopTimesFieldsList("CA_G8-Weekday-096000_MISC_545",
+                        LocalTime.of(16, 47, 42), LocalTime.of(16, 47, 44), // delay by 4-6 seconds
+                        "203564", 68),
+                dateDescriptors(LocalDate.of(2018, 8, 10)));
+        assertTrue(_handler.handleServiceChange(change));
+
+        TripDetailsBean tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
+        assertEquals(71, tripDetails.getSchedule().getStopTimes().size());
+        List<TripStopTimeBean> stopTimes = tripDetails.getSchedule().getStopTimes();
+
+        TripStopTimeBean prev = stopTimes.get(66);
+        assertEquals("MTA_203563", prev.getStop().getId());
+        assertEquals(67, prev.getGtfsSequence());
+        assertEquals(time(16, 47, 0), prev.getArrivalTime());
+        assertEquals(time(16, 47, 0), prev.getDepartureTime());
+
+        TripStopTimeBean altered = stopTimes.get(67);
+        assertEquals("MTA_203564", altered.getStop().getId());
+        assertEquals(68, altered.getGtfsSequence());
+        assertEquals(time(16, 47, 42), altered.getArrivalTime());
+        assertEquals(time(16, 47, 44), altered.getDepartureTime());
+
+        TripStopTimeBean next = stopTimes.get(68);
+        assertEquals("MTA_203565", next.getStop().getId());
+        assertEquals(69, next.getGtfsSequence());
+        assertEquals(time(16, 47, 58), next.getArrivalTime());
+        assertEquals(time(16, 47, 58), next.getDepartureTime());
+    }
+
 
     private TripDetailsBean getTripDetails(String tripId) {
         TripDetailsQueryBean query = new TripDetailsQueryBean();

@@ -18,9 +18,15 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes;
 import com.camsys.transit.servicechange.DateDescriptor;
 import com.camsys.transit.servicechange.EntityDescriptor;
 import com.camsys.transit.servicechange.ServiceChange;
+import com.camsys.transit.servicechange.ServiceChangeType;
+import com.camsys.transit.servicechange.field_descriptors.AbstractFieldDescriptor;
+import com.camsys.transit.servicechange.field_descriptors.StopTimesFields;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeEntitySource;
 import org.onebusaway.transit_data_federation.services.AgencyService;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
+import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,6 +102,9 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     @Override
     public boolean handleServiceChange(ServiceChange serviceChange) {
+        if (!validateServiceChange(serviceChange)) {
+            return false;
+        }
         if (!dateIsApplicable(serviceChange)) {
             _log.debug("Service change is not applicable to date.");
             return false;
@@ -115,6 +124,21 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                 break;
         }
         _log.error("Table not implemented: {}", serviceChange.getTable());
+        return false;
+    }
+
+    private boolean validateServiceChange(ServiceChange change) {
+        if (change.getAffectedDates().isEmpty()) {
+            return false;
+        }
+        switch(change.getServiceChangeType()) {
+            case ADD:
+                return change.getAffectedEntity().isEmpty() && !change.getAffectedField().isEmpty();
+            case ALTER:
+                return !change.getAffectedEntity().isEmpty() && change.getAffectedField().size() == 1;
+            case DELETE:
+                return !change.getAffectedEntity().isEmpty() && change.getAffectedField().isEmpty();
+        }
         return false;
     }
 
@@ -141,26 +165,48 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     private boolean handleStopTimesChange(ServiceChange change) {
         boolean success = true;
+        if (change.getServiceChangeType().equals(ServiceChangeType.ADD)) {
+            for (AbstractFieldDescriptor abstractFieldDescriptor : change.getAffectedField()) {
+                if (!(abstractFieldDescriptor instanceof StopTimesFields)) {
+                    return false;
+                }
+                StopTimesFields fields = (StopTimesFields) abstractFieldDescriptor;
+                AgencyAndId tripId = _entitySource.getObaTripId(fields.getTripId());
+                AgencyAndId stopId = _entitySource.getObaStopId(fields.getStopId());
+                success &= _dao.insertStopTime(tripId, stopId, fields.getArrivalTime().toSecondOfDay(), fields.getDepartureTime().toSecondOfDay(), -1);
+            }
+        }
         for (EntityDescriptor descriptor : change.getAffectedEntity()) {
-            String tripId = descriptor.getTripId();
-            String stopId = descriptor.getStopId();
-            if (tripId == null || stopId == null) {
+            String bareTripId = descriptor.getTripId();
+            String bareStopId = descriptor.getStopId();
+            if (bareTripId == null || bareStopId == null) {
                 _log.info("Service Change not fully applied; not enough info for stop_time");
                 success = false;
                 continue;
             }
+            AgencyAndId tripId = _entitySource.getObaTripId(bareTripId);
+            AgencyAndId stopId = _entitySource.getObaStopId(bareStopId);
             switch (change.getServiceChangeType()) {
                 case ADD:
-                    _log.info("not implemented");
-                    success = false;
-                    break;
+                    throw new IllegalArgumentException("Invalid service change!");
                 case ALTER:
-                    _log.info("not implemented");
+                    TripEntry trip = _dao.getTripEntryForId(tripId);
                     success = false;
+                    if (trip != null) {
+                        // TODO: loop trips?
+                        for (StopTimeEntry stopTime : trip.getStopTimes()) {
+                            if (stopTime.getStop().getId().equals(stopId)) {
+                                StopTimesFields fields = (StopTimesFields) change.getAffectedField().iterator().next();
+                                int arrivalTime = fields.getArrivalTime().toSecondOfDay();
+                                int departureTime = fields.getDepartureTime().toSecondOfDay();
+                                success = _dao.updateStopTime(tripId, stopId, stopTime.getArrivalTime(),
+                                        stopTime.getDepartureTime(), arrivalTime, departureTime);
+                            }
+                        }
+                    }
                     break;
                 case DELETE:
-                    success = _dao.deleteStopTime(_entitySource.getObaTripId(tripId),
-                            _entitySource.getObaStopId(stopId));
+                    success &= _dao.deleteStopTime(tripId, stopId);
                     break;
             }
         }

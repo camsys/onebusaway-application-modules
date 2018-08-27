@@ -21,9 +21,12 @@ import com.camsys.transit.servicechange.ServiceChange;
 import com.camsys.transit.servicechange.ServiceChangeType;
 import com.camsys.transit.servicechange.Table;
 import com.camsys.transit.servicechange.field_descriptors.AbstractFieldDescriptor;
+import com.camsys.transit.servicechange.field_descriptors.StopTimesFields;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ServiceChangeUnitTestingSupport {
@@ -57,8 +60,40 @@ public class ServiceChangeUnitTestingSupport {
         return descriptors;
     }
 
+    public static StopTimesFields stopTimesFieldDescriptor(String tripId, LocalTime arrivalTime, LocalTime departureTime,
+                                                           String stopId, Integer stopSequence, Integer pickupType, Integer dropOffType,
+                                                           Double shapeDistTravelled, Integer timepoint) {
+        StopTimesFields fields = new StopTimesFields();
+        fields.setTripId(tripId);
+        fields.setArrivalTime(arrivalTime);
+        fields.setDepartureTime(departureTime);
+        fields.setStopId(stopId);
+        fields.setStopSequence(stopSequence);
+        fields.setPickupType(pickupType);
+        fields.setDropOffType(dropOffType);
+        fields.setShapeDistTraveled(shapeDistTravelled);
+        fields.setTimepoint(timepoint);
+        return fields;
+    }
+
+    public static StopTimesFields stopTimesFieldDescriptor(String tripId, LocalTime arrivalTime, LocalTime departureTime,
+                                                           String stopId, int stopSequence) {
+        return stopTimesFieldDescriptor(tripId, arrivalTime, departureTime, stopId, stopSequence, null, null, null, null);
+    }
+
+    public static List<AbstractFieldDescriptor> stopTimesFieldsList(String tripId, LocalTime arrivalTime, LocalTime departureTime,
+                                                            String stopId, int stopSequence) {
+        return Collections.singletonList(stopTimesFieldDescriptor(tripId, arrivalTime, departureTime, stopId, stopSequence));
+    }
+
     public static ServiceChange serviceChange(Table table, ServiceChangeType type, List<EntityDescriptor> entities,
                                                List<AbstractFieldDescriptor> descriptors, List<DateDescriptor> dates) {
+        if (entities == null)
+            entities = Collections.emptyList();
+        if (descriptors == null)
+            descriptors = Collections.emptyList();
+        if (dates == null)
+            dates = Collections.emptyList();
         ServiceChange change = new ServiceChange();
         change.setTable(table);
         change.setServiceChangeType(type);
