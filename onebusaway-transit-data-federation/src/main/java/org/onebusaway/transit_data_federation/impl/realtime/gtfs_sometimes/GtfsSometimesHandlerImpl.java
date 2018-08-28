@@ -103,6 +103,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     @Override
     public boolean handleServiceChange(ServiceChange serviceChange) {
         if (!validateServiceChange(serviceChange)) {
+            _log.debug("service change is invalid");
             return false;
         }
         if (!dateIsApplicable(serviceChange)) {
@@ -129,6 +130,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     private boolean validateServiceChange(ServiceChange change) {
         if (change.getAffectedDates().isEmpty()) {
+            _log.info("affected dates is empty");
             return false;
         }
         switch(change.getServiceChangeType()) {
@@ -156,8 +158,13 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                         return true;
                     }
                 } else {
-                    _log.error("Not supported: from-date with no to-date specified.");
+                    LocalDate from = dateDescriptor.getFrom();
+                    if ((date.isEqual(from) || date.isAfter(from))) {
+                        return true;
+                    }
                 }
+            } else if (dateDescriptor.getTo() != null) {
+                _log.error("Not supported: to-date with no from-date specified.");
             }
         }
         return false;
