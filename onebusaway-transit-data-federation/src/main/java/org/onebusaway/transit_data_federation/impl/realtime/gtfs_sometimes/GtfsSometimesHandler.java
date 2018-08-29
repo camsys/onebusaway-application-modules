@@ -17,12 +17,22 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes;
 
 import com.camsys.transit.servicechange.ServiceChange;
 
+import java.util.Collection;
+
 public interface GtfsSometimesHandler {
     /**
-     * Process a ServiceChange; make the appropriate changes in the graph.
+     * Process ServiceChanges; make the appropriate changes in the graph.
+     *
+     * @param serviceChanges ServiceChanges to process
+     * @return number of service changes fully successfully handled
+     */
+    int handleServiceChanges(Collection<ServiceChange> serviceChanges);
+
+    /**
+     * Process a single ServiceChange.
      *
      * @param serviceChange ServiceChange to process
-     * @return true if successfully processed, otherwise false.
+     * @return true if ServiceChange fully successfully handled.
      */
     boolean handleServiceChange(ServiceChange serviceChange);
 }
