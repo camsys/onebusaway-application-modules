@@ -28,6 +28,8 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -107,15 +109,14 @@ public class GtfsSometimesJsonClientImpl {
     }
 
     private void handleNewFeed(Feed feed) {
-        int nSuccess = 0;
-        int nTotal = 0;
+        List<ServiceChange> changes = new ArrayList<>();
         for (FeedEntity entity : feed.getFeedEntities()) {
-            ServiceChange change = entity.getServiceChange();
-            if(_gtfsSometimesHandler.handleServiceChange(change)) {
-                nSuccess++;
+            if (entity.getServiceChange() != null) {
+                changes.add(entity.getServiceChange());
             }
-            nTotal++;
         }
-        _log.info("Service changes: processed {} / {}", nSuccess, nTotal);
+        int total = changes.size(),
+                success = _gtfsSometimesHandler.handleServiceChanges(changes);
+        _log.info("Service changes: processed {} / {}", success, total);
     }
 }

@@ -286,13 +286,8 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
   @Override
   public boolean deleteStopTime(AgencyAndId tripId, AgencyAndId stopId) {
-    boolean rc = _graph.removeStopTime(tripId, stopId);
-    if (rc) {
-      TripEntryImpl trip = (TripEntryImpl) getTripEntryForId(tripId);
-      updateBlockIndices(trip);
-    }
-    flushCache();
-    return rc;
+    // Caller is responsible for forcing the cache to flush
+    return _graph.removeStopTime(tripId, stopId);
   }
 
   @Override
@@ -359,10 +354,11 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
    * todo this is a serious performance penalty
    * todosheldonabrown
    * this needs to be redesigned to support updates not just completely rebuilding
+   *
    * @param trip
    * @return
    */
-  private boolean updateBlockIndices(TripEntryImpl trip) {
+  public boolean updateBlockIndices(TripEntryImpl trip) {
     _blockIndexService.updateBlockIndices(trip);
     return true;
   }
@@ -385,7 +381,7 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     return new ArrayList<AgencyAndId>(shapeIds);
   }
 
-  private void flushCache() {
+  public void flushCache() {
     try {
       _cacheableMethodManager.flush();
       _cacheableAnnotationInterceptor.flush();
