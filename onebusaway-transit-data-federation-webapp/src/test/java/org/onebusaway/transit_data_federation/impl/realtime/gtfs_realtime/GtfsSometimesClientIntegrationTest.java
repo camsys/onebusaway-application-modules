@@ -63,6 +63,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -186,6 +187,57 @@ public class GtfsSometimesClientIntegrationTest {
         assertEquals(17, next.getGtfsSequence());
         assertEquals(time(16, 10, 20), next.getArrivalTime());
         assertEquals(time(16, 10, 20), next.getDepartureTime());
+    }
+
+    @Test
+    @DirtiesContext
+    public void testRemoveMultipleStopTimesDifferentTrips() {
+        ServiceChange change = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.DELETE,
+                Arrays.asList(stopTimeEntity("CA_G8-Weekday-096000_MISC_545", "201645"),
+                        stopTimeEntity("CA_C8-Weekday-099000_S7686_307", "203190")),
+                null,
+                dateDescriptors(LocalDate.of(2018, 8, 10)));
+        assertTrue(_handler.handleServiceChange(change));
+
+        TripDetailsBean tripDetails1 = getTripDetails("CA_G8-Weekday-096000_MISC_545");
+        assertEquals(70, tripDetails1.getSchedule().getStopTimes().size());
+        List<TripStopTimeBean> stopTimes1 = tripDetails1.getSchedule().getStopTimes();
+        TripStopTimeBean stop1 = stopTimes1.get(15);
+        assertEquals("MTA_201646", stop1.getStop().getId());
+        assertEquals(17, stop1.getGtfsSequence());
+        assertEquals(time(16, 10, 20), stop1.getArrivalTime());
+        assertEquals(time(16, 10, 20), stop1.getDepartureTime());
+
+        TripDetailsBean tripDetails2 = getTripDetails("CA_C8-Weekday-099000_S7686_307");
+        assertEquals(70, tripDetails2.getSchedule().getStopTimes().size());
+        List<TripStopTimeBean> stopTimes2 = tripDetails2.getSchedule().getStopTimes();
+        TripStopTimeBean stop2 = stopTimes2.get(4);
+        assertEquals("MTA_200180", stop2.getStop().getId());
+        assertEquals(6, stop2.getGtfsSequence());
+        assertEquals(time(16, 33, 32), stop2.getArrivalTime());
+        assertEquals(time(16, 33, 32), stop2.getDepartureTime());
+    }
+
+    @Test
+    @DirtiesContext
+    public void testRemoveMultipleStopTimesSameTrip() {
+        ServiceChange change = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.DELETE,
+                Arrays.asList(stopTimeEntity("CA_G8-Weekday-096000_MISC_545", "201645"),
+                        stopTimeEntity("CA_G8-Weekday-096000_MISC_545", "201646")),
+                null,
+                dateDescriptors(LocalDate.of(2018, 8, 10)));
+        assertTrue(_handler.handleServiceChange(change));
+
+        TripDetailsBean tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
+        assertEquals(69, tripDetails.getSchedule().getStopTimes().size());
+        List<TripStopTimeBean> stopTimes1 = tripDetails.getSchedule().getStopTimes();
+        TripStopTimeBean stop1 = stopTimes1.get(15);
+        assertEquals("MTA_201647", stop1.getStop().getId());
+        assertEquals(18, stop1.getGtfsSequence());
+        assertEquals(time(16, 11, 0), stop1.getArrivalTime());
+        assertEquals(time(16, 11, 0), stop1.getDepartureTime());
     }
 
     @Test
