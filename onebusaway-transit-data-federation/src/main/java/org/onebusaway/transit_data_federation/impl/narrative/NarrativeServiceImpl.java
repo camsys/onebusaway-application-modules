@@ -104,13 +104,15 @@ public class NarrativeServiceImpl implements NarrativeService {
   }
 
   @Override
-  public void addTrip(TripEntryImpl trip) {
-    _provider.addTrip(trip);
+  public void addTrip(TripEntryImpl trip, TripNarrative narrative) {
+    _provider.addTrip(trip, narrative);
   }
 
-  public void removeTrip(TripEntryImpl trip) {
-    _provider.removeTrip(trip);
+  @Override
+  public TripNarrative removeTrip(TripEntryImpl trip) {
+    return _provider.removeTrip(trip);
   }
+
   @Override
   public void addStop(StopEntryImpl stop) {
     _provider.addStop(stop);

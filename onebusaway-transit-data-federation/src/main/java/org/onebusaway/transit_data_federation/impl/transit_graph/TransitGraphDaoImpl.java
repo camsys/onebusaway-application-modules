@@ -33,6 +33,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
+import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
@@ -312,10 +313,15 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
   @Override
   public boolean addTripEntry(TripEntryImpl trip) {
+    return addTripEntry(trip, null);
+  }
+
+  @Override
+  public boolean addTripEntry(TripEntryImpl trip, TripNarrative narrative) {
     boolean rc = _graph.addTripEntry(trip);
     // adding a trip requires updating other parts of the TDS
     if (rc && _narrativeService != null) {
-       _narrativeService.addTrip(trip);
+       _narrativeService.addTrip(trip, narrative);
     }
 
     if (rc)
@@ -384,8 +390,8 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     boolean rc = _graph.insertStopTime(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled);
     if (rc) {
       TripEntryImpl trip = (TripEntryImpl) getTripEntryForId(tripId);
-      _narrativeService.removeTrip(trip);
-      _narrativeService.addTrip(trip);
+      TripNarrative narrative = _narrativeService.removeTrip(trip);
+      _narrativeService.addTrip(trip, narrative);
       addRevenueService(trip, stopId);
 
       return true;

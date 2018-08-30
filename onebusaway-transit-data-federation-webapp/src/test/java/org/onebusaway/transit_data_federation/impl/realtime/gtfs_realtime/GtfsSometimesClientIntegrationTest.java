@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
 import org.onebusaway.gtfs.impl.calendar.CalendarServiceDataFactoryImpl;
 import org.onebusaway.gtfs.model.Agency;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Stop;
 import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.Trip;
@@ -35,6 +36,7 @@ import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
+import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
@@ -46,6 +48,8 @@ import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
+import org.onebusaway.transit_data_federation.services.beans.TripBeanService;
 import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
@@ -89,6 +93,9 @@ public class GtfsSometimesClientIntegrationTest {
 
     @Autowired
     private GtfsSometimesHandler _handler;
+
+    @Autowired
+    private TripBeanService _tripBeanService;
 
     private static final Logger _log = LoggerFactory.getLogger(GtfsSometimesClientIntegrationTest.class);
 
@@ -150,11 +157,18 @@ public class GtfsSometimesClientIntegrationTest {
             builder.setTripGapDistances(new double[] { 0 });
             builder.setServiceIds(new ServiceIdActivation(lsi));
             bei.getConfigurations().add(builder.create());
-            assertTrue(_graph.addTripEntry(tei));
+            assertTrue(_graph.addTripEntry(tei, tripNarrative(trip)));
         }
 
         // set handler time
         ((GtfsSometimesHandlerImpl) _handler).setTime(dateAsLong("2018-08-10 12:00"));
+    }
+
+    private TripNarrative tripNarrative(Trip trip) {
+        return TripNarrative.builder()
+                .setRouteShortName(trip.getRouteShortName())
+                .setTripHeadsign(trip.getTripHeadsign())
+                .setTripShortName(trip.getTripShortName()).create();
     }
 
     @Test
@@ -247,18 +261,32 @@ public class GtfsSometimesClientIntegrationTest {
     @Test
     @DirtiesContext
     public void testAddStopTime() {
+
+        String tripId = "CA_G8-Weekday-096000_MISC_545";
+
+        // Check that adding a stop time does not change the narrative values
+        TripBean trip = _tripBeanService.getTripForId(new AgencyAndId("MTA NYCT", tripId));
+        assertNotNull(trip);
+        assertEquals("MTA NYCT_" + tripId, trip.getId());
+        assertEquals("LTD OAKWOOD MILL RD", trip.getTripHeadsign());
+
         ServiceChange change = serviceChange(Table.STOP_TIMES,
                 ServiceChangeType.ADD,
                 null,
-                 stopTimesFieldsList("CA_G8-Weekday-096000_MISC_545",
+                 stopTimesFieldsList(tripId,
                         LocalTime.of(16, 47, 20), LocalTime.of(16, 47, 22),
                          "200176", 68), // stop_sequence is ignored
                 dateDescriptors(LocalDate.of(2018, 8, 10)));
         assertTrue(_handler.handleServiceChange(change));
 
-        TripDetailsBean tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
+        TripDetailsBean tripDetails = getTripDetails(tripId);
         assertEquals(72, tripDetails.getSchedule().getStopTimes().size());
         List<TripStopTimeBean> stopTimes = tripDetails.getSchedule().getStopTimes();
+
+        trip = _tripBeanService.getTripForId(new AgencyAndId("MTA NYCT", tripId));
+        assertNotNull(trip);
+        assertEquals("MTA NYCT_" + tripId, trip.getId());
+        assertEquals("LTD OAKWOOD MILL RD", trip.getTripHeadsign());
 
         TripStopTimeBean prev = stopTimes.get(66);
         assertEquals("MTA_203563", prev.getStop().getId());
@@ -281,6 +309,16 @@ public class GtfsSometimesClientIntegrationTest {
     @Test
     @DirtiesContext
     public void testAddStopTimeDifferentRoute() {
+
+        // Duplicate some logic in StopForIdAction to ensure we can find this trip...
+        // Before we add it, this stop does not exist for the route.
+        StopsForRouteBean stopsForRouteBean = _tds.getStopsForRoute("MTA NYCT_S86");
+        boolean stopFound = false;
+        for (StopBean stop : stopsForRouteBean.getStops()) {
+            stopFound |= stop.getId().equals("MTA_200001");
+        }
+        assertFalse(stopFound);
+
         ServiceChange change = serviceChange(Table.STOP_TIMES,
                 ServiceChangeType.ADD,
                 null,
@@ -293,9 +331,8 @@ public class GtfsSometimesClientIntegrationTest {
         TripDetailsBean tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
         assertEquals(72, tripDetails.getSchedule().getStopTimes().size());
 
-        // Duplicate some logic in StopForIdAction to ensure we can find this trip...
-        StopsForRouteBean stopsForRouteBean = _tds.getStopsForRoute("MTA NYCT_S86");
-        boolean stopFound = false;
+        stopsForRouteBean = _tds.getStopsForRoute("MTA NYCT_S86");
+        stopFound = false;
         for (StopBean stop : stopsForRouteBean.getStops()) {
             stopFound |= stop.getId().equals("MTA_200001");
         }
@@ -338,7 +375,6 @@ public class GtfsSometimesClientIntegrationTest {
         assertEquals(time(16, 47, 58), next.getArrivalTime());
         assertEquals(time(16, 47, 58), next.getDepartureTime());
     }
-
 
     private TripDetailsBean getTripDetails(String tripId) {
         TripDetailsQueryBean query = new TripDetailsQueryBean();

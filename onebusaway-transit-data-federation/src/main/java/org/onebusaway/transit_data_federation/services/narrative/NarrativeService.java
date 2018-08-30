@@ -68,9 +68,9 @@ public interface NarrativeService {
   
   public ShapePoints getShapePointsForId(AgencyAndId id);
 
-  public void addTrip(TripEntryImpl trip);
+  public void addTrip(TripEntryImpl trip, TripNarrative narrative);
 
-  public void removeTrip(TripEntryImpl trip);
+  public TripNarrative removeTrip(TripEntryImpl trip);
 
   public void addStop(StopEntryImpl stop);
 
