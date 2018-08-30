@@ -25,7 +25,6 @@
            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
            http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
 
-
     <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
         <property name="order" value="-3" />
         <property name="properties">
@@ -36,10 +35,7 @@
         </property>
     </bean>
 
-
     <import resource="classpath:org/onebusaway/transit_data_federation/application-context-webapp.xml" />
-
-
 
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
@@ -48,5 +44,12 @@
         <property name="password" value="" />
     </bean>
 
+    <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
+        <property name="properties">
+            <props>
+                <prop key="revenueSearchServiceImpl.emptyMeansRevenueService">false</prop>
+            </props>
+        </property>
+    </bean>
 
 </beans>
