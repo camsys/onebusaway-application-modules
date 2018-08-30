@@ -122,8 +122,14 @@ public final class NarrativeProviderImpl implements Serializable {
     return _shapePointsById.get(id);
   }
 
-  public void addTrip(TripEntryImpl trip) {
-    TripNarrative.Builder builder = TripNarrative.builder();
+  public void addTrip(TripEntryImpl trip, TripNarrative narrative) {
+    if (narrative == null) {
+      TripNarrative.Builder builder = TripNarrative.builder();
+      // if routeCollection knows of this trip then use that information for TripNarrative
+      builder.setRouteShortName(_routeCollectionNarratives.get(trip.getRoute().getId()).getShortName());
+      narrative = builder.create();
+    }
+
     if (!_routeCollectionNarratives.containsKey(trip.getRoute().getId())) {
       // we need to build a routeCollectionNarrative to represent route short name
       RouteCollectionNarrative.Builder routeBuilder = RouteCollectionNarrative.builder();
@@ -131,10 +137,7 @@ public final class NarrativeProviderImpl implements Serializable {
       _routeCollectionNarratives.put(trip.getRoute().getId(), routeBuilder.create());
     }
 
-    // if routeCollection knows of this trip then use that information for TripNarrative
-    builder.setRouteShortName(_routeCollectionNarratives.get(trip.getRoute().getId()).getShortName());
-
-    _tripNarratives.put(trip.getId(), builder.create());
+    _tripNarratives.put(trip.getId(), narrative);
 
     for (StopTimeEntry ste: trip.getStopTimes()) {
       addStopTime((StopTimeEntryImpl) ste);
@@ -142,13 +145,14 @@ public final class NarrativeProviderImpl implements Serializable {
     }
   }
 
-  public void removeTrip(TripEntryImpl trip) {
-    _tripNarratives.remove(trip.getId());
+  public TripNarrative removeTrip(TripEntryImpl trip) {
+    TripNarrative narrative = _tripNarratives.remove(trip.getId());
     for (StopTimeEntry ste: trip.getStopTimes()) {
       // don't orphan the stop times -- remove them as well
       removeStopTime((StopTimeEntryImpl) ste);
       // it clearly shouldn't delete the stops
     }
+    return narrative;
   }
 
 

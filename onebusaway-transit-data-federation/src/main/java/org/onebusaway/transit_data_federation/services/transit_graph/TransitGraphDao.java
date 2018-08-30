@@ -24,6 +24,7 @@ import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
+import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 
 /**
  * Service interface that abstract operations on a transit graph, such as access
@@ -132,6 +133,8 @@ public interface TransitGraphDao {
    * @return true if deltion was successful
    */
   public boolean deleteStopTime(AgencyAndId tripId, AgencyAndId stopId);
+
+  public boolean addTripEntry(TripEntryImpl trip, TripNarrative narrative);
 
   public boolean addTripEntry(TripEntryImpl trip);
 
