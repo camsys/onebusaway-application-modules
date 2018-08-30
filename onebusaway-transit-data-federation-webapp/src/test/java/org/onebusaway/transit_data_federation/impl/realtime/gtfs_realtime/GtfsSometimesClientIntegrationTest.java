@@ -32,6 +32,8 @@ import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.gtfs.services.calendar.CalendarServiceDataFactory;
 import org.onebusaway.transit_data.model.ListBean;
+import org.onebusaway.transit_data.model.StopBean;
+import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
@@ -41,7 +43,6 @@ import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.GtfsS
 import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockConfigurationEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteCollectionEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
@@ -123,6 +124,7 @@ public class GtfsSometimesClientIntegrationTest {
             LocalizedServiceId lsi = new LocalizedServiceId(trip.getServiceId(), csd.getTimeZoneForAgencyId(trip.getId().getAgencyId()));
             TripEntryImpl tei = new TripEntryImpl();
             tei.setId(trip.getId());
+            tei.setDirectionId(trip.getDirectionId());
             tei.setServiceId(lsi);
             BlockEntryImpl bei = new BlockEntryImpl();
             bei.setId(trip.getId());
@@ -131,6 +133,8 @@ public class GtfsSometimesClientIntegrationTest {
 
             tei.setBlock(bei);
             RouteEntryImpl rei = new RouteEntryImpl();
+            rei.setTrips(new ArrayList<>());
+            rei.getTrips().add(tei);
             rei.setId(trip.getRoute().getId());
             tei.setRoute(rei);
             List<StopTimeEntry> stopTimes = new ArrayList<>();
@@ -272,6 +276,32 @@ public class GtfsSometimesClientIntegrationTest {
         assertEquals(68, next.getGtfsSequence());
         assertEquals(time(16, 47, 38), next.getArrivalTime());
         assertEquals(time(16, 47, 38), next.getDepartureTime());
+    }
+
+    @Test
+    @DirtiesContext
+    public void testAddStopTimeDifferentRoute() {
+        ServiceChange change = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.ADD,
+                null,
+                stopTimesFieldsList("CA_G8-Weekday-096000_MISC_545",
+                        LocalTime.of(16, 47, 20), LocalTime.of(16, 47, 22),
+                        "200001", 68), // stop_sequence is ignored
+                dateDescriptors(LocalDate.of(2018, 8, 10)));
+        assertTrue(_handler.handleServiceChange(change));
+
+        TripDetailsBean tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
+        assertEquals(72, tripDetails.getSchedule().getStopTimes().size());
+
+        // Duplicate some logic in StopForIdAction to ensure we can find this trip...
+        StopsForRouteBean stopsForRouteBean = _tds.getStopsForRoute("MTA NYCT_S86");
+        boolean stopFound = false;
+        for (StopBean stop : stopsForRouteBean.getStops()) {
+            stopFound |= stop.getId().equals("MTA_200001");
+        }
+        assertTrue(stopFound);
+
+        assertTrue(_tds.stopHasRevenueServiceOnRoute("MTA NYCT", "MTA_200001", "MTA NYCT_S86", "1"));
     }
 
     @Test

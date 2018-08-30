@@ -55,6 +55,7 @@ import org.onebusaway.transit_data_federation.services.beans.TripDetailsBeanServ
 import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
+import org.onebusaway.transit_data_federation.services.revenue.RevenueSearchService;
 import org.onebusaway.transit_data_federation.services.transit_graph.AgencyEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
@@ -119,6 +120,9 @@ public class GtfsServiceChangesStopTimeTest {
     @Autowired
     private TripDetailsBeanService _tripDetailsBeanService;
 
+    @Autowired
+    private RevenueSearchService _revenueSearchService;
+
     private FederatedTransitDataBundle _bundle;
 
 
@@ -158,6 +162,9 @@ public class GtfsServiceChangesStopTimeTest {
             }
         }
 
+        assertFalse(_revenueSearchService.stopHasRevenueService("1", "1_a"));
+        assertFalse(_revenueSearchService.stopHasRevenueServiceOnRoute("1", "1_a", "1_route1", "0"));
+
         // put it back
         _dao.insertStopTime(aid("tripA"), aid("a"), 30, 90, 25);
         assertNotNull(_dao.getAllTrips().get(0).getStopTimes());
@@ -172,6 +179,10 @@ public class GtfsServiceChangesStopTimeTest {
         assertEquals(3, _dao.getAllTrips().get(0).getStopTimes().size());
 
         assertNotNull(_tds.getTrip("1_tripA"));
+
+        assertTrue(_revenueSearchService.stopHasRevenueService("1", "1_a"));
+        assertTrue(_revenueSearchService.stopHasRevenueServiceOnRoute("1", "1_a", "1_route1", "0"));
+
     }
 
     private void assertTripStopTimesSize(int nStops, String tripId) {
@@ -362,6 +373,9 @@ public class GtfsServiceChangesStopTimeTest {
         assertTrue(_dao.addStopEntry(stopB));
         assertNotNull(_dao.getStopEntryForId(aid("b")));
 
+        assertFalse(_revenueSearchService.stopHasRevenueService("1", "1_a"));
+        assertFalse(_revenueSearchService.stopHasRevenueServiceOnRoute("1", "1_a", "1_route1", "0"));
+
         stopTime(0, stopA, tripA, time(0, 15), time(0, 17), 35);
         stopTime(1, stopB, tripA, time(0, 30), time(0, 31), 95);
 
@@ -374,6 +388,9 @@ public class GtfsServiceChangesStopTimeTest {
         assertFalse(blockConfigA.getServiceIds().getActiveServiceIds().isEmpty());
 
         assertTrue(_dao.addTripEntry(tripA));
+
+        assertTrue(_revenueSearchService.stopHasRevenueService("1", "1_a"));
+        assertTrue(_revenueSearchService.stopHasRevenueServiceOnRoute("1", "1_a", "1_route1", "0"));
 
         BlockEntry blockEntry = _dao.getBlockEntryForId(aid("tripA"));
         assertNotNull(blockEntry);

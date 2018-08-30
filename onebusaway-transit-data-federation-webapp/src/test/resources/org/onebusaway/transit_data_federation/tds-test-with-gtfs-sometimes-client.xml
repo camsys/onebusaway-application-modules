@@ -56,5 +56,12 @@
         </property>
     </bean>
 
+    <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
+        <property name="properties">
+            <props>
+                <prop key="revenueSearchServiceImpl.emptyMeansRevenueService">false</prop>
+            </props>
+        </property>
+    </bean>
 
 </beans>

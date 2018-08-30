@@ -32,7 +32,6 @@ import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
-import org.onebusaway.transit_data_federation.impl.blocks.BlockStopTimeIndicesFactory;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;
@@ -42,13 +41,19 @@ import org.onebusaway.transit_data_federation.services.beans.NearbyStopsBeanServ
 import org.onebusaway.transit_data_federation.services.beans.RoutesBeanService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
+import org.onebusaway.transit_data_federation.services.revenue.RevenueSearchService;
 import org.onebusaway.transit_data_federation.services.shapes.ShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.AgencyEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.transit_data_federation.services.tripplanner.TripPlannerGraph;
@@ -83,6 +88,8 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   private GeospatialBeanService _whereGeospatialService;
 
   private RoutesBeanService _routesBeanService;
+
+  private RevenueSearchService _revenueSearchService;
 
   @Autowired
   @Qualifier("cacheableMethodManager")
@@ -140,6 +147,11 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   @Autowired
   public void setRoutesBeanService(RoutesBeanService routesBeanService) {
     _routesBeanService = routesBeanService;
+  }
+
+  @Autowired
+  public void setRevenueSearchService(RevenueSearchService revenueSearchService) {
+    _revenueSearchService = revenueSearchService;
   }
 
   @PostConstruct
@@ -287,7 +299,15 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   @Override
   public boolean deleteStopTime(AgencyAndId tripId, AgencyAndId stopId) {
     // Caller is responsible for forcing the cache to flush
-    return _graph.removeStopTime(tripId, stopId);
+    boolean rc = _graph.removeStopTime(tripId, stopId);
+    if (rc) {
+      StopEntry stop = getStopEntryForId(stopId);
+      TripEntry trip = getTripEntryForId(tripId);
+      if (!stopHasServiceOnRouteExcludingTrip(stop, trip)) {
+        removeRevenueService(trip, stop.getId());
+      }
+    }
+    return rc;
   }
 
   @Override
@@ -303,6 +323,12 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
     if (rc) {
       _routesBeanService.refresh();
+    }
+
+    if (rc) {
+      for (StopTimeEntry stopTimeEntry : trip.getStopTimes()) {
+        addRevenueService(trip, stopTimeEntry.getStop().getId());
+      }
     }
 
     if (rc) {
@@ -334,6 +360,14 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     if (rc) {
       rc = updateBlockIndices(null);
     }
+    if (rc) {
+      for (StopTimeEntry stopTimeEntry : trip.getStopTimes()) {
+        if (!stopHasServiceOnRouteExcludingTrip(stopTimeEntry.getStop(), trip)) {
+          removeRevenueService(trip, stopTimeEntry.getStop().getId());
+        }
+      }
+    }
+
     if (rc)
       rc = _blockGeospatialService.addShape(null);
     return rc;
@@ -347,7 +381,16 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
   @Override
   public boolean insertStopTime(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime, int shapeDistanceTravelled) {
-    return _graph.insertStopTime(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled);
+    boolean rc = _graph.insertStopTime(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled);
+    if (rc) {
+      TripEntryImpl trip = (TripEntryImpl) getTripEntryForId(tripId);
+      _narrativeService.removeTrip(trip);
+      _narrativeService.addTrip(trip);
+      addRevenueService(trip, stopId);
+
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -390,4 +433,38 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     }
   }
 
+  private boolean stopHasServiceOnRouteExcludingTrip(StopEntry stop, TripEntry trip) {
+    return stopHasServiceOnRouteExcludingTrip(stop, trip.getRoute().getId(), trip.getId());
+  }
+
+  private boolean stopHasServiceOnRouteExcludingTrip(StopEntry stop, AgencyAndId routeId, AgencyAndId tripId) {
+    for (BlockStopTimeIndex index : _blockIndexService.getStopTimeIndicesForStop(stop)) {
+      // Can't look at the stop time index directly because it hasn't been rebuilt yet.
+      for (BlockConfigurationEntry entry : index.getBlockConfigs()) {
+        for (BlockTripEntry trip : entry.getTrips()) {
+          if (trip.getTrip().getId().equals(tripId) || trip.getTrip().getRoute().getId().equals(routeId)) {
+            continue;
+          }
+          for (BlockStopTimeEntry bst : trip.getStopTimes()) {
+            if (bst.getStopTime().getStop().getId().equals(stop.getId())) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  private void addRevenueService(TripEntry trip, AgencyAndId stopId) {
+    String directionId = trip.getDirectionId() == null ? "0" : trip.getDirectionId();
+    _revenueSearchService.addRevenueService(trip.getId().getAgencyId(), stopId.toString(),
+            trip.getRoute().getId().toString(), directionId);
+  }
+
+  public void removeRevenueService(TripEntry trip, AgencyAndId stopId) {
+    String directionId = trip.getDirectionId() == null ? "0" : trip.getDirectionId();
+    _revenueSearchService.removeRevenueService(trip.getId().getAgencyId(), stopId.toString(),
+            trip.getRoute().getId().toString(), directionId);
+  }
 }

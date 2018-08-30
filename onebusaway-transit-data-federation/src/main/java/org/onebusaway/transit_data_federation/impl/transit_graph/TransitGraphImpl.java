@@ -494,6 +494,22 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
           RouteEntryImpl route = _routeEntriesById.get(trip.getRoute().getId());
           trip.setRoute(route);
         }
+
+        // Add trip to RouteEntry
+        RouteEntry route = trip.getRoute();
+        boolean found = false;
+        if (route.getTrips() != null) {
+          for (TripEntry tripEntry : route.getTrips()) {
+            found |= (tripEntry.getId().equals(trip.getId()));
+          }
+        }
+        if (!found) {
+          if (route.getTrips() == null) {
+            ((RouteEntryImpl) route).setTrips(new ArrayList<>());
+          }
+          route.getTrips().add(trip);
+        }
+
         if (!_routeCollectionEntriesById.containsKey(trip.getRoute().getId())) {
           RouteCollectionEntryImpl rcei = createRouteCollectionForRoute((RouteEntryImpl) trip.getRoute());
           _routeCollectionEntriesById.put(trip.getRoute().getId(), rcei);
