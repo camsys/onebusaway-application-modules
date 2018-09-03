@@ -72,6 +72,6 @@ public interface TripPlannerGraph {
   public boolean updateStopTime(AgencyAndId tripId, AgencyAndId stopId, int originalArrivalTime, int originalDepartureTime,
                                 int newArrivalTime, int newDepartureTime);
 
-  public boolean insertStopTime(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime, int shapeDistanceTravelled);
+  public boolean insertStopTime(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime, double shapeDistanceTravelled);
 
 }

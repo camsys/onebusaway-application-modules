@@ -50,7 +50,7 @@ public class GtfsSometimesHandlerImplTest {
     public void setup() {
         dao = mock(TransitGraphDao.class);
         when(dao.deleteStopTime(any(), any())).thenReturn(true);
-        when(dao.insertStopTime(any(), any(), anyInt(), anyInt(), anyInt())).thenReturn(true);
+        when(dao.insertStopTime(any(), any(), anyInt(), anyInt(), anyDouble())).thenReturn(true);
         when(dao.updateStopTime(any(), any(), anyInt(), anyInt(), anyInt(), anyInt())).thenReturn(true);
 
         // for alter trip:
