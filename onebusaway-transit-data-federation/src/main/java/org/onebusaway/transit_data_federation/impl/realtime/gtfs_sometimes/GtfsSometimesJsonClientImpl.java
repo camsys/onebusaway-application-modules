@@ -76,13 +76,17 @@ public class GtfsSometimesJsonClientImpl {
     public void update() {
         try {
             URL url = new URL(_gtfsSometimesUrl);
+            Feed feed;
             if (url.getProtocol().equals("file")) {
                 File file = new File(url.getPath());
-                Feed feed = _mapper.readValue(file, Feed.class);
-                processFeed(feed);
+                feed = _mapper.readValue(file, Feed.class);
+            } else if (url.getProtocol().equals("http")) {
+                feed = _mapper.readValue(url.openStream(), Feed.class);
             } else {
                 _log.error("Protocol not supported: " + url.getProtocol());
+                return;
             }
+            processFeed(feed);
         } catch (IOException ex) {
             _log.error("Error processing feed: {}", ex.getMessage());
         }
