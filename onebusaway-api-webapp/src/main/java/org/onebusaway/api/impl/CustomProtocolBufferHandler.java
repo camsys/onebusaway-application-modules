@@ -30,6 +30,7 @@ import com.google.protobuf.Message;
 
 public class CustomProtocolBufferHandler implements ContentTypeHandler {
 
+  @Deprecated
   @Override
   public void toObject(Reader in, Object target) throws IOException {
     throw new UnsupportedOperationException();
@@ -37,12 +38,18 @@ public class CustomProtocolBufferHandler implements ContentTypeHandler {
 
   @Override
   public void toObject(ActionInvocation actionInvocation, Reader in, Object target) throws IOException {
-      toObject(in, target);
+    throw new UnsupportedOperationException();
   }
 
+  @Deprecated
   @Override
   public String fromObject(Object obj, String resultCode, Writer stream)
       throws IOException {
+    return null;
+  }
+
+  @Override
+  public String fromObject(ActionInvocation actionInvocation, Object obj, String resultCode, Writer stream) throws IOException {
     ResponseBean response = (ResponseBean) obj;
     if (response.getData() != null && response.getData() instanceof Message) {
       Message message = (Message) response.getData();
@@ -57,11 +64,6 @@ public class CustomProtocolBufferHandler implements ContentTypeHandler {
       stream.write(response.getText());
     }
     return null;
-  }
-
-  @Override
-  public String fromObject(ActionInvocation actionInvocation, Object obj, String resultCode, Writer stream) throws IOException {
-    return fromObject(obj, resultCode, stream);
   }
 
   @Override

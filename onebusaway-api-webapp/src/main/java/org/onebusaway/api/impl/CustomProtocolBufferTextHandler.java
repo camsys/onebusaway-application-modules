@@ -27,19 +27,26 @@ import com.google.protobuf.Message;
 
 public class CustomProtocolBufferTextHandler implements ContentTypeHandler {
 
+  @Deprecated
   @Override
   public void toObject(Reader in, Object target) throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void toObject(ActionInvocation actionInvocation, Reader reader, Object o) throws IOException {
-
+  public void toObject(ActionInvocation actionInvocation, Reader in, Object target) throws IOException {
+    throw new UnsupportedOperationException();
   }
 
+  @Deprecated
   @Override
   public String fromObject(Object obj, String resultCode, Writer stream)
       throws IOException {
+    return null;
+  }
+
+  @Override
+  public String fromObject(ActionInvocation actionInvocation, Object obj, String resultCode, Writer stream) throws IOException {
     ResponseBean response = (ResponseBean) obj;
     if (response.getData() != null && response.getData() instanceof Message) {
       Message message = (Message) response.getData();
@@ -47,11 +54,6 @@ public class CustomProtocolBufferTextHandler implements ContentTypeHandler {
     } else {
       stream.write(response.getText());
     }
-    return null;
-  }
-
-  @Override
-  public String fromObject(ActionInvocation actionInvocation, Object o, String s, Writer writer) throws IOException {
     return null;
   }
 

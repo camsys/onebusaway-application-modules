@@ -35,8 +35,14 @@ import org.apache.struts2.rest.handler.ContentTypeHandler;
  */
 public class CustomJsonLibHandler implements ContentTypeHandler {
 
+  @Deprecated
   @Override
   public void toObject(Reader in, Object target) throws IOException {
+    return;
+  }
+
+  @Override
+  public void toObject(ActionInvocation actionInvocation, Reader in, Object target) throws IOException {
     StringBuilder sb = new StringBuilder();
     char[] buffer = new char[1024];
     int len = 0;
@@ -57,14 +63,15 @@ public class CustomJsonLibHandler implements ContentTypeHandler {
     }
   }
 
+  @Deprecated
   @Override
-  public void toObject(ActionInvocation actionInvocation, Reader in, Object target) throws IOException {
-    toObject(in, target);
-  }
-
   public String fromObject(Object obj, String resultCode, Writer stream)
       throws IOException {
+    return null;
+  }
 
+  @Override
+  public String fromObject(ActionInvocation actionInvocation,Object obj, String resultCode, Writer stream) throws IOException {
     String callback = null;
     HttpServletRequest req = ServletActionContext.getRequest();
     if (req != null)
@@ -88,13 +95,8 @@ public class CustomJsonLibHandler implements ContentTypeHandler {
       else
         stream.write(value);
     }
-    
-    return null;
-  }
 
-  @Override
-  public String fromObject(ActionInvocation actionInvocation,Object obj, String resultCode, Writer stream) throws IOException {
-    return fromObject(obj, resultCode, stream);
+    return null;
   }
 
   private boolean isArray(Object obj) {

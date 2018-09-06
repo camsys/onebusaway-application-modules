@@ -31,6 +31,7 @@ import org.onebusaway.csv_entities.EntityHandler;
 
 public class CustomCsvHandler implements ContentTypeHandler {
 
+  @Deprecated
   @Override
   public void toObject(Reader in, Object target) throws IOException {
     throw new UnsupportedOperationException();
@@ -38,12 +39,18 @@ public class CustomCsvHandler implements ContentTypeHandler {
 
   @Override
   public void toObject(ActionInvocation actionInvocation, Reader in, Object target) throws IOException {
-    toObject(in, target);
+    throw new UnsupportedOperationException();
   }
 
+  @Deprecated
   @Override
   public String fromObject(Object obj, String resultCode, Writer stream)
       throws IOException {
+    return null;
+  }
+
+  @Override
+  public String fromObject(ActionInvocation actionInvocation, Object obj, String resultCode, Writer stream) throws IOException {
     CsvEntityWriterFactory factory = new CsvEntityWriterFactory();
     Class<?> entityType = getEntityType(obj);
     EntityHandler csvHandler = factory.createWriter(entityType, stream);
@@ -53,11 +60,6 @@ public class CustomCsvHandler implements ContentTypeHandler {
       csvHandler.handleEntity(value);
 
     return null;
-  }
-
-  @Override
-  public String fromObject(ActionInvocation actionInvocation, Object obj, String resultCode, Writer stream) throws IOException {
-    return fromObject(obj, resultCode, stream);
   }
 
   @Override
