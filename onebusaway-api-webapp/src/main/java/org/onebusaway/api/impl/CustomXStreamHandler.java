@@ -16,6 +16,7 @@
  */
 package org.onebusaway.api.impl;
 
+import com.opensymphony.xwork2.ActionInvocation;
 import org.apache.struts2.rest.handler.XStreamHandler;
 import org.onebusaway.api.actions.api.ValidationErrorBean;
 import org.onebusaway.api.model.ResponseBean;
@@ -91,11 +92,26 @@ import org.onebusaway.transit_data.model.StopGroupingBean;
 
 import com.thoughtworks.xstream.XStream;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+
 public class CustomXStreamHandler extends XStreamHandler {
 
   @Override
-  protected XStream createXStream() {
+  protected XStream createXStream(ActionInvocation actionInvocation) {
+    XStream xstream = super.createXStream(actionInvocation);
+    processXStreamAliases(xstream);
+    return xstream;
+  }
+
+  protected XStream createTestXStream() {
     XStream xstream = super.createXStream();
+    processXStreamAliases(xstream);
+    return xstream;
+  }
+
+  private void processXStreamAliases(XStream xstream){
     xstream.setMode(XStream.NO_REFERENCES);
     xstream.alias("response", ResponseBean.class);
     xstream.alias("validationError", ValidationErrorBean.class);
@@ -114,7 +130,7 @@ public class CustomXStreamHandler extends XStreamHandler {
     xstream.alias("entryWithReferences", EntryWithReferencesBean.class);
     xstream.alias("listWithReferences", ListWithReferencesBean.class);
     xstream.alias("listWithRangeAndReferences",
-        ListWithRangeAndReferencesBean.class);
+            ListWithRangeAndReferencesBean.class);
     xstream.alias("references", ReferencesBean.class);
 
     xstream.alias("agency", AgencyV2Bean.class);
@@ -132,12 +148,12 @@ public class CustomXStreamHandler extends XStreamHandler {
     xstream.alias("stopSchedule", StopScheduleV2Bean.class);
     xstream.alias("stopRouteSchedule", StopRouteScheduleV2Bean.class);
     xstream.alias("stopRouteDirectionSchedule",
-        StopRouteDirectionScheduleV2Bean.class);
+            StopRouteDirectionScheduleV2Bean.class);
     xstream.alias("scheduleStopTime", ScheduleStopTimeInstanceV2Bean.class);
     xstream.alias("scheduleFrequency", ScheduleFrequencyInstanceV2Bean.class);
     xstream.alias("stopCalendarDay", StopCalendarDayV2Bean.class);
     xstream.alias("stopWithArrivalsAndDepartures",
-        StopWithArrivalsAndDeparturesV2Bean.class);
+            StopWithArrivalsAndDeparturesV2Bean.class);
     xstream.alias("arrivalAndDeparture", ArrivalAndDepartureV2Bean.class);
     xstream.alias("agencyWithCoverage", AgencyWithCoverageV2Bean.class);
     xstream.alias("stopsForRoute", StopsForRouteV2Bean.class);
@@ -174,7 +190,7 @@ public class CustomXStreamHandler extends XStreamHandler {
     xstream.alias("edge", EdgeV2Bean.class);
 
     xstream.alias("currentVehicleEstimate", CurrentVehicleEstimateV2Bean.class);
-    
+
     xstream.alias("registeredAlarm", RegisteredAlarmV2Bean.class);
 
     xstream.processAnnotations(VehicleMonitoringRequest.class);
@@ -183,6 +199,20 @@ public class CustomXStreamHandler extends XStreamHandler {
     xstream.processAnnotations(Siri.class);
     xstream.processAnnotations(ErrorMessage.class);
     xstream.processAnnotations(MonitoredStopVisit.class);
-    return xstream;
   }
+
+  public String fromObjectTest(Object obj, String resultCode, Writer out) throws IOException {
+    if (obj != null) {
+      XStream xstream = this.createTestXStream();
+      xstream.toXML(obj, out);
+    }
+
+    return null;
+  }
+
+  public void toObjectTest(Reader in, Object target) {
+    XStream xstream = this.createTestXStream();
+    xstream.fromXML(in, target);
+  }
+
 }
