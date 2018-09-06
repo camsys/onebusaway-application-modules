@@ -21,6 +21,7 @@ import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
 
+import com.opensymphony.xwork2.ActionInvocation;
 import org.apache.struts2.rest.handler.ContentTypeHandler;
 import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.model.transit.EntryWithReferencesBean;
@@ -36,6 +37,11 @@ public class CustomCsvHandler implements ContentTypeHandler {
   }
 
   @Override
+  public void toObject(ActionInvocation actionInvocation, Reader in, Object target) throws IOException {
+    toObject(in, target);
+  }
+
+  @Override
   public String fromObject(Object obj, String resultCode, Writer stream)
       throws IOException {
     CsvEntityWriterFactory factory = new CsvEntityWriterFactory();
@@ -47,6 +53,11 @@ public class CustomCsvHandler implements ContentTypeHandler {
       csvHandler.handleEntity(value);
 
     return null;
+  }
+
+  @Override
+  public String fromObject(ActionInvocation actionInvocation, Object obj, String resultCode, Writer stream) throws IOException {
+    return fromObject(obj, resultCode, stream);
   }
 
   @Override

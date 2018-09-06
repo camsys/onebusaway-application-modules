@@ -22,6 +22,7 @@ import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.opensymphony.xwork2.ActionInvocation;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
@@ -34,6 +35,7 @@ import org.apache.struts2.rest.handler.ContentTypeHandler;
  */
 public class CustomJsonLibHandler implements ContentTypeHandler {
 
+  @Override
   public void toObject(Reader in, Object target) throws IOException {
     StringBuilder sb = new StringBuilder();
     char[] buffer = new char[1024];
@@ -53,6 +55,11 @@ public class CustomJsonLibHandler implements ContentTypeHandler {
       JSONObject jsonObject = JSONObject.fromObject(sb.toString());
       JSONObject.toBean(jsonObject, target, new JsonConfig());
     }
+  }
+
+  @Override
+  public void toObject(ActionInvocation actionInvocation, Reader in, Object target) throws IOException {
+    toObject(in, target);
   }
 
   public String fromObject(Object obj, String resultCode, Writer stream)
@@ -83,6 +90,11 @@ public class CustomJsonLibHandler implements ContentTypeHandler {
     }
     
     return null;
+  }
+
+  @Override
+  public String fromObject(ActionInvocation actionInvocation,Object obj, String resultCode, Writer stream) throws IOException {
+    return fromObject(obj, resultCode, stream);
   }
 
   private boolean isArray(Object obj) {
