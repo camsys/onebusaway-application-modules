@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertLibrary;
+import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.Id;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
@@ -146,5 +147,29 @@ public class GtfsRealtimeEntitySource {
 
   public Id getStopId(String stopId) {
     return ServiceAlertLibrary.id(getObaStopId(stopId));
+  }
+
+  public AgencyAndId getObaShapeId(String shapeId) {
+
+    for (String agencyId : _agencyIds) {
+      AgencyAndId id = new AgencyAndId(agencyId, shapeId);
+      ShapePoints shape = _transitGraphDao.getShape(id);
+      if (shape != null)
+        return id;
+    }
+
+    try {
+      AgencyAndId id = AgencyAndId.convertFromString(shapeId);
+      ShapePoints shape = _transitGraphDao.getShape(id);
+      if (shape != null)
+        return id;
+    } catch (IllegalArgumentException ex) {
+
+    }
+
+    _log.warn("shape not found with id \"{}\"", shapeId);
+
+    AgencyAndId id = new AgencyAndId(_agencyIds.get(0), shapeId);
+    return id;
   }
 }

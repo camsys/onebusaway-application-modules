@@ -36,6 +36,7 @@ import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryIm
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
+import org.onebusaway.transit_data_federation.services.StopTimeEntriesProcessor;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -46,7 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class StopTimeEntriesFactory {
+public class StopTimeEntriesFactory implements StopTimeEntriesProcessor {
 
   private Logger _log = LoggerFactory.getLogger(StopTimeEntriesFactory.class);
 
@@ -62,6 +63,15 @@ public class StopTimeEntriesFactory {
 
   public long getInvalidStopToShapeMappingExceptionCount() {
     return _invalidStopToShapeMappingExceptionCount;
+  }
+
+  public List<StopTimeEntryImpl> processStopTimeEntries(TransitGraphImpl graph,
+                                                  List<StopTimeEntry> stopTimeEntries, TripEntryImpl tripEntry, ShapePoints shapePoints) {
+    // Write stop time entries into stop times.
+    // In the future, this could be refactored to use StopTimeEntry
+
+    List<StopTime> stopTimes = createStopTimes(stopTimeEntries);
+    return processStopTimes(graph, stopTimes, tripEntry, shapePoints);
   }
 
   public List<StopTimeEntryImpl> processStopTimes(TransitGraphImpl graph,
@@ -150,6 +160,23 @@ public class StopTimeEntriesFactory {
     }
 
     return stopTimeEntries;
+  }
+
+  private List<StopTime> createStopTimes(List<StopTimeEntry> stopTimeEntries) {
+    List<StopTime> stopTimes = new ArrayList<>();
+    for (StopTimeEntry entry : stopTimeEntries) {
+      StopTime stopTime = new StopTime();
+      stopTime.setStop(new Stop());
+      stopTime.getStop().setId(entry.getStop().getId());
+      stopTime.setId(entry.getId());
+      stopTime.setStopSequence(entry.getGtfsSequence());
+      stopTime.setDropOffType(entry.getDropOffType());
+      stopTime.setPickupType(entry.getPickupType());
+      stopTime.setArrivalTime(entry.getArrivalTime());
+      stopTime.setDepartureTime(entry.getDepartureTime());
+      stopTimes.add(stopTime);
+    }
+    return stopTimes;
   }
 
   /**

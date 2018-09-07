@@ -172,5 +172,9 @@ public interface TransitGraphDao {
 
   public boolean addShape(ShapePoints shape);
 
+  public ShapePoints getShape(AgencyAndId shapeId);
+
   public List<AgencyAndId> getAllReferencedShapeIds();
+
+  public boolean updateShapeForTrip(TripEntryImpl trip, AgencyAndId shapeId);
 }

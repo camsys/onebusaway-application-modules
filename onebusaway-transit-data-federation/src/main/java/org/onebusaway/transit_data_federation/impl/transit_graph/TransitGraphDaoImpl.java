@@ -30,6 +30,8 @@ import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.exceptions.NoSuchStopServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.Stop;
+import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
@@ -37,6 +39,7 @@ import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
+import org.onebusaway.transit_data_federation.services.StopTimeEntriesProcessor;
 import org.onebusaway.transit_data_federation.services.beans.GeospatialBeanService;
 import org.onebusaway.transit_data_federation.services.beans.NearbyStopsBeanService;
 import org.onebusaway.transit_data_federation.services.beans.RoutesBeanService;
@@ -57,7 +60,6 @@ import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
-import org.onebusaway.transit_data_federation.services.tripplanner.TripPlannerGraph;
 import org.onebusaway.utility.ObjectSerializationLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +74,7 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
   private FederatedTransitDataBundle _bundle;
 
-  private TripPlannerGraph _graph;
+  private TransitGraphImpl _graph;
 
   private NarrativeService _narrativeService;
 
@@ -92,6 +94,8 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
   private RevenueSearchService _revenueSearchService;
 
+  private StopTimeEntriesProcessor _stopTimesFactory;
+
   @Autowired
   @Qualifier("cacheableMethodManager")
   private CacheableMethodManager _cacheableMethodManager;
@@ -105,7 +109,7 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     _bundle = bundle;
   }
 
-  public void setTripPlannerGraph(TripPlannerGraph graph) {
+  public void setTripPlannerGraph(TransitGraphImpl graph) {
     _graph = graph;
   }
 
@@ -153,6 +157,11 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   @Autowired
   public void setRevenueSearchService(RevenueSearchService revenueSearchService) {
     _revenueSearchService = revenueSearchService;
+  }
+
+  @Autowired
+  public void setStopTimesFactory(StopTimeEntriesProcessor stopTimesFactory) {
+    _stopTimesFactory = stopTimesFactory;
   }
 
   @PostConstruct
@@ -345,6 +354,22 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     return rc;
   }
 
+  @Override
+  public boolean updateShapeForTrip(TripEntryImpl trip, AgencyAndId shapeId) {
+    if (_graph.getTripEntryForId(trip.getId()) != null) {
+      _graph.removeTripEntryForId(trip.getId());
+      TripNarrative narrative = _narrativeService.removeTrip(trip);
+      trip.setShapeId(shapeId);
+
+      // recalculate distance along shape
+      ShapePoints shape = getShape(shapeId);
+      List<StopTimeEntryImpl> stopTimeEntries = _stopTimesFactory.processStopTimeEntries(_graph, trip.getStopTimes(), trip, shape);
+      trip.setStopTimes(new ArrayList<>(stopTimeEntries));
+
+      return addTripEntry(trip, narrative);
+    }
+    return false;
+  }
 
   @Override
   public boolean updateTripEntry(TripEntryImpl trip) {
@@ -420,6 +445,11 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     return _shapePointService.addShape(shape);
   }
 
+  @Override
+  public ShapePoints getShape(AgencyAndId shapeId) {
+    return _shapePointService.getShapePointsForShapeId(shapeId);
+  }
+
   public List<AgencyAndId> getAllReferencedShapeIds() {
     Set<AgencyAndId> shapeIds = new HashSet<AgencyAndId>();
     for (TripEntry trip : getAllTrips()) {
@@ -472,5 +502,9 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     String directionId = trip.getDirectionId() == null ? "0" : trip.getDirectionId();
     _revenueSearchService.removeRevenueService(trip.getId().getAgencyId(), stopId.toString(),
             trip.getRoute().getId().toString(), directionId);
+  }
+
+  public TransitGraphImpl getGraph() {
+    return _graph;
   }
 }
