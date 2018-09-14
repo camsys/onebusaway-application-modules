@@ -52,6 +52,7 @@ public class GtfsSometimesHandlerImplTest {
         when(dao.deleteStopTime(any(), any())).thenReturn(true);
         when(dao.insertStopTime(any(), any(), anyInt(), anyInt(), anyDouble())).thenReturn(true);
         when(dao.updateStopTime(any(), any(), anyInt(), anyInt(), anyInt(), anyInt())).thenReturn(true);
+        when(dao.updateStopTimesForTrip(any(), anyList(), any())).thenReturn(true);
 
         // for alter trip:
         TripEntryImpl tripA = new TripEntryImpl();
@@ -63,6 +64,7 @@ public class GtfsSometimesHandlerImplTest {
         stopTimeA.setDepartureTime(LocalTime.of(8, 0, 0).toSecondOfDay());
         tripA.setStopTimes(Collections.singletonList(stopTimeA));
         when(dao.getTripEntryForId(new AgencyAndId("1", "tripA"))).thenReturn(tripA);
+        when(dao.getStopEntryForId(new AgencyAndId("1", "stopA"))).thenReturn(stopA);
 
         handler = new GtfsSometimesHandlerImpl();
         handler.setTransitGraphDao(dao);
@@ -82,9 +84,6 @@ public class GtfsSometimesHandlerImplTest {
                 null, // no affected field for delete
                 dateDescriptors(LocalDate.of(2018, 7, 1)));
         assertTrue(handler.handleServiceChange(change));
-        verify(dao, times(1)).deleteStopTime(
-                AgencyAndId.convertFromString("1_tripA"),
-                AgencyAndId.convertFromString("1_stopA"));
     }
 
     @Test
@@ -116,7 +115,6 @@ public class GtfsSometimesHandlerImplTest {
                 null,
                 dateDescriptors(LocalDate.of(2018, 7, 2)));
         assertFalse(handler.handleServiceChange(change));
-        verify(dao, never()).deleteStopTime(any(), any());
     }
 
     @Test
@@ -127,9 +125,6 @@ public class GtfsSometimesHandlerImplTest {
                 null,
                 dateDescriptorsRange(LocalDate.of(2018, 6, 1), LocalDate.of(2018, 8, 1)));
         assertTrue(handler.handleServiceChange(change));
-        verify(dao, times(1)).deleteStopTime(
-                AgencyAndId.convertFromString("1_tripA"),
-                AgencyAndId.convertFromString("1_stopA"));
     }
 
     @Test
@@ -140,7 +135,6 @@ public class GtfsSometimesHandlerImplTest {
                 null,
                 dateDescriptorsRange(LocalDate.of(2018, 7, 2), LocalDate.of(2018, 8, 1)));
         assertFalse(handler.handleServiceChange(change));
-        verify(dao, never()).deleteStopTime(any(), any());
     }
 
     @Test
@@ -153,12 +147,6 @@ public class GtfsSometimesHandlerImplTest {
                 null, // no affected field for delete
                 dateDescriptors(LocalDate.of(2018, 6, 1), LocalDate.of(2018, 7, 1)));
         assertTrue(handler.handleServiceChange(change));
-        verify(dao, times(1)).deleteStopTime(
-                AgencyAndId.convertFromString("1_tripA"),
-                AgencyAndId.convertFromString("1_stopA"));
-        verify(dao, times(1)).deleteStopTime(
-                AgencyAndId.convertFromString("1_tripB"),
-                AgencyAndId.convertFromString("1_stopB"));
     }
 
     @Test
@@ -189,10 +177,6 @@ public class GtfsSometimesHandlerImplTest {
                 stopTimesFieldsList("tripA", LocalTime.of(9, 0, 0), LocalTime.of(9, 0, 0), "stopA", 0),
                 dateDescriptors(LocalDate.of(2018, 6, 1), LocalDate.of(2018, 7, 1)));
         assertTrue(handler.handleServiceChange(change));
-        verify(dao, times(1)).insertStopTime(
-                AgencyAndId.convertFromString("1_tripA"),
-                AgencyAndId.convertFromString("1_stopA"),
-                9 * 3600, 9 * 3600, -1);
     }
 
     @Test
@@ -234,11 +218,6 @@ public class GtfsSometimesHandlerImplTest {
                 stopTimesFieldsList("tripA", LocalTime.of(9, 0, 0), LocalTime.of(9, 0, 0), "stopA", 0),
                 dateDescriptors(LocalDate.of(2018, 6, 1), LocalDate.of(2018, 7, 1)));
         assertTrue(handler.handleServiceChange(change));
-        verify(dao, times(1)).updateStopTime(
-                AgencyAndId.convertFromString("1_tripA"),
-                AgencyAndId.convertFromString("1_stopA"),
-                8 * 3600, 8 * 3600,
-                9 * 3600, 9 * 3600);
     }
 
     private abstract class MockEntitySource extends GtfsRealtimeEntitySource {
