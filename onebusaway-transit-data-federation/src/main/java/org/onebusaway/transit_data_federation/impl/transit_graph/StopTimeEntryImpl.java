@@ -19,6 +19,7 @@ package org.onebusaway.transit_data_federation.impl.transit_graph;
 
 import java.io.Serializable;
 
+import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 
 public class StopTimeEntryImpl implements StopTimeEntry, Serializable {
@@ -39,6 +40,28 @@ public class StopTimeEntryImpl implements StopTimeEntry, Serializable {
   private StopEntryImpl _stop;
 
   private TripEntryImpl _trip;
+
+  public StopTimeEntryImpl() {
+  }
+
+  public StopTimeEntryImpl(StopTimeEntry stopTimeEntry) {
+    _stopTimeId = stopTimeEntry.getId();
+    _arrivalTime = stopTimeEntry.getArrivalTime();
+    _departureTime = stopTimeEntry.getDepartureTime();
+    _sequence = stopTimeEntry.getSequence();
+    _gtfsSequence = stopTimeEntry.getGtfsSequence();
+    _dropOffType = stopTimeEntry.getDropOffType();
+    _pickupType = stopTimeEntry.getPickupType();
+    _shapePointIndex = stopTimeEntry.getShapePointIndex();
+    _shapeDistTraveled = stopTimeEntry.getShapeDistTraveled();
+    _accumulatedSlackTime = stopTimeEntry.getAccumulatedSlackTime();
+    if (stopTimeEntry.getStop() instanceof StopEntryImpl) {
+      _stop = (StopEntryImpl) stopTimeEntry.getStop();
+    }
+    if (stopTimeEntry.getTrip() instanceof TripEntryImpl) {
+      _trip = (TripEntryImpl) stopTimeEntry.getTrip();
+    }
+  }
 
   public void setId(int id) {
     _stopTimeId = id;
@@ -173,4 +196,5 @@ public class StopTimeEntryImpl implements StopTimeEntry, Serializable {
     return "StopTimeEntryImpl(stop=" + _stop.getId() + " trip=" + _trip
         + " arrival=" + _arrivalTime + " departure=" + _departureTime + ")";
   }
+
 }

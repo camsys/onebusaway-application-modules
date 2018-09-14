@@ -361,6 +361,10 @@ public class BlockConfigurationEntryImpl implements BlockConfigurationEntry,
 
       List<StopTimeEntry> stopTimes = trip.getStopTimes();
       int stopTimeIndex = index - accumulatedStopTimeIndices[tripIndex];
+      // fail gracefully if block has not been updated yet via service changes
+      if (stopTimeIndex > stopTimes.size() - 1)
+        return null;
+
       StopTimeEntry stopTime = stopTimes.get(stopTimeIndex);
 
       boolean hasNextStop = index + 1 < tripIndices.length;

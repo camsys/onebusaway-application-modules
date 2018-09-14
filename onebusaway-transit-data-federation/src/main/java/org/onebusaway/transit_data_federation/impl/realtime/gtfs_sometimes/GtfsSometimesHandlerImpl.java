@@ -18,12 +18,16 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes;
 import com.camsys.transit.servicechange.DateDescriptor;
 import com.camsys.transit.servicechange.EntityDescriptor;
 import com.camsys.transit.servicechange.ServiceChange;
+import com.camsys.transit.servicechange.ServiceChangeType;
+import com.camsys.transit.servicechange.Table;
 import com.camsys.transit.servicechange.field_descriptors.AbstractFieldDescriptor;
 import com.camsys.transit.servicechange.field_descriptors.ShapesFields;
 import com.camsys.transit.servicechange.field_descriptors.StopTimesFields;
 import com.camsys.transit.servicechange.field_descriptors.TripsFields;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeEntitySource;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphDaoImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
@@ -45,7 +49,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
@@ -117,7 +125,19 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     @Override
     public int handleServiceChanges(Collection<ServiceChange> serviceChanges) {
+          /*
+        Currently handled:
+         * adding shapes (do this first so trips can use the new shapes)
+         * trip modifications:
+         *   inserted stop times
+         *   deleted stop times
+         *   altered stop times
+         *   shape ID change
+         */
         int nSuccess = 0;
+        Collection<ServiceChange> addedShapes = new ArrayList<>();
+        Map<String, TripChange> changesByTrip = new HashMap<>();
+
         for (ServiceChange serviceChange : serviceChanges) {
             if (!validateServiceChange(serviceChange)) {
                 _log.debug("service change is invalid");
@@ -127,26 +147,70 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                 _log.debug("Service change is not applicable to date.");
                 continue;
             }
-            switch (serviceChange.getTable()) {
-                case STOP_TIMES:
-                    if (handleStopTimesChange(serviceChange)) {
-                        nSuccess++;
+            if (Table.SHAPES.equals(serviceChange.getTable())
+                    && ServiceChangeType.ADD.equals(serviceChange.getServiceChangeType())) {
+                addedShapes.add(serviceChange);
+            } else if (Table.TRIPS.equals(serviceChange.getTable())
+                    && ServiceChangeType.ALTER.equals(serviceChange.getServiceChangeType())) {
+                String shapeId = ((TripsFields) serviceChange.getAffectedField().get(0)).getShapeId();
+                if (shapeId != null) {
+                    for (EntityDescriptor desc : serviceChange.getAffectedEntity()) {
+                        String tripId = desc.getTripId();
+                        if (tripId != null) {
+                            AgencyAndId shape = _entitySource.getObaShapeId(shapeId);
+                            changesByTrip.computeIfAbsent(tripId, TripChange::new).newShapeId = shape;
+                        }
                     }
-                    break;
-                case STOPS:
-                case ROUTES:
-                case TRIPS:
-                    if (handleTripsChange(serviceChange)) {
-                        nSuccess++;
-                    }
-                case SHAPES:
-                    if (handleShapesChange(serviceChange)) {
-                        nSuccess++;
-                    }
-                case TRANSFERS:
-                default:
-                    _log.error("Table not implemented: {}", serviceChange.getTable());
+                }
+            } else if (Table.STOP_TIMES.equals(serviceChange.getTable())) {
+                switch(serviceChange.getServiceChangeType()) {
+                    case ADD:
+                        for (AbstractFieldDescriptor desc : serviceChange.getAffectedField()) {
+                            StopTimesFields stopTimesFields = (StopTimesFields) desc;
+                            if (stopTimesFields.getTripId() != null) {
+                                changesByTrip.computeIfAbsent(stopTimesFields.getTripId(), TripChange::new).insertedStops.add(stopTimesFields);
+                            }
+                        }
+                        break;
+                    case ALTER:
+                        StopTimesFields stopTimesFields = (StopTimesFields) serviceChange.getAffectedField().get(0);
+                        for (EntityDescriptor desc : serviceChange.getAffectedEntity()) {
+                            StopTimesFields fields = new StopTimesFields();
+                            fields.setArrivalTime(stopTimesFields.getArrivalTime());
+                            fields.setDepartureTime(stopTimesFields.getDepartureTime());
+                            String tripId = desc.getTripId();
+                            fields.setTripId(tripId);
+                            fields.setStopId(desc.getStopId());
+                            if (tripId != null) {
+                                changesByTrip.computeIfAbsent(tripId, TripChange::new).modifiedStops.add(fields);
+                            }
+                        }
+                        break;
+                    case DELETE:
+                        for (EntityDescriptor descriptor : serviceChange.getAffectedEntity()) {
+                            String tripId = descriptor.getTripId();
+                            String stopId = descriptor.getStopId();
+                            if (tripId != null && stopId != null) {
+                                changesByTrip.computeIfAbsent(tripId, TripChange::new).deletedStops.add(descriptor);
+                            }
+                        }
+                        break;
+                }
+            } else {
+                _log.info("not implemented: handling service change for table={}, type={}",
+                        serviceChange.getTable(), serviceChange.getServiceChangeType());
             }
+
+        }
+
+        for (ServiceChange change : addedShapes) {
+            if (handleAddShapesChange(change)) {
+                nSuccess++;
+            }
+        }
+
+        for (String tripId : changesByTrip.keySet()) {
+            nSuccess += handleTripChanges(tripId, changesByTrip.get(tripId));
         }
 
         if (nSuccess > 0) {
@@ -157,7 +221,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     @Override
     public boolean handleServiceChange(ServiceChange change) {
-        return handleServiceChanges(Collections.singleton(change)) == 1;
+        return handleServiceChanges(Collections.singleton(change)) > 0;
     }
 
     private void forceFlush() {
@@ -209,6 +273,109 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         }
         return false;
     }
+
+    private int handleTripChanges(String trip, TripChange change) {
+        int nSuccess = 0;
+
+        AgencyAndId tripId = _entitySource.getObaTripId(trip);
+        TripEntryImpl tripEntry = (TripEntryImpl) _dao.getTripEntryForId(tripId);
+        if (tripEntry == null) {
+            return 0;
+        }
+        List<StopTimeEntry> stopTimes = new ArrayList<>(tripEntry.getStopTimes());
+        AgencyAndId shapeId = change.newShapeId;
+        if (shapeId == null) {
+            shapeId = tripEntry.getShapeId();
+        } else {
+            nSuccess++;
+        }
+
+        // Removed stops
+
+        Set<AgencyAndId> stopsToRemove = new HashSet<>();
+        for (EntityDescriptor descriptor : change.deletedStops) {
+            AgencyAndId stopId = _entitySource.getObaStopId(descriptor.getStopId());
+            stopsToRemove.add(stopId);
+        }
+        if (stopTimes.removeIf(ste -> stopsToRemove.contains(ste.getStop().getId()))) {
+            nSuccess++;
+        }
+
+        // Alter - only support changing arrival time/departure time
+
+        for (StopTimesFields stopTimesFields : change.modifiedStops) {
+            AgencyAndId stopId = _entitySource.getObaStopId(stopTimesFields.getStopId());
+            for (int i = 0; i < stopTimes.size(); i++) {
+                StopTimeEntry stopTime = stopTimes.get(i);
+                if (stopTime.getStop().getId().equals(stopId)) {
+                    StopTimeEntryImpl newStopTime = new StopTimeEntryImpl(stopTime);
+                    newStopTime.setArrivalTime(stopTimesFields.getArrivalTime().toSecondOfDay());
+                    newStopTime.setDepartureTime(stopTimesFields.getDepartureTime().toSecondOfDay());
+                    stopTimes.set(i, newStopTime);
+                    nSuccess++;
+                    break;
+                }
+            }
+        }
+
+
+        // Inserted stops
+
+        for (StopTimesFields stopTimesFields : change.insertedStops) {
+            AgencyAndId stopId = _entitySource.getObaStopId(stopTimesFields.getStopId());
+            StopEntryImpl stopEntry = (StopEntryImpl) _dao.getStopEntryForId(stopId);
+            Double shapeDistanceTravelled = stopTimesFields.getShapeDistTraveled();
+            int arrivalTime = stopTimesFields.getArrivalTime().toSecondOfDay();
+            int departureTime = stopTimesFields.getDepartureTime().toSecondOfDay();
+            if (stopEntry != null) {
+                StopTimeEntry newEntry = createStopTimeEntry(tripEntry, stopEntry, arrivalTime, departureTime, shapeDistanceTravelled == null ? -999 : shapeDistanceTravelled, -999);
+                int insertPosition = -1;
+                for (int i = stopTimes.size() - 1; i >= 0; i--) {
+                    StopTimeEntry ste = tripEntry.getStopTimes().get(i);
+                    if (shapeDistanceTravelled != null) {
+                        // we have shape distance, use it to determine insertion position
+                        if (shapeDistanceTravelled > ste.getShapeDistTraveled()) {
+                            insertPosition = i + 1;
+                            break;
+                        }
+                    } else if (arrivalTime >= 0) {
+                        // try arrivalTime
+                        if (arrivalTime > ste.getArrivalTime()) {
+                            insertPosition = i + 1;
+                            break;
+                        }
+                    } else {
+                        // use departureTime
+                        if (departureTime > ste.getDepartureTime()) {
+                            insertPosition = i + 1;
+                            break;
+                        }
+                    }
+                }
+                if (insertPosition >= 0) {
+                    nSuccess++;
+                    stopTimes.add(insertPosition, newEntry);
+                }
+            }
+        }
+
+        // call internal method
+        boolean success = _dao.updateStopTimesForTrip(tripEntry, stopTimes, shapeId);
+
+        return success ? nSuccess : 0;
+    }
+
+    private StopTimeEntry createStopTimeEntry(TripEntryImpl tripEntry, StopEntryImpl stopEntry, int arrivalTime, int departureTime, double shapeDistanceTravelled, int gtfsSequence) {
+        StopTimeEntryImpl stei = new StopTimeEntryImpl();
+        stei.setTrip(tripEntry);
+        stei.setStop(stopEntry);
+        stei.setArrivalTime(arrivalTime);
+        stei.setDepartureTime(departureTime);
+        stei.setShapeDistTraveled(shapeDistanceTravelled);
+        stei.setGtfsSequence(gtfsSequence);
+        return stei;
+    }
+
 
     private boolean handleStopTimesChange(ServiceChange change) {
         switch(change.getServiceChangeType()) {
@@ -293,19 +460,6 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         return success;
     }
 
-    private boolean handleShapesChange(ServiceChange change) {
-        switch(change.getServiceChangeType()) {
-            case ADD:
-                return handleAddShapesChange(change);
-            case ALTER:
-                _log.info("Alter shape not supported");
-            case DELETE:
-                _log.info("Delete shape not supported");
-            default:
-                return false;
-        }
-    }
-
     private boolean handleAddShapesChange(ServiceChange change) {
         Collection<List<ShapesFields>> shapesListCollection = change.getAffectedField().stream()
                 .filter(ShapesFields.class::isInstance)
@@ -380,4 +534,21 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         return Instant.ofEpochMilli(getCurrentTime())
                 .atZone(ZoneId.systemDefault()).toLocalDate();
     }
+
+    class TripChange {
+        TripChange(String tripId) {
+            this.tripId = tripId;
+        }
+
+        String tripId;
+
+        List<StopTimesFields> modifiedStops = new ArrayList<>();
+
+        List<StopTimesFields> insertedStops = new ArrayList<>();
+
+        List<EntityDescriptor> deletedStops = new ArrayList<>();
+
+        AgencyAndId newShapeId;
+    }
 }
+

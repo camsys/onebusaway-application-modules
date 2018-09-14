@@ -15,6 +15,11 @@
       <artifactId>onebusaway-transit-data-federation</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.onebusaway</groupId>
+      <artifactId>onebusaway-transit-data-federation-common</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.onebusaway</groupId>

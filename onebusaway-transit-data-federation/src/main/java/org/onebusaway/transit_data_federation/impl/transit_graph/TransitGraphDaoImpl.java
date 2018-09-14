@@ -333,8 +333,9 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
        _narrativeService.addTrip(trip, narrative);
     }
 
-    if (rc)
-      rc = _blockGeospatialService.addShape(trip.getShapeId());
+    if (rc) {
+      rc = updateBlockIndices(trip);
+    }
 
     if (rc) {
       _routesBeanService.refresh();
@@ -346,16 +347,17 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
       }
     }
 
-    if (rc) {
-      rc = updateBlockIndices(trip);
-    }
-
     flushCache();
     return rc;
   }
 
   @Override
   public boolean updateShapeForTrip(TripEntryImpl trip, AgencyAndId shapeId) {
+    return updateStopTimesForTrip(trip, trip.getStopTimes(), shapeId);
+  }
+
+  @Override
+  public boolean updateStopTimesForTrip(TripEntryImpl trip, List<StopTimeEntry> stopTimeEntries, AgencyAndId shapeId) {
     if (_graph.getTripEntryForId(trip.getId()) != null) {
       _graph.removeTripEntryForId(trip.getId());
       TripNarrative narrative = _narrativeService.removeTrip(trip);
@@ -363,8 +365,8 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
       // recalculate distance along shape
       ShapePoints shape = getShape(shapeId);
-      List<StopTimeEntryImpl> stopTimeEntries = _stopTimesFactory.processStopTimeEntries(_graph, trip.getStopTimes(), trip, shape);
-      trip.setStopTimes(new ArrayList<>(stopTimeEntries));
+      List<StopTimeEntryImpl> processedStopTimeEntries = _stopTimesFactory.processStopTimeEntries(_graph, stopTimeEntries, trip, shape);
+      trip.setStopTimes(new ArrayList<>(processedStopTimeEntries));
 
       return addTripEntry(trip, narrative);
     }
@@ -398,9 +400,6 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
         }
       }
     }
-
-    if (rc)
-      rc = _blockGeospatialService.addShape(null);
     return rc;
   }
 
@@ -434,6 +433,7 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
    */
   public boolean updateBlockIndices(TripEntryImpl trip) {
     _blockIndexService.updateBlockIndices(trip);
+    _blockGeospatialService.addShape(null);
     return true;
   }
 
