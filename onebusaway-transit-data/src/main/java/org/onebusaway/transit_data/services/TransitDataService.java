@@ -632,4 +632,11 @@ public interface TransitDataService extends FederatedService {
    */
   public Boolean stopHasRevenueService(String agencyId, String stopId);
 
+  /**
+   * Reload the current bundle. This is helpful if the bundle is modified, e.g.
+   * for GTFS Service Changes.
+   *
+   * @return true if bundle is successfully reloaded.
+   */
+  public Boolean reloadBundle();
 }

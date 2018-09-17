@@ -745,4 +745,9 @@ class TransitDataServiceImpl implements TransitDataService {
     return _revenueSearchService.stopHasRevenueService(agencyId, stopId);    
   }
 
+  // Not implemented
+  @Override
+  public Boolean reloadBundle() {
+    return false;
+  }
 }
