@@ -1,0 +1,34 @@
+{
+    "header": {
+        "gtfs_realtime_version": 1,
+        "feed_version_number": 1,
+        "timestamp": 1533568782623,
+        "incrementality": "FULL_DATASET"
+    },
+    "entity": [
+        {
+            "service_change": {
+                "table": "STOP_TIMES",
+                "service_change_type": "ALTER",
+                "affected_entity": [
+                    {
+                        "trip_id": "MTA NYCT_OH_C8-Weekday-SDon-035100_M101_18",
+                        "stop_id": "MTA NYCT_405075"
+                    }
+                ],
+                "affected_field": [
+                    {
+                        "arrival_time": "24:24:25"
+                    }
+                ],
+                "affected_dates": [
+                    {
+                        "date": "2018-07-01",
+                        "from": null,
+                        "to": null
+                    }
+                ]
+            }
+        }
+    ]
+}

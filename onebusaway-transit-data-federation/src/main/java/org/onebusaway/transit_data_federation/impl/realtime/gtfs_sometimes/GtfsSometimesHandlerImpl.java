@@ -301,8 +301,8 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
         for (StopTimesFields stopTimesFields : change.modifiedStops) {
             AgencyAndId stopId = _entitySource.getObaStopId(stopTimesFields.getStopId());
-            int arrivalTime = stopTimesFields.getArrivalTime().toSecondOfDay();
-            int departureTime = stopTimesFields.getDepartureTime().toSecondOfDay();
+            int arrivalTime = stopTimesFields.getArrivalTime();
+            int departureTime = stopTimesFields.getDepartureTime();
             Optional<StopTimeEntry> stopTimeSearch = stopTimes.stream().filter(ste -> stopId.equals(ste.getStop().getId())).findFirst();
             if (stopTimeSearch.isPresent()) {
                 int originalArrivalTime = stopTimeSearch.get().getArrivalTime();
@@ -319,8 +319,8 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         for (StopTimesFields stopTimesFields : change.insertedStops) {
             AgencyAndId stopId = _entitySource.getObaStopId(stopTimesFields.getStopId());
             StopEntryImpl stopEntry = (StopEntryImpl) _dao.getStopEntryForId(stopId);
-            int arrivalTime = stopTimesFields.getArrivalTime().toSecondOfDay();
-            int departureTime = stopTimesFields.getDepartureTime().toSecondOfDay();
+            int arrivalTime = stopTimesFields.getArrivalTime();
+            int departureTime = stopTimesFields.getDepartureTime();
             Double shapeDistanceTravelled = stopTimesFields.getShapeDistTraveled();
             if (_dao.insertStopTime(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled != null ? shapeDistanceTravelled : -999)) {
                 nSuccess++;
@@ -376,8 +376,8 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                 StopTimeEntry stopTime = stopTimes.get(i);
                 if (stopTime.getStop().getId().equals(stopId)) {
                     StopTimeEntryImpl newStopTime = new StopTimeEntryImpl(stopTime);
-                    newStopTime.setArrivalTime(stopTimesFields.getArrivalTime().toSecondOfDay());
-                    newStopTime.setDepartureTime(stopTimesFields.getDepartureTime().toSecondOfDay());
+                    newStopTime.setArrivalTime(stopTimesFields.getArrivalTime());
+                    newStopTime.setDepartureTime(stopTimesFields.getDepartureTime());
                     stopTimes.set(i, newStopTime);
                     nSuccess++;
                     break;
@@ -392,8 +392,8 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
             AgencyAndId stopId = _entitySource.getObaStopId(stopTimesFields.getStopId());
             StopEntryImpl stopEntry = (StopEntryImpl) _dao.getStopEntryForId(stopId);
             Double shapeDistanceTravelled = stopTimesFields.getShapeDistTraveled();
-            int arrivalTime = stopTimesFields.getArrivalTime().toSecondOfDay();
-            int departureTime = stopTimesFields.getDepartureTime().toSecondOfDay();
+            int arrivalTime = stopTimesFields.getArrivalTime();
+            int departureTime = stopTimesFields.getDepartureTime();
             if (stopEntry != null) {
                 StopTimeEntry newEntry = createStopTimeEntry(tripEntry, stopEntry, arrivalTime, departureTime, shapeDistanceTravelled == null ? -999 : shapeDistanceTravelled, -999);
                 int insertPosition = -1;
@@ -469,7 +469,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
             StopTimesFields fields = (StopTimesFields) abstractFieldDescriptor;
             AgencyAndId tripId = _entitySource.getObaTripId(fields.getTripId());
             AgencyAndId stopId = _entitySource.getObaStopId(fields.getStopId());
-            success &= _dao.insertStopTime(tripId, stopId, fields.getArrivalTime().toSecondOfDay(), fields.getDepartureTime().toSecondOfDay(), -1);
+            success &= _dao.insertStopTime(tripId, stopId, fields.getArrivalTime(), fields.getDepartureTime(), -1);
         }
         return success;
     }
@@ -518,8 +518,8 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                 for (StopTimeEntry stopTime : trip.getStopTimes()) {
                     if (stopTime.getStop().getId().equals(stopId)) {
                         StopTimesFields fields = (StopTimesFields) change.getAffectedField().iterator().next();
-                        int arrivalTime = fields.getArrivalTime().toSecondOfDay();
-                        int departureTime = fields.getDepartureTime().toSecondOfDay();
+                        int arrivalTime = fields.getArrivalTime();
+                        int departureTime = fields.getDepartureTime();
                         success = _dao.updateStopTime(tripId, stopId, stopTime.getArrivalTime(),
                                 stopTime.getDepartureTime(), arrivalTime, departureTime);
                     }
