@@ -26,12 +26,9 @@ import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRe
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
-import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -60,8 +57,8 @@ public class GtfsSometimesHandlerImplTest {
         StopTimeEntryImpl stopTimeA = new StopTimeEntryImpl();
         StopEntryImpl stopA = new StopEntryImpl(new AgencyAndId("1", "stopA"), 0d, 0d);
         stopTimeA.setStop(stopA);
-        stopTimeA.setArrivalTime(LocalTime.of(8, 0, 0).toSecondOfDay());
-        stopTimeA.setDepartureTime(LocalTime.of(8, 0, 0).toSecondOfDay());
+        stopTimeA.setArrivalTime(time(8, 0, 0));
+        stopTimeA.setDepartureTime(time(8, 0, 0));
         tripA.setStopTimes(Collections.singletonList(stopTimeA));
         when(dao.getTripEntryForId(new AgencyAndId("1", "tripA"))).thenReturn(tripA);
         when(dao.getStopEntryForId(new AgencyAndId("1", "stopA"))).thenReturn(stopA);
@@ -154,7 +151,7 @@ public class GtfsSometimesHandlerImplTest {
         ServiceChange change = serviceChange(Table.STOP_TIMES,
                 ServiceChangeType.ADD,
                 Arrays.asList(stopTimeEntity("tripA", "stopA")),
-                stopTimesFieldsList("tripA", LocalTime.of(9, 0, 0), LocalTime.of(9, 0, 0), "stopA", 0),
+                stopTimesFieldsList("tripA", time(9, 0, 0), time(9, 0, 0), "stopA", 0),
                 dateDescriptors(LocalDate.of(2018, 6, 1), LocalDate.of(2018, 7, 1)));
         assertFalse(handler.handleServiceChange(change));
     }
@@ -164,7 +161,7 @@ public class GtfsSometimesHandlerImplTest {
         ServiceChange change = serviceChange(Table.STOP_TIMES,
                 ServiceChangeType.ADD,
                 null,
-                stopTimesFieldsList("tripA", LocalTime.of(9, 0, 0), LocalTime.of(9, 0, 0), "stopA", 0),
+                stopTimesFieldsList("tripA", time(9, 0, 0), time(9, 0, 0), "stopA", 0),
                 Collections.emptyList());
         assertFalse(handler.handleServiceChange(change));
     }
@@ -174,7 +171,7 @@ public class GtfsSometimesHandlerImplTest {
         ServiceChange change = serviceChange(Table.STOP_TIMES,
                 ServiceChangeType.ADD,
                 null,
-                stopTimesFieldsList("tripA", LocalTime.of(9, 0, 0), LocalTime.of(9, 0, 0), "stopA", 0),
+                stopTimesFieldsList("tripA", time(9, 0, 0), time(9, 0, 0), "stopA", 0),
                 dateDescriptors(LocalDate.of(2018, 6, 1), LocalDate.of(2018, 7, 1)));
         assertTrue(handler.handleServiceChange(change));
     }
@@ -184,7 +181,7 @@ public class GtfsSometimesHandlerImplTest {
         ServiceChange change = serviceChange(Table.STOP_TIMES,
                 ServiceChangeType.ALTER,
                 null,
-                stopTimesFieldsList("tripA", LocalTime.of(9, 0, 0), LocalTime.of(9, 0, 0), "stopA", 0),
+                stopTimesFieldsList("tripA", time(9, 0, 0), time(9, 0, 0), "stopA", 0),
                 dateDescriptors(LocalDate.of(2018, 6, 1), LocalDate.of(2018, 7, 1)));
         assertFalse(handler.handleServiceChange(change));
     }
@@ -215,7 +212,7 @@ public class GtfsSometimesHandlerImplTest {
         ServiceChange change = serviceChange(Table.STOP_TIMES,
                 ServiceChangeType.ALTER,
                 Collections.singletonList(stopTimeEntity("tripA", "stopA")),
-                stopTimesFieldsList("tripA", LocalTime.of(9, 0, 0), LocalTime.of(9, 0, 0), "stopA", 0),
+                stopTimesFieldsList("tripA", time(9, 0, 0), time(9, 0, 0), "stopA", 0),
                 dateDescriptors(LocalDate.of(2018, 6, 1), LocalDate.of(2018, 7, 1)));
         assertTrue(handler.handleServiceChange(change));
     }

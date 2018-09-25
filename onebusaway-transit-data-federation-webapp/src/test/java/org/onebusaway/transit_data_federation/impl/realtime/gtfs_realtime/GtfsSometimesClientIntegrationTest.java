@@ -70,7 +70,6 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -302,7 +301,7 @@ public class GtfsSometimesClientIntegrationTest {
                 ServiceChangeType.ADD,
                 null,
                  stopTimesFieldsList(tripId,
-                        LocalTime.of(16, 47, 20), LocalTime.of(16, 47, 22),
+                        time(16, 47, 20), time(16, 47, 22),
                          "200176", 68), // stop_sequence is ignored
                 dateDescriptors(LocalDate.of(2018, 8, 10)));
         assertTrue(_handler.handleServiceChange(change));
@@ -351,7 +350,7 @@ public class GtfsSometimesClientIntegrationTest {
                 ServiceChangeType.ADD,
                 null,
                 stopTimesFieldsList("CA_G8-Weekday-096000_MISC_545",
-                        LocalTime.of(16, 47, 20), LocalTime.of(16, 47, 22),
+                        time(16, 47, 20), time(16, 47, 22),
                         "200001", 68), // stop_sequence is ignored
                 dateDescriptors(LocalDate.of(2018, 8, 10)));
         assertTrue(_handler.handleServiceChange(change));
@@ -376,7 +375,7 @@ public class GtfsSometimesClientIntegrationTest {
                 ServiceChangeType.ALTER,
                 Collections.singletonList(stopTimeEntity("CA_G8-Weekday-096000_MISC_545", "203564")),
                 stopTimesFieldsList("CA_G8-Weekday-096000_MISC_545",
-                        LocalTime.of(16, 47, 42), LocalTime.of(16, 47, 44), // delay by 4-6 seconds
+                        time(16, 47, 42), time(16, 47, 44), // delay by 4-6 seconds
                         "203564", 68),
                 dateDescriptors(LocalDate.of(2018, 8, 10)));
         assertTrue(_handler.handleServiceChange(change));

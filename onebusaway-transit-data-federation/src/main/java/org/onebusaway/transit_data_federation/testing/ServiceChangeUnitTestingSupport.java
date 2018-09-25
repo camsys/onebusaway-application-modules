@@ -23,10 +23,8 @@ import com.camsys.transit.servicechange.Table;
 import com.camsys.transit.servicechange.field_descriptors.AbstractFieldDescriptor;
 import com.camsys.transit.servicechange.field_descriptors.ShapesFields;
 import com.camsys.transit.servicechange.field_descriptors.StopTimesFields;
-import com.camsys.transit.servicechange.field_descriptors.TripsFields;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -68,13 +66,13 @@ public class ServiceChangeUnitTestingSupport {
         return descriptors;
     }
 
-    public static StopTimesFields stopTimesFieldDescriptor(String tripId, LocalTime arrivalTime, LocalTime departureTime,
+    public static StopTimesFields stopTimesFieldDescriptor(String tripId, Integer arrivalTime, Integer departureTime,
                                                            String stopId, Integer stopSequence, Integer pickupType, Integer dropOffType,
                                                            Double shapeDistTravelled, Integer timepoint) {
         StopTimesFields fields = new StopTimesFields();
         fields.setTripId(tripId);
-        fields.setArrivalTime(arrivalTime);
-        fields.setDepartureTime(departureTime);
+        fields.setArrivalTime(arrivalTime == null ? -999 : arrivalTime);
+        fields.setDepartureTime(departureTime == null ? -999 : departureTime);
         fields.setStopId(stopId);
         fields.setStopSequence(stopSequence);
         fields.setPickupType(pickupType);
@@ -84,12 +82,12 @@ public class ServiceChangeUnitTestingSupport {
         return fields;
     }
 
-    public static StopTimesFields stopTimesFieldDescriptor(String tripId, LocalTime arrivalTime, LocalTime departureTime,
+    public static StopTimesFields stopTimesFieldDescriptor(String tripId, Integer arrivalTime, Integer departureTime,
                                                            String stopId, int stopSequence) {
         return stopTimesFieldDescriptor(tripId, arrivalTime, departureTime, stopId, stopSequence, null, null, null, null);
     }
 
-    public static List<AbstractFieldDescriptor> stopTimesFieldsList(String tripId, LocalTime arrivalTime, LocalTime departureTime,
+    public static List<AbstractFieldDescriptor> stopTimesFieldsList(String tripId, Integer arrivalTime, Integer departureTime,
                                                             String stopId, int stopSequence) {
         return Collections.singletonList(stopTimesFieldDescriptor(tripId, arrivalTime, departureTime, stopId, stopSequence));
     }
@@ -118,5 +116,9 @@ public class ServiceChangeUnitTestingSupport {
         change.setAffectedField(descriptors);
         change.setAffectedDates(dates);
         return change;
+    }
+
+    public static int time(int hours, int minutes, int seconds) {
+        return (hours * 3600) + (minutes * 60) + seconds;
     }
 }

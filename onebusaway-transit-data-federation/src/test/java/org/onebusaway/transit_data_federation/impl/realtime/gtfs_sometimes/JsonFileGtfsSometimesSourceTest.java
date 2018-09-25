@@ -48,4 +48,15 @@ public class JsonFileGtfsSometimesSourceTest {
         assertEquals("MTA NYCT_405075", entity.getStopId());
         assertEquals("MTA NYCT_OH_C8-Weekday-SDon-035100_M101_18", entity.getTripId());
     }
+
+    @Test
+    public void testReadJsonAfterMidnight() {
+        URL url = getClass().getResource("/gtfs_sometimes/service_change_after_midnight.json");
+        String path = url.getPath();
+        JsonFileGtfsSometimesSource bean = new JsonFileGtfsSometimesSource();
+        bean.setFilename(path);
+
+        Feed feed = bean.getFeed();
+        assertNotNull(feed);
+    }
 }
