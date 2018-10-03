@@ -45,6 +45,9 @@ public final class RefreshableResources {
   
   public static final String REVENUE_STOP_ROUTE_INDEX = "revenueStopRouteIndex";
 
+  // Possibly could be combined with BLOCK_INDEX_DATA
+  public static final String BLOCK_SHAPE_DATA = "blockShapeData";
+
   private RefreshableResources() {
 
   }
