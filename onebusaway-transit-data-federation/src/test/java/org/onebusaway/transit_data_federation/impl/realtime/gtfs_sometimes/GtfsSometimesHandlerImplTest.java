@@ -101,7 +101,6 @@ public class GtfsSometimesHandlerImplTest {
                 null,
                 Collections.emptyList());
         assertFalse(handler.handleServiceChange(change));
-
     }
 
     @Test

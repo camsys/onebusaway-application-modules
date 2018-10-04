@@ -288,69 +288,6 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         return false;
     }
 
-    private int handleTripChangesSeparately(String trip, TripChange change) {
-        int nSuccess = 0;
-
-        AgencyAndId tripId = _entitySource.getObaTripId(trip);
-        TripEntryImpl tripEntry = (TripEntryImpl) _dao.getTripEntryForId(tripId);
-        if (tripEntry == null) {
-            return 0;
-        }
-        List<StopTimeEntry> stopTimes = new ArrayList<>(tripEntry.getStopTimes());
-        AgencyAndId shapeId = change.newShapeId;
-
-        // Removed stops
-        for (EntityDescriptor descriptor : change.deletedStops) {
-            AgencyAndId stopId = _entitySource.getObaStopId(descriptor.getStopId());
-            if (_dao.deleteStopTime(tripId, stopId)) {
-                nSuccess++;
-            }
-        }
-
-        // Alter - only support changing arrival time/departure time
-
-        for (StopTimesFields stopTimesFields : change.modifiedStops) {
-            AgencyAndId stopId = _entitySource.getObaStopId(stopTimesFields.getStopId());
-            int arrivalTime = stopTimesFields.getArrivalTime();
-            int departureTime = stopTimesFields.getDepartureTime();
-            Optional<StopTimeEntry> stopTimeSearch = stopTimes.stream().filter(ste -> stopId.equals(ste.getStop().getId())).findFirst();
-            if (stopTimeSearch.isPresent()) {
-                int originalArrivalTime = stopTimeSearch.get().getArrivalTime();
-                int originalDepartureTime = stopTimeSearch.get().getDepartureTime();
-                if (_dao.updateStopTime(tripId, stopId, originalArrivalTime, originalDepartureTime, arrivalTime, departureTime)) {
-                    nSuccess++;
-                }
-            }
-
-        }
-
-
-        // Inserted stops
-        for (StopTimesFields stopTimesFields : change.insertedStops) {
-            AgencyAndId stopId = _entitySource.getObaStopId(stopTimesFields.getStopId());
-            StopEntryImpl stopEntry = (StopEntryImpl) _dao.getStopEntryForId(stopId);
-            int arrivalTime = stopTimesFields.getArrivalTime();
-            int departureTime = stopTimesFields.getDepartureTime();
-            Double shapeDistanceTravelled = stopTimesFields.getShapeDistTraveled();
-            if (_dao.insertStopTime(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled != null ? shapeDistanceTravelled : -999)) {
-                nSuccess++;
-            }
-        }
-
-        // Update shape
-        if (shapeId != null) {
-            if (_dao.updateShapeForTrip(tripEntry, shapeId)) {
-                nSuccess++;
-                _log.info("Success updated shape for trip {}", tripId);
-
-            } else {
-                _log.info("Error updating shape for trip {}", tripId);
-            }
-        }
-
-        return nSuccess;
-    }
-
     private int handleTripChanges(String trip, TripChange change) {
         int nSuccess = 0;
 
@@ -456,90 +393,6 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         return stei;
     }
 
-
-    private boolean handleStopTimesChange(ServiceChange change) {
-        switch(change.getServiceChangeType()) {
-            case ADD:
-                return handleAddStopTimes(change);
-            case ALTER:
-                return handleAlterStopTimes(change);
-            case DELETE:
-                return handleDeleteStopTimes(change);
-            default:
-                return false;
-        }
-    }
-
-    private boolean handleAddStopTimes(ServiceChange change) {
-        boolean success = true;
-        for (AbstractFieldDescriptor abstractFieldDescriptor : change.getAffectedField()) {
-            if (!(abstractFieldDescriptor instanceof StopTimesFields)) {
-                return false;
-            }
-            StopTimesFields fields = (StopTimesFields) abstractFieldDescriptor;
-            AgencyAndId tripId = _entitySource.getObaTripId(fields.getTripId());
-            AgencyAndId stopId = _entitySource.getObaStopId(fields.getStopId());
-            success &= _dao.insertStopTime(tripId, stopId, fields.getArrivalTime(), fields.getDepartureTime(), -1);
-        }
-        return success;
-    }
-
-    private boolean handleDeleteStopTimes(ServiceChange change) {
-        boolean success = true;
-        int nSuccess = 0, nTotal = 0;
-        for (EntityDescriptor descriptor : change.getAffectedEntity()) {
-            String bareTripId = descriptor.getTripId();
-            String bareStopId = descriptor.getStopId();
-            if (bareTripId == null || bareStopId == null) {
-                _log.info("Service Change not fully applied; not enough info for stop_time");
-                success = false;
-                continue;
-            }
-            AgencyAndId tripId = _entitySource.getObaTripId(bareTripId);
-            AgencyAndId stopId = _entitySource.getObaStopId(bareStopId);
-            if (_dao.deleteStopTime(tripId, stopId)) {
-                nSuccess++;
-            } else {
-                success = false;
-            }
-            nTotal++;
-        }
-        _log.info("Delete stop times: success in {} / {}", nSuccess, nTotal);
-        return success;
-    }
-
-    private boolean handleAlterStopTimes(ServiceChange change) {
-        boolean success = true;
-        for (EntityDescriptor descriptor : change.getAffectedEntity()) {
-            String bareTripId = descriptor.getTripId();
-            String bareStopId = descriptor.getStopId();
-            if (bareTripId == null || bareStopId == null) {
-                _log.info("Service Change not fully applied; not enough info for stop_time");
-                success = false;
-                continue;
-            }
-            AgencyAndId tripId = _entitySource.getObaTripId(bareTripId);
-            AgencyAndId stopId = _entitySource.getObaStopId(bareStopId);
-
-            TripEntry trip = _dao.getTripEntryForId(tripId);
-            success = false;
-            if (trip != null) {
-                // TODO: loop trips?
-                for (StopTimeEntry stopTime : trip.getStopTimes()) {
-                    if (stopTime.getStop().getId().equals(stopId)) {
-                        StopTimesFields fields = (StopTimesFields) change.getAffectedField().iterator().next();
-                        int arrivalTime = fields.getArrivalTime();
-                        int departureTime = fields.getDepartureTime();
-                        success = _dao.updateStopTime(tripId, stopId, stopTime.getArrivalTime(),
-                                stopTime.getDepartureTime(), arrivalTime, departureTime);
-                    }
-                }
-            }
-            break;
-        }
-        return success;
-    }
-
     private boolean handleAddShapesChange(ServiceChange change) {
         Collection<List<ShapesFields>> shapesListCollection = change.getAffectedField().stream()
                 .filter(ShapesFields.class::isInstance)
@@ -573,35 +426,6 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         }
 
         return true;
-    }
-
-    private boolean handleTripsChange(ServiceChange change) {
-        switch(change.getServiceChangeType()) {
-            case ADD:
-                _log.info("Add trip not supported");
-            case ALTER:
-                return handleAlterTrip(change);
-            case DELETE:
-                _log.info("Delete trip not supported");
-            default:
-                return false;
-        }
-    }
-
-    private boolean handleAlterTrip(ServiceChange change) {
-        TripsFields field = (TripsFields) change.getAffectedField().get(0);
-        if (field.getShapeId() == null) {
-            _log.info("Only alter trip shape supported");
-            return false;
-        }
-        AgencyAndId shapeId = _entitySource.getObaShapeId(field.getShapeId());
-        boolean success = true;
-        for (EntityDescriptor entityDescriptor : change.getAffectedEntity()) {
-            AgencyAndId tripId = _entitySource.getObaTripId(entityDescriptor.getTripId());
-            TripEntry trip = _dao.getTripEntryForId(tripId);
-            success &= _dao.updateShapeForTrip((TripEntryImpl) trip, shapeId);
-        }
-        return success;
     }
 
     private long getCurrentTime() {
