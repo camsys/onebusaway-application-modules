@@ -22,7 +22,6 @@ import org.onebusaway.gtfs.model.Stop;
 import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
@@ -32,6 +31,7 @@ import org.onebusaway.transit_data_federation.model.narrative.StopNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.StopTimeNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 
 /**
@@ -46,7 +46,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEnt
  * The narrative service has methods for querying narrative objects for various
  * low-level objects, such as {@link Agency}, {@link Stop},
  * {@link RouteCollectionEntry}, {@link Trip}, and {@link StopTime}.
- * 
+ *
  * @author bdferris
  * @see AgencyNarrative
  * @see StopNarrative
@@ -72,11 +72,13 @@ public interface NarrativeService {
 
   public TripNarrative removeTrip(TripEntryImpl trip);
 
-  public void addStop(StopEntryImpl stop);
+  public void addStop(StopEntry stop, String stopName);
 
   public void addStopTime(StopTimeEntryImpl stopTime);
 
   public boolean addShape(ShapePoints shape);
 
   public boolean addAgency(AgencyEntryImpl agency);
+
+  public StopNarrative removeStop(AgencyAndId stopId);
 }

@@ -25,7 +25,6 @@ import java.util.TimeZone;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
@@ -34,6 +33,7 @@ import org.onebusaway.transit_data_federation.model.narrative.RouteCollectionNar
 import org.onebusaway.transit_data_federation.model.narrative.StopNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.StopTimeNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
@@ -141,7 +141,9 @@ public final class NarrativeProviderImpl implements Serializable {
 
     for (StopTimeEntry ste: trip.getStopTimes()) {
       addStopTime((StopTimeEntryImpl) ste);
-      addStop((StopEntryImpl)ste.getStop());
+      if (getNarrativeForStopId(ste.getStop().getId()) == null) {
+        addStop(ste.getStop(), ste.getStop().getId().getId());
+      }
     }
   }
 
@@ -156,9 +158,9 @@ public final class NarrativeProviderImpl implements Serializable {
   }
 
 
-  public void addStop(StopEntryImpl stop) {
+  public void addStop(StopEntry stop, String stopName) {
     StopNarrative.Builder builder = StopNarrative.builder();
-    builder.setName(stop.getId().getId());
+    builder.setName(stopName);
     _stopNarratives.put(stop.getId(), builder.create());
   }
 
@@ -190,6 +192,9 @@ public final class NarrativeProviderImpl implements Serializable {
       return true;
     }
     return false;
+  }
 
+  public StopNarrative removeStop(AgencyAndId stopId) {
+    return _stopNarratives.remove(stopId);
   }
 }
