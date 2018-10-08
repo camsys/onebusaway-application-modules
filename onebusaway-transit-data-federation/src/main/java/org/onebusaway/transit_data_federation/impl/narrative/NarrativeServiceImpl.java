@@ -25,7 +25,6 @@ import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
@@ -36,6 +35,7 @@ import org.onebusaway.transit_data_federation.model.narrative.StopTimeNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.utility.ObjectSerializationLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,8 +114,8 @@ public class NarrativeServiceImpl implements NarrativeService {
   }
 
   @Override
-  public void addStop(StopEntryImpl stop) {
-    _provider.addStop(stop);
+  public void addStop(StopEntry stop, String stopName) {
+    _provider.addStop(stop, stopName);
   }
 
   @Override
@@ -131,5 +131,10 @@ public class NarrativeServiceImpl implements NarrativeService {
   @Override
   public boolean addAgency(AgencyEntryImpl agency) {
     return _provider.addAgency(agency);
+  }
+
+  @Override
+  public StopNarrative removeStop(AgencyAndId stop) {
+    return _provider.removeStop(stop);
   }
 }

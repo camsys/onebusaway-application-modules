@@ -459,6 +459,26 @@ public class GtfsSometimesClientIntegrationTest {
         }
     }
 
+    @Test
+    @DirtiesContext
+    public void testChangeStopName() {
+        String newName = "new stop name";
+        ServiceChange change = serviceChange(Table.STOPS,
+                ServiceChangeType.ALTER,
+                Collections.singletonList(stopEntity("203564")),
+                stopsFieldsList(newName),
+                dateDescriptors(LocalDate.of(2018, 8, 10)));
+
+        assertTrue(_handler.handleServiceChange(change));
+
+        StopBean stopBean = _tds.getStop("MTA_203564");
+        assertEquals(newName, stopBean.getName());
+
+        TripDetailsBean tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
+        TripStopTimeBean stop = tripDetails.getSchedule().getStopTimes().get(67);
+        assertEquals(newName, stop.getStop().getName());
+    }
+
     private TripDetailsBean getTripDetails(String tripId) {
         TripDetailsQueryBean query = new TripDetailsQueryBean();
         query.setTripId("MTA NYCT_" + tripId);

@@ -23,20 +23,25 @@ import com.camsys.transit.servicechange.Table;
 import com.camsys.transit.servicechange.field_descriptors.AbstractFieldDescriptor;
 import com.camsys.transit.servicechange.field_descriptors.ShapesFields;
 import com.camsys.transit.servicechange.field_descriptors.StopTimesFields;
+import com.camsys.transit.servicechange.field_descriptors.StopsFields;
 import com.camsys.transit.servicechange.field_descriptors.TripsFields;
 import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.ShapePoint;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeEntitySource;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.StopChange;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChange;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphDaoImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
+import org.onebusaway.transit_data_federation.model.narrative.StopNarrative;
 import org.onebusaway.transit_data_federation.services.AgencyService;
+import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
 import org.onebusaway.transit_data_federation.services.shapes.ShapePointService;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.slf4j.Logger;
@@ -71,6 +76,8 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     private ShapePointService _shapePointsService;
 
+    private NarrativeService _narrativeService;
+
     private RefreshService _refreshService;
 
     // for debugging
@@ -91,6 +98,11 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     @Autowired
     public void setShapePointsService(ShapePointService shapePointsService) {
         _shapePointsService = shapePointsService;
+    }
+
+    @Autowired
+    public void setNarrativeService(NarrativeService narrativeService) {
+        _narrativeService = narrativeService;
     }
 
     @Autowired
@@ -134,7 +146,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     @Override
     public int handleServiceChanges(Collection<ServiceChange> serviceChanges) {
-          /*
+        /*
         Currently handled:
          * adding shapes (do this first so trips can use the new shapes)
          * trip modifications:
@@ -149,6 +161,13 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         List<ShapePoints> shapesChanges = getShapePointsToAdd(activeChanges);
         for (ShapePoints shapePoints : shapesChanges) {
             if (_shapePointsService.addShape(shapePoints)) {
+                nSuccess++;
+            }
+        }
+
+        List<StopChange> stopChanges = getAllStopChanges(activeChanges);
+        for (StopChange change : stopChanges) {
+            if (handleStopChange(change)) {
                 nSuccess++;
             }
         }
@@ -225,6 +244,25 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
             }
         }
         return shapePointsList;
+    }
+
+    List<StopChange> getAllStopChanges(Collection<ServiceChange> changes) {
+        List<StopChange> stopChanges = new ArrayList<>();
+        for (ServiceChange change : changes) {
+            if (Table.STOPS.equals(change.getTable())) {
+                if (ServiceChangeType.ALTER.equals(change.getServiceChangeType())) {
+                    for (EntityDescriptor entity : change.getAffectedEntity()) {
+                        StopChange stopChange = new StopChange(entity.getStopId());
+                        StopsFields stopsFields = (StopsFields) change.getAffectedField().get(0);
+                        stopChange.setStopName(stopsFields.getStopName());
+                        stopChanges.add(stopChange);
+                    }
+                } else {
+                    _log.info("Type {} not handled for table {}", change.getServiceChangeType(), change.getTable());
+                }
+            }
+        }
+        return stopChanges;
     }
 
     List<TripChange> getAllTripChanges(Collection<ServiceChange> changes) {
@@ -424,6 +462,15 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         }
 
         return success ? nSuccess : 0;
+    }
+
+    private boolean handleStopChange(StopChange change) {
+        AgencyAndId stopId = _entitySource.getObaStopId(change.getStopId());
+        StopEntry stopEntry = _dao.getStopEntryForId(stopId);
+        StopNarrative narrative = _narrativeService.removeStop(stopId);
+        String stopName = change.hasStopName() ? change.getStopName() : narrative.getName();
+        _narrativeService.addStop(stopEntry, stopName);
+        return true;
     }
 
     private StopTimeEntry createStopTimeEntry(TripEntryImpl tripEntry, StopEntryImpl stopEntry, int arrivalTime, int departureTime, double shapeDistanceTravelled, int gtfsSequence) {

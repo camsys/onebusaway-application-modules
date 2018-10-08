@@ -21,6 +21,7 @@ import com.camsys.transit.servicechange.Table;
 import com.camsys.transit.servicechange.field_descriptors.StopTimesFields;
 import org.junit.Before;
 import org.junit.Test;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.StopChange;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChange;
 
 import java.time.LocalDate;
@@ -270,5 +271,21 @@ public class GtfsSometimesHandlerImplTest {
         List<TripChange> tripChanges = handler.getAllTripChanges(Arrays.asList(changes));
         assertEquals(1, tripChanges.size());
         return tripChanges.get(0);
+    }
+
+    // Stop Change
+
+    @Test
+    public void stopChangeTest() {
+        ServiceChange change = serviceChange(Table.STOPS,
+                ServiceChangeType.ALTER,
+                Collections.singletonList(stopEntity("stopA")),
+                stopsFieldsList("stopA name"),
+                dateDescriptors(LocalDate.of(2018, 8, 10)));
+        List<StopChange> stopChanges = handler.getAllStopChanges(Arrays.asList(change));
+        assertEquals(1, stopChanges.size());
+        StopChange stopChange = stopChanges.get(0);
+        assertEquals("stopA", stopChange.getStopId());
+        assertEquals("stopA name", stopChange.getStopName());
     }
 }
