@@ -188,7 +188,7 @@ public class GtfsSometimesClientIntegrationTest {
         }
 
         // set handler time
-        ((GtfsSometimesHandlerImpl) _handler).setTime(dateAsLong("2018-08-10 12:00"));
+        ((GtfsSometimesHandlerImpl) _handler).setTime(dateAsLong("2018-08-23 12:00"));
     }
 
     private TripNarrative tripNarrative(Trip trip) {
@@ -216,7 +216,7 @@ public class GtfsSometimesClientIntegrationTest {
                 ServiceChangeType.DELETE,
                 Collections.singletonList(stopTimeEntity("CA_G8-Weekday-096000_MISC_545", "201645")),
                 null,
-                dateDescriptors(LocalDate.of(2018, 8, 10)));
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
         assertTrue(_handler.handleServiceChange(change));
         TripDetailsBean tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
         assertEquals(70, tripDetails.getSchedule().getStopTimes().size());
@@ -242,7 +242,7 @@ public class GtfsSometimesClientIntegrationTest {
                 Arrays.asList(stopTimeEntity("CA_G8-Weekday-096000_MISC_545", "201645"),
                         stopTimeEntity("CA_C8-Weekday-099000_S7686_307", "203190")),
                 null,
-                dateDescriptors(LocalDate.of(2018, 8, 10)));
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
         assertTrue(_handler.handleServiceChange(change));
 
         TripDetailsBean tripDetails1 = getTripDetails("CA_G8-Weekday-096000_MISC_545");
@@ -272,7 +272,7 @@ public class GtfsSometimesClientIntegrationTest {
                 Arrays.asList(stopTimeEntity("CA_G8-Weekday-096000_MISC_545", "201645"),
                         stopTimeEntity("CA_G8-Weekday-096000_MISC_545", "201646")),
                 null,
-                dateDescriptors(LocalDate.of(2018, 8, 10)));
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
         assertTrue(_handler.handleServiceChange(change));
 
         TripDetailsBean tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
@@ -303,7 +303,7 @@ public class GtfsSometimesClientIntegrationTest {
                  stopTimesFieldsList(tripId,
                         time(16, 47, 20), time(16, 47, 22),
                          "200176", 68), // stop_sequence is ignored
-                dateDescriptors(LocalDate.of(2018, 8, 10)));
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
         assertTrue(_handler.handleServiceChange(change));
 
         TripDetailsBean tripDetails = getTripDetails(tripId);
@@ -352,7 +352,7 @@ public class GtfsSometimesClientIntegrationTest {
                 stopTimesFieldsList("CA_G8-Weekday-096000_MISC_545",
                         time(16, 47, 20), time(16, 47, 22),
                         "200001", 68), // stop_sequence is ignored
-                dateDescriptors(LocalDate.of(2018, 8, 10)));
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
         assertTrue(_handler.handleServiceChange(change));
 
         TripDetailsBean tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
@@ -377,7 +377,7 @@ public class GtfsSometimesClientIntegrationTest {
                 stopTimesFieldsList("CA_G8-Weekday-096000_MISC_545",
                         time(16, 47, 42), time(16, 47, 44), // delay by 4-6 seconds
                         "203564", 68),
-                dateDescriptors(LocalDate.of(2018, 8, 10)));
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
         assertTrue(_handler.handleServiceChange(change));
 
         TripDetailsBean tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
@@ -429,7 +429,7 @@ public class GtfsSometimesClientIntegrationTest {
                 ServiceChangeType.ADD,
                null,
                 newShapeFields,
-                dateDescriptors(LocalDate.of(2018, 8, 10)));
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
 
         TripsFields fields = new TripsFields();
         fields.setShapeId("newShape");
@@ -437,7 +437,7 @@ public class GtfsSometimesClientIntegrationTest {
                 ServiceChangeType.ALTER,
                 Collections.singletonList(tripEntity("CA_G8-Weekday-096000_MISC_545")),
                 Collections.singletonList(fields),
-                dateDescriptors(LocalDate.of(2018, 8, 10)));
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
 
         assertEquals(2, _handler.handleServiceChanges(Arrays.asList(addShape, alterTrip)));
 
@@ -454,7 +454,7 @@ public class GtfsSometimesClientIntegrationTest {
             if (i <= 9) {
                 assertEquals(oldStopTime.getDistanceAlongTrip(), newStopTime.getDistanceAlongTrip(), 0.001);
             } else {
-                assertTrue(oldStopTime.getDistanceAlongTrip() < newStopTime.getDistanceAlongTrip());
+                assertTrue(newStopTime.getDistanceAlongTrip() - oldStopTime.getDistanceAlongTrip() > 100d);
             }
         }
     }
@@ -466,8 +466,8 @@ public class GtfsSometimesClientIntegrationTest {
         ServiceChange change = serviceChange(Table.STOPS,
                 ServiceChangeType.ALTER,
                 Collections.singletonList(stopEntity("203564")),
-                stopsFieldsList(newName),
-                dateDescriptors(LocalDate.of(2018, 8, 10)));
+                stopsFieldsList(newName, null, null),
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
 
         assertTrue(_handler.handleServiceChange(change));
 
@@ -477,6 +477,45 @@ public class GtfsSometimesClientIntegrationTest {
         TripDetailsBean tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
         TripStopTimeBean stop = tripDetails.getSchedule().getStopTimes().get(67);
         assertEquals(newName, stop.getStop().getName());
+    }
+
+    @Test
+    @DirtiesContext
+    public void testChangeStopLocation() {
+
+        List<TripStopTimeBean> oldSchedule = getTripDetails("CA_G8-Weekday-096000_MISC_545").getSchedule().getStopTimes();
+
+        double newLat = 40.557318, newLon = -74.1141876;
+        ServiceChange change = serviceChange(Table.STOPS,
+                ServiceChangeType.ALTER,
+                Collections.singletonList(stopEntity("203564")),
+                stopsFieldsList(null, newLat, newLon),
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
+        assertTrue(_handler.handleServiceChange(change));
+
+        StopBean stopBean = _tds.getStop("MTA_203564");
+        assertEquals(newLat, stopBean.getLat(), 0.00001);
+        assertEquals(newLon, stopBean.getLon(), 0.00001);
+
+        TripDetailsBean tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
+        List<TripStopTimeBean> newSchedule = tripDetails.getSchedule().getStopTimes();
+        TripStopTimeBean stop = tripDetails.getSchedule().getStopTimes().get(67);
+        assertEquals(newLat, stop.getStop().getLat(), 0.00001);
+        assertEquals(newLon, stop.getStop().getLon(), 0.00001);
+
+        for (int i = 0; i < newSchedule.size(); i++) {
+            TripStopTimeBean oldStopTime = oldSchedule.get(i);
+            TripStopTimeBean newStopTime = newSchedule.get(i);
+            if (i == 67) {
+                // new location is one block further than old location
+                double distance = newStopTime.getDistanceAlongTrip() - oldStopTime.getDistanceAlongTrip();
+                assertTrue(distance > 20d);
+            } else {
+                assertEquals(oldStopTime.getDistanceAlongTrip(), newStopTime.getDistanceAlongTrip(), 0.00001);
+            }
+            assertEquals(oldStopTime.getGtfsSequence(), newStopTime.getGtfsSequence());
+        }
+
     }
 
     private TripDetailsBean getTripDetails(String tripId) {

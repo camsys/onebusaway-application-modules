@@ -21,16 +21,25 @@ import com.camsys.transit.servicechange.Table;
 import com.camsys.transit.servicechange.field_descriptors.StopTimesFields;
 import org.junit.Before;
 import org.junit.Test;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeEntitySource;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.StopChange;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChange;
+import org.onebusaway.transit_data_federation.impl.transit_graph.BlockTripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.services.StopTimeService;
+import org.onebusaway.transit_data_federation.services.tripplanner.StopTimeInstance;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
+import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 import static org.onebusaway.transit_data_federation.testing.ServiceChangeUnitTestingSupport.*;
 
@@ -41,11 +50,27 @@ public class GtfsSometimesHandlerImplTest {
     @Before
     public void setup() {
         handler = new GtfsSometimesHandlerImpl();
-        //handler.setTransitGraphDao(dao);
         handler.setAgencyId("1");
         Calendar cal = Calendar.getInstance();
         cal.set(2018, Calendar.JULY, 1, 13, 0, 0);
         handler.setTime(cal.getTimeInMillis());
+
+        // some mocks needed for getting trips incident on stops
+        GtfsRealtimeEntitySource entitySource = mock(GtfsRealtimeEntitySource.class);
+        AgencyAndId id = new AgencyAndId("1", "stopA");
+        when(entitySource.getObaStopId("stopA")).thenReturn(id);
+        handler.setEntitySource(entitySource);
+        StopTimeService stopTimeService = mock(StopTimeService.class);
+        Date from = Date.from(LocalDate.of(2018, 8, 10).atStartOfDay(ZoneId.of("America/New_York")).toInstant());
+        Date to = Date.from(LocalDate.of(2018, 8, 11).atStartOfDay(ZoneId.of("America/New_York")).toInstant());
+        StopTimeInstance stopTime = mock(StopTimeInstance.class);
+        BlockTripEntryImpl blockTrip = new BlockTripEntryImpl();
+        TripEntryImpl tripEntry = new TripEntryImpl();
+        tripEntry.setId(new AgencyAndId("1", "tripA"));
+        blockTrip.setTrip(tripEntry);
+        when(stopTime.getTrip()).thenReturn(blockTrip);
+        when(stopTimeService.getStopTimeInstancesInTimeRange(id, from, to)).thenReturn(Collections.singletonList(stopTime));
+        handler.setStopTimeService(stopTimeService);
     }
 
     // Validation and date range tests
@@ -276,16 +301,43 @@ public class GtfsSometimesHandlerImplTest {
     // Stop Change
 
     @Test
-    public void stopChangeTest() {
+    public void stopChangeNameTest() {
         ServiceChange change = serviceChange(Table.STOPS,
                 ServiceChangeType.ALTER,
                 Collections.singletonList(stopEntity("stopA")),
-                stopsFieldsList("stopA name"),
+                stopsFieldsList("stopA name", null, null),
                 dateDescriptors(LocalDate.of(2018, 8, 10)));
         List<StopChange> stopChanges = handler.getAllStopChanges(Arrays.asList(change));
         assertEquals(1, stopChanges.size());
         StopChange stopChange = stopChanges.get(0);
         assertEquals("stopA", stopChange.getStopId());
         assertEquals("stopA name", stopChange.getStopName());
+    }
+
+    @Test
+    public void stopChangeLocationTest1() {
+        ServiceChange change = serviceChange(Table.STOPS,
+                ServiceChangeType.ALTER,
+                Collections.singletonList(stopEntity("stopA")),
+                stopsFieldsList(null, 10d, 20d),
+                dateDescriptors(LocalDate.of(2018, 8, 10)));
+        List<StopChange> stopChanges = handler.getAllStopChanges(Arrays.asList(change));
+        assertEquals(1, stopChanges.size());
+        StopChange stopChange = stopChanges.get(0);
+        assertEquals("stopA", stopChange.getStopId());
+        assertEquals(10d, stopChange.getStopLat(), 0.0001);
+        assertEquals(20d, stopChange.getStopLon(), 0.0001);
+    }
+
+    @Test
+    public void stopChangeLocationTest2() {
+        ServiceChange change = serviceChange(Table.STOPS,
+                ServiceChangeType.ALTER,
+                Collections.singletonList(stopEntity("stopA")),
+                stopsFieldsList(null, 10d, 20d),
+                dateDescriptors(LocalDate.of(2018, 8, 10)));
+        List<TripChange> tripChanges = handler.getAllTripChanges(Arrays.asList(change));
+        assertEquals(1, tripChanges.size());
+        assertEquals("tripA", tripChanges.get(0).getTripId());
     }
 }
