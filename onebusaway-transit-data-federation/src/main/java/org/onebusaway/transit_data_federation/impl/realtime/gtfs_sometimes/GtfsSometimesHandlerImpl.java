@@ -29,6 +29,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.ShapePoint;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeEntitySource;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChange;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphDaoImpl;
@@ -38,7 +39,6 @@ import org.onebusaway.transit_data_federation.services.AgencyService;
 import org.onebusaway.transit_data_federation.services.shapes.ShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
-import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +56,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -115,7 +114,6 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         _time = time;
     }
 
-
     @PostConstruct
     public void init() {
         // Borrowed from GtfsRealtimeSource. TODO - make this behavior reusbale.
@@ -146,22 +144,93 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
          *   shape ID change
          */
         int nSuccess = 0;
-        Collection<ServiceChange> addedShapes = new ArrayList<>();
-        Map<String, TripChange> changesByTrip = new HashMap<>();
+        List<ServiceChange> activeChanges = filterServiceChanges(serviceChanges);
 
-        for (ServiceChange serviceChange : serviceChanges) {
-            if (!validateServiceChange(serviceChange)) {
-                _log.debug("service change is invalid");
-                continue;
+        List<ShapePoints> shapesChanges = getShapePointsToAdd(activeChanges);
+        for (ShapePoints shapePoints : shapesChanges) {
+            if (_shapePointsService.addShape(shapePoints)) {
+                nSuccess++;
             }
-            if (!dateIsApplicable(serviceChange)) {
-                _log.debug("Service change is not applicable to date.");
-                continue;
+        }
+
+        List<TripChange> tripChanges = getAllTripChanges(activeChanges);
+        for (TripChange change : tripChanges) {
+            _log.info("Handling changes for trip {}", change.getTripId());
+            nSuccess += handleTripChanges(change);
+         }
+
+        if (nSuccess > 0) {
+            forceFlush();
+        }
+        return nSuccess;
+    }
+
+
+    @Override
+    public boolean handleServiceChange(ServiceChange change) {
+        return handleServiceChanges(Collections.singleton(change)) > 0;
+    }
+
+    List<ServiceChange> filterServiceChanges(Collection<ServiceChange> changes) {
+       return changes.stream().filter(this::isServiceChangeOk).collect(Collectors.toList());
+    }
+
+    boolean isServiceChangeOk(ServiceChange change) {
+        if (!validateServiceChange(change)) {
+            _log.debug("service change is invalid");
+            return false;
+        }
+        if (!dateIsApplicable(change)) {
+            _log.debug("Service change is not applicable to date.");
+            return false;
+        }
+        return true;
+    }
+
+    List<ShapePoints> getShapePointsToAdd(Collection<ServiceChange> changes) {
+        List<ShapePoints> shapePointsList = new ArrayList<>();
+        for (ServiceChange change : changes) {
+            if (Table.SHAPES.equals(change.getTable())
+                    && ServiceChangeType.ADD.equals(change.getServiceChangeType())) {
+                Collection<List<ShapesFields>> shapesListCollection = change.getAffectedField().stream()
+                        .filter(ShapesFields.class::isInstance)
+                        .map(ShapesFields.class::cast)
+                        .collect(Collectors.groupingBy(ShapesFields::getShapeId))
+                        .values();
+
+                for (List<ShapesFields> shapeList : shapesListCollection) {
+                    int nPoints = shapeList.size();
+                    double[] lat = new double[nPoints];
+                    double[] lon = new double[nPoints];
+                    double[] distTraveled = new double[nPoints];
+                    shapeList.sort(Comparator.comparingInt(ShapesFields::getShapePtSequence));
+                    int i = 0;
+                    for (ShapesFields fields : shapeList) {
+                        lat[i] = fields.getShapePtLat();
+                        lon[i] = fields.getShapePtLon();
+                        if (fields.getShapeDistTraveled() != null && fields.getShapeDistTraveled() != ShapePoint.MISSING_VALUE) {
+                            distTraveled[i] = fields.getShapeDistTraveled();
+                        }
+                        i++;
+                    }
+                    ShapePoints shapePoints = new ShapePoints();
+                    shapePoints.setLats(lat);
+                    shapePoints.setLons(lon);
+                    shapePoints.setDistTraveled(distTraveled);
+                    AgencyAndId shapeId = new AgencyAndId(_agencyIds.iterator().next(), shapeList.get(0).getShapeId());
+                    shapePoints.setShapeId(shapeId);
+                    shapePoints.ensureDistTraveled();
+                    shapePointsList.add(shapePoints);
+                }
             }
-            if (Table.SHAPES.equals(serviceChange.getTable())
-                    && ServiceChangeType.ADD.equals(serviceChange.getServiceChangeType())) {
-                addedShapes.add(serviceChange);
-            } else if (Table.TRIPS.equals(serviceChange.getTable())
+        }
+        return shapePointsList;
+    }
+
+    List<TripChange> getAllTripChanges(Collection<ServiceChange> changes) {
+        Map<String, TripChange> changesByTrip = new HashMap<>();
+        for (ServiceChange serviceChange : changes) {
+            if (Table.TRIPS.equals(serviceChange.getTable())
                     && ServiceChangeType.ALTER.equals(serviceChange.getServiceChangeType())) {
                 String shapeId = ((TripsFields) serviceChange.getAffectedField().get(0)).getShapeId();
                 if (shapeId != null) {
@@ -169,17 +238,17 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                         String tripId = desc.getTripId();
                         if (tripId != null) {
                             AgencyAndId shape = _entitySource.getObaShapeId(shapeId);
-                            changesByTrip.computeIfAbsent(tripId, TripChange::new).newShapeId = shape;
+                            changesByTrip.computeIfAbsent(tripId, TripChange::new).setNewShapeId(shape);
                         }
                     }
                 }
             } else if (Table.STOP_TIMES.equals(serviceChange.getTable())) {
-                switch(serviceChange.getServiceChangeType()) {
+                switch (serviceChange.getServiceChangeType()) {
                     case ADD:
                         for (AbstractFieldDescriptor desc : serviceChange.getAffectedField()) {
                             StopTimesFields stopTimesFields = (StopTimesFields) desc;
                             if (stopTimesFields.getTripId() != null) {
-                                changesByTrip.computeIfAbsent(stopTimesFields.getTripId(), TripChange::new).insertedStops.add(stopTimesFields);
+                                changesByTrip.computeIfAbsent(stopTimesFields.getTripId(), TripChange::new).addInsertedStop(stopTimesFields);
                             }
                         }
                         break;
@@ -193,7 +262,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                             fields.setTripId(tripId);
                             fields.setStopId(desc.getStopId());
                             if (tripId != null) {
-                                changesByTrip.computeIfAbsent(tripId, TripChange::new).modifiedStops.add(fields);
+                                changesByTrip.computeIfAbsent(tripId, TripChange::new).addModifiedStop(fields);
                             }
                         }
                         break;
@@ -202,39 +271,14 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                             String tripId = descriptor.getTripId();
                             String stopId = descriptor.getStopId();
                             if (tripId != null && stopId != null) {
-                                changesByTrip.computeIfAbsent(tripId, TripChange::new).deletedStops.add(descriptor);
+                                changesByTrip.computeIfAbsent(tripId, TripChange::new).addDeletedStop(descriptor);
                             }
                         }
                         break;
                 }
-            } else {
-                _log.info("not implemented: handling service change for table={}, type={}",
-                        serviceChange.getTable(), serviceChange.getServiceChangeType());
-            }
-
-        }
-
-        for (ServiceChange change : addedShapes) {
-            if (handleAddShapesChange(change)) {
-                _log.info("Added shape");
-                nSuccess++;
             }
         }
-
-        for (String tripId : changesByTrip.keySet()) {
-            _log.info("Handling changes for trip {}", tripId);
-            nSuccess += handleTripChanges(tripId, changesByTrip.get(tripId));
-        }
-
-        if (nSuccess > 0) {
-            forceFlush();
-        }
-        return nSuccess;
-    }
-
-    @Override
-    public boolean handleServiceChange(ServiceChange change) {
-        return handleServiceChanges(Collections.singleton(change)) > 0;
+        return new ArrayList<>(changesByTrip.values());
     }
 
     private void forceFlush() {
@@ -288,16 +332,16 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         return false;
     }
 
-    private int handleTripChanges(String trip, TripChange change) {
+    private int handleTripChanges(TripChange change) {
         int nSuccess = 0;
-
+        String trip = change.getTripId();
         AgencyAndId tripId = _entitySource.getObaTripId(trip);
         TripEntryImpl tripEntry = (TripEntryImpl) _dao.getTripEntryForId(tripId);
         if (tripEntry == null) {
             return 0;
         }
         List<StopTimeEntry> stopTimes = new ArrayList<>(tripEntry.getStopTimes());
-        AgencyAndId shapeId = change.newShapeId;
+        AgencyAndId shapeId = change.getNewShapeId();
         if (shapeId == null) {
             shapeId = tripEntry.getShapeId();
         } else {
@@ -307,7 +351,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         // Removed stops
 
         Set<AgencyAndId> stopsToRemove = new HashSet<>();
-        for (EntityDescriptor descriptor : change.deletedStops) {
+        for (EntityDescriptor descriptor : change.getDeletedStops()) {
             AgencyAndId stopId = _entitySource.getObaStopId(descriptor.getStopId());
             stopsToRemove.add(stopId);
         }
@@ -317,7 +361,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
         // Alter - only support changing arrival time/departure time
 
-        for (StopTimesFields stopTimesFields : change.modifiedStops) {
+        for (StopTimesFields stopTimesFields : change.getModifiedStops()) {
             AgencyAndId stopId = _entitySource.getObaStopId(stopTimesFields.getStopId());
             for (int i = 0; i < stopTimes.size(); i++) {
                 StopTimeEntry stopTime = stopTimes.get(i);
@@ -335,7 +379,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
         // Inserted stops
 
-        for (StopTimesFields stopTimesFields : change.insertedStops) {
+        for (StopTimesFields stopTimesFields : change.getInsertedStops()) {
             AgencyAndId stopId = _entitySource.getObaStopId(stopTimesFields.getStopId());
             StopEntryImpl stopEntry = (StopEntryImpl) _dao.getStopEntryForId(stopId);
             Double shapeDistanceTravelled = stopTimesFields.getShapeDistTraveled();
@@ -393,41 +437,6 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         return stei;
     }
 
-    private boolean handleAddShapesChange(ServiceChange change) {
-        Collection<List<ShapesFields>> shapesListCollection = change.getAffectedField().stream()
-                .filter(ShapesFields.class::isInstance)
-                .map(ShapesFields.class::cast)
-                .collect(Collectors.groupingBy(ShapesFields::getShapeId))
-                .values();
-
-        for (List<ShapesFields> shapeList : shapesListCollection) {
-            int nPoints = shapeList.size();
-            double[] lat = new double[nPoints];
-            double[] lon = new double[nPoints];
-            double[] distTraveled = new double[nPoints];
-            shapeList.sort(Comparator.comparingInt(ShapesFields::getShapePtSequence));
-            int i = 0;
-            for (ShapesFields fields : shapeList) {
-                lat[i] = fields.getShapePtLat();
-                lon[i] = fields.getShapePtLon();
-                if (fields.getShapeDistTraveled() != null && fields.getShapeDistTraveled() != ShapePoint.MISSING_VALUE) {
-                    distTraveled[i] = fields.getShapeDistTraveled();
-                }
-                i++;
-            }
-            ShapePoints shapePoints = new ShapePoints();
-            shapePoints.setLats(lat);
-            shapePoints.setLons(lon);
-            shapePoints.setDistTraveled(distTraveled);
-            AgencyAndId shapeId = new AgencyAndId(_agencyIds.iterator().next(), shapeList.get(0).getShapeId());
-            shapePoints.setShapeId(shapeId);
-            shapePoints.ensureDistTraveled();
-            _shapePointsService.addShape(shapePoints);
-        }
-
-        return true;
-    }
-
     private long getCurrentTime() {
         if (_time != -1)
             return _time;
@@ -437,22 +446,6 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     private LocalDate getCurrentDate() {
         return Instant.ofEpochMilli(getCurrentTime())
                 .atZone(ZoneId.systemDefault()).toLocalDate();
-    }
-
-    class TripChange {
-        TripChange(String tripId) {
-            this.tripId = tripId;
-        }
-
-        String tripId;
-
-        List<StopTimesFields> modifiedStops = new ArrayList<>();
-
-        List<StopTimesFields> insertedStops = new ArrayList<>();
-
-        List<EntityDescriptor> deletedStops = new ArrayList<>();
-
-        AgencyAndId newShapeId;
     }
 }
 
