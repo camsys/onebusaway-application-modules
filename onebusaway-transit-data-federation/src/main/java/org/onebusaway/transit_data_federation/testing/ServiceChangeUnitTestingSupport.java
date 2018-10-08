@@ -100,14 +100,16 @@ public class ServiceChangeUnitTestingSupport {
         return Collections.singletonList(stopTimesFieldDescriptor(tripId, arrivalTime, departureTime, stopId, stopSequence));
     }
 
-    public static StopsFields stopsFields(String stopName) {
+    public static StopsFields stopsFields(String stopName, Double lat, Double lon) {
         StopsFields stop = new StopsFields();
         stop.setStopName(stopName);
+        stop.setStopLat(lat);
+        stop.setStopLon(lon);
         return stop;
     }
 
-    public static List<AbstractFieldDescriptor> stopsFieldsList(String stopName) {
-        return Collections.singletonList(stopsFields(stopName));
+    public static List<AbstractFieldDescriptor> stopsFieldsList(String stopName, Double lat, Double lon) {
+        return Collections.singletonList(stopsFields(stopName, lat, lon));
     }
 
     public static ShapesFields shapeFields(String shapeId, double lat, double lon, int sequence) {

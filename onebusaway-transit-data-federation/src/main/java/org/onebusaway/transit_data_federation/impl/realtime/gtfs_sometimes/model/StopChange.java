@@ -25,6 +25,10 @@ public class StopChange {
 
     private String stopName;
 
+    private Double stopLat;
+
+    private Double stopLon;
+
     public String getStopId() {
         return stopId;
     }
@@ -39,5 +43,29 @@ public class StopChange {
 
     public boolean hasStopName() {
         return stopName != null;
+    }
+
+    public Double getStopLat() {
+        return stopLat;
+    }
+
+    public void setStopLat(Double stopLat) {
+        this.stopLat = stopLat;
+    }
+
+    public boolean hasStopLat() {
+        return stopLat != null;
+    }
+
+    public Double getStopLon() {
+        return stopLon;
+    }
+
+    public void setStopLon(Double stopLon) {
+        this.stopLon = stopLon;
+    }
+
+    public boolean hasStopLon() {
+        return stopLon != null;
     }
 }
