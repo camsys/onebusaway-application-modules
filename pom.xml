@@ -36,6 +36,10 @@
       <id>public.onebusaway.org</id>
       <url>http://nexus.onebusaway.org/content/groups/public/</url>
     </repository>
+    <repository>
+      <id>releases-mvn-repo</id>
+      <url>http://build.staging.obanyc.com/archiva/repository/public/</url>
+    </repository>
   </repositories>
 
   <pluginRepositories>
