@@ -54,6 +54,7 @@ public class GtfsSometimesHandlerImplTest {
         Calendar cal = Calendar.getInstance();
         cal.set(2018, Calendar.JULY, 1, 13, 0, 0);
         handler.setTime(cal.getTimeInMillis());
+        handler.setTimeZone(ZoneId.of("America/New_York"));
 
         // some mocks needed for getting trips incident on stops
         GtfsRealtimeEntitySource entitySource = mock(GtfsRealtimeEntitySource.class);
@@ -61,8 +62,8 @@ public class GtfsSometimesHandlerImplTest {
         when(entitySource.getObaStopId("stopA")).thenReturn(id);
         handler.setEntitySource(entitySource);
         StopTimeService stopTimeService = mock(StopTimeService.class);
-        Date from = Date.from(LocalDate.of(2018, 8, 10).atStartOfDay(ZoneId.of("America/New_York")).toInstant());
-        Date to = Date.from(LocalDate.of(2018, 8, 11).atStartOfDay(ZoneId.of("America/New_York")).toInstant());
+        Date from = Date.from(LocalDate.of(2018, 7, 1).atStartOfDay(ZoneId.of("America/New_York")).toInstant());
+        Date to = Date.from(LocalDate.of(2018, 7, 2).atStartOfDay(ZoneId.of("America/New_York")).toInstant());
         StopTimeInstance stopTime = mock(StopTimeInstance.class);
         BlockTripEntryImpl blockTrip = new BlockTripEntryImpl();
         TripEntryImpl tripEntry = new TripEntryImpl();
@@ -335,7 +336,7 @@ public class GtfsSometimesHandlerImplTest {
                 ServiceChangeType.ALTER,
                 Collections.singletonList(stopEntity("stopA")),
                 stopsFieldsList(null, 10d, 20d),
-                dateDescriptors(LocalDate.of(2018, 8, 10)));
+                dateDescriptors(LocalDate.of(2018, 7, 01)));
         List<TripChange> tripChanges = handler.getAllTripChanges(Arrays.asList(change));
         assertEquals(1, tripChanges.size());
         assertEquals("tripA", tripChanges.get(0).getTripId());

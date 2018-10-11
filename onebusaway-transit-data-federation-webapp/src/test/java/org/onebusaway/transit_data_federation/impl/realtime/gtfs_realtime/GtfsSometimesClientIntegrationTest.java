@@ -70,6 +70,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -189,6 +190,7 @@ public class GtfsSometimesClientIntegrationTest {
 
         // set handler time
         ((GtfsSometimesHandlerImpl) _handler).setTime(dateAsLong("2018-08-23 12:00"));
+        ((GtfsSometimesHandlerImpl) _handler).setTimeZone(ZoneId.of("America/New_York"));
     }
 
     private TripNarrative tripNarrative(Trip trip) {
@@ -484,6 +486,8 @@ public class GtfsSometimesClientIntegrationTest {
     public void testChangeStopLocation() {
 
         List<TripStopTimeBean> oldSchedule = getTripDetails("CA_G8-Weekday-096000_MISC_545").getSchedule().getStopTimes();
+        StopBean stopBean = _tds.getStop("MTA_203564");
+        assertFalse(stopBean.getRoutes().isEmpty());
 
         double newLat = 40.557318, newLon = -74.1141876;
         ServiceChange change = serviceChange(Table.STOPS,
@@ -493,9 +497,10 @@ public class GtfsSometimesClientIntegrationTest {
                 dateDescriptors(LocalDate.of(2018, 8, 23)));
         assertTrue(_handler.handleServiceChange(change));
 
-        StopBean stopBean = _tds.getStop("MTA_203564");
+        stopBean = _tds.getStop("MTA_203564");
         assertEquals(newLat, stopBean.getLat(), 0.00001);
         assertEquals(newLon, stopBean.getLon(), 0.00001);
+        assertFalse(stopBean.getRoutes().isEmpty());
 
         TripDetailsBean tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
         List<TripStopTimeBean> newSchedule = tripDetails.getSchedule().getStopTimes();

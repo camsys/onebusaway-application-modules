@@ -28,6 +28,7 @@ import com.camsys.transit.servicechange.field_descriptors.TripsFields;
 import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.ShapePoint;
+import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeEntitySource;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.StopChange;
@@ -64,6 +65,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
@@ -86,6 +88,8 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     // for debugging
     private long _time = -1;
+
+    private ZoneId _timeZone = null;
 
     private static final Logger _log = LoggerFactory.getLogger(GtfsSometimesHandlerImpl.class);
 
@@ -133,6 +137,10 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     public void setTime(long time) {
         _time = time;
+    }
+
+    public void setTimeZone(ZoneId timeZone) {
+        _timeZone = timeZone;
     }
 
     @PostConstruct
@@ -532,11 +540,12 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     private List<AgencyAndId> getTripsForStopAndDateRange(AgencyAndId stopId, DateDescriptor range) {
         Date from, to;
         LocalDate fromDate = range.getFrom() != null ? range.getFrom() : range.getDate();
-        from = Date.from(fromDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        from = Date.from(fromDate.atStartOfDay(getTimeZone()).toInstant());
         if (range.getTo() != null) {
-            to = Date.from(range.getTo().atStartOfDay(ZoneId.systemDefault()).toInstant());
+            to = Date.from(range.getTo().atStartOfDay(getTimeZone()).toInstant());
         } else {
-            to = new Date(from.getTime() + (24 * 60 * 60 * 1000));
+            // If there is no "to", end tonight at midnight.
+            to = Date.from(getCurrentDate().plusDays(1).atStartOfDay(getTimeZone()).toInstant());
         }
         List<AgencyAndId> tripIds = new ArrayList<>();
         List<StopTimeInstance> instances = _stopTimeService.getStopTimeInstancesInTimeRange(stopId, from, to);
@@ -565,7 +574,15 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     private LocalDate getCurrentDate() {
         return Instant.ofEpochMilli(getCurrentTime())
-                .atZone(ZoneId.systemDefault()).toLocalDate();
+                .atZone(getTimeZone()).toLocalDate();
+    }
+
+    private ZoneId getTimeZone() {
+        if (_timeZone != null) {
+            return _timeZone;
+        } else {
+            return ZoneId.systemDefault();
+        }
     }
 }
 
