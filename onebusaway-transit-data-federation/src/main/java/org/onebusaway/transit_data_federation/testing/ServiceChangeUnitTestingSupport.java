@@ -24,6 +24,7 @@ import com.camsys.transit.servicechange.field_descriptors.AbstractFieldDescripto
 import com.camsys.transit.servicechange.field_descriptors.ShapesFields;
 import com.camsys.transit.servicechange.field_descriptors.StopTimesFields;
 import com.camsys.transit.servicechange.field_descriptors.StopsFields;
+import com.camsys.transit.servicechange.field_descriptors.TripsFields;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -119,6 +120,19 @@ public class ServiceChangeUnitTestingSupport {
         fields.setShapePtLon(lon);
         fields.setShapePtSequence(sequence);
         return fields;
+    }
+
+    public static TripsFields tripsFields(String tripId, String routeId, String serviceId, String shapeId) {
+        TripsFields tripsFields = new TripsFields();
+        tripsFields.setTripId(tripId);
+        tripsFields.setRouteId(routeId);
+        tripsFields.setServiceId(serviceId);
+        tripsFields.setShapeId(shapeId);
+        return tripsFields;
+    }
+
+    public static List<AbstractFieldDescriptor> tripsFieldsList(String tripId, String routeId, String serviceId, String shapeId) {
+        return Collections.singletonList(tripsFields(tripId, routeId, serviceId, shapeId));
     }
 
     public static ServiceChange serviceChange(Table table, ServiceChangeType type, List<EntityDescriptor> entities,

@@ -17,6 +17,7 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.mode
 
 import com.camsys.transit.servicechange.EntityDescriptor;
 import com.camsys.transit.servicechange.field_descriptors.StopTimesFields;
+import com.camsys.transit.servicechange.field_descriptors.TripsFields;
 import org.onebusaway.gtfs.model.AgencyAndId;
 
 import java.util.ArrayList;
@@ -28,6 +29,8 @@ public class TripChange {
     }
 
     private String tripId;
+
+    private TripsFields addedTripsFields;
 
     private List<StopTimesFields> modifiedStops = new ArrayList<>();
 
@@ -71,5 +74,17 @@ public class TripChange {
 
     public void setNewShapeId(AgencyAndId newShapeId) {
         this.newShapeId = newShapeId;
+    }
+
+    public boolean isAdded() {
+        return addedTripsFields != null;
+    }
+
+    public TripsFields getAddedTripsFields() {
+        return addedTripsFields;
+    }
+
+    public void setAddedTripsFields(TripsFields addedTripsFields) {
+        this.addedTripsFields = addedTripsFields;
     }
 }

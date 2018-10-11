@@ -46,7 +46,6 @@ import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.StopTim
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.GtfsSometimesHandler;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.GtfsSometimesHandlerImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockConfigurationEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
@@ -56,7 +55,6 @@ import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.beans.TripBeanService;
-import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -167,8 +165,6 @@ public class GtfsSometimesClientIntegrationTest {
             tei.setShapeId(trip.getShapeId());
             BlockEntryImpl bei = new BlockEntryImpl();
             bei.setId(trip.getId());
-            bei.setConfigurations(new ArrayList<>());
-            BlockConfigurationEntryImpl.Builder builder = BlockConfigurationEntryImpl.builder();
 
             tei.setBlock(bei);
             RouteEntryImpl rei = new RouteEntryImpl();
@@ -180,11 +176,6 @@ public class GtfsSometimesClientIntegrationTest {
             List<StopTimeEntryImpl> stopTimes = _stopTimesEntriesFactory.processStopTimes(((TransitGraphDaoImpl) _graph).getGraph(),
                     dao.getStopTimesForTrip(trip), tei, shape);
             tei.setStopTimes(new ArrayList<>(stopTimes));
-            builder.setBlock(bei);
-            builder.setTrips(Collections.singletonList(tei));
-            builder.setTripGapDistances(new double[] { 0 });
-            builder.setServiceIds(new ServiceIdActivation(lsi));
-            bei.getConfigurations().add(builder.create());
             assertTrue(_graph.addTripEntry(tei, tripNarrative(trip)));
         }
 
@@ -520,7 +511,48 @@ public class GtfsSometimesClientIntegrationTest {
             }
             assertEquals(oldStopTime.getGtfsSequence(), newStopTime.getGtfsSequence());
         }
+    }
 
+    @Test
+    @DirtiesContext
+    public void testAddTrip() {
+        assertNull(getTripDetails("tripA"));
+
+        ServiceChange addTrip = serviceChange(Table.TRIPS,
+                ServiceChangeType.ADD,
+                null,
+                tripsFieldsList("tripA", "S86", "CA_C8-Weekday", "S860022"),
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
+
+        ServiceChange stop0 = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.ADD,
+                null,
+                stopTimesFieldsList("tripA",
+                        time(16, 5, 0), time(16, 5, 0),
+                        "805163", 0),
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
+
+        ServiceChange stop1 = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.ADD,
+                null,
+                stopTimesFieldsList("tripA",
+                        time(16, 5, 42), time(16, 5, 42),
+                        "200176", 1),
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
+
+        ServiceChange stop2 = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.ADD,
+                null,
+                stopTimesFieldsList("tripA",
+                        time(16, 6, 38), time(16, 6, 38),
+                        "805163", 0),
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
+
+        assertTrue(_handler.handleServiceChanges(Arrays.asList(addTrip, stop0, stop1, stop2)) > 0);
+
+        TripDetailsBean tripDetails = getTripDetails("tripA");
+        assertEquals("MTA NYCT_S86", tripDetails.getTrip().getRoute().getId());
+        assertEquals(3, tripDetails.getSchedule().getStopTimes().size());
     }
 
     private TripDetailsBean getTripDetails(String tripId) {
@@ -528,9 +560,9 @@ public class GtfsSometimesClientIntegrationTest {
         query.setTripId("MTA NYCT_" + tripId);
         //query.setServiceDate(UnitTestingSupport.dateAsLong("2018-08-14 00:00")/1000);
         ListBean<TripDetailsBean> tripDetailsList = _tds.getTripDetails(query);
+        if (tripDetailsList == null || tripDetailsList.getList() == null)
+            return null;
         assertEquals(1, tripDetailsList.getList().size());
         return tripDetailsList.getList().get(0);
     }
-
-
 }

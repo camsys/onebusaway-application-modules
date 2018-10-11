@@ -329,6 +329,18 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
   @Override
   public boolean addTripEntry(TripEntryImpl trip, TripNarrative narrative) {
+
+    // Calculate distance along shape
+    AgencyAndId shapeId = trip.getShapeId();
+    ShapePoints shape = getShape(shapeId);
+    List<StopTimeEntryImpl> processedStopTimeEntries;
+    try {
+      processedStopTimeEntries = _stopTimesFactory.processStopTimeEntries(_graph, trip.getStopTimes(), trip, shape);
+    } catch (Exception ex) {
+      return false;
+    }
+    trip.setStopTimes(new ArrayList<>(processedStopTimeEntries));
+
     boolean rc = _graph.addTripEntry(trip);
     // adding a trip requires updating other parts of the TDS
     if (rc && _narrativeService != null) {
