@@ -40,6 +40,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -459,6 +460,18 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
   public boolean addTripEntry(TripEntryImpl trip) {
     if (!valid(trip)) return false;
 
+    // Create block configurations if they do not exist
+    if (trip.getBlock().getConfigurations() == null) {
+      BlockEntryImpl block = trip.getBlock();
+      block.setConfigurations(new ArrayList<>());
+      BlockConfigurationEntryImpl.Builder builder = BlockConfigurationEntryImpl.builder();
+      builder.setBlock(block);
+      builder.setTrips(Collections.singletonList(trip));
+      builder.setTripGapDistances(new double[] { 0 });
+      builder.setServiceIds(new ServiceIdActivation(trip.getServiceId()));
+      block.getConfigurations().add(builder.create());
+    }
+
     _lock.writeLock().lock();
     try {
       if (_tripEntriesById.containsKey(trip.getId()))
@@ -520,12 +533,11 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
         }
       }
       // rebuild block indices
-      updateBlockIndices(trip);
+      return updateBlockIndices(trip);
 
     } finally {
       _lock.writeLock().unlock();
     }
-    return true;
   }
 
   // maintain some minimum requirements to keep data structures consistent
@@ -681,7 +693,8 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
   @Override
   public boolean updateBlockIndices(TripEntryImpl tripEntry) {
     List<BlockConfigurationEntry> newBlockConfigs = new ArrayList<BlockConfigurationEntry>();
-    if (tripEntry.getBlock() == null || tripEntry.getBlock().getConfigurations() == null) return false;
+    if (tripEntry.getBlock() == null || tripEntry.getBlock().getConfigurations() == null)
+      return false;
     for (BlockConfigurationEntry bce : tripEntry.getBlock().getConfigurations()) {
       BlockConfigurationEntryImpl.Builder builder = BlockConfigurationEntryImpl.builder();
       // the builder computes blockTrips

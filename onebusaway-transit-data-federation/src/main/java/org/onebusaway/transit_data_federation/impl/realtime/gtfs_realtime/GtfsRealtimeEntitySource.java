@@ -18,6 +18,7 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime;
 import java.util.List;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertLibrary;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.Id;
@@ -35,14 +36,42 @@ public class GtfsRealtimeEntitySource {
 
   private TransitGraphDao _transitGraphDao;
 
+  private CalendarService _calendarService;
+
   private List<String> _agencyIds;
 
   public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
     _transitGraphDao = transitGraphDao;
   }
 
+  public void setCalendarService(CalendarService calendarService) {
+    _calendarService = calendarService;
+  }
+
   public void setAgencyIds(List<String> agencyIds) {
     _agencyIds = agencyIds;
+  }
+
+  public AgencyAndId getObaRouteId(String routeId) {
+    for (String agencyId : _agencyIds) {
+      AgencyAndId id = new AgencyAndId(agencyId, routeId);
+      RouteEntry route = _transitGraphDao.getRouteForId(id);
+      if (route != null)
+        return route.getParent().getId();
+    }
+
+    try {
+      AgencyAndId id = AgencyAndId.convertFromString(routeId);
+      RouteEntry route = _transitGraphDao.getRouteForId(id);
+      if (route != null)
+        return route.getParent().getId();
+    } catch (IllegalArgumentException ex) {
+
+    }
+
+    _log.warn("route not found with id \"{}\"", routeId);
+
+    return new AgencyAndId(_agencyIds.get(0), routeId);
   }
 
   /**
@@ -63,26 +92,7 @@ public class GtfsRealtimeEntitySource {
    *         {@link RouteEntry} id
    */
   public Id getRouteId(String routeId) {
-
-    for (String agencyId : _agencyIds) {
-      AgencyAndId id = new AgencyAndId(agencyId, routeId);
-      RouteEntry route = _transitGraphDao.getRouteForId(id);
-      if (route != null)
-        return ServiceAlertLibrary.id(route.getParent().getId());
-    }
-
-    try {
-      AgencyAndId id = AgencyAndId.convertFromString(routeId);
-      RouteEntry route = _transitGraphDao.getRouteForId(id);
-      if (route != null)
-        return ServiceAlertLibrary.id(route.getParent().getId());
-    } catch (IllegalArgumentException ex) {
-
-    }
-
-    _log.warn("route not found with id \"{}\"", routeId);
-
-    AgencyAndId id = new AgencyAndId(_agencyIds.get(0), routeId);
+    AgencyAndId id = getObaRouteId(routeId);
     return ServiceAlertLibrary.id(id);
   }
 
@@ -171,5 +181,24 @@ public class GtfsRealtimeEntitySource {
 
     AgencyAndId id = new AgencyAndId(_agencyIds.get(0), shapeId);
     return id;
+  }
+
+  public AgencyAndId getObaServiceId(String serviceId) {
+    if (_calendarService != null) {
+      for (String agencyId : _agencyIds) {
+        AgencyAndId id = new AgencyAndId(agencyId, serviceId);
+        if (!_calendarService.getServiceDatesForServiceId(id).isEmpty()) {
+          return id;
+        }
+      }
+    }
+
+    _log.warn("serviceId not found with id \"{}\"", serviceId);
+
+    return new AgencyAndId(_agencyIds.get(0), serviceId);
+  }
+
+  public String getDefaultAgencyId() {
+    return _agencyIds.get(0);
   }
 }

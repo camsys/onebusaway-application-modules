@@ -28,10 +28,13 @@ import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockTripEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.services.StopTimeService;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.tripplanner.StopTimeInstance;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -42,6 +45,8 @@ import java.util.List;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 import static org.onebusaway.transit_data_federation.testing.ServiceChangeUnitTestingSupport.*;
+import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.stop;
+import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.time;
 
 public class GtfsSometimesHandlerImplTest {
 
@@ -57,9 +62,7 @@ public class GtfsSometimesHandlerImplTest {
         handler.setTimeZone(ZoneId.of("America/New_York"));
 
         // some mocks needed for getting trips incident on stops
-        GtfsRealtimeEntitySource entitySource = mock(GtfsRealtimeEntitySource.class);
-        AgencyAndId id = new AgencyAndId("1", "stopA");
-        when(entitySource.getObaStopId("stopA")).thenReturn(id);
+        GtfsRealtimeEntitySource entitySource = new MockEntitySource();
         handler.setEntitySource(entitySource);
         StopTimeService stopTimeService = mock(StopTimeService.class);
         Date from = Date.from(LocalDate.of(2018, 7, 1).atStartOfDay(ZoneId.of("America/New_York")).toInstant());
@@ -70,8 +73,16 @@ public class GtfsSometimesHandlerImplTest {
         tripEntry.setId(new AgencyAndId("1", "tripA"));
         blockTrip.setTrip(tripEntry);
         when(stopTime.getTrip()).thenReturn(blockTrip);
-        when(stopTimeService.getStopTimeInstancesInTimeRange(id, from, to)).thenReturn(Collections.singletonList(stopTime));
+        when(stopTimeService.getStopTimeInstancesInTimeRange(new AgencyAndId("1", "stopA"), from, to))
+                .thenReturn(Collections.singletonList(stopTime));
         handler.setStopTimeService(stopTimeService);
+
+        // mocks for inserted stops
+        TransitGraphDao dao = mock(TransitGraphDao.class);
+        when(dao.getStopEntryForId(new AgencyAndId("1", "stopA"))).thenReturn(stop("1_stopA"));
+        when(dao.getStopEntryForId(new AgencyAndId("1", "stopB"))).thenReturn(stop("1_stopB"));
+        when(dao.getStopEntryForId(new AgencyAndId("1", "stopC"))).thenReturn(stop("1_stopC"));
+        handler.setTransitGraphDao(dao);
     }
 
     // Validation and date range tests
@@ -293,6 +304,53 @@ public class GtfsSometimesHandlerImplTest {
         assertEquals(1, changeB.getDeletedStops().size());
     }
 
+    @Test
+    public void addTripTripChangeTest() {
+        ServiceChange addTrip = serviceChange(Table.TRIPS,
+                ServiceChangeType.ADD,
+                null,
+                tripsFieldsList("tripA", "routeA", "serviceA", "shapeA"),
+                dateDescriptors(LocalDate.of(2018, 7, 1)));
+
+        ServiceChange stop0 = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.ADD,
+                null,
+                stopTimesFieldsList("tripA",
+                        time(16, 5, 0), time(16, 5, 0),
+                        "stopA", 0),
+                dateDescriptors(LocalDate.of(2018, 7, 1)));
+
+        ServiceChange stop1 = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.ADD,
+                null,
+                stopTimesFieldsList("tripA",
+                        time(16, 5, 42), time(16, 5, 42),
+                        "stopB", 1),
+                dateDescriptors(LocalDate.of(2018, 7, 1)));
+
+        ServiceChange stop2 = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.ADD,
+                null,
+                stopTimesFieldsList("tripA",
+                        time(16, 6, 38), time(16, 6, 38),
+                        "stopC", 0),
+                dateDescriptors(LocalDate.of(2018, 7, 1)));
+
+        TripChange tripChange = getSingleTripChange(addTrip, stop1, stop0, stop2);
+        assertEquals("tripA", tripChange.getTripId());
+        assertTrue(tripChange.getDeletedStops().isEmpty());
+        assertTrue(tripChange.getModifiedStops().isEmpty());
+        assertEquals(3, tripChange.getInsertedStops().size());
+        assertTrue(tripChange.isAdded());
+
+        List<StopTimeEntry> newStops = new ArrayList<>();
+        handler.computeNewStopTimes(tripChange, new TripEntryImpl(), newStops);
+        assertEquals(3, newStops.size());
+        assertEquals("1_stopA", newStops.get(0).getStop().getId().getId());
+        assertEquals("1_stopB", newStops.get(1).getStop().getId().getId());
+        assertEquals("1_stopC", newStops.get(2).getStop().getId().getId());
+    }
+
     private TripChange getSingleTripChange(ServiceChange... changes) {
         List<TripChange> tripChanges = handler.getAllTripChanges(Arrays.asList(changes));
         assertEquals(1, tripChanges.size());
@@ -340,5 +398,12 @@ public class GtfsSometimesHandlerImplTest {
         List<TripChange> tripChanges = handler.getAllTripChanges(Arrays.asList(change));
         assertEquals(1, tripChanges.size());
         assertEquals("tripA", tripChanges.get(0).getTripId());
+    }
+
+    private class MockEntitySource extends GtfsRealtimeEntitySource {
+        @Override
+        public AgencyAndId getObaStopId(String id) {
+            return new AgencyAndId("1", id);
+        }
     }
 }
