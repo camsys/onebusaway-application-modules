@@ -24,11 +24,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TripChange {
+    public enum TripChangeType { MODIFY, ADD, DELETE };
+
     public TripChange(String tripId) {
         this.tripId = tripId;
     }
 
     private String tripId;
+
+    private TripChangeType type = TripChangeType.MODIFY;
 
     private TripsFields addedTripsFields;
 
@@ -76,15 +80,24 @@ public class TripChange {
         this.newShapeId = newShapeId;
     }
 
-    public boolean isAdded() {
-        return addedTripsFields != null;
-    }
-
     public TripsFields getAddedTripsFields() {
         return addedTripsFields;
     }
 
     public void setAddedTripsFields(TripsFields addedTripsFields) {
         this.addedTripsFields = addedTripsFields;
+        this.type = TripChangeType.ADD;
+    }
+
+    public void setDelete() {
+        this.type = TripChangeType.DELETE;
+    }
+
+    public boolean isAdded() {
+        return TripChangeType.ADD.equals(type);
+    }
+
+    public boolean isDelete() {
+        return TripChangeType.DELETE.equals(type);
     }
 }

@@ -555,6 +555,20 @@ public class GtfsSometimesClientIntegrationTest {
         assertEquals(3, tripDetails.getSchedule().getStopTimes().size());
     }
 
+    @Test
+    @DirtiesContext
+    public void testDeleteTrip() {
+        String tripId = "CA_G8-Weekday-096000_MISC_545";
+        assertNotNull(getTripDetails(tripId));
+        ServiceChange change = serviceChange(Table.TRIPS,
+                ServiceChangeType.DELETE,
+                Collections.singletonList(tripEntity(tripId)),
+                null,
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
+        assertTrue(_handler.handleServiceChange(change));
+        assertNull(getTripDetails(tripId));
+    }
+
     private TripDetailsBean getTripDetails(String tripId) {
         TripDetailsQueryBean query = new TripDetailsQueryBean();
         query.setTripId("MTA NYCT_" + tripId);
