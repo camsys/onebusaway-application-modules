@@ -351,6 +351,21 @@ public class GtfsSometimesHandlerImplTest {
         assertEquals("1_stopC", newStops.get(2).getStop().getId().getId());
     }
 
+    @Test
+    public void deleteTripTripChange() {
+        ServiceChange serviceChange = serviceChange(Table.TRIPS,
+                ServiceChangeType.DELETE,
+                Collections.singletonList(tripEntity("tripA")),
+                null, // no affected field for delete
+                dateDescriptors(LocalDate.of(2018, 7, 1)));
+        TripChange tripChange = getSingleTripChange(serviceChange);
+        assertEquals("tripA", tripChange.getTripId());
+        assertTrue(tripChange.getInsertedStops().isEmpty());
+        assertTrue(tripChange.getModifiedStops().isEmpty());
+        assertTrue(tripChange.getDeletedStops().isEmpty());
+        assertTrue(tripChange.isDelete());
+    }
+
     private TripChange getSingleTripChange(ServiceChange... changes) {
         List<TripChange> tripChanges = handler.getAllTripChanges(Arrays.asList(changes));
         assertEquals(1, tripChanges.size());

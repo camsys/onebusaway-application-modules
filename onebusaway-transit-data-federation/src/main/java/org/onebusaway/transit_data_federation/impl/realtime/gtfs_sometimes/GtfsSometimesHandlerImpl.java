@@ -314,7 +314,6 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         }
         return stopChanges;
     }
-
     List<TripChange> getAllTripChanges(Collection<ServiceChange> changes) {
         Map<String, TripChange> changesByTrip = new HashMap<>();
         for (ServiceChange serviceChange : changes) {
@@ -336,6 +335,13 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                         String tripId = tripsFields.getTripId();
                         if (tripId != null) {
                             changesByTrip.computeIfAbsent(tripId, TripChange::new).setAddedTripsFields(tripsFields);
+                        }
+                    }
+                } else if (ServiceChangeType.DELETE.equals(serviceChange.getServiceChangeType())) {
+                    for (EntityDescriptor desc : serviceChange.getAffectedEntity()) {
+                        String tripId = desc.getTripId();
+                        if (tripId != null) {
+                            changesByTrip.computeIfAbsent(tripId, TripChange::new).setDelete();
                         }
                     }
                 }
@@ -451,6 +457,8 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         if (change.isAdded()) {
             tripEntry = convertTripFieldsToTripEntry(change.getAddedTripsFields());
             stopTimes = new ArrayList<>();
+        } else if (change.isDelete()) {
+          return _dao.deleteTripEntryForId(tripId);
         } else {
             tripEntry = (TripEntryImpl) _dao.getTripEntryForId(tripId);
             if (tripEntry == null) {
@@ -509,7 +517,6 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                 }
             }
         }
-
 
         // Inserted stops
 
