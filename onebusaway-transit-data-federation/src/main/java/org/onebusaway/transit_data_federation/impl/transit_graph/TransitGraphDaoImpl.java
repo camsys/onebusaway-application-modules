@@ -348,10 +348,6 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     }
 
     if (rc) {
-      rc = updateBlockIndices(trip);
-    }
-
-    if (rc) {
       _routesBeanService.refresh();
     }
 
@@ -360,8 +356,6 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
         addRevenueService(trip, stopTimeEntry.getStop().getId());
       }
     }
-
-    flushCache();
     return rc;
   }
 
@@ -427,9 +421,6 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     boolean rc = _graph.removeTripEntryForId(trip.getId());
     if (rc && _narrativeService != null) {
       _narrativeService.removeTrip(trip);
-    }
-    if (rc) {
-      rc = updateBlockIndices(null);
     }
     if (rc) {
       for (StopTimeEntry stopTimeEntry : trip.getStopTimes()) {

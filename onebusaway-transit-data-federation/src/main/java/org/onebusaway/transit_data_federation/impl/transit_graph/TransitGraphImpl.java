@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -567,11 +568,46 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
   public boolean removeTripEntryForId(AgencyAndId id) {
     _lock.writeLock().lock();
     try {
-      TripEntryImpl tripEntry = _tripEntriesById.get(id);
-      if (tripEntry != null) {
-        _trips.remove(tripEntry);
-        return _tripEntriesById.remove(id) != null;
+      TripEntryImpl trip = _tripEntriesById.get(id);
+      if (trip != null) {
+        _trips.remove(trip);
+        if (_tripEntriesById.remove(id) != null) {
+          // recalculate block
+          boolean foundBlock = false;
+          for (int i = 0; i < _blocks.size(); i++) {
+            BlockEntryImpl origBlock = _blocks.get(i);
+            if (origBlock.getId().equals(trip.getBlock().getId())) {
+              foundBlock = true;
+              BlockEntryImpl block = new BlockEntryImpl();
+              block.setId(origBlock.getId());
+              List<BlockConfigurationEntry> configs = new ArrayList<>();
+              for (BlockConfigurationEntry config : origBlock.getConfigurations()) {
+                BlockConfigurationEntryImpl.Builder builder = BlockConfigurationEntryImpl.builder();
+                builder.setBlock(block);
+                List<TripEntry> blockTrips = new ArrayList<>();
+                for (BlockTripEntry blockTrip : config.getTrips()) {
+                  if (!blockTrip.getTrip().getId().equals(trip.getId())) {
+                    blockTrips.add(blockTrip.getTrip());
+                  }
+                }
+                builder.setTrips(blockTrips);
+                builder.setTripGapDistances(new double[blockTrips.size()]);
+                builder.setServiceIds(config.getServiceIds());
+                if (!blockTrips.isEmpty()) {
+                  configs.add(builder.create());
+                }
+              }
+              block.setConfigurations(configs);
+              _blocks.set(i, block);
+              _blockEntriesById.put(block.getId(), block);
+            }
+          }
+          return foundBlock;
+        }
       }
+      return false;
+    } catch(Exception e) {
+      e.printStackTrace();
       return false;
     } finally {
       _lock.writeLock().unlock();

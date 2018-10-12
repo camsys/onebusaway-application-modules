@@ -42,7 +42,9 @@ import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryIm
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphDaoImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
+import org.onebusaway.transit_data_federation.model.narrative.RouteCollectionNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.StopNarrative;
+import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.AgencyService;
 import org.onebusaway.transit_data_federation.services.StopTimeService;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
@@ -482,7 +484,8 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
         if (change.isAdded()) {
             tripEntry.setStopTimes(stopTimes);
-            return _dao.addTripEntry(tripEntry);
+            TripNarrative narrative = convertTripFieldsToTripNarrative(change.getAddedTripsFields());
+            return _dao.addTripEntry(tripEntry, narrative);
         }
 
         // call internal method
@@ -498,8 +501,10 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
             AgencyAndId stopId = _entitySource.getObaStopId(descriptor.getStopId());
             stopsToRemove.add(stopId);
         }
-        if (!stopTimes.removeIf(ste -> stopsToRemove.contains(ste.getStop().getId()))) {
-            _log.error("unable to remove stops for trip {}", tripEntry.getId());
+        if (!stopsToRemove.isEmpty()) {
+            if (!stopTimes.removeIf(ste -> stopsToRemove.contains(ste.getStop().getId()))) {
+                _log.error("unable to remove stops for trip {}", tripEntry.getId());
+            }
         }
 
         // Alter - only support changing arrival time/departure time
@@ -603,6 +608,22 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         stei.setShapeDistTraveled(shapeDistanceTravelled);
         stei.setGtfsSequence(gtfsSequence);
         return stei;
+    }
+
+    private TripNarrative convertTripFieldsToTripNarrative(TripsFields fields) {
+        TripNarrative.Builder builder = TripNarrative.builder();
+        if (fields.getTripHeadsign() != null) {
+            builder.setTripHeadsign(fields.getTripHeadsign());
+        }
+        if (fields.getTripShortName() != null) {
+            builder.setTripShortName(fields.getTripShortName());
+        }
+        if (fields.getRouteId() != null) {
+            AgencyAndId routeId = _entitySource.getObaRouteId(fields.getRouteId());
+            RouteCollectionNarrative routeNarrative = _narrativeService.getRouteCollectionForId(routeId);
+            builder.setRouteShortName(routeNarrative.getShortName());
+        }
+        return builder.create();
     }
 
     private TripEntryImpl convertTripFieldsToTripEntry(TripsFields fields) {
