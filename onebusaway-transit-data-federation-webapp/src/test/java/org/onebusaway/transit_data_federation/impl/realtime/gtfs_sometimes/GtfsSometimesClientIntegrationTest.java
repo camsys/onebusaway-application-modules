@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime;
+package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes;
 
 import com.camsys.transit.servicechange.ServiceChange;
 import com.camsys.transit.servicechange.ServiceChangeType;
@@ -44,8 +44,6 @@ import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.StopTimeEntriesFactory;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.GtfsSometimesHandler;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.GtfsSometimesHandlerImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
@@ -179,6 +177,7 @@ public class GtfsSometimesClientIntegrationTest {
             tei.setStopTimes(new ArrayList<>(stopTimes));
             assertTrue(_graph.addTripEntry(tei, tripNarrative(trip)));
         }
+        ((GtfsSometimesHandlerImpl) _handler).forceFlush();
 
         // set handler time
         ((GtfsSometimesHandlerImpl) _handler).setTime(dateAsLong("2018-08-23 12:00"));
