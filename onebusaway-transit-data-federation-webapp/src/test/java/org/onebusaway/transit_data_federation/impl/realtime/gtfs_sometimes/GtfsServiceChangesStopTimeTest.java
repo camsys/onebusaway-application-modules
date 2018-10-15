@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime;
+package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.onebusaway.geospatial.model.CoordinateBounds;

@@ -416,7 +416,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         return new ArrayList<>(changesByTrip.values());
     }
 
-    private void forceFlush() {
+    void forceFlush() {
         _refreshService.refresh(RefreshableResources.BLOCK_INDEX_DATA_GRAPH);
         try {
             if (_cacheableMethodManager != null) {
