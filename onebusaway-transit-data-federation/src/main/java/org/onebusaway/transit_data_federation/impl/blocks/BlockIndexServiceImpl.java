@@ -25,8 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.annotation.PostConstruct;
 
@@ -102,8 +100,6 @@ public class BlockIndexServiceImpl implements BlockIndexService {
 
   private List<BlockSequenceIndex> _blockSequenceIndices = Collections.emptyList();
 
-  private transient ReadWriteLock _lock = new ReentrantReadWriteLock();
-
   @Autowired
   public void setBundle(FederatedTransitDataBundle bundle) {
     _bundle = bundle;
@@ -123,71 +119,41 @@ public class BlockIndexServiceImpl implements BlockIndexService {
   @PostConstruct
   @Refreshable(dependsOn = RefreshableResources.BLOCK_INDEX_DATA)
   public void setup() throws Exception {
-    _lock.writeLock().lock();
-    try {
-      loadBlockTripIndicesFromBundle();
-      loadBlockLayoverIndicesFromBundle();
-      loadFrequencyBlockTripIndicesFromBundle();
-      loadBlockTripIndicesByBlockId();
+    loadBlockTripIndicesFromBundle();
+    loadBlockLayoverIndicesFromBundle();
+    loadFrequencyBlockTripIndicesFromBundle();
+    loadBlockTripIndicesByBlockId();
 
-      loadBlockSequenceIndices();
+    loadBlockSequenceIndices();
 
-      loadStopTimeIndices();
-      loadStopTripIndices();
-    } finally {
-      _lock.writeLock().unlock();
-    }
+    loadStopTimeIndices();
+    loadStopTripIndices();
   }
 
   @Override
   public List<BlockTripIndex> getBlockTripIndices() {
-    _lock.readLock().lock();
-    try {
-      return _blockTripIndices;
-    } finally {
-      _lock.readLock().unlock();
-    }
+    return _blockTripIndices;
   }
 
   @Override
   public List<BlockTripIndex> getBlockTripIndicesForAgencyId(String agencyId) {
-    _lock.readLock().lock();
-    try {
-      return list(_blockTripIndicesByAgencyId.get(agencyId));
-    } finally {
-      _lock.readLock().unlock();
-    }
+    return list(_blockTripIndicesByAgencyId.get(agencyId));
   }
 
   @Override
   public List<BlockTripIndex> getBlockTripIndicesForRouteCollectionId(
       AgencyAndId routeCollectionId) {
-    _lock.readLock().lock();
-    try {
-      return list(_blockTripIndicesByRouteId.get(routeCollectionId));
-    } finally {
-      _lock.readLock().unlock();
-    }
+    return list(_blockTripIndicesByRouteId.get(routeCollectionId));
   }
 
   @Override
   public List<BlockTripIndex> getBlockTripIndicesForBlock(AgencyAndId blockId) {
-    _lock.readLock().lock();
-    try {
-      return list(_blockTripIndicesByBlockId.get(blockId));
-    } finally {
-      _lock.readLock().unlock();
-    }
+    return list(_blockTripIndicesByBlockId.get(blockId));
   }
 
   @Override
   public List<BlockStopTimeIndex> getStopTimeIndicesForStop(StopEntry stopEntry) {
-    _lock.readLock().lock();
-    try {
-      return ((StopEntryImpl) stopEntry).getStopTimeIndices();
-    } finally {
-      _lock.readLock().unlock();
-    }
+    return ((StopEntryImpl) stopEntry).getStopTimeIndices();
   }
 
   @Override
@@ -198,50 +164,40 @@ public class BlockIndexServiceImpl implements BlockIndexService {
   @Override
   public List<BlockStopSequenceIndex> getStopSequenceIndicesForStop(
       StopEntry stopEntry) {
-    _lock.readLock().lock();
-    try {
-      return ((StopEntryImpl) stopEntry).getStopTripIndices();
-    } finally {
-      _lock.readLock().unlock();
-    }
+    return ((StopEntryImpl) stopEntry).getStopTripIndices();
   }
 
   @Override
   public List<Pair<BlockStopSequenceIndex>> getBlockSequenceIndicesBetweenStops(
-      StopEntry fromStop, StopEntry toStop) {
-    _lock.readLock().lock();
-    try {
-      List<BlockStopSequenceIndex> fromIndices = ((StopEntryImpl) fromStop).getStopTripIndices();
-      List<BlockStopSequenceIndex> toIndices = ((StopEntryImpl) toStop).getStopTripIndices();
+          StopEntry fromStop, StopEntry toStop) {
+    List<BlockStopSequenceIndex> fromIndices = ((StopEntryImpl) fromStop).getStopTripIndices();
+    List<BlockStopSequenceIndex> toIndices = ((StopEntryImpl) toStop).getStopTripIndices();
 
-      Map<BlockSequenceIndex, BlockStopSequenceIndex> fromIndicesBySequence = getBlockStopSequenceIndicesBySequence(fromIndices);
-      Map<BlockSequenceIndex, BlockStopSequenceIndex> toIndicesBySequence = getBlockStopSequenceIndicesBySequence(toIndices);
+    Map<BlockSequenceIndex, BlockStopSequenceIndex> fromIndicesBySequence = getBlockStopSequenceIndicesBySequence(fromIndices);
+    Map<BlockSequenceIndex, BlockStopSequenceIndex> toIndicesBySequence = getBlockStopSequenceIndicesBySequence(toIndices);
 
-      fromIndicesBySequence.keySet().retainAll(toIndicesBySequence.keySet());
+    fromIndicesBySequence.keySet().retainAll(toIndicesBySequence.keySet());
 
-      List<Pair<BlockStopSequenceIndex>> results = new ArrayList<Pair<BlockStopSequenceIndex>>();
+    List<Pair<BlockStopSequenceIndex>> results = new ArrayList<Pair<BlockStopSequenceIndex>>();
 
-      for (Map.Entry<BlockSequenceIndex, BlockStopSequenceIndex> entry : fromIndicesBySequence.entrySet()) {
-        BlockSequenceIndex index = entry.getKey();
-        BlockStopSequenceIndex fromStopIndex = entry.getValue();
-        BlockStopSequenceIndex toStopIndex = toIndicesBySequence.get(index);
+    for (Map.Entry<BlockSequenceIndex, BlockStopSequenceIndex> entry : fromIndicesBySequence.entrySet()) {
+      BlockSequenceIndex index = entry.getKey();
+      BlockStopSequenceIndex fromStopIndex = entry.getValue();
+      BlockStopSequenceIndex toStopIndex = toIndicesBySequence.get(index);
 
-        /**
-         * If the stops aren't in the requested order, then we don't include the
-         * sequence indices in the results
-         */
-        if (fromStopIndex.getOffset() > toStopIndex.getOffset())
-          continue;
+      /**
+       * If the stops aren't in the requested order, then we don't include the
+       * sequence indices in the results
+       */
+      if (fromStopIndex.getOffset() > toStopIndex.getOffset())
+        continue;
 
-        Pair<BlockStopSequenceIndex> pair = Tuples.pair(fromStopIndex,
-            toStopIndex);
-        results.add(pair);
-      }
-
-      return results;
-    } finally {
-      _lock.readLock().unlock();
+      Pair<BlockStopSequenceIndex> pair = Tuples.pair(fromStopIndex,
+              toStopIndex);
+      results.add(pair);
     }
+
+    return results;
   }
   
   @Override
@@ -252,34 +208,19 @@ public class BlockIndexServiceImpl implements BlockIndexService {
   @Override
   public List<BlockLayoverIndex> getBlockLayoverIndicesForAgencyId(
       String agencyId) {
-    _lock.readLock().lock();
-    try {
-      return list(_blockLayoverIndicesByAgencyId.get(agencyId));
-    } finally {
-      _lock.readLock().unlock();
-    }
+    return list(_blockLayoverIndicesByAgencyId.get(agencyId));
   }
 
   @Override
   public List<BlockLayoverIndex> getBlockLayoverIndicesForRouteCollectionId(
       AgencyAndId routeCollectionId) {
-    _lock.readLock().lock();
-    try {
-      return list(_blockLayoverIndicesByRouteId.get(routeCollectionId));
-    } finally {
-      _lock.readLock().unlock();
-    }
+    return list(_blockLayoverIndicesByRouteId.get(routeCollectionId));
   }
 
   @Override
   public List<BlockLayoverIndex> getBlockLayoverIndicesForBlock(
       AgencyAndId blockId) {
-    _lock.readLock().lock();
-    try {
-      return list(_blockLayoverIndicesByBlockId.get(blockId));
-    } finally {
-      _lock.readLock().unlock();
-    }
+    return list(_blockLayoverIndicesByBlockId.get(blockId));
   }
 
   @Override
@@ -290,100 +231,70 @@ public class BlockIndexServiceImpl implements BlockIndexService {
   @Override
   public List<FrequencyBlockTripIndex> getFrequencyBlockTripIndicesForAgencyId(
       String agencyId) {
-    _lock.readLock().lock();
-    try {
-      return list(_frequencyBlockTripIndicesByAgencyId.get(agencyId));
-    } finally {
-      _lock.readLock().unlock();
-    }
+    return list(_frequencyBlockTripIndicesByAgencyId.get(agencyId));
   }
 
   @Override
   public List<FrequencyBlockTripIndex> getFrequencyBlockTripIndicesForRouteCollectionId(
       AgencyAndId routeCollectionId) {
-    _lock.readLock().lock();
-    try {
-      return list(_frequencyBlockTripIndicesByRouteId.get(routeCollectionId));
-    } finally {
-      _lock.readLock().unlock();
-    }
+    return list(_frequencyBlockTripIndicesByRouteId.get(routeCollectionId));
   }
 
   @Override
   public List<FrequencyBlockTripIndex> getFrequencyBlockTripIndicesForBlock(
       AgencyAndId blockId) {
-    _lock.readLock().lock();
-    try {
-      return list(_frequencyBlockTripIndicesByBlockId.get(blockId));
-    } finally {
-      _lock.readLock().unlock();
-    }
+    return list(_frequencyBlockTripIndicesByBlockId.get(blockId));
   }
 
   @Override
   public List<FrequencyBlockStopTimeIndex> getFrequencyStopTimeIndicesForStop(
       StopEntry stopEntry) {
-    _lock.readLock().lock();
-    try {
-      return ((StopEntryImpl) stopEntry).getFrequencyStopTimeIndices();
-    } finally {
-      _lock.readLock().unlock();
-    }
+    return ((StopEntryImpl) stopEntry).getFrequencyStopTimeIndices();
   }
 
   @Override
   public List<FrequencyStopTripIndex> getFrequencyStopTripIndicesForStop(
       StopEntry stop) {
-    _lock.readLock().lock();
-    try {
-      return ((StopEntryImpl) stop).getFrequencyStopTripIndices();
-    } finally {
-      _lock.readLock().unlock();
-    }
+    return ((StopEntryImpl) stop).getFrequencyStopTripIndices();
   }
 
   @Override
   public List<Pair<FrequencyStopTripIndex>> getFrequencyIndicesBetweenStops(
-      StopEntry fromStop, StopEntry toStop) {
-    _lock.readLock().lock();
-    try {
-      List<FrequencyStopTripIndex> fromIndices = getFrequencyStopTripIndicesForStop(fromStop);
-      List<FrequencyStopTripIndex> toIndices = getFrequencyStopTripIndicesForStop(toStop);
+          StopEntry fromStop, StopEntry toStop) {
 
-      Map<FrequencyBlockTripIndex, FrequencyStopTripIndex> fromIndicesBySequence = getFrequencyStopTripIndicesBySequence(fromIndices);
-      Map<FrequencyBlockTripIndex, FrequencyStopTripIndex> toIndicesBySequence = getFrequencyStopTripIndicesBySequence(toIndices);
+    List<FrequencyStopTripIndex> fromIndices = getFrequencyStopTripIndicesForStop(fromStop);
+    List<FrequencyStopTripIndex> toIndices = getFrequencyStopTripIndicesForStop(toStop);
 
-      fromIndicesBySequence.keySet().retainAll(toIndicesBySequence.keySet());
+    Map<FrequencyBlockTripIndex, FrequencyStopTripIndex> fromIndicesBySequence = getFrequencyStopTripIndicesBySequence(fromIndices);
+    Map<FrequencyBlockTripIndex, FrequencyStopTripIndex> toIndicesBySequence = getFrequencyStopTripIndicesBySequence(toIndices);
 
-      List<Pair<FrequencyStopTripIndex>> results = new ArrayList<Pair<FrequencyStopTripIndex>>();
+    fromIndicesBySequence.keySet().retainAll(toIndicesBySequence.keySet());
 
-      for (Map.Entry<FrequencyBlockTripIndex, FrequencyStopTripIndex> entry : fromIndicesBySequence.entrySet()) {
-        FrequencyBlockTripIndex index = entry.getKey();
-        FrequencyStopTripIndex fromStopIndex = entry.getValue();
-        FrequencyStopTripIndex toStopIndex = toIndicesBySequence.get(index);
+    List<Pair<FrequencyStopTripIndex>> results = new ArrayList<Pair<FrequencyStopTripIndex>>();
 
-        /**
-         * If the stops aren't in the requested order, then we don't include the
-         * sequence indices in the results
-         */
-        if (fromStopIndex.getOffset() > toStopIndex.getOffset())
-          continue;
+    for (Map.Entry<FrequencyBlockTripIndex, FrequencyStopTripIndex> entry : fromIndicesBySequence.entrySet()) {
+      FrequencyBlockTripIndex index = entry.getKey();
+      FrequencyStopTripIndex fromStopIndex = entry.getValue();
+      FrequencyStopTripIndex toStopIndex = toIndicesBySequence.get(index);
 
-        Pair<FrequencyStopTripIndex> pair = Tuples.pair(fromStopIndex,
-            toStopIndex);
-        results.add(pair);
-      }
+      /**
+       * If the stops aren't in the requested order, then we don't include the
+       * sequence indices in the results
+       */
+      if (fromStopIndex.getOffset() > toStopIndex.getOffset())
+        continue;
 
-
-      return results;
-    } finally {
-      _lock.readLock().unlock();
+      Pair<FrequencyStopTripIndex> pair = Tuples.pair(fromStopIndex,
+              toStopIndex);
+      results.add(pair);
     }
+
+
+    return results;
   }
 
   @Override
   public void updateBlockIndices(TripEntryImpl trip) {
-    _lock.writeLock().lock();
     try {
       loadBlockTripLayoverFrequencyIndicesFromGraph();
       loadBlockTripIndicesByBlockId();
@@ -395,8 +306,6 @@ public class BlockIndexServiceImpl implements BlockIndexService {
 
     } catch (Exception any) {
       _log.error("issue updating block indices " + trip, any);
-    } finally {
-      _lock.writeLock().unlock();
     }
   }
 
