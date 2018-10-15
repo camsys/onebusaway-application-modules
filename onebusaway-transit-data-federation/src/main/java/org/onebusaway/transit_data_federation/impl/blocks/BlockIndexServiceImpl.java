@@ -117,7 +117,7 @@ public class BlockIndexServiceImpl implements BlockIndexService {
   }
 
   @PostConstruct
-  @Refreshable(dependsOn = RefreshableResources.BLOCK_INDEX_DATA)
+  @Refreshable(dependsOn = RefreshableResources.BLOCK_INDEX_DATA_BUNDLE)
   public void setup() throws Exception {
     loadBlockTripIndicesFromBundle();
     loadBlockLayoverIndicesFromBundle();
@@ -128,6 +128,15 @@ public class BlockIndexServiceImpl implements BlockIndexService {
 
     loadStopTimeIndices();
     loadStopTripIndices();
+  }
+
+  @Refreshable(dependsOn = RefreshableResources.BLOCK_INDEX_DATA_GRAPH)
+  public void reloadFromGraph() throws Exception {
+      loadBlockTripLayoverFrequencyIndicesFromGraph();
+      loadBlockTripIndicesByBlockId();
+      loadBlockSequenceIndices();
+      loadStopTimeIndices();
+      loadStopTripIndices();
   }
 
   @Override
@@ -291,22 +300,6 @@ public class BlockIndexServiceImpl implements BlockIndexService {
 
 
     return results;
-  }
-
-  @Override
-  public void updateBlockIndices(TripEntryImpl trip) {
-    try {
-      loadBlockTripLayoverFrequencyIndicesFromGraph();
-      loadBlockTripIndicesByBlockId();
-
-      loadBlockSequenceIndices();
-
-      loadStopTimeIndices();
-      loadStopTripIndices();
-
-    } catch (Exception any) {
-      _log.error("issue updating block indices " + trip, any);
-    }
   }
 
   /****
