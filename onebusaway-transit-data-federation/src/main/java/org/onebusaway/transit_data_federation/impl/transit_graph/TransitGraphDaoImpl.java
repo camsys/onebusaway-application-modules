@@ -284,20 +284,6 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   }
 
   @Override
-  public boolean deleteStopTime(AgencyAndId tripId, AgencyAndId stopId) {
-    // Caller is responsible for forcing the cache to flush
-    boolean rc = _graph.removeStopTime(tripId, stopId);
-    if (rc) {
-      StopEntry stop = getStopEntryForId(stopId);
-      TripEntry trip = getTripEntryForId(tripId);
-      if (!stopHasServiceOnRouteExcludingTrip(stop, trip)) {
-        removeRevenueService(trip, stop.getId());
-      }
-    }
-    return rc;
-  }
-
-  @Override
   public boolean addTripEntry(TripEntryImpl trip) {
     return addTripEntry(trip, null);
   }
@@ -335,11 +321,6 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   }
 
   @Override
-  public boolean updateShapeForTrip(TripEntryImpl trip, AgencyAndId shapeId) {
-    return updateStopTimesForTrip(trip, trip.getStopTimes(), shapeId);
-  }
-
-  @Override
   public boolean updateStopTimesForTrip(TripEntryImpl trip, List<StopTimeEntry> stopTimeEntries, AgencyAndId shapeId) {
     if (_graph.getTripEntryForId(trip.getId()) != null) {
       AgencyAndId originalShapeId = trip.getShapeId();
@@ -354,6 +335,7 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
         processedStopTimeEntries = _stopTimesFactory.processStopTimeEntries(_graph, stopTimeEntries, trip, shape);
       } catch (Exception ex) {
         // reset...
+        ex.printStackTrace();
         trip.setShapeId(originalShapeId);
         _narrativeService.addTrip(trip, narrative);
         return false;
@@ -405,26 +387,6 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
       }
     }
     return rc;
-  }
-
-  @Override
-  public boolean updateStopTime(AgencyAndId tripId, AgencyAndId stopId, int originalArrivalTime, int originalDepartureTime,
-                                int newArrivalTime, int newDepartureTime) {
-    return _graph.updateStopTime(tripId, stopId, originalArrivalTime, originalDepartureTime, newArrivalTime, newDepartureTime);
-  }
-
-  @Override
-  public boolean insertStopTime(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime, double shapeDistanceTravelled) {
-    boolean rc = _graph.insertStopTime(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled);
-    if (rc) {
-      TripEntryImpl trip = (TripEntryImpl) getTripEntryForId(tripId);
-      TripNarrative narrative = _narrativeService.removeTrip(trip);
-      _narrativeService.addTrip(trip, narrative);
-      addRevenueService(trip, stopId);
-
-      return true;
-    }
-    return false;
   }
 
   public void updateCalendarServiceData(CalendarServiceData data) {

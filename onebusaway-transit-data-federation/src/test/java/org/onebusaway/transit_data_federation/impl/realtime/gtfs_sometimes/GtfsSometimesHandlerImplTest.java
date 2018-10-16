@@ -26,12 +26,16 @@ import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRe
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.StopChange;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChange;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockTripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.StopSequence;
 import org.onebusaway.transit_data_federation.model.StopSequenceCollection;
 import org.onebusaway.transit_data_federation.services.StopTimeService;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
+import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.transit_data_federation.services.tripplanner.StopTimeInstance;
 
 import java.time.LocalDate;
@@ -44,15 +48,28 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import static junit.framework.TestCase.assertNotNull;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 import static org.onebusaway.transit_data_federation.testing.ServiceChangeUnitTestingSupport.*;
-import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.stop;
-import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.time;
+import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.*;
+import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.stopTime;
+import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.trip;
 
 public class GtfsSometimesHandlerImplTest {
 
+    private class MockEntitySource extends GtfsRealtimeEntitySource {
+        @Override
+        public AgencyAndId getObaStopId(String id) {
+            return new AgencyAndId("1", id);
+        }
+    }
+
     private GtfsSometimesHandlerImpl handler;
+
+    private TripEntryImpl tripA, tripB, tripC, tripD, tripE, tripF, tripG, tripH, tripI, tripJ;
+    private StopEntryImpl stopA, stopB, stopC;
+    private StopTimeEntryImpl stopAA, stopBA, stopCA, stopCB, stopBB, stopAB, stopAC, stopBC, stopCC, stopAD, stopBD, stopCD;
 
     @Before
     public void setup() {
@@ -85,6 +102,43 @@ public class GtfsSometimesHandlerImplTest {
         when(dao.getStopEntryForId(new AgencyAndId("1", "stopB"))).thenReturn(stop("1_stopB"));
         when(dao.getStopEntryForId(new AgencyAndId("1", "stopC"))).thenReturn(stop("1_stopC"));
         handler.setTransitGraphDao(dao);
+
+        // Setup for stop-time modification tests:
+        stopA = stop("a", 47.5, -122.5);
+        stopB = stop("b", 47.6, -122.4);
+        stopC = stop("c", 47.5, -122.3);
+
+        tripA = trip("tripA", "serviceId");
+        tripB = trip("tripB", "serviceId");
+        tripC = trip("tripC", "serviceId");
+        tripD = trip("tripD", "serviceId");
+        tripE = trip("tripE", "serviceId");
+        tripF = trip("tripF", "serviceId");
+        tripG = trip("tripG", "serviceId");
+        tripH = trip("tripH", "serviceId");
+        tripI = trip("tripI", "serviceId");
+        tripJ = trip("tripJ", "serviceId");
+
+        stopAA = stopTime(0, stopA, tripA, 30, 90, 25);
+        stopBA = stopTime(1, stopB, tripA, 120, 120, 100);
+        stopCA = stopTime(2, stopC, tripA, 180, 210, 200);
+
+        stopCB = stopTime(3, stopC, tripB, 240, 240, 300);
+        stopBB = stopTime(4, stopB, tripB, 270, 270, 400);
+        stopAB = stopTime(5, stopA, tripB, 300, 300, 500);
+
+        stopAC = stopTime(6, stopA, tripC, 360, 360, 600);
+        stopBC = stopTime(7, stopB, tripC, 390, 390, 700);
+        stopCC = stopTime(8, stopC, tripC, 420, 420, 800);
+
+        // trip C and D are the same but on different runs
+        stopAD = stopTime(6, stopA, tripD, 360, 360, 600);
+        stopBD = stopTime(7, stopB, tripD, 390, 390, 700);
+        stopCD = stopTime(8, stopC, tripD, 420, 420, 800);
+
+        when(dao.getStopEntryForId(aid("a"))).thenReturn(stopA);
+        when(dao.getStopEntryForId(aid("b"))).thenReturn(stopB);
+        when(dao.getStopEntryForId(aid("c"))).thenReturn(stopC);
     }
 
     // Validation and date range tests
@@ -417,10 +471,172 @@ public class GtfsSometimesHandlerImplTest {
         assertEquals("tripA", tripChanges.get(0).getTripId());
     }
 
-    private class MockEntitySource extends GtfsRealtimeEntitySource {
-        @Override
-        public AgencyAndId getObaStopId(String id) {
-            return new AgencyAndId("1", id);
+    // Test stoptime logic. Moved from TransitGraphDaoImplTest
+
+    @Test
+    public void testDeleteStopTime() {
+        assertEquals(3, tripA.getStopTimes().size());
+        assertEquals(stopCA.getStop().getId().getId(), tripA.getStopTimes().get(2).getStop().getId().getId());
+        TripChange change = deletedStopTripChange(tripA, stopCA);
+        List<StopTimeEntry> stopTimes = handler.computeNewStopTimes(change, tripA);
+        assertEquals(2, stopTimes.size());
+        for (StopTimeEntry stop : stopTimes) {
+            assertNotEquals(stopCA.getStop().getId().getId(), stop.getStop().getId().getId());
         }
+    }
+
+    @Test
+    public void testUpdateStopTime() {
+
+        assertEquals(3, tripA.getStopTimes().size());
+
+        StopTimeEntry stopTimeEntry = tripA.getStopTimes().get(2);
+        assertEquals(stopCA.getStop().getId().getId(), stopTimeEntry.getStop().getId().getId());
+        assertEquals(180, stopTimeEntry.getArrivalTime());
+
+        TripChange change = modifiedStopTripChange(tripA, stopCA, 185, 186);
+        List<StopTimeEntry> stopTimes = handler.computeNewStopTimes(change, tripA);
+
+        assertEquals(185, stopTimes.get(2).getArrivalTime());
+        assertEquals(186, stopTimes.get(2).getDepartureTime());
+    }
+
+    @Test
+    public void testAddStopTime0Dist() {
+        // insert at 0 position
+        assertEquals(3, tripA.getStopTimes().size());
+        TripChange change = insertStopTripChange(tripA, stopAD, 15, 60, 10);
+        List<StopTimeEntry> stopTimes = handler.computeNewStopTimes(change, tripA);
+        assertEquals(4, stopTimes.size());
+        assertEquals(stopTimes.get(0).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime1Dist() {
+        // insert at 1 position
+        assertEquals(3, tripA.getStopTimes().size());
+        TripChange change = insertStopTripChange(tripA, stopAD, 45, 100, 75);
+        List<StopTimeEntry> stopTimes = handler.computeNewStopTimes(change, tripA);
+        assertEquals(4, stopTimes.size());
+        assertEquals(stopTimes.get(1).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime2Dist() {
+        // insert at 2 position
+        assertEquals(3, tripA.getStopTimes().size());
+        TripChange change = insertStopTripChange(tripA, stopAD, 150, 180, 150);
+        List<StopTimeEntry> stopTimes = handler.computeNewStopTimes(change, tripA);
+        assertEquals(4, stopTimes.size());
+        assertEquals(stopTimes.get(2).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime3Dist() {
+        // insert at 3 position
+        assertEquals(3, tripA.getStopTimes().size());
+        TripChange change = insertStopTripChange(tripA, stopAD, 220, 250, 300);
+        List<StopTimeEntry> stopTimes = handler.computeNewStopTimes(change, tripA);
+        assertEquals(4, stopTimes.size());
+        assertEquals(stopTimes.get(3).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime0Arr() {
+        // insert at 0 position
+        assertEquals(3, tripA.getStopTimes().size());
+        TripChange change = insertStopTripChange(tripA, stopAD, 15, 60, -1);
+        List<StopTimeEntry> stopTimes = handler.computeNewStopTimes(change, tripA);
+        assertEquals(4, stopTimes.size());
+        assertEquals(stopTimes.get(0).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime1Arr() {
+        // insert at 1 position
+        assertEquals(3, tripA.getStopTimes().size());
+        TripChange change = insertStopTripChange(tripA, stopAD, 45, 100, -1);
+        List<StopTimeEntry> stopTimes = handler.computeNewStopTimes(change, tripA);
+        assertEquals(4, stopTimes.size());
+        assertEquals(stopTimes.get(1).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime2Arr() {
+        // insert at 2 position
+        assertEquals(3, tripA.getStopTimes().size());
+        TripChange change = insertStopTripChange(tripA, stopAD, 150, 180, -1);
+        List<StopTimeEntry> stopTimes = handler.computeNewStopTimes(change, tripA);
+        assertEquals(4, stopTimes.size());
+        assertEquals(stopTimes.get(2).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime3Arr() {
+        // insert at 3 position
+        assertEquals(3, tripA.getStopTimes().size());
+        TripChange change = insertStopTripChange(tripA, stopAD, 220, 250, -1);
+        List<StopTimeEntry> stopTimes = handler.computeNewStopTimes(change, tripA);
+        assertEquals(4, stopTimes.size());
+        assertEquals(stopTimes.get(3).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime0Dept() {
+        // insert at 0 position
+        assertEquals(3, tripA.getStopTimes().size());
+        TripChange change = insertStopTripChange(tripA, stopAD, -1, 60, -1);
+        List<StopTimeEntry> stopTimes = handler.computeNewStopTimes(change, tripA);
+        assertEquals(4, stopTimes.size());
+        assertEquals(stopTimes.get(0).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime1Dept() {
+        // insert at 1 position
+        assertEquals(3, tripA.getStopTimes().size());
+        TripChange change = insertStopTripChange(tripA, stopAD, -1, 100, -1);
+        List<StopTimeEntry> stopTimes = handler.computeNewStopTimes(change, tripA);
+        assertEquals(4, stopTimes.size());
+        assertEquals(stopTimes.get(1).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime2Dept() {
+        // insert at 2 position
+        assertEquals(3, tripA.getStopTimes().size());
+        TripChange change = insertStopTripChange(tripA, stopAD, -1, 180, -1);
+        List<StopTimeEntry> stopTimes = handler.computeNewStopTimes(change, tripA);
+        assertEquals(4, stopTimes.size());
+        assertEquals(stopTimes.get(2).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime3Dept() {
+        // insert at 3 position
+        assertEquals(3, tripA.getStopTimes().size());
+        TripChange change = insertStopTripChange(tripA, stopAD, -1, 250, -1);
+        List<StopTimeEntry> stopTimes = handler.computeNewStopTimes(change, tripA);
+        assertEquals(4, stopTimes.size());
+        assertEquals(stopTimes.get(3).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    private static TripChange modifiedStopTripChange(TripEntryImpl trip, StopTimeEntry stop, int arrivalTime, int departureTime) {
+        TripChange change = new TripChange(trip.getId().getId());
+        change.addModifiedStop(stopTimesFieldDescriptor(trip.getId().getId(), arrivalTime, departureTime, stop.getStop().getId().getId(), 0));
+        return change;
+    }
+
+    private static TripChange deletedStopTripChange(TripEntryImpl trip, StopTimeEntry stop) {
+        TripChange change = new TripChange(trip.getId().getId());
+        change.addDeletedStop(stopTimeEntity(trip.getId().getId(), stop.getStop().getId().getId()));
+        return change;
+    }
+
+    private static TripChange insertStopTripChange(TripEntryImpl trip, StopTimeEntry stop, int arrivalTime, int departureTime, double shapeDistTravelled) {
+        TripChange change = new TripChange(trip.getId().getId());
+        change.addInsertedStop(stopTimesFieldDescriptor(trip.getId().getId(), arrivalTime, departureTime, stop.getStop().getId().getId(),
+                0, null, null, shapeDistTravelled, null));
+        return change;
     }
 }
