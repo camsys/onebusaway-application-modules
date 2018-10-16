@@ -35,6 +35,7 @@ import org.onebusaway.gtfs.serialization.mappings.InvalidStopTimeException;
 import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
+import org.onebusaway.transit_data_federation.services.EntityIdService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
@@ -42,6 +43,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,9 +64,11 @@ class GtfsRealtimeTripLibrary {
 
   private static final Logger _log = LoggerFactory.getLogger(GtfsRealtimeTripLibrary.class);
 
-  private GtfsRealtimeEntitySource _entitySource;
+  private EntityIdService _entityIdService;
 
   private BlockCalendarService _blockCalendarService;
+
+  private TransitGraphDao _dao;
 
   private String[] _agencyIds = {};
   void setAgencyIds(List<String> agencies) {
@@ -81,12 +85,16 @@ class GtfsRealtimeTripLibrary {
    */
   private long _currentTime = 0;
 
-  public void setEntitySource(GtfsRealtimeEntitySource entitySource) {
-    _entitySource = entitySource;
+  public void setEntityIdService(EntityIdService entityIdService) {
+    _entityIdService = entityIdService;
   }
 
   public void setBlockCalendarService(BlockCalendarService blockCalendarService) {
     _blockCalendarService = blockCalendarService;
+  }
+
+  public void setTransitGraphDao(TransitGraphDao dao) {
+    _dao = dao;
   }
 
   public long getCurrentTime() {
@@ -330,7 +338,8 @@ class GtfsRealtimeTripLibrary {
     if (!trip.hasTripId()) {
       return null;
     }
-    TripEntry tripEntry = _entitySource.getTrip(trip.getTripId());
+    AgencyAndId tripId = _entityIdService.getTripId(trip.getTripId());
+    TripEntry tripEntry = _dao.getTripEntryForId(tripId);
     if (tripEntry == null) {
       if (result != null) {
         _log.debug("reporting unmatched trip with id=" + trip.getTripId());

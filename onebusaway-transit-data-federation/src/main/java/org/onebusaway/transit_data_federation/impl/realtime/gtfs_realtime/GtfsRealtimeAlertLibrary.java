@@ -17,6 +17,7 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertLibrary;
+import org.onebusaway.transit_data_federation.services.EntityIdService;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.Affects;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.Consequence;
@@ -32,11 +33,13 @@ import com.google.transit.realtime.GtfsRealtime.TripDescriptor;
 
 import java.util.List;
 
+import static org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertLibrary.id;
+
 class GtfsRealtimeAlertLibrary {
 
   private static final Logger _log = LoggerFactory.getLogger(GtfsRealtimeAlertLibrary.class);
 
-  private GtfsRealtimeEntitySource _entitySource;
+  private EntityIdService _entityIdService;
 
   private String[] _agencyIds = {};
   void setAgencyIds(List<String> agencies) {
@@ -49,8 +52,8 @@ class GtfsRealtimeAlertLibrary {
     _stripAgencyPrefix = remove;
   }
 
-  public void setEntitySource(GtfsRealtimeEntitySource entitySource) {
-    _entitySource = entitySource;
+  public void setEntitySource(EntityIdService entitySource) {
+    _entityIdService = entitySource;
   }
 
   public ServiceAlert.Builder getAlertAsServiceAlert(AgencyAndId id, Alert alert) {
@@ -91,19 +94,19 @@ class GtfsRealtimeAlertLibrary {
     if (selector.hasAgencyId())
       affects.setAgencyId(selector.getAgencyId());
     if (selector.hasRouteId()) {
-      Id routeId = _entitySource.getRouteId(idOnly(selector.getRouteId()));
+      Id routeId = id(_entityIdService.getRouteId(idOnly(selector.getRouteId())));
       affects.setRouteId(routeId);
     }
     if (selector.hasStopId()) {
-      Id stopId = _entitySource.getStopId(selector.getStopId());
+      Id stopId = id(_entityIdService.getStopId(selector.getStopId()));
       affects.setStopId(stopId);
     }
     if (selector.hasTrip()) {
       TripDescriptor trip = selector.getTrip();
       if (trip.hasTripId())
-        affects.setTripId(_entitySource.getTripId(trip.getTripId()));
+        affects.setTripId(id(_entityIdService.getTripId(trip.getTripId())));
       else if (trip.hasRouteId())
-        affects.setRouteId(_entitySource.getRouteId(idOnly(trip.getRouteId())));
+        affects.setRouteId(id(_entityIdService.getRouteId(idOnly(trip.getRouteId()))));
     }
     return affects;
   }
@@ -187,4 +190,5 @@ class GtfsRealtimeAlertLibrary {
     }
     return b.build();
   }
+
 }

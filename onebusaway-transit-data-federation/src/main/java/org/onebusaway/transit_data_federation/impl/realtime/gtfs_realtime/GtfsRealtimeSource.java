@@ -39,6 +39,7 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.services.AgencyService;
+import org.onebusaway.transit_data_federation.services.EntityIdService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.ServiceAlert;
@@ -109,7 +110,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
    */
   private Map<AgencyAndId, ServiceAlert> _alertsById = new HashMap<AgencyAndId, ServiceAlerts.ServiceAlert>();
 
-  private GtfsRealtimeEntitySource _entitySource;
+  private EntityIdService _entityIdService;
 
   private GtfsRealtimeTripLibrary _tripsLibrary;
 
@@ -188,6 +189,10 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
 
   public void setStripAgencyPrefixesFromFeed(boolean strip) { _stripAgencyPrefixesFromFeed = strip; }
 
+  public void setEntityIdService(EntityIdService entityIdService) {
+    _entityIdService = entityIdService;
+  }
+
   @PostConstruct
   public void start() {
     if (_agencyIds.isEmpty()) {
@@ -201,18 +206,15 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
       }
     }
 
-    _entitySource = new GtfsRealtimeEntitySource();
-    _entitySource.setAgencyIds(_agencyIds);
-    _entitySource.setTransitGraphDao(_transitGraphDao);
-
     _tripsLibrary = new GtfsRealtimeTripLibrary();
     _tripsLibrary.setAgencyIds(getAgencyIds());
     _tripsLibrary.setStripAgencyPrefix(_stripAgencyPrefixesFromFeed);
     _tripsLibrary.setBlockCalendarService(_blockCalendarService);
-    _tripsLibrary.setEntitySource(_entitySource);
+    _tripsLibrary.setEntityIdService(_entityIdService);
+    _tripsLibrary.setTransitGraphDao(_transitGraphDao);
 
     _alertLibrary = new GtfsRealtimeAlertLibrary();
-    _alertLibrary.setEntitySource(_entitySource);
+    _alertLibrary.setEntitySource(_entityIdService);
     _alertLibrary.setAgencyIds(getAgencyIds());
     _alertLibrary.setStripAgencyPrefix(_stripAgencyPrefixesFromFeed);
 

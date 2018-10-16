@@ -22,20 +22,16 @@ import com.camsys.transit.servicechange.field_descriptors.StopTimesFields;
 import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeEntitySource;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.StopChange;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChange;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockTripEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
-import org.onebusaway.transit_data_federation.model.StopSequence;
-import org.onebusaway.transit_data_federation.model.StopSequenceCollection;
+import org.onebusaway.transit_data_federation.services.EntityIdService;
 import org.onebusaway.transit_data_federation.services.StopTimeService;
-import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
-import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.transit_data_federation.services.tripplanner.StopTimeInstance;
 
 import java.time.LocalDate;
@@ -48,7 +44,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import static junit.framework.TestCase.assertNotNull;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 import static org.onebusaway.transit_data_federation.testing.ServiceChangeUnitTestingSupport.*;
@@ -58,9 +53,9 @@ import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.
 
 public class GtfsSometimesHandlerImplTest {
 
-    private class MockEntitySource extends GtfsRealtimeEntitySource {
+    private abstract class MockEntityIdService implements EntityIdService {
         @Override
-        public AgencyAndId getObaStopId(String id) {
+        public AgencyAndId getStopId(String id) {
             return new AgencyAndId("1", id);
         }
     }
@@ -74,15 +69,15 @@ public class GtfsSometimesHandlerImplTest {
     @Before
     public void setup() {
         handler = new GtfsSometimesHandlerImpl();
-        handler.setAgencyId("1");
         Calendar cal = Calendar.getInstance();
         cal.set(2018, Calendar.JULY, 1, 13, 0, 0);
         handler.setTime(cal.getTimeInMillis());
         handler.setTimeZone(ZoneId.of("America/New_York"));
 
         // some mocks needed for getting trips incident on stops
-        GtfsRealtimeEntitySource entitySource = new MockEntitySource();
-        handler.setEntitySource(entitySource);
+        EntityIdService entityIdService = mock(MockEntityIdService.class);
+        when(entityIdService.getStopId(anyString())).thenCallRealMethod();
+        handler.setEntityIdService(entityIdService);
         StopTimeService stopTimeService = mock(StopTimeService.class);
         Date from = Date.from(LocalDate.of(2018, 7, 1).atStartOfDay(ZoneId.of("America/New_York")).toInstant());
         Date to = Date.from(LocalDate.of(2018, 7, 2).atStartOfDay(ZoneId.of("America/New_York")).toInstant());
