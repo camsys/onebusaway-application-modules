@@ -67,12 +67,5 @@ public interface TripPlannerGraph {
 
   public RouteEntry getRouteForId(AgencyAndId id);
 
-  public boolean removeStopTime(AgencyAndId tripId, AgencyAndId stopId);
-
-  public boolean updateStopTime(AgencyAndId tripId, AgencyAndId stopId, int originalArrivalTime, int originalDepartureTime,
-                                int newArrivalTime, int newDepartureTime);
-
-  public boolean insertStopTime(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime, double shapeDistanceTravelled);
-
   public boolean updateBlockIndices(TripEntryImpl tripEntry);
 }
