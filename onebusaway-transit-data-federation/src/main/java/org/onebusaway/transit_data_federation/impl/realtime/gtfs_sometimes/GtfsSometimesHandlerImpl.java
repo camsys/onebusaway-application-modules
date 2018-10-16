@@ -47,7 +47,6 @@ import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.AgencyService;
 import org.onebusaway.transit_data_federation.services.StopTimeService;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
-import org.onebusaway.transit_data_federation.services.shapes.ShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
@@ -85,8 +84,6 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     private GtfsRealtimeEntitySource _entitySource;
 
-    private ShapePointService _shapePointsService;
-
     private NarrativeService _narrativeService;
 
     private RefreshService _refreshService;
@@ -114,11 +111,6 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     @Autowired
     public void setAgencyService(AgencyService agencyService) {
         _agencyService = agencyService;
-    }
-
-    @Autowired
-    public void setShapePointsService(ShapePointService shapePointsService) {
-        _shapePointsService = shapePointsService;
     }
 
     @Autowired
@@ -218,7 +210,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         List<TripChange> tripChanges = getAllTripChanges(activeChanges);
 
         for (ShapePoints shapePoints : shapesChanges) {
-            if (_shapePointsService.addShape(shapePoints)) {
+            if (_dao.addShape(shapePoints)) {
                 nSuccess++;
             }
         }
@@ -513,6 +505,10 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         return _dao.updateStopTimesForTrip(tripEntry, stopTimes, shapeId);
     }
 
+    List<StopTimeEntry> computeNewStopTimes(TripChange change, TripEntryImpl tripEntry) {
+        return computeNewStopTimes(change, tripEntry, new ArrayList<>(tripEntry.getStopTimes()));
+    }
+
     List<StopTimeEntry> computeNewStopTimes(TripChange change, TripEntryImpl tripEntry, List<StopTimeEntry> stopTimes) {
 
         // Removed stops
@@ -557,7 +553,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                 int insertPosition = 0;
                 for (int i = stopTimes.size() - 1; i >= 0; i--) {
                     StopTimeEntry ste = stopTimes.get(i);
-                    if (shapeDistanceTravelled != null) {
+                    if (shapeDistanceTravelled != null && shapeDistanceTravelled > 0) {
                         // we have shape distance, use it to determine insertion position
                         if (shapeDistanceTravelled > ste.getShapeDistTraveled()) {
                             insertPosition = i + 1;
