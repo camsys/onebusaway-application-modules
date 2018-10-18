@@ -92,6 +92,8 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     private ZoneId _timeZone = null;
 
+    private boolean _isApplying = false;
+
     private static final Logger _log = LoggerFactory.getLogger(GtfsSometimesHandlerImpl.class);
 
     @Autowired
@@ -141,6 +143,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     @Override
     public int handleServiceChanges(Collection<ServiceChange> serviceChanges) {
+        _isApplying = true;
         /*
         Currently handled:
          * adding shapes (do this first so trips can use the new shapes)
@@ -188,6 +191,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         if (nSuccess > 0) {
             forceFlush();
         }
+        _isApplying = false;
         return nSuccess;
     }
 
@@ -195,6 +199,11 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     @Override
     public boolean handleServiceChange(ServiceChange change) {
         return handleServiceChanges(Collections.singleton(change)) > 0;
+    }
+
+    @Override
+    public boolean isApplying() {
+        return _isApplying;
     }
 
     List<ServiceChange> filterServiceChanges(Collection<ServiceChange> changes) {
