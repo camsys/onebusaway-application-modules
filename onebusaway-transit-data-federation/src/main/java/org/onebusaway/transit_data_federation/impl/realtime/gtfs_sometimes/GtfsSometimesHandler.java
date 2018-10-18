@@ -35,4 +35,9 @@ public interface GtfsSometimesHandler {
      * @return true if ServiceChange fully successfully handled.
      */
     boolean handleServiceChange(ServiceChange serviceChange);
+
+    /**
+     * Return true if handler is currently applying service changes.
+     */
+    boolean isApplying();
 }

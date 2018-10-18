@@ -139,6 +139,6 @@ public class GtfsSometimesJsonClientImpl {
         }
         int total = changes.size(),
                 success = _gtfsSometimesHandler.handleServiceChanges(changes);
-        _log.info("Service changes: processed {} / {}", success, total);
+        _log.info("Service changes: processed {} service changes, corresponding to {} successful internal changes", total, success);
     }
 }
