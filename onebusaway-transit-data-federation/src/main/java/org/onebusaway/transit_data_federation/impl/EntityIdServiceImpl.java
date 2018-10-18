@@ -17,20 +17,18 @@ package org.onebusaway.transit_data_federation.impl;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.services.calendar.CalendarService;
-import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.AgencyService;
 import org.onebusaway.transit_data_federation.services.EntityIdService;
-import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
-import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 @Component
 public class EntityIdServiceImpl implements EntityIdService {
@@ -65,118 +63,27 @@ public class EntityIdServiceImpl implements EntityIdService {
 
     @Override
     public AgencyAndId getTripId(String tripId) {
-        TripEntry trip = getTrip(tripId);
-        if (trip != null)
-            return trip.getId();
-
-        _log.warn("trip not found with id \"{}\"", tripId);
-
-        return new AgencyAndId(getDefaultAgencyId(), tripId);
+        return getId(_transitGraphDao::getTripEntryForId, tripId);
     }
 
     @Override
     public AgencyAndId getStopId(String stopId) {
-        for (String agencyId : getAgencyIds()) {
-            AgencyAndId id = new AgencyAndId(agencyId, stopId);
-            StopEntry stop = _transitGraphDao.getStopEntryForId(id);
-            if (stop != null)
-                return id;
-        }
-
-        try {
-            AgencyAndId id = AgencyAndId.convertFromString(stopId);
-            StopEntry stop = _transitGraphDao.getStopEntryForId(id);
-            if (stop != null)
-                return id;
-        } catch (IllegalArgumentException ex) {
-
-        }
-
-        _log.warn("stop not found with id \"{}\"", stopId);
-
-        return new AgencyAndId(getDefaultAgencyId(), stopId);
+        return getId(_transitGraphDao::getStopEntryForId, stopId);
     }
 
     @Override
     public AgencyAndId getRouteId(String routeId) {
-        for (String agencyId : getAgencyIds()) {
-            AgencyAndId id = new AgencyAndId(agencyId, routeId);
-            RouteEntry route = _transitGraphDao.getRouteForId(id);
-            if (route != null)
-                return route.getParent().getId();
-        }
-
-        try {
-            AgencyAndId id = AgencyAndId.convertFromString(routeId);
-            RouteEntry route = _transitGraphDao.getRouteForId(id);
-            if (route != null)
-                return route.getParent().getId();
-        } catch (IllegalArgumentException ex) {
-
-        }
-
-        _log.warn("route not found with id \"{}\"", routeId);
-
-        return new AgencyAndId(getDefaultAgencyId(), routeId);
+        return getId(_transitGraphDao::getRouteForId, r -> r.getParent().getId(), Objects::nonNull, routeId);
     }
 
     @Override
     public AgencyAndId getShapeId(String shapeId) {
-        for (String agencyId : getAgencyIds()) {
-            AgencyAndId id = new AgencyAndId(agencyId, shapeId);
-            ShapePoints shape = _transitGraphDao.getShape(id);
-            if (shape != null)
-                return id;
-        }
-
-        try {
-            AgencyAndId id = AgencyAndId.convertFromString(shapeId);
-            ShapePoints shape = _transitGraphDao.getShape(id);
-            if (shape != null)
-                return id;
-        } catch (IllegalArgumentException ex) {
-
-        }
-
-        _log.warn("shape not found with id \"{}\"", shapeId);
-
-        return new AgencyAndId(getDefaultAgencyId(), shapeId);
-    }
-
-    private TripEntry getTrip(String tripId) {
-
-        for (String agencyId : getAgencyIds()) {
-            AgencyAndId id = new AgencyAndId(agencyId, tripId);
-            TripEntry trip = _transitGraphDao.getTripEntryForId(id);
-            if (trip != null)
-                return trip;
-        }
-
-        try {
-            AgencyAndId id = AgencyAndId.convertFromString(tripId);
-            TripEntry trip = _transitGraphDao.getTripEntryForId(id);
-            if (trip != null)
-                return trip;
-        } catch (IllegalArgumentException ex) {
-
-        }
-        return null;
+        return getId(_transitGraphDao::getShape, shapeId);
     }
 
     @Override
     public AgencyAndId getServiceId(String serviceId) {
-        if (_calendarService != null) {
-            for (String agencyId : getAgencyIds()) {
-                AgencyAndId id = new AgencyAndId(agencyId, serviceId);
-                if (!_calendarService.getServiceDatesForServiceId(id).isEmpty()) {
-                    return id;
-                }
-            }
-        }
-
-        _log.warn("serviceId not found with id \"{}\"", serviceId);
-
-        return new AgencyAndId(getDefaultAgencyId(), serviceId);
+        return getId(_calendarService::getServiceDatesForServiceId, null, s -> !s.isEmpty(), serviceId);
     }
 
     @Override
@@ -191,4 +98,31 @@ public class EntityIdServiceImpl implements EntityIdService {
         return _agencyService.getAllAgencyIds();
     }
 
+    private <T> AgencyAndId getId(Function<AgencyAndId, T> getEntity, String bareId) {
+        return getId(getEntity, null, Objects::nonNull, bareId);
+    }
+
+    private <T> AgencyAndId getId(Function<AgencyAndId, T> getEntity, Function<T, AgencyAndId> getId, Predicate<T> predicate, String bareId) {
+        for (String agencyId : getAgencyIds()) {
+            AgencyAndId id = new AgencyAndId(agencyId, bareId);
+            T entity = getEntity.apply(id);
+            if (predicate.test(entity))
+                return getId == null ? id : getId.apply(entity);
+        }
+
+        if (bareId.indexOf(AgencyAndId.ID_SEPARATOR) >= 0) {
+            try {
+                AgencyAndId id = AgencyAndId.convertFromString(bareId);
+                T entity = getEntity.apply(id);
+                if (entity != null)
+                    return id;
+            } catch (IllegalArgumentException ex) {
+                // pass
+            }
+        }
+
+        _log.warn("entity not found with id \"{}\"", bareId);
+
+        return new AgencyAndId(getDefaultAgencyId(), bareId);
+    }
 }
