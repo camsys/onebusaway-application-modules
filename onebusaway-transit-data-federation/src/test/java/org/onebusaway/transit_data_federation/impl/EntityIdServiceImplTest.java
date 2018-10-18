@@ -18,15 +18,20 @@ package org.onebusaway.transit_data_federation.impl;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.calendar.ServiceDate;
+import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.transit_data_federation.impl.transit_graph.RouteCollectionEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 
 public class EntityIdServiceImplTest {
@@ -35,6 +40,8 @@ public class EntityIdServiceImplTest {
 
   private TransitGraphDao _dao;
 
+  private CalendarService _calendarService;
+
   @Before
   public void before() {
     _service = new EntityIdServiceImpl();
@@ -42,6 +49,10 @@ public class EntityIdServiceImplTest {
 
     _dao = Mockito.mock(TransitGraphDao.class);
     _service.setTransitGraphDao(_dao);
+
+    _calendarService = Mockito.mock(CalendarService.class);
+    _service.setCalendarService(_calendarService);
+
   }
 
   @Test
@@ -78,6 +89,16 @@ public class EntityIdServiceImplTest {
     tripId = _service.getTripId("T11");
     assertEquals("1", tripId.getAgencyId());
     assertEquals("T11", tripId.getId());
+
+    // test assume agencyAndId
+    tripId = _service.getTripId("2_T10");
+    assertEquals("2", tripId.getAgencyId());
+    assertEquals("T10", tripId.getId());
+
+    // Looks like AgencyAndId but does not exist in graph.
+    tripId = _service.getTripId("1_T11");
+    assertEquals("1", tripId.getAgencyId());
+    assertEquals("1_T11", tripId.getId());
   }
 
 
@@ -94,6 +115,39 @@ public class EntityIdServiceImplTest {
     stopId = _service.getStopId("S11");
     assertEquals("1", stopId.getAgencyId());
     assertEquals("S11", stopId.getId());
+  }
+
+  @Test
+  public void testGetShapeId() {
+
+    ShapePoints shapePoints = new ShapePoints();
+    shapePoints.setShapeId(new AgencyAndId("2", "shape0"));
+    Mockito.when(_dao.getShape(shapePoints.getShapeId())).thenReturn(shapePoints);
+
+    AgencyAndId shapeId = _service.getShapeId("shape0");
+    assertEquals("2", shapeId.getAgencyId());
+    assertEquals("shape0", shapeId.getId());
+
+    shapeId = _service.getStopId("shape1");
+    assertEquals("1", shapeId.getAgencyId());
+    assertEquals("shape1", shapeId.getId());
+  }
+
+  @Test
+  public void testGetServiceId() {
+
+    AgencyAndId serviceId = new AgencyAndId("2", "date0");
+    Set<ServiceDate> dates = new HashSet<>();
+    dates.add(new ServiceDate());
+    Mockito.when(_calendarService.getServiceDatesForServiceId(serviceId)).thenReturn(dates);
+
+    AgencyAndId svcId = _service.getServiceId("date0");
+    assertEquals("2", svcId.getAgencyId());
+    assertEquals("date0", svcId.getId());
+
+    svcId = _service.getServiceId("date1");
+    assertEquals("1", svcId.getAgencyId());
+    assertEquals("date1", svcId.getId());
   }
 
 }
