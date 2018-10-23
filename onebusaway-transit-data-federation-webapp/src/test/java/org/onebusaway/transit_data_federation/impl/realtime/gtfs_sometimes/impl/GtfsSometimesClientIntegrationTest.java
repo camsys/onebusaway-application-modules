@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes;
+package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.impl;
 
 import com.camsys.transit.servicechange.ServiceChange;
 import com.camsys.transit.servicechange.ServiceChangeType;
@@ -44,6 +44,8 @@ import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.StopTimeEntriesFactory;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.GtfsSometimesHandler;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.TimeService;
 import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
@@ -101,6 +103,9 @@ public class GtfsSometimesClientIntegrationTest {
 
     @Autowired
     private StopTimeEntriesFactory _stopTimesEntriesFactory;
+
+    @Autowired
+    private TimeService _timeService;
 
     private static final Logger _log = LoggerFactory.getLogger(GtfsSometimesClientIntegrationTest.class);
 
@@ -184,8 +189,8 @@ public class GtfsSometimesClientIntegrationTest {
         ((GtfsSometimesHandlerImpl) _handler).forceFlush();
 
         // set handler time
-        ((GtfsSometimesHandlerImpl) _handler).setTime(dateAsLong("2018-08-23 12:00"));
-        ((GtfsSometimesHandlerImpl) _handler).setTimeZone(ZoneId.of("America/New_York"));
+        ((TimeServiceImpl) _timeService).setTime(dateAsLong("2018-08-23 12:00"));
+        ((TimeServiceImpl) _timeService).setTimeZone(ZoneId.of("America/New_York"));
     }
 
     private TripNarrative tripNarrative(Trip trip) {

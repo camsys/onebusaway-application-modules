@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes;
+package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.impl;
 
 import com.camsys.transit.servicechange.DateDescriptor;
 import com.camsys.transit.servicechange.EntityDescriptor;
@@ -21,50 +21,37 @@ import com.camsys.transit.servicechange.ServiceChange;
 import com.camsys.transit.servicechange.ServiceChangeType;
 import com.camsys.transit.servicechange.Table;
 import com.camsys.transit.servicechange.field_descriptors.AbstractFieldDescriptor;
-import com.camsys.transit.servicechange.field_descriptors.ShapesFields;
 import com.camsys.transit.servicechange.field_descriptors.StopTimesFields;
 import com.camsys.transit.servicechange.field_descriptors.StopsFields;
 import com.camsys.transit.servicechange.field_descriptors.TripsFields;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-import org.onebusaway.container.cache.CacheableMethodManager;
-import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.model.ShapePoint;
 import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
-import org.onebusaway.transit_data_federation.impl.RefreshableResources;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.ShapeChange;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.StopChange;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChange;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChangeSet;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.TimeService;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.TripChangeHandler;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
-import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.narrative.RouteCollectionNarrative;
-import org.onebusaway.transit_data_federation.model.narrative.StopNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.EntityIdService;
 import org.onebusaway.transit_data_federation.services.StopTimeService;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.tripplanner.StopTimeInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,9 +59,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.stream.Collectors;
 
-public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
+@Component
+public class TripChangeHandlerImpl implements TripChangeHandler {
+
+    private static final Logger _log = LoggerFactory.getLogger(TripChangeHandlerImpl.class);
 
     private TransitGraphDao _dao;
 
@@ -82,41 +71,13 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     private NarrativeService _narrativeService;
 
-    private RefreshService _refreshService;
-
     private StopTimeService _stopTimeService;
 
-    private CacheableMethodManager _cacheableMethodManager;
-
-    private CacheableMethodManager _cacheableAnnotationInterceptor;
-
-    // for debugging
-    private long _time = -1;
-
-    private ZoneId _timeZone = null;
-
-    private boolean _isApplying = false;
-
-    private static final Logger _log = LoggerFactory.getLogger(GtfsSometimesHandlerImpl.class);
+    private TimeService _timeService;
 
     @Autowired
     public void setTransitGraphDao(TransitGraphDao dao) {
         _dao = dao;
-    }
-
-    @Autowired
-    public void setNarrativeService(NarrativeService narrativeService) {
-        _narrativeService = narrativeService;
-    }
-
-    @Autowired
-    public void setRefreshService(RefreshService refreshService) {
-        _refreshService = refreshService;
-    }
-
-    @Autowired
-    public void setStopTimeService(StopTimeService stopTimeService) {
-        _stopTimeService = stopTimeService;
     }
 
     @Autowired
@@ -125,178 +86,22 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     }
 
     @Autowired
-    @Qualifier("cacheableMethodManager")
-    public void setCacheableMethodManager(CacheableMethodManager cacheableMethodManager) {
-        _cacheableMethodManager = cacheableMethodManager;
+    public void setNarrativeService(NarrativeService narrativeService) {
+        _narrativeService = narrativeService;
     }
 
     @Autowired
-    @Qualifier("cacheableAnnotationInterceptor")
-    public void setCacheableAnnotationInterceptor(CacheableMethodManager cacheableAnnotationInterceptor) {
-        _cacheableAnnotationInterceptor = cacheableAnnotationInterceptor;
+    public void setStopTimeService(StopTimeService stopTimeService) {
+        _stopTimeService = stopTimeService;
     }
 
-    public void setTime(long time) {
-        _time = time;
-    }
-
-    public void setTimeZone(ZoneId timeZone) {
-        _timeZone = timeZone;
+    @Autowired
+    public void setTimeService(TimeService timeService) {
+        _timeService = timeService;
     }
 
     @Override
-    public int handleServiceChanges(Collection<ServiceChange> serviceChanges) {
-        _isApplying = true;
-        /*
-        Currently handled:
-         * adding shapes (do this first so trips can use the new shapes)
-         * trip modifications:
-         *   inserted stop times
-         *   deleted stop times
-         *   altered stop times
-         *   shape ID change
-         */
-        int nSuccess = 0;
-        List<ServiceChange> activeChanges = filterServiceChanges(serviceChanges);
-
-        // The ordering is tricky. Because we need to use StopEntryImpl to look up stops for trip,
-        // we cannot apply StopChanges until we create TripChanges.
-        // TripChanges also need to be applied AFTER shape and stop changes so that distances along
-        // trip are calculated correctly.
-
-        List<ShapeChange> shapesChanges = getAllShapeChanges(activeChanges);
-
-        List<StopChange> stopChanges = getAllStopChanges(activeChanges);
-
-        List<TripChange> tripChanges = getAllTripChanges(activeChanges);
-
-        for (ShapeChange shapeChange : shapesChanges) {
-            if (handleShapeChange(shapeChange)) {
-                nSuccess++;
-            }
-        }
-
-        for (StopChange change : stopChanges) {
-            if (handleStopChange(change)) {
-                nSuccess++;
-            }
-        }
-
-        for (TripChange change : tripChanges) {
-            _log.info("Handling changes for trip {}", change.getTripId());
-            if (handleTripChanges(change)) {
-                nSuccess++;
-            } else {
-                _log.info("Unable to apply changes for trip {}", change.getTripId());
-            }
-         }
-
-        if (nSuccess > 0) {
-            forceFlush();
-        }
-        _isApplying = false;
-        return nSuccess;
-    }
-
-
-    @Override
-    public boolean handleServiceChange(ServiceChange change) {
-        return handleServiceChanges(Collections.singleton(change)) > 0;
-    }
-
-    @Override
-    public boolean isApplying() {
-        return _isApplying;
-    }
-
-    List<ServiceChange> filterServiceChanges(Collection<ServiceChange> changes) {
-       return changes.stream().filter(this::isServiceChangeOk).collect(Collectors.toList());
-    }
-
-    boolean isServiceChangeOk(ServiceChange change) {
-        if (!validateServiceChange(change)) {
-            _log.debug("service change is invalid");
-            return false;
-        }
-        if (!dateIsApplicable(change)) {
-            _log.debug("Service change is not applicable to date.");
-            return false;
-        }
-        return true;
-    }
-
-    List<ShapeChange> getAllShapeChanges(Collection<ServiceChange> changes) {
-        List<ShapeChange> shapeChanges = new ArrayList<>();
-
-        Multimap<String, ShapesFields> shapesFieldsMap = ArrayListMultimap.create();
-        for (ServiceChange change : changes) {
-            if (Table.SHAPES.equals(change.getTable())
-                    && ServiceChangeType.ADD.equals(change.getServiceChangeType())) {
-                for (AbstractFieldDescriptor desc : change.getAffectedField()) {
-                    if (desc instanceof ShapesFields) {
-                        ShapesFields shapesFields = (ShapesFields) desc;
-                        shapesFieldsMap.put(shapesFields.getShapeId(), shapesFields);
-                    }
-                }
-            }
-        }
-
-        for (String id : shapesFieldsMap.keySet()) {
-            List<ShapesFields> shapeList = new ArrayList<>(shapesFieldsMap.get(id));
-            int nPoints = shapeList.size();
-            double[] lat = new double[nPoints];
-            double[] lon = new double[nPoints];
-            double[] distTraveled = new double[nPoints];
-            shapeList.sort(Comparator.comparingInt(ShapesFields::getShapePtSequence));
-            int i = 0;
-            for (ShapesFields fields : shapeList) {
-                lat[i] = fields.getShapePtLat();
-                lon[i] = fields.getShapePtLon();
-                if (fields.getShapeDistTraveled() != null && fields.getShapeDistTraveled() != ShapePoint.MISSING_VALUE) {
-                    distTraveled[i] = fields.getShapeDistTraveled();
-                }
-                i++;
-            }
-            ShapePoints shapePoints = new ShapePoints();
-            shapePoints.setLats(lat);
-            shapePoints.setLons(lon);
-            shapePoints.setDistTraveled(distTraveled);
-            AgencyAndId shapeId = _entityIdService.getShapeId(id);
-            shapePoints.setShapeId(shapeId);
-            shapePoints.ensureDistTraveled();
-            shapeChanges.add(new ShapeChange(shapeId, shapePoints));
-        }
-
-        return shapeChanges;
-    }
-
-    List<StopChange> getAllStopChanges(Collection<ServiceChange> changes) {
-        List<StopChange> stopChanges = new ArrayList<>();
-        for (ServiceChange change : changes) {
-            if (Table.STOPS.equals(change.getTable())) {
-                if (ServiceChangeType.ALTER.equals(change.getServiceChangeType())) {
-                    for (EntityDescriptor entity : change.getAffectedEntity()) {
-                        StopChange stopChange = new StopChange(entity.getStopId());
-                        StopsFields stopsFields = (StopsFields) change.getAffectedField().get(0);
-                        if (stopsFields.getStopName() != null) {
-                            stopChange.setStopName(stopsFields.getStopName());
-                        }
-                        if (stopsFields.getStopLat() != null) {
-                            stopChange.setStopLat(stopsFields.getStopLat());
-                        }
-                        if (stopsFields.getStopLon() != null) {
-                            stopChange.setStopLon(stopsFields.getStopLon());
-                        }
-                        stopChanges.add(stopChange);
-                    }
-                } else {
-                    _log.info("Type {} not handled for table {}", change.getServiceChangeType(), change.getTable());
-                }
-            }
-        }
-        return stopChanges;
-    }
-    List<TripChange> getAllTripChanges(Collection<ServiceChange> changes) {
+    public TripChangeSet getAllTripChanges(Collection<ServiceChange> changes) {
         Map<String, TripChange> changesByTrip = new HashMap<>();
         for (ServiceChange serviceChange : changes) {
             if (Table.TRIPS.equals(serviceChange.getTable())) {
@@ -377,63 +182,22 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                 }
             }
         }
-        return new ArrayList<>(changesByTrip.values());
+        List<TripChange> tripChanges = new ArrayList<>(changesByTrip.values());
+        return new TripChangeSet(tripChanges);
     }
 
-    void forceFlush() {
-        _refreshService.refresh(RefreshableResources.BLOCK_INDEX_DATA_GRAPH);
-        try {
-            if (_cacheableMethodManager != null) {
-                _cacheableMethodManager.flush();
-            }
-            if (_cacheableAnnotationInterceptor != null) {
-                _cacheableAnnotationInterceptor.flush();
-            }
-        } catch (Throwable t) {
-            _log.error("issue flushing cache:", t);
-        }
-    }
-
-    private boolean validateServiceChange(ServiceChange change) {
-        if (change.getAffectedDates().isEmpty()) {
-            _log.info("affected dates is empty");
-            return false;
-        }
-        switch(change.getServiceChangeType()) {
-            case ADD:
-                return change.getAffectedEntity().isEmpty() && !change.getAffectedField().isEmpty();
-            case ALTER:
-                return !change.getAffectedEntity().isEmpty() && change.getAffectedField().size() == 1;
-            case DELETE:
-                return !change.getAffectedEntity().isEmpty() && change.getAffectedField().isEmpty();
-        }
-        return false;
-    }
-
-    private boolean dateIsApplicable(ServiceChange change) {
-        LocalDate date = getCurrentDate();
-        for (DateDescriptor dateDescriptor : change.getAffectedDates()) {
-            if (dateDescriptor.getDate() != null && dateDescriptor.getDate().isEqual(date)) {
-                return true;
-            }
-            if (dateDescriptor.getFrom() != null) {
-                if (dateDescriptor.getTo() != null) {
-                    LocalDate from = dateDescriptor.getFrom();
-                    LocalDate to = dateDescriptor.getTo();
-                    if ((date.isEqual(from) || date.isAfter(from)) && (date.isEqual(to) || date.isBefore(to))) {
-                        return true;
-                    }
-                } else {
-                    LocalDate from = dateDescriptor.getFrom();
-                    if ((date.isEqual(from) || date.isAfter(from))) {
-                        return true;
-                    }
-                }
-            } else if (dateDescriptor.getTo() != null) {
-                _log.error("Not supported: to-date with no from-date specified.");
+    @Override
+    public int handleTripChanges(TripChangeSet changeset) {
+        int nSuccess = 0;
+        for (TripChange change : changeset.getTripChanges()) {
+            _log.info("Handling changes for trip {}", change.getTripId());
+            if (handleTripChanges(change)) {
+                nSuccess++;
+            } else {
+                _log.info("Unable to apply changes for trip {}", change.getTripId());
             }
         }
-        return false;
+        return nSuccess;
     }
 
     private boolean handleTripChanges(TripChange change) {
@@ -445,7 +209,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
             tripEntry = convertTripFieldsToTripEntry(change.getAddedTripsFields());
             stopTimes = new ArrayList<>();
         } else if (change.isDelete()) {
-          return _dao.deleteTripEntryForId(tripId);
+            return _dao.deleteTripEntryForId(tripId);
         } else {
             tripEntry = (TripEntryImpl) _dao.getTripEntryForId(tripId);
             if (tripEntry == null) {
@@ -551,38 +315,16 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         return stopTimes;
     }
 
-    private boolean handleStopChange(StopChange change) {
-        AgencyAndId stopId = _entityIdService.getStopId(change.getStopId());
-        StopEntry oldStopEntry = _dao.getStopEntryForId(stopId);
-        StopNarrative narrative = _narrativeService.removeStop(stopId);
-        String stopName = change.hasStopName() ? change.getStopName() : narrative.getName();
-        int index = oldStopEntry.getIndex();
-        double lat = change.hasStopLat() ? change.getStopLat() : oldStopEntry.getStopLat();
-        double lon = change.hasStopLon() ? change.getStopLon() : oldStopEntry.getStopLon();
-        StopEntryImpl stopEntry = new StopEntryImpl(stopId, lat, lon);
-        stopEntry.setIndex(index);
-        stopEntry.setWheelchairBoarding(oldStopEntry.getWheelchairBoarding());
-        _narrativeService.addStop(stopEntry, stopName);
-        if (change.hasStopLat() || change.hasStopLon()) {
-            _dao.removeStopEntry(stopId);
-            _dao.addStopEntry(stopEntry);
-        }
-        return true;
-    }
-
-    private boolean handleShapeChange(ShapeChange shapeChange) {
-        return _dao.addShape(shapeChange.getAddedShapePoints());
-    }
 
     private List<AgencyAndId> getTripsForStopAndDateRange(AgencyAndId stopId, DateDescriptor range) {
         Date from, to;
         LocalDate fromDate = range.getFrom() != null ? range.getFrom() : range.getDate();
-        from = Date.from(fromDate.atStartOfDay(getTimeZone()).toInstant());
+        from = Date.from(fromDate.atStartOfDay(_timeService.getTimeZone()).toInstant());
         if (range.getTo() != null) {
-            to = Date.from(range.getTo().atStartOfDay(getTimeZone()).toInstant());
+            to = Date.from(range.getTo().atStartOfDay(_timeService.getTimeZone()).toInstant());
         } else {
             // If there is no "to", end tonight at midnight.
-            to = Date.from(getCurrentDate().plusDays(1).atStartOfDay(getTimeZone()).toInstant());
+            to = Date.from(_timeService.getCurrentDate().plusDays(1).atStartOfDay(_timeService.getTimeZone()).toInstant());
         }
         List<AgencyAndId> tripIds = new ArrayList<>();
         List<StopTimeInstance> instances = _stopTimeService.getStopTimeInstancesInTimeRange(stopId, from, to);
@@ -590,33 +332,6 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
             tripIds.add(instance.getTrip().getTrip().getId());
         }
         return tripIds;
-    }
-
-    private StopTimeEntry createStopTimeEntry(TripEntryImpl tripEntry, StopEntryImpl stopEntry, int arrivalTime, int departureTime, double shapeDistanceTravelled, int gtfsSequence) {
-        StopTimeEntryImpl stei = new StopTimeEntryImpl();
-        stei.setTrip(tripEntry);
-        stei.setStop(stopEntry);
-        stei.setArrivalTime(arrivalTime);
-        stei.setDepartureTime(departureTime);
-        stei.setShapeDistTraveled(shapeDistanceTravelled);
-        stei.setGtfsSequence(gtfsSequence);
-        return stei;
-    }
-
-    private TripNarrative convertTripFieldsToTripNarrative(TripsFields fields) {
-        TripNarrative.Builder builder = TripNarrative.builder();
-        if (fields.getTripHeadsign() != null) {
-            builder.setTripHeadsign(fields.getTripHeadsign());
-        }
-        if (fields.getTripShortName() != null) {
-            builder.setTripShortName(fields.getTripShortName());
-        }
-        if (fields.getRouteId() != null) {
-            AgencyAndId routeId = _entityIdService.getRouteId(fields.getRouteId());
-            RouteCollectionNarrative routeNarrative = _narrativeService.getRouteCollectionForId(routeId);
-            builder.setRouteShortName(routeNarrative.getShortName());
-        }
-        return builder.create();
     }
 
     private TripEntryImpl convertTripFieldsToTripEntry(TripsFields fields) {
@@ -657,23 +372,30 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         return trip;
     }
 
-    private long getCurrentTime() {
-        if (_time != -1)
-            return _time;
-        return new Date().getTime();
-    }
-
-    private LocalDate getCurrentDate() {
-        return Instant.ofEpochMilli(getCurrentTime())
-                .atZone(getTimeZone()).toLocalDate();
-    }
-
-    private ZoneId getTimeZone() {
-        if (_timeZone != null) {
-            return _timeZone;
-        } else {
-            return ZoneId.systemDefault();
+    private TripNarrative convertTripFieldsToTripNarrative(TripsFields fields) {
+        TripNarrative.Builder builder = TripNarrative.builder();
+        if (fields.getTripHeadsign() != null) {
+            builder.setTripHeadsign(fields.getTripHeadsign());
         }
+        if (fields.getTripShortName() != null) {
+            builder.setTripShortName(fields.getTripShortName());
+        }
+        if (fields.getRouteId() != null) {
+            AgencyAndId routeId = _entityIdService.getRouteId(fields.getRouteId());
+            RouteCollectionNarrative routeNarrative = _narrativeService.getRouteCollectionForId(routeId);
+            builder.setRouteShortName(routeNarrative.getShortName());
+        }
+        return builder.create();
+    }
+
+    private StopTimeEntry createStopTimeEntry(TripEntryImpl tripEntry, StopEntryImpl stopEntry, int arrivalTime, int departureTime, double shapeDistanceTravelled, int gtfsSequence) {
+        StopTimeEntryImpl stei = new StopTimeEntryImpl();
+        stei.setTrip(tripEntry);
+        stei.setStop(stopEntry);
+        stei.setArrivalTime(arrivalTime);
+        stei.setDepartureTime(departureTime);
+        stei.setShapeDistTraveled(shapeDistanceTravelled);
+        stei.setGtfsSequence(gtfsSequence);
+        return stei;
     }
 }
-

@@ -21,6 +21,7 @@ import com.camsys.transit.servicechange.FeedIncrementality;
 import com.camsys.transit.servicechange.ServiceChange;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.GtfsSometimesHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
