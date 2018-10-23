@@ -46,8 +46,7 @@
         <property name="password" value="" />
     </bean>
 
-
-    <bean class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.GtfsSometimesHandlerImpl" />
+    <context:component-scan base-package="org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.impl"/>
     
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
