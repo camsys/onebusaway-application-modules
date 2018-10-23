@@ -22,6 +22,7 @@ import com.camsys.transit.servicechange.field_descriptors.StopTimesFields;
 import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.ShapeChange;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.StopChange;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChange;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockTripEntryImpl;
@@ -58,6 +59,11 @@ public class GtfsSometimesHandlerImplTest {
         public AgencyAndId getStopId(String id) {
             return new AgencyAndId("1", id);
         }
+
+        @Override
+        public AgencyAndId getShapeId(String id) {
+            return new AgencyAndId("1", id);
+        }
     }
 
     private GtfsSometimesHandlerImpl handler;
@@ -77,6 +83,7 @@ public class GtfsSometimesHandlerImplTest {
         // some mocks needed for getting trips incident on stops
         EntityIdService entityIdService = mock(MockEntityIdService.class);
         when(entityIdService.getStopId(anyString())).thenCallRealMethod();
+        when(entityIdService.getShapeId(anyString())).thenCallRealMethod();
         handler.setEntityIdService(entityIdService);
         StopTimeService stopTimeService = mock(StopTimeService.class);
         Date from = Date.from(LocalDate.of(2018, 7, 1).atStartOfDay(ZoneId.of("America/New_York")).toInstant());
@@ -464,6 +471,34 @@ public class GtfsSometimesHandlerImplTest {
         List<TripChange> tripChanges = handler.getAllTripChanges(Arrays.asList(change));
         assertEquals(1, tripChanges.size());
         assertEquals("tripA", tripChanges.get(0).getTripId());
+    }
+
+    // Shape change
+
+    @Test
+    public void shapeChangeTest() {
+        ServiceChange change1 = serviceChange(Table.SHAPES,
+                ServiceChangeType.ADD,
+                null,
+                Arrays.asList(shapeFields("1", 0, 0, 1),
+                        shapeFields("2", 0, 0, 1),
+                        shapeFields("1", 0, 0, 2)),
+                dateDescriptors(LocalDate.of(2018, 6, 1), LocalDate.of(2018, 7, 1)));
+        ServiceChange change2 = serviceChange(Table.SHAPES,
+                ServiceChangeType.ADD,
+                null,
+                Arrays.asList(shapeFields("1", 0, 0, 3),
+                        shapeFields("3", 0, 0, 1)),
+                dateDescriptors(LocalDate.of(2018, 6, 1), LocalDate.of(2018, 7, 1)));
+        List<ShapeChange> shapeChanges = handler.getAllShapeChanges(Arrays.asList(change1, change2));
+        assertEquals(3, shapeChanges.size());
+        shapeChanges.sort(Comparator.comparing(ShapeChange::getShapeId));
+        assertEquals("1", shapeChanges.get(0).getShapeId().getId());
+        assertEquals("2", shapeChanges.get(1).getShapeId().getId());
+        assertEquals("3", shapeChanges.get(2).getShapeId().getId());
+        assertEquals(3, shapeChanges.get(0).getAddedShapePoints().getSize());
+        assertEquals(1, shapeChanges.get(1).getAddedShapePoints().getSize());
+        assertEquals(1, shapeChanges.get(2).getAddedShapePoints().getSize());
     }
 
     // Test stoptime logic. Moved from TransitGraphDaoImplTest
