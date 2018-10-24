@@ -43,6 +43,8 @@ import java.util.stream.Collectors;
 @Component
 public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
+    private static final Logger _log = LoggerFactory.getLogger(GtfsSometimesHandlerImpl.class);
+
     private RefreshService _refreshService;
 
     private CacheableMethodManager _cacheableMethodManager;
@@ -59,7 +61,11 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     private boolean _isApplying = false;
 
-    private static final Logger _log = LoggerFactory.getLogger(GtfsSometimesHandlerImpl.class);
+    private TripChangeSet revertTripChanges;
+
+    private ShapeChangeSet revertShapeChanges;
+
+    private StopChangeSet revertStopChanges;
 
     @Autowired
     public void setRefreshService(RefreshService refreshService) {
@@ -101,6 +107,9 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     @Override
     public int handleServiceChanges(Collection<ServiceChange> serviceChanges) {
         _isApplying = true;
+
+        revertPreviousChanges();
+
         /*
         Currently handled:
          * adding shapes (do this first so trips can use the new shapes)
@@ -110,7 +119,6 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
          *   altered stop times
          *   shape ID change
          */
-        int nSuccess = 0;
         List<ServiceChange> activeChanges = filterServiceChanges(serviceChanges);
 
         // The ordering is tricky. Because we need to use StopEntryImpl to look up stops for trip,
@@ -122,10 +130,11 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         StopChangeSet stopChanges = _stopChangeHandler.getAllStopChanges(activeChanges);
         TripChangeSet tripChanges = _tripChangeHandler.getAllTripChanges(activeChanges);
 
-        nSuccess += _shapeChangeHandler.handleShapeChanges(shapesChanges);
-        nSuccess += _stopChangeHandler.handleStopChanges(stopChanges);
-        nSuccess += _tripChangeHandler.handleTripChanges(tripChanges);
+        revertShapeChanges = _shapeChangeHandler.handleShapeChanges(shapesChanges);
+        revertStopChanges = _stopChangeHandler.handleStopChanges(stopChanges);
+        revertTripChanges = _tripChangeHandler.handleTripChanges(tripChanges);
 
+        int nSuccess = revertShapeChanges.size() + revertStopChanges.size() + revertTripChanges.size();
         if (nSuccess > 0) {
             forceFlush();
         }
@@ -159,6 +168,26 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         return true;
     }
 
+    void revertPreviousChanges() {
+        if (revertShapeChanges != null) {
+            int success = _shapeChangeHandler.handleShapeChanges(revertShapeChanges).size();
+            if (success != revertShapeChanges.size()) {
+                _log.error("Error reverting some shapes!");
+            }
+        }
+        if (revertStopChanges != null) {
+            int success = _stopChangeHandler.handleStopChanges(revertStopChanges).size();
+            if (success != revertStopChanges.size()) {
+                _log.error("Error reverting some stops!");
+            }
+        }
+        if (revertTripChanges != null) {
+            int success = _tripChangeHandler.handleTripChanges(revertTripChanges).size();
+            if (success != revertTripChanges.size()) {
+                _log.error("Error reverting some trips!");
+            }
+        }
+    }
 
     void forceFlush() {
         _refreshService.refresh(RefreshableResources.BLOCK_INDEX_DATA_GRAPH);

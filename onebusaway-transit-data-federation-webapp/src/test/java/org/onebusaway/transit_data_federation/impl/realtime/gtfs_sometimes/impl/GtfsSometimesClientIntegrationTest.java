@@ -44,8 +44,6 @@ import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.StopTimeEntriesFactory;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.GtfsSometimesHandler;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.TimeService;
 import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
@@ -96,7 +94,7 @@ public class GtfsSometimesClientIntegrationTest {
     private TransitGraphDao _graph;
 
     @Autowired
-    private GtfsSometimesHandler _handler;
+    private GtfsSometimesHandlerImpl _handler;
 
     @Autowired
     private TripBeanService _tripBeanService;
@@ -105,7 +103,7 @@ public class GtfsSometimesClientIntegrationTest {
     private StopTimeEntriesFactory _stopTimesEntriesFactory;
 
     @Autowired
-    private TimeService _timeService;
+    private TimeServiceImpl _timeService;
 
     private static final Logger _log = LoggerFactory.getLogger(GtfsSometimesClientIntegrationTest.class);
 
@@ -186,11 +184,11 @@ public class GtfsSometimesClientIntegrationTest {
             tei.setStopTimes(new ArrayList<>(stopTimes));
             assertTrue(_graph.addTripEntry(tei, tripNarrative(trip)));
         }
-        ((GtfsSometimesHandlerImpl) _handler).forceFlush();
+        _handler.forceFlush();
 
         // set handler time
-        ((TimeServiceImpl) _timeService).setTime(dateAsLong("2018-08-23 12:00"));
-        ((TimeServiceImpl) _timeService).setTimeZone(ZoneId.of("America/New_York"));
+        _timeService.setTime(dateAsLong("2018-08-23 12:00"));
+        _timeService.setTimeZone(ZoneId.of("America/New_York"));
     }
 
     private TripNarrative tripNarrative(Trip trip) {
@@ -198,17 +196,6 @@ public class GtfsSometimesClientIntegrationTest {
                 .setRouteShortName(trip.getRouteShortName())
                 .setTripHeadsign(trip.getTripHeadsign())
                 .setTripShortName(trip.getTripShortName()).create();
-    }
-
-    @Test
-    @DirtiesContext
-    public void testLoadSuccess() {
-        TripDetailsBean tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
-        assertEquals(71, tripDetails.getSchedule().getStopTimes().size());
-        List<TripStopTimeBean> stopTimes = tripDetails.getSchedule().getStopTimes();
-        TripStopTimeBean prev = stopTimes.get(14);
-        assertEquals("MTA_201644", prev.getStop().getId());
-        assertEquals(15, prev.getGtfsSequence());
     }
 
     @Test
@@ -234,6 +221,14 @@ public class GtfsSometimesClientIntegrationTest {
         assertEquals(17, next.getGtfsSequence());
         assertEquals(time(16, 10, 20), next.getArrivalTime());
         assertEquals(time(16, 10, 20), next.getDepartureTime());
+
+        // Revert
+        _handler.revertPreviousChanges();
+        tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
+        assertEquals(71, tripDetails.getSchedule().getStopTimes().size());
+        stopTimes = tripDetails.getSchedule().getStopTimes();
+        TripStopTimeBean stop = stopTimes.get(15);
+        assertEquals("MTA_201645", stop.getStop().getId());
     }
 
     @Test
@@ -264,6 +259,19 @@ public class GtfsSometimesClientIntegrationTest {
         assertEquals(6, stop2.getGtfsSequence());
         assertEquals(time(16, 33, 32), stop2.getArrivalTime());
         assertEquals(time(16, 33, 32), stop2.getDepartureTime());
+
+        // Revert
+        _handler.revertPreviousChanges();
+        tripDetails1 = getTripDetails("CA_G8-Weekday-096000_MISC_545");
+        stopTimes1 = tripDetails1.getSchedule().getStopTimes();
+        assertEquals(71, stopTimes1.size());
+        stop1 = stopTimes1.get(15);
+        assertEquals("MTA_201645", stop1.getStop().getId());
+        tripDetails2 = getTripDetails("CA_C8-Weekday-099000_S7686_307");
+        stopTimes2 = tripDetails2.getSchedule().getStopTimes();
+        assertEquals(71, stopTimes2.size());
+        stop2 = stopTimes2.get(4);
+        assertEquals("MTA_203190", stop2.getStop().getId());
     }
 
     @Test
@@ -285,6 +293,14 @@ public class GtfsSometimesClientIntegrationTest {
         assertEquals(18, stop1.getGtfsSequence());
         assertEquals(time(16, 11, 0), stop1.getArrivalTime());
         assertEquals(time(16, 11, 0), stop1.getDepartureTime());
+
+        // Revert
+        _handler.revertPreviousChanges();
+        tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
+        assertEquals(71, tripDetails.getSchedule().getStopTimes().size());
+        stopTimes1 = tripDetails.getSchedule().getStopTimes();
+        TripStopTimeBean stop = stopTimes1.get(15);
+        assertEquals("MTA_201645", stop.getStop().getId());
     }
 
     @Test
@@ -333,6 +349,14 @@ public class GtfsSometimesClientIntegrationTest {
         assertEquals(68, next.getGtfsSequence());
         assertEquals(time(16, 47, 38), next.getArrivalTime());
         assertEquals(time(16, 47, 38), next.getDepartureTime());
+
+        // Revert
+        _handler.revertPreviousChanges();
+        tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
+        assertEquals(71, tripDetails.getSchedule().getStopTimes().size());
+        stopTimes = tripDetails.getSchedule().getStopTimes();
+        TripStopTimeBean stop = stopTimes.get(15);
+        assertEquals("MTA_201645", stop.getStop().getId());
     }
 
     @Test
@@ -368,6 +392,24 @@ public class GtfsSometimesClientIntegrationTest {
         assertTrue(stopFound);
 
         assertTrue(_tds.stopHasRevenueServiceOnRoute("MTA NYCT", "MTA_200001", "MTA NYCT_S86", "1"));
+
+        // Revert
+        _handler.revertPreviousChanges();
+        _handler.forceFlush();
+        tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
+        assertEquals(71, tripDetails.getSchedule().getStopTimes().size());
+        List<TripStopTimeBean> stopTimes = tripDetails.getSchedule().getStopTimes();
+        TripStopTimeBean stopTime = stopTimes.get(15);
+        assertEquals("MTA_201645", stopTime.getStop().getId());
+
+        stopsForRouteBean = _tds.getStopsForRoute("MTA NYCT_S86");
+        stopFound = false;
+        for (StopBean stop : stopsForRouteBean.getStops()) {
+            stopFound |= stop.getId().equals("MTA_200001");
+        }
+        assertFalse(stopFound);
+
+        assertFalse(_tds.stopHasRevenueServiceOnRoute("MTA NYCT", "MTA_200001", "MTA NYCT_S86", "1"));
     }
 
     @Test
@@ -403,6 +445,16 @@ public class GtfsSometimesClientIntegrationTest {
         assertEquals(69, next.getGtfsSequence());
         assertEquals(time(16, 47, 58), next.getArrivalTime());
         assertEquals(time(16, 47, 58), next.getDepartureTime());
+
+        // Revert
+        _handler.revertPreviousChanges();
+        tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
+        assertEquals(71, tripDetails.getSchedule().getStopTimes().size());
+        stopTimes = tripDetails.getSchedule().getStopTimes();
+        TripStopTimeBean stopTime = stopTimes.get(67);
+        assertEquals("MTA_203564", stopTime.getStop().getId());
+        assertEquals(time(16, 47, 38), stopTime.getArrivalTime());
+        assertEquals(time(16, 47, 38), stopTime.getDepartureTime());
     }
 
     @Test
@@ -442,14 +494,20 @@ public class GtfsSometimesClientIntegrationTest {
                 dateDescriptors(LocalDate.of(2018, 8, 23)));
 
         assertEquals(2, _handler.handleServiceChanges(Arrays.asList(addShape, alterTrip)));
+        assertNotNull(_graph.getShape(new AgencyAndId("MTA NYCT", "newShape")));
 
         List<TripStopTimeBean> oldSchedule = tripDetails.getSchedule().getStopTimes();
         List<TripStopTimeBean> newSchedule = getTripDetails("CA_G8-Weekday-096000_MISC_545").getSchedule().getStopTimes();
+
+        _handler.revertPreviousChanges();
+        assertNull(_graph.getShape(new AgencyAndId("MTA NYCT", "newShape")));
+        List<TripStopTimeBean> revertedSchedule = getTripDetails("CA_G8-Weekday-096000_MISC_545").getSchedule().getStopTimes();
 
         // skip first stop - ends up with unset shape dist.
         for (int i = 1; i < newSchedule.size(); i++) {
             TripStopTimeBean oldStopTime = oldSchedule.get(i);
             TripStopTimeBean newStopTime = newSchedule.get(i);
+            TripStopTimeBean revertedStopTime = revertedSchedule.get(i);
 
             // before stop 200184 (10th stop), distance should be the same. After, the detour has happened.
             assertEquals(oldStopTime.getStop().getId(), newStopTime.getStop().getId());
@@ -458,6 +516,9 @@ public class GtfsSometimesClientIntegrationTest {
             } else {
                 assertTrue(newStopTime.getDistanceAlongTrip() - oldStopTime.getDistanceAlongTrip() > 100d);
             }
+
+            assertEquals(oldStopTime.getStop().getId(), revertedStopTime.getStop().getId());
+            assertEquals(oldStopTime.getDistanceAlongTrip(), revertedStopTime.getDistanceAlongTrip(), 0.001);
         }
     }
 
@@ -465,6 +526,7 @@ public class GtfsSometimesClientIntegrationTest {
     @DirtiesContext
     public void testChangeStopName() {
         String newName = "new stop name";
+        String oldName = _tds.getStop("MTA_203564").getName();
         ServiceChange change = serviceChange(Table.STOPS,
                 ServiceChangeType.ALTER,
                 Collections.singletonList(stopEntity("203564")),
@@ -479,6 +541,14 @@ public class GtfsSometimesClientIntegrationTest {
         TripDetailsBean tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
         TripStopTimeBean stop = tripDetails.getSchedule().getStopTimes().get(67);
         assertEquals(newName, stop.getStop().getName());
+
+        _handler.revertPreviousChanges();
+        _handler.forceFlush();
+        stopBean = _tds.getStop("MTA_203564");
+        assertEquals(oldName, stopBean.getName());
+        tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
+        stop = tripDetails.getSchedule().getStopTimes().get(67);
+        assertEquals(oldName, stop.getStop().getName());
     }
 
     @Test
@@ -488,6 +558,8 @@ public class GtfsSometimesClientIntegrationTest {
         List<TripStopTimeBean> oldSchedule = getTripDetails("CA_G8-Weekday-096000_MISC_545").getSchedule().getStopTimes();
         StopBean stopBean = _tds.getStop("MTA_203564");
         assertFalse(stopBean.getRoutes().isEmpty());
+        double oldLat = stopBean.getLat();
+        double oldLon = stopBean.getLon();
 
         double newLat = 40.557318, newLon = -74.1141876;
         ServiceChange change = serviceChange(Table.STOPS,
@@ -508,9 +580,22 @@ public class GtfsSometimesClientIntegrationTest {
         assertEquals(newLat, stop.getStop().getLat(), 0.00001);
         assertEquals(newLon, stop.getStop().getLon(), 0.00001);
 
+        _handler.revertPreviousChanges();
+        _handler.forceFlush();
+        stopBean = _tds.getStop("MTA_203564");
+        assertEquals(oldLat, stopBean.getLat(), 0.00001);
+        assertEquals(oldLon, stopBean.getLon(), 0.00001);
+        assertFalse(stopBean.getRoutes().isEmpty());
+        tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
+        List<TripStopTimeBean> revertedSchedule = tripDetails.getSchedule().getStopTimes();
+        stop = revertedSchedule.get(67);
+        assertEquals(oldLat, stop.getStop().getLat(), 0.00001);
+        assertEquals(oldLon, stop.getStop().getLon(), 0.00001);
+
         for (int i = 0; i < newSchedule.size(); i++) {
             TripStopTimeBean oldStopTime = oldSchedule.get(i);
             TripStopTimeBean newStopTime = newSchedule.get(i);
+            TripStopTimeBean revertStopTime = revertedSchedule.get(i);
             if (i == 67) {
                 // new location is one block further than old location
                 double distance = newStopTime.getDistanceAlongTrip() - oldStopTime.getDistanceAlongTrip();
@@ -519,6 +604,8 @@ public class GtfsSometimesClientIntegrationTest {
                 assertEquals(oldStopTime.getDistanceAlongTrip(), newStopTime.getDistanceAlongTrip(), 0.00001);
             }
             assertEquals(oldStopTime.getGtfsSequence(), newStopTime.getGtfsSequence());
+            assertEquals(oldStopTime.getGtfsSequence(), revertStopTime.getGtfsSequence());
+            assertEquals(oldStopTime.getDistanceAlongTrip(), revertStopTime.getDistanceAlongTrip(), 0.00001);
         }
     }
 
@@ -564,6 +651,9 @@ public class GtfsSometimesClientIntegrationTest {
         assertEquals(3, tripDetails.getSchedule().getStopTimes().size());
         assertEquals("my headsign", tripDetails.getTrip().getTripHeadsign());
         assertEquals("S86", tripDetails.getTrip().getRouteShortName());
+
+        _handler.revertPreviousChanges();
+        assertNull(getTripDetails("tripA"));
     }
 
     @Test
@@ -594,6 +684,12 @@ public class GtfsSometimesClientIntegrationTest {
             }
         }
         assertFalse(found);
+
+        // Revert
+        _handler.revertPreviousChanges();
+        TripDetailsBean tripDetails = getTripDetails(tripId);
+        assertNotNull(tripDetails);
+        assertEquals(71, tripDetails.getSchedule().getStopTimes().size());
     }
 
     private TripDetailsBean getTripDetails(String tripId) {

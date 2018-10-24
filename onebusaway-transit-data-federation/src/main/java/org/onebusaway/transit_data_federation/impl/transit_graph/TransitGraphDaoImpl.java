@@ -394,6 +394,11 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     return _shapePointService.getShapePointsForShapeId(shapeId);
   }
 
+  @Override
+  public void removeShape(AgencyAndId shapeId) {
+    _shapePointService.removeShape(shapeId);
+  }
+
   public List<AgencyAndId> getAllReferencedShapeIds() {
     Set<AgencyAndId> shapeIds = new HashSet<AgencyAndId>();
     for (TripEntry trip : getAllTrips()) {

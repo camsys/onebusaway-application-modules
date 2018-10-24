@@ -23,7 +23,16 @@ import java.util.Collection;
 
 public interface StopChangeHandler {
 
+    /**
+     * Read in GTFS-Sometimes model classes and return a StopChangeSet to apply.
+     */
     StopChangeSet getAllStopChanges(Collection<ServiceChange> changes);
 
-    int handleStopChanges(StopChangeSet changeset);
+    /**
+     * Apply a set of stop changes, returning a set that will revert the changes.
+     *
+     * @param changeset changes to apply
+     * @return changes that would revert the supplied changes.
+     */
+    StopChangeSet handleStopChanges(StopChangeSet changeset);
 }

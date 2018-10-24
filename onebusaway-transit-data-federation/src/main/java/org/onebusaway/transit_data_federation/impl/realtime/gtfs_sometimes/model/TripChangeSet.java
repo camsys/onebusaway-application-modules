@@ -51,4 +51,8 @@ public class TripChangeSet {
     public List<AddTrip> getAddedTrips() {
         return addedTrips;
     }
+
+    public int size() {
+        return deletedTrips.size() + modifiedTrips.size() + addedTrips.size();
+    }
 }

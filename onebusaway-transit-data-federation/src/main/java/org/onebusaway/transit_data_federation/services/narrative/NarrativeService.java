@@ -78,6 +78,8 @@ public interface NarrativeService {
 
   public boolean addShape(ShapePoints shape);
 
+  public void removeShape(AgencyAndId shapeId);
+
   public boolean addAgency(AgencyEntryImpl agency);
 
   public StopNarrative removeStop(AgencyAndId stopId);

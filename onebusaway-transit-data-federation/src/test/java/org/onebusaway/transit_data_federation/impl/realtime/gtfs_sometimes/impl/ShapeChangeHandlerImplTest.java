@@ -21,7 +21,9 @@ import com.camsys.transit.servicechange.Table;
 import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.transit_data_federation.impl.MockEntityIdServiceImpl;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.ShapeChange;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.AddShape;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.ShapeChangeSet;
+import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -29,9 +31,14 @@ import java.util.Comparator;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
 import static org.onebusaway.transit_data_federation.testing.ServiceChangeUnitTestingSupport.dateDescriptors;
 import static org.onebusaway.transit_data_federation.testing.ServiceChangeUnitTestingSupport.serviceChange;
 import static org.onebusaway.transit_data_federation.testing.ServiceChangeUnitTestingSupport.shapeFields;
+
+import static org.mockito.Mockito.mock;
 
 public class ShapeChangeHandlerImplTest {
 
@@ -41,6 +48,9 @@ public class ShapeChangeHandlerImplTest {
     public void setup() {
         handler = new ShapeChangeHandlerImpl();
         handler.setEntityIdService(new MockEntityIdServiceImpl());
+        TransitGraphDao dao = mock(TransitGraphDao.class);
+        when(dao.addShape(any())).thenReturn(true);
+        handler.setTransitGraphDao(dao);
     }
 
     // Shape change
@@ -60,15 +70,22 @@ public class ShapeChangeHandlerImplTest {
                 Arrays.asList(shapeFields("1", 0, 0, 3),
                         shapeFields("3", 0, 0, 1)),
                 dateDescriptors(LocalDate.of(2018, 6, 1), LocalDate.of(2018, 7, 1)));
-        List<ShapeChange> shapeChanges = handler.getAllShapeChanges(Arrays.asList(change1, change2)).getShapeChanges();
-        assertEquals(3, shapeChanges.size());
-        shapeChanges.sort(Comparator.comparing(ShapeChange::getShapeId));
-        assertEquals("1", shapeChanges.get(0).getShapeId().getId());
-        assertEquals("2", shapeChanges.get(1).getShapeId().getId());
-        assertEquals("3", shapeChanges.get(2).getShapeId().getId());
-        assertEquals(3, shapeChanges.get(0).getAddedShapePoints().getSize());
-        assertEquals(1, shapeChanges.get(1).getAddedShapePoints().getSize());
-        assertEquals(1, shapeChanges.get(2).getAddedShapePoints().getSize());
+        ShapeChangeSet changeset = handler.getAllShapeChanges(Arrays.asList(change1, change2));
+        assertTrue(changeset.getDeletedShapes().isEmpty());
+        List<AddShape> addShapes = changeset.getAddedShapes();
+        assertEquals(3, addShapes.size());
+        addShapes.sort(Comparator.comparing(AddShape::getShapeId));
+        assertEquals("1", addShapes.get(0).getShapeId().getId());
+        assertEquals("2", addShapes.get(1).getShapeId().getId());
+        assertEquals("3", addShapes.get(2).getShapeId().getId());
+        assertEquals(3, addShapes.get(0).getAddedShapePoints().getSize());
+        assertEquals(1, addShapes.get(1).getAddedShapePoints().getSize());
+        assertEquals(1, addShapes.get(2).getAddedShapePoints().getSize());
+
+        // revert
+        ShapeChangeSet revertset = handler.handleShapeChanges(changeset);
+        assertTrue(revertset.getAddedShapes().isEmpty());
+        assertEquals(3, revertset.getDeletedShapes().size());
     }
 
 }

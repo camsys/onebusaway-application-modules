@@ -183,6 +183,10 @@ public final class NarrativeProviderImpl implements Serializable {
     return true;
   }
 
+  public void removeShape(AgencyAndId shapeId) {
+    _shapePointsById.remove(shapeId);
+  }
+
   public boolean addAgency(AgencyEntryImpl agency) {
     if (_agencyNarratives.get(agency.getId()) == null) {
       AgencyNarrative.Builder ab = AgencyNarrative.builder();
