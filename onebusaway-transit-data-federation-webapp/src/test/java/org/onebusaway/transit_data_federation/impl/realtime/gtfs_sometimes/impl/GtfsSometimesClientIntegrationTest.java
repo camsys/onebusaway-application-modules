@@ -609,6 +609,76 @@ public class GtfsSometimesClientIntegrationTest {
         }
     }
 
+    // Test whether location change is successfully reverted and new change is applied
+    @Test
+    @DirtiesContext
+    public void testChangeStopLocationThenSubsequentChange() {
+
+        List<TripStopTimeBean> oldSchedule = getTripDetails("CA_G8-Weekday-096000_MISC_545").getSchedule().getStopTimes();
+        StopBean stopBean = _tds.getStop("MTA_203564");
+        assertFalse(stopBean.getRoutes().isEmpty());
+        double oldLat = stopBean.getLat();
+        double oldLon = stopBean.getLon();
+
+        double newLat = 40.557318, newLon = -74.1141876;
+        ServiceChange moveStopChange = serviceChange(Table.STOPS,
+                ServiceChangeType.ALTER,
+                Collections.singletonList(stopEntity("203564")),
+                stopsFieldsList(null, newLat, newLon),
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
+        assertTrue(_handler.handleServiceChange(moveStopChange));
+
+        stopBean = _tds.getStop("MTA_203564");
+        assertEquals(newLat, stopBean.getLat(), 0.00001);
+        assertEquals(newLon, stopBean.getLon(), 0.00001);
+        assertFalse(stopBean.getRoutes().isEmpty());
+
+        TripDetailsBean tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
+        List<TripStopTimeBean> newSchedule = tripDetails.getSchedule().getStopTimes();
+        TripStopTimeBean stop = tripDetails.getSchedule().getStopTimes().get(67);
+        assertEquals(newLat, stop.getStop().getLat(), 0.00001);
+        assertEquals(newLon, stop.getStop().getLon(), 0.00001);
+
+        ServiceChange alterStopTime = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.ALTER,
+                Collections.singletonList(stopTimeEntity("CA_G8-Weekday-096000_MISC_545", "203565")),
+                stopTimesFieldsList("CA_G8-Weekday-096000_MISC_545",
+                        time(16, 47, 59), time(16, 47, 59),
+                        "203565", 68),
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
+        assertTrue(_handler.handleServiceChange(alterStopTime));
+
+        stopBean = _tds.getStop("MTA_203564");
+        assertEquals(oldLat, stopBean.getLat(), 0.00001);
+        assertEquals(oldLon, stopBean.getLon(), 0.00001);
+        assertFalse(stopBean.getRoutes().isEmpty());
+        tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
+        List<TripStopTimeBean> revertedSchedule = tripDetails.getSchedule().getStopTimes();
+        stop = revertedSchedule.get(67);
+        assertEquals(oldLat, stop.getStop().getLat(), 0.00001);
+        assertEquals(oldLon, stop.getStop().getLon(), 0.00001);
+
+        for (int i = 0; i < newSchedule.size(); i++) {
+            TripStopTimeBean oldStopTime = oldSchedule.get(i);
+            TripStopTimeBean newStopTime = newSchedule.get(i);
+            TripStopTimeBean revertStopTime = revertedSchedule.get(i);
+            if (i == 67) {
+                // new location is one block further than old location
+                double distance = newStopTime.getDistanceAlongTrip() - oldStopTime.getDistanceAlongTrip();
+                assertTrue(distance > 20d);
+            } else if (i == 68) {
+                assertEquals(oldStopTime.getDistanceAlongTrip(), newStopTime.getDistanceAlongTrip(), 0.00001);
+                assertTrue(revertStopTime.getDepartureTime() > oldStopTime.getDepartureTime());
+                assertEquals(oldStopTime.getDepartureTime(), newStopTime.getDepartureTime());
+            }else {
+                assertEquals(oldStopTime.getDistanceAlongTrip(), newStopTime.getDistanceAlongTrip(), 0.00001);
+            }
+            assertEquals(oldStopTime.getGtfsSequence(), newStopTime.getGtfsSequence());
+            assertEquals(oldStopTime.getGtfsSequence(), revertStopTime.getGtfsSequence());
+            assertEquals(oldStopTime.getDistanceAlongTrip(), revertStopTime.getDistanceAlongTrip(), 0.00001);
+        }
+    }
+
     @Test
     @DirtiesContext
     public void testAddTrip() {
