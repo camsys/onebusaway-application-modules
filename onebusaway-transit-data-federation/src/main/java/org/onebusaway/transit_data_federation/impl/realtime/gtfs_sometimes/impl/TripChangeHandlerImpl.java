@@ -26,7 +26,9 @@ import com.camsys.transit.servicechange.field_descriptors.StopsFields;
 import com.camsys.transit.servicechange.field_descriptors.TripsFields;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.AddTrip;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChange;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.ModifyTrip;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChangeSet;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.TimeService;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.TripChangeHandler;
@@ -102,6 +104,57 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
 
     @Override
     public TripChangeSet getAllTripChanges(Collection<ServiceChange> changes) {
+        return getChangeset(getTripChanges(changes));
+    }
+
+    TripChangeSet getChangeset(List<TripChange> changes) {
+        TripChangeSet changeset = new TripChangeSet();
+        for (TripChange change : changes) {
+            String trip = change.getTripId();
+            AgencyAndId tripId = _entityIdService.getTripId(trip);
+            if (change.isDelete()) {
+                changeset.addDeletedTrip(tripId);
+            } else if (change.isAdded()) {
+                TripEntryImpl tripEntry = convertTripFieldsToTripEntry(change.getAddedTripsFields());
+                List<StopTimeEntry> stopTimes = new ArrayList<>();
+                stopTimes = computeNewStopTimes(change, tripEntry, stopTimes);
+                tripEntry.setStopTimes(stopTimes);
+                TripNarrative narrative = convertTripFieldsToTripNarrative(change.getAddedTripsFields());
+                AddTrip addTrip = new AddTrip();
+                addTrip.setTripId(tripId);
+                addTrip.setTripEntry(tripEntry);
+                addTrip.setTripNarrative(narrative);
+                changeset.addAddedTrip(addTrip);
+            } else {
+                TripEntryImpl tripEntry = (TripEntryImpl) _dao.getTripEntryForId(tripId);
+                if (tripEntry == null) {
+                    _log.info("No trip found for trip change {}", tripId);
+                    continue;
+                }
+                List<StopTimeEntry> stopTimes = new ArrayList<>(tripEntry.getStopTimes());
+                // Ensure stops are fresh
+                for (StopTimeEntry stopTimeEntry : stopTimes) {
+                    StopEntryImpl stopEntry = (StopEntryImpl) _dao.getStopEntryForId(stopTimeEntry.getStop().getId());
+                    ((StopTimeEntryImpl) stopTimeEntry).setStop(stopEntry);
+                }
+
+                AgencyAndId shapeId = change.getNewShapeId();
+                if (shapeId == null) {
+                    shapeId = tripEntry.getShapeId();
+                }
+                stopTimes = computeNewStopTimes(change, tripEntry, stopTimes);
+                ModifyTrip modify = new ModifyTrip();
+                modify.setTripId(tripId);
+                modify.setShapeId(shapeId);
+                modify.setStopTimes(stopTimes);
+                modify.setTripEntry(tripEntry);
+                changeset.addModifiedTrip(modify);
+            }
+        }
+        return changeset;
+    }
+
+    List<TripChange> getTripChanges(Collection<ServiceChange> changes) {
         Map<String, TripChange> changesByTrip = new HashMap<>();
         for (ServiceChange serviceChange : changes) {
             if (Table.TRIPS.equals(serviceChange.getTable())) {
@@ -183,62 +236,37 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
             }
         }
         List<TripChange> tripChanges = new ArrayList<>(changesByTrip.values());
-        return new TripChangeSet(tripChanges);
+        return tripChanges;
     }
 
     @Override
     public int handleTripChanges(TripChangeSet changeset) {
         int nSuccess = 0;
-        for (TripChange change : changeset.getTripChanges()) {
-            _log.info("Handling changes for trip {}", change.getTripId());
-            if (handleTripChanges(change)) {
+        for (AgencyAndId tripId : changeset.getDeletedTrips()) {
+            _log.info("Handling changes for trip {}", tripId);
+            if (_dao.deleteTripEntryForId(tripId)) {
                 nSuccess++;
             } else {
-                _log.info("Unable to apply changes for trip {}", change.getTripId());
+                _log.info("Unable to apply changes for trip {}", tripId);
+            }
+        }
+        for (AddTrip addTrip : changeset.getAddedTrips()) {
+            _log.info("Handling changes for trip {}", addTrip.getTripId());
+            if (_dao.addTripEntry(addTrip.getTripEntry(), addTrip.getTripNarrative())) {
+                nSuccess++;
+            } else {
+                _log.info("Unable to apply changes for trip {}", addTrip.getTripId());
+            }
+        }
+        for (ModifyTrip modifyTrip : changeset.getModifiedTrips()) {
+            _log.info("Handling changes for trip {}", modifyTrip.getTripId());
+            if (_dao.updateStopTimesForTrip(modifyTrip.getTripEntry(), modifyTrip.getStopTimes(), modifyTrip.getShapeId())) {
+                nSuccess++;
+            } else {
+                _log.info("Unable to apply changes for trip {}", modifyTrip.getTripId());
             }
         }
         return nSuccess;
-    }
-
-    private boolean handleTripChanges(TripChange change) {
-        String trip = change.getTripId();
-        AgencyAndId tripId = _entityIdService.getTripId(trip);
-        TripEntryImpl tripEntry;
-        List<StopTimeEntry> stopTimes;
-        if (change.isAdded()) {
-            tripEntry = convertTripFieldsToTripEntry(change.getAddedTripsFields());
-            stopTimes = new ArrayList<>();
-        } else if (change.isDelete()) {
-            return _dao.deleteTripEntryForId(tripId);
-        } else {
-            tripEntry = (TripEntryImpl) _dao.getTripEntryForId(tripId);
-            if (tripEntry == null) {
-                return false;
-            }
-            stopTimes = new ArrayList<>(tripEntry.getStopTimes());
-        }
-
-        // Ensure stops are fresh
-        for (StopTimeEntry stopTimeEntry : stopTimes) {
-            StopEntryImpl stopEntry = (StopEntryImpl) _dao.getStopEntryForId(stopTimeEntry.getStop().getId());
-            ((StopTimeEntryImpl) stopTimeEntry).setStop(stopEntry);
-        }
-
-        AgencyAndId shapeId = change.getNewShapeId();
-        if (shapeId == null) {
-            shapeId = tripEntry.getShapeId();
-        }
-
-        stopTimes = computeNewStopTimes(change, tripEntry, stopTimes);
-
-        if (change.isAdded()) {
-            tripEntry.setStopTimes(stopTimes);
-            TripNarrative narrative = convertTripFieldsToTripNarrative(change.getAddedTripsFields());
-            return _dao.addTripEntry(tripEntry, narrative);
-        }
-
-        // call internal method
-        return _dao.updateStopTimesForTrip(tripEntry, stopTimes, shapeId);
     }
 
     List<StopTimeEntry> computeNewStopTimes(TripChange change, TripEntryImpl tripEntry) {

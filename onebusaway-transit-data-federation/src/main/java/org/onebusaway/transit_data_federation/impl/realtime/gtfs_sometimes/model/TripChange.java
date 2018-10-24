@@ -23,6 +23,11 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This is an object created while processing ServiceChanges into a TripChangeSet, to hold some
+ * state created while reading through the ServiceChanges, before we know what the type is going
+ * to be.
+ */
 public class TripChange {
     public enum TripChangeType { MODIFY, ADD, DELETE };
 

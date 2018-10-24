@@ -22,7 +22,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.MockEntityIdServiceImpl;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.AddTrip;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChange;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.ModifyTrip;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChangeSet;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockTripEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
@@ -131,6 +134,7 @@ public class TripChangeHandlerImplTest {
         when(dao.getStopEntryForId(aid("a"))).thenReturn(stopA);
         when(dao.getStopEntryForId(aid("b"))).thenReturn(stopB);
         when(dao.getStopEntryForId(aid("c"))).thenReturn(stopC);
+        when(dao.getTripEntryForId(aid("tripA"))).thenReturn(tripA);
 
     }
 
@@ -198,7 +202,7 @@ public class TripChangeHandlerImplTest {
                 Collections.singletonList(stopTimeEntity("tripB", "stopA")),
                 null, // no affected field for delete
                 dateDescriptors(LocalDate.of(2018, 7, 1)));
-        List<TripChange> tripChanges = handler.getAllTripChanges(Arrays.asList(change1, change2, change3)).getTripChanges();
+        List<TripChange> tripChanges = handler.getTripChanges(Arrays.asList(change1, change2, change3));
         assertEquals(2, tripChanges.size());
         tripChanges.sort(Comparator.comparing(TripChange::getTripId));
         TripChange changeA = tripChanges.get(0);
@@ -270,7 +274,7 @@ public class TripChangeHandlerImplTest {
     }
 
     private TripChange getSingleTripChange(ServiceChange... changes) {
-        List<TripChange> tripChanges = handler.getAllTripChanges(Arrays.asList(changes)).getTripChanges();
+        List<TripChange> tripChanges = handler.getTripChanges(Arrays.asList(changes));
         assertEquals(1, tripChanges.size());
         return tripChanges.get(0);
     }
@@ -283,7 +287,7 @@ public class TripChangeHandlerImplTest {
                 Collections.singletonList(stopEntity("stopA")),
                 stopsFieldsList(null, 10d, 20d),
                 dateDescriptors(LocalDate.of(2018, 7, 01)));
-        List<TripChange> tripChanges = handler.getAllTripChanges(Arrays.asList(change)).getTripChanges();
+        List<TripChange> tripChanges = handler.getTripChanges(Arrays.asList(change));
         assertEquals(1, tripChanges.size());
         assertEquals("tripA", tripChanges.get(0).getTripId());
     }
@@ -456,5 +460,44 @@ public class TripChangeHandlerImplTest {
         change.addInsertedStop(stopTimesFieldDescriptor(trip.getId().getId(), arrivalTime, departureTime, stop.getStop().getId().getId(),
                 0, null, null, shapeDistTravelled, null));
         return change;
+    }
+
+    // Test IntermediateTripChange -> TripChangeSet
+
+    @Test
+    public void testModifiedTripChange() {
+        TripChange change = insertStopTripChange(tripA, stopAD, -1, 250, -1);
+        TripChangeSet changeset = handler.getChangeset(Collections.singletonList(change));
+        assertTrue(changeset.getAddedTrips().isEmpty());
+        assertTrue(changeset.getDeletedTrips().isEmpty());
+        assertEquals(1, changeset.getModifiedTrips().size());
+        ModifyTrip trip = changeset.getModifiedTrips().get(0);
+        assertEquals(tripA, trip.getTripEntry());
+        assertEquals(4, trip.getStopTimes().size());
+        assertEquals(tripA.getId(), trip.getTripId());
+    }
+
+    @Test
+    public void testDeletedTripChange() {
+        TripChange change = new TripChange("tripX");
+        change.setDelete();
+        TripChangeSet changeset = handler.getChangeset(Collections.singletonList(change));
+        assertTrue(changeset.getAddedTrips().isEmpty());
+        assertTrue(changeset.getModifiedTrips().isEmpty());
+        assertEquals(1, changeset.getDeletedTrips().size());
+        AgencyAndId tripId = changeset.getDeletedTrips().get(0);
+        assertEquals("1_tripX", tripId.toString());
+    }
+
+    @Test
+    public void testAddedTripChange() {
+        TripChange change = new TripChange("tripX");
+        change.setAddedTripsFields(tripsFields("tripX", null, "serviceA", "shapeA", "headsign"));
+        TripChangeSet changeset = handler.getChangeset(Collections.singletonList(change));
+        assertTrue(changeset.getModifiedTrips().isEmpty());
+        assertTrue(changeset.getDeletedTrips().isEmpty());
+        assertEquals(1, changeset.getAddedTrips().size());
+        AddTrip addTrip = changeset.getAddedTrips().get(0);
+        assertEquals("1_tripX", addTrip.getTripId().toString());
     }
 }

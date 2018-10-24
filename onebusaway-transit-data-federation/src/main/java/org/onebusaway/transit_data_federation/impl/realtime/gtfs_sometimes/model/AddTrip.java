@@ -16,39 +16,38 @@
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 
-import java.util.ArrayList;
-import java.util.List;
+public class AddTrip {
 
-public class TripChangeSet {
+    private AgencyAndId tripId;
 
-    private List<AgencyAndId> deletedTrips = new ArrayList<>();
+    private TripEntryImpl tripEntry;
 
-    private List<ModifyTrip> modifiedTrips = new ArrayList<>();
+    private TripNarrative tripNarrative;
 
-    private List<AddTrip> addedTrips = new ArrayList<>();
-
-    public void addDeletedTrip(AgencyAndId id) {
-        deletedTrips.add(id);
+    public AgencyAndId getTripId() {
+        return tripId;
     }
 
-    public void addModifiedTrip(ModifyTrip trip) {
-        modifiedTrips.add(trip);
+    public void setTripId(AgencyAndId tripId) {
+        this.tripId = tripId;
     }
 
-    public void addAddedTrip(AddTrip addTrip) {
-        addedTrips.add(addTrip);
+    public TripEntryImpl getTripEntry() {
+        return tripEntry;
     }
 
-    public List<AgencyAndId> getDeletedTrips() {
-        return deletedTrips;
+    public void setTripEntry(TripEntryImpl tripEntry) {
+        this.tripEntry = tripEntry;
     }
 
-    public List<ModifyTrip> getModifiedTrips() {
-        return modifiedTrips;
+    public TripNarrative getTripNarrative() {
+        return tripNarrative;
     }
 
-    public List<AddTrip> getAddedTrips() {
-        return addedTrips;
+    public void setTripNarrative(TripNarrative tripNarrative) {
+        this.tripNarrative = tripNarrative;
     }
 }
