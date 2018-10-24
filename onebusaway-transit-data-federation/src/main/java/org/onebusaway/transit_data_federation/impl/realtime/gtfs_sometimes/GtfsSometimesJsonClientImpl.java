@@ -118,14 +118,9 @@ public class GtfsSometimesJsonClientImpl {
         } else if (_lastUpdatedTimestamp == feed.getFeedHeader().getTimestamp()) {
             _log.info("Feed is the same as previously processed, no action.");
         } else if (_lastUpdatedTimestamp < feed.getFeedHeader().getTimestamp()) {
-            _log.info("New feed: refresh bundle...");
-            if (_transitDataService.reloadBundle()) {
-                _log.info("Update feed.");
-                handleNewFeed(feed);
-                _lastUpdatedTimestamp = feed.getFeedHeader().getTimestamp();
-            } else {
-                _log.error("Unable to refresh bundle.");
-            }
+            _log.info("Update feed.");
+            handleNewFeed(feed);
+            _lastUpdatedTimestamp = feed.getFeedHeader().getTimestamp();
         } else {
             _log.error("Non-increasing timestamps in feed!");
         }
