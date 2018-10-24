@@ -15,17 +15,33 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class ShapeChangeSet {
+    private List<AddShape> addedShapes = new ArrayList<>();
 
-    private List<ShapeChange> shapeChanges;
+    private List<AgencyAndId> deletedShapes = new ArrayList<>();
 
-    public ShapeChangeSet(List<ShapeChange> shapeChanges) {
-        this.shapeChanges = shapeChanges;
+    public List<AddShape> getAddedShapes() {
+        return addedShapes;
     }
 
-    public List<ShapeChange> getShapeChanges() {
-        return shapeChanges;
+    public void addAddedShape(AddShape addedShape) {
+        addedShapes.add(addedShape);
+    }
+
+    public List<AgencyAndId> getDeletedShapes() {
+        return deletedShapes;
+    }
+
+    public void addDeletedShape(AgencyAndId id) {
+        deletedShapes.add(id);
+    }
+
+    public int size() {
+        return addedShapes.size() + deletedShapes.size();
     }
 }

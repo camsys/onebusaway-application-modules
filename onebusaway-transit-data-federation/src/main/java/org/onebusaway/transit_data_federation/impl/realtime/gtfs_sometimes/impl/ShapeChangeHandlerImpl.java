@@ -24,7 +24,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.ShapePoint;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.ShapeChange;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.AddShape;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.ShapeChangeSet;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.ShapeChangeHandler;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
@@ -57,7 +57,7 @@ public class ShapeChangeHandlerImpl implements ShapeChangeHandler {
 
     @Override
     public ShapeChangeSet getAllShapeChanges(Collection<ServiceChange> changes) {
-        List<ShapeChange> shapeChanges = new ArrayList<>();
+        ShapeChangeSet changeset = new ShapeChangeSet();
 
         Multimap<String, ShapesFields> shapesFieldsMap = ArrayListMultimap.create();
         for (ServiceChange change : changes) {
@@ -95,24 +95,33 @@ public class ShapeChangeHandlerImpl implements ShapeChangeHandler {
             AgencyAndId shapeId = _entityIdService.getShapeId(id);
             shapePoints.setShapeId(shapeId);
             shapePoints.ensureDistTraveled();
-            shapeChanges.add(new ShapeChange(shapeId, shapePoints));
+            changeset.addAddedShape(new AddShape(shapeId, shapePoints));
         }
-
-        return new ShapeChangeSet(shapeChanges);
+        return changeset;
     }
 
     @Override
-    public int handleShapeChanges(ShapeChangeSet changeset) {
-        int nSuccess = 0;
-        for (ShapeChange shapeChange : changeset.getShapeChanges()) {
-            if (handleShapeChange(shapeChange)) {
-                nSuccess++;
+    public ShapeChangeSet handleShapeChanges(ShapeChangeSet changeset) {
+        ShapeChangeSet revertSet = new ShapeChangeSet();
+        for (AddShape addShape : changeset.getAddedShapes()) {
+            if (handleShapeChange(addShape)) {
+                revertSet.addDeletedShape(addShape.getShapeId());
             }
         }
-        return nSuccess;
+        for (AgencyAndId shapeId : changeset.getDeletedShapes()) {
+            AddShape addShape = getAddedShapeFromExistingShape(shapeId);
+            revertSet.addAddedShape(addShape);
+            _dao.removeShape(shapeId);
+        }
+        return revertSet;
     }
 
-    private boolean handleShapeChange(ShapeChange shapeChange) {
-        return _dao.addShape(shapeChange.getAddedShapePoints());
+    private boolean handleShapeChange(AddShape addShape) {
+        return _dao.addShape(addShape.getAddedShapePoints());
+    }
+
+    private AddShape getAddedShapeFromExistingShape(AgencyAndId shapeId) {
+        ShapePoints shapePoints = _dao.getShape(shapeId);
+        return new AddShape(shapeId, shapePoints);
     }
 }

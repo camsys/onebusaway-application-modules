@@ -18,13 +18,13 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.mode
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 
-public class ShapeChange {
+public class AddShape {
 
     private ShapePoints addedShapePoints;
 
     private AgencyAndId shapeId;
 
-    public ShapeChange(AgencyAndId shapeId, ShapePoints addedShapePoints) {
+    public AddShape(AgencyAndId shapeId, ShapePoints addedShapePoints) {
         this.shapeId = shapeId;
         this.addedShapePoints = addedShapePoints;
     }

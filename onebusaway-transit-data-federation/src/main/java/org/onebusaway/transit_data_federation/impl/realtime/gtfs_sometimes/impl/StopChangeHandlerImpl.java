@@ -35,9 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 @Component
 public class StopChangeHandlerImpl implements StopChangeHandler {
@@ -67,7 +65,7 @@ public class StopChangeHandlerImpl implements StopChangeHandler {
 
     @Override
     public StopChangeSet getAllStopChanges(Collection<ServiceChange> changes) {
-        List<StopChange> stopChanges = new ArrayList<>();
+        StopChangeSet changeset = new StopChangeSet();
         for (ServiceChange change : changes) {
             if (Table.STOPS.equals(change.getTable())) {
                 if (ServiceChangeType.ALTER.equals(change.getServiceChangeType())) {
@@ -83,30 +81,30 @@ public class StopChangeHandlerImpl implements StopChangeHandler {
                         if (stopsFields.getStopLon() != null) {
                             stopChange.setStopLon(stopsFields.getStopLon());
                         }
-                        stopChanges.add(stopChange);
+                        changeset.addStopChange(stopChange);
                     }
                 } else {
                     _log.info("Type {} not handled for table {}", change.getServiceChangeType(), change.getTable());
                 }
             }
         }
-        return new StopChangeSet(stopChanges);
+        return changeset;
     }
 
     @Override
-    public int handleStopChanges(StopChangeSet changeset) {
-        int nSuccess = 0;
+    public StopChangeSet handleStopChanges(StopChangeSet changeset) {
+        StopChangeSet revertSet = new StopChangeSet();
         for (StopChange stopChange : changeset.getStopChanges()) {
-            if (handleStopChange(stopChange)) {
-                nSuccess++;
+            AgencyAndId stopId = _entityIdService.getStopId(stopChange.getStopId());
+            StopChange revert = getStopChangeFromExistingStop(stopId);
+            if (handleStopChange(stopId, stopChange)) {
+                revertSet.addStopChange(revert);
             }
         }
-        return nSuccess;
+        return revertSet;
     }
 
-
-    private boolean handleStopChange(StopChange change) {
-        AgencyAndId stopId = _entityIdService.getStopId(change.getStopId());
+    private boolean handleStopChange(AgencyAndId stopId, StopChange change) {
         StopEntry oldStopEntry = _dao.getStopEntryForId(stopId);
         StopNarrative narrative = _narrativeService.removeStop(stopId);
         String stopName = change.hasStopName() ? change.getStopName() : narrative.getName();
@@ -122,5 +120,15 @@ public class StopChangeHandlerImpl implements StopChangeHandler {
             _dao.addStopEntry(stopEntry);
         }
         return true;
+    }
+
+    private StopChange getStopChangeFromExistingStop(AgencyAndId stopId) {
+        StopEntry stopEntry = _dao.getStopEntryForId(stopId);
+        StopNarrative stopNarrative = _narrativeService.getStopForId(stopId);
+        StopChange change = new StopChange(stopId.getId());
+        change.setStopName(stopNarrative.getName());
+        change.setStopLat(stopEntry.getStopLat());
+        change.setStopLon(stopEntry.getStopLon());
+        return change;
     }
 }

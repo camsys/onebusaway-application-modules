@@ -30,7 +30,9 @@ import org.onebusaway.transit_data_federation.impl.transit_graph.BlockTripEntryI
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.StopTimeService;
+import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.tripplanner.StopTimeInstance;
@@ -48,6 +50,8 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.onebusaway.transit_data_federation.testing.ServiceChangeUnitTestingSupport.*;
@@ -136,6 +140,14 @@ public class TripChangeHandlerImplTest {
         when(dao.getStopEntryForId(aid("c"))).thenReturn(stopC);
         when(dao.getTripEntryForId(aid("tripA"))).thenReturn(tripA);
 
+        NarrativeService narrativeService = mock(NarrativeService.class);
+        when(narrativeService.getTripForId(aid("tripA"))).thenReturn(TripNarrative.builder().create());
+        handler.setNarrativeService(narrativeService);
+
+        // for creating the revert set, just pretend dao succeeded
+        when(dao.deleteTripEntryForId(any())).thenReturn(true);
+        when(dao.updateStopTimesForTrip(any(), anyList(), any())).thenReturn(true);
+        when(dao.addTripEntry(any(), any())).thenReturn(true);
     }
 
     // TripChange creation
@@ -468,13 +480,16 @@ public class TripChangeHandlerImplTest {
     public void testModifiedTripChange() {
         TripChange change = insertStopTripChange(tripA, stopAD, -1, 250, -1);
         TripChangeSet changeset = handler.getChangeset(Collections.singletonList(change));
-        assertTrue(changeset.getAddedTrips().isEmpty());
-        assertTrue(changeset.getDeletedTrips().isEmpty());
-        assertEquals(1, changeset.getModifiedTrips().size());
-        ModifyTrip trip = changeset.getModifiedTrips().get(0);
+        ModifyTrip trip = getSingleModifyTrip(changeset);
         assertEquals(tripA, trip.getTripEntry());
         assertEquals(4, trip.getStopTimes().size());
         assertEquals(tripA.getId(), trip.getTripId());
+
+        // Revert
+        TripChangeSet revertSet = handler.handleTripChanges(changeset);
+        ModifyTrip revertTrip = getSingleModifyTrip(revertSet);
+        assertEquals(3, revertTrip.getStopTimes().size());
+        assertEquals(tripA.getId(), revertTrip.getTripId());
     }
 
     @Test
@@ -482,11 +497,13 @@ public class TripChangeHandlerImplTest {
         TripChange change = new TripChange("tripX");
         change.setDelete();
         TripChangeSet changeset = handler.getChangeset(Collections.singletonList(change));
-        assertTrue(changeset.getAddedTrips().isEmpty());
-        assertTrue(changeset.getModifiedTrips().isEmpty());
-        assertEquals(1, changeset.getDeletedTrips().size());
-        AgencyAndId tripId = changeset.getDeletedTrips().get(0);
+        AgencyAndId tripId = getSingleDeleteTrip(changeset);
         assertEquals("1_tripX", tripId.toString());
+
+        // Revert
+        TripChangeSet revertSet = handler.handleTripChanges(changeset);
+        AddTrip addTrip = getSingleAddTrip(revertSet);
+        assertEquals("1_tripX", addTrip.getTripId().toString());
     }
 
     @Test
@@ -494,10 +511,33 @@ public class TripChangeHandlerImplTest {
         TripChange change = new TripChange("tripX");
         change.setAddedTripsFields(tripsFields("tripX", null, "serviceA", "shapeA", "headsign"));
         TripChangeSet changeset = handler.getChangeset(Collections.singletonList(change));
+        AddTrip addTrip = getSingleAddTrip(changeset);
+        assertEquals("1_tripX", addTrip.getTripId().toString());
+
+        // Revert
+        TripChangeSet revertSet = handler.handleTripChanges(changeset);
+        AgencyAndId deleteTrip = getSingleDeleteTrip(revertSet);
+        assertEquals("1_tripX", deleteTrip.toString());
+    }
+
+    private ModifyTrip getSingleModifyTrip(TripChangeSet changeset) {
+        assertTrue(changeset.getAddedTrips().isEmpty());
+        assertTrue(changeset.getDeletedTrips().isEmpty());
+        assertEquals(1, changeset.getModifiedTrips().size());
+        return changeset.getModifiedTrips().get(0);
+    }
+
+    private AddTrip getSingleAddTrip(TripChangeSet changeset) {
         assertTrue(changeset.getModifiedTrips().isEmpty());
         assertTrue(changeset.getDeletedTrips().isEmpty());
         assertEquals(1, changeset.getAddedTrips().size());
-        AddTrip addTrip = changeset.getAddedTrips().get(0);
-        assertEquals("1_tripX", addTrip.getTripId().toString());
+        return changeset.getAddedTrips().get(0);
+    }
+
+    private AgencyAndId getSingleDeleteTrip(TripChangeSet changeset) {
+        assertTrue(changeset.getAddedTrips().isEmpty());
+        assertTrue(changeset.getModifiedTrips().isEmpty());
+        assertEquals(1, changeset.getDeletedTrips().size());
+        return changeset.getDeletedTrips().get(0);
     }
 }

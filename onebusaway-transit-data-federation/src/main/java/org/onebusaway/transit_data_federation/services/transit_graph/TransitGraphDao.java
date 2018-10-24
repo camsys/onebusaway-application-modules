@@ -138,6 +138,8 @@ public interface TransitGraphDao {
 
   public ShapePoints getShape(AgencyAndId shapeId);
 
+  public void removeShape(AgencyAndId shapeId);
+
   public List<AgencyAndId> getAllReferencedShapeIds();
 
   public boolean updateStopTimesForTrip(TripEntryImpl trip, List<StopTimeEntry> stopTimeEntries, AgencyAndId shapeId);

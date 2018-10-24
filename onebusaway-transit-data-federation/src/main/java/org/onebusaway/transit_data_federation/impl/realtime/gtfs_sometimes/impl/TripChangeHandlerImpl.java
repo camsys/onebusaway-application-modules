@@ -240,12 +240,14 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
     }
 
     @Override
-    public int handleTripChanges(TripChangeSet changeset) {
-        int nSuccess = 0;
+    public TripChangeSet handleTripChanges(TripChangeSet changeset) {
+        TripChangeSet revertSet = new TripChangeSet();
         for (AgencyAndId tripId : changeset.getDeletedTrips()) {
             _log.info("Handling changes for trip {}", tripId);
+            // If deleting a trip, we need to add one.
+            AddTrip addTrip = getAddTripForExistingTrip(tripId);
             if (_dao.deleteTripEntryForId(tripId)) {
-                nSuccess++;
+                revertSet.addAddedTrip(addTrip);
             } else {
                 _log.info("Unable to apply changes for trip {}", tripId);
             }
@@ -253,20 +255,21 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
         for (AddTrip addTrip : changeset.getAddedTrips()) {
             _log.info("Handling changes for trip {}", addTrip.getTripId());
             if (_dao.addTripEntry(addTrip.getTripEntry(), addTrip.getTripNarrative())) {
-                nSuccess++;
+                revertSet.addDeletedTrip(addTrip.getTripId());
             } else {
                 _log.info("Unable to apply changes for trip {}", addTrip.getTripId());
             }
         }
         for (ModifyTrip modifyTrip : changeset.getModifiedTrips()) {
             _log.info("Handling changes for trip {}", modifyTrip.getTripId());
+            ModifyTrip revertTrip = getModifyTripForExistingTrip(modifyTrip.getTripId());
             if (_dao.updateStopTimesForTrip(modifyTrip.getTripEntry(), modifyTrip.getStopTimes(), modifyTrip.getShapeId())) {
-                nSuccess++;
+                revertSet.addModifiedTrip(revertTrip);
             } else {
                 _log.info("Unable to apply changes for trip {}", modifyTrip.getTripId());
             }
         }
-        return nSuccess;
+        return revertSet;
     }
 
     List<StopTimeEntry> computeNewStopTimes(TripChange change, TripEntryImpl tripEntry) {
@@ -425,5 +428,25 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
         stei.setShapeDistTraveled(shapeDistanceTravelled);
         stei.setGtfsSequence(gtfsSequence);
         return stei;
+    }
+
+    private AddTrip getAddTripForExistingTrip(AgencyAndId tripId) {
+        TripEntryImpl tripEntry = (TripEntryImpl) _dao.getTripEntryForId(tripId);
+        TripNarrative narrative = _narrativeService.getTripForId(tripId);
+        AddTrip addTrip = new AddTrip();
+        addTrip.setTripId(tripId);
+        addTrip.setTripEntry(tripEntry);
+        addTrip.setTripNarrative(narrative);
+        return addTrip;
+    }
+
+    private ModifyTrip getModifyTripForExistingTrip(AgencyAndId tripId) {
+        TripEntryImpl tripEntry = (TripEntryImpl) _dao.getTripEntryForId(tripId);
+        ModifyTrip modify = new ModifyTrip();
+        modify.setTripId(tripId);
+        modify.setShapeId(tripEntry.getShapeId());
+        modify.setStopTimes(tripEntry.getStopTimes());
+        modify.setTripEntry(tripEntry);
+        return modify;
     }
 }

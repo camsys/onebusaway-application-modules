@@ -46,4 +46,6 @@ public interface ShapePointService {
   public ShapePoints getShapePointsForShapeIds(List<AgencyAndId> shapeIds);
 
   public boolean addShape(ShapePoints shape);
+
+  public void removeShape(AgencyAndId shapeId);
 }

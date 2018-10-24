@@ -22,7 +22,16 @@ import java.util.Collection;
 
 public interface ShapeChangeHandler {
 
+    /**
+     * Read in GTFS-Sometimes model classes and return a ShapeChangeSet to apply.
+     */
     ShapeChangeSet getAllShapeChanges(Collection<ServiceChange> changes);
 
-    int handleShapeChanges(ShapeChangeSet changeset);
+    /**
+     * Apply a set of shape changes, returning a set that will revert the changes.
+     *
+     * @param changeset changes to apply
+     * @return changes that would revert the supplied changes.
+     */
+    ShapeChangeSet handleShapeChanges(ShapeChangeSet changeset);
 }

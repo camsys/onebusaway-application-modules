@@ -129,6 +129,11 @@ public class NarrativeServiceImpl implements NarrativeService {
   }
 
   @Override
+  public void removeShape(AgencyAndId shapeId) {
+    _provider.removeShape(shapeId);
+  }
+
+  @Override
   public boolean addAgency(AgencyEntryImpl agency) {
     return _provider.addAgency(agency);
   }

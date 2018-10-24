@@ -15,17 +15,22 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class StopChangeSet {
 
-    private List<StopChange> stopChanges;
-
-    public StopChangeSet(List<StopChange> stopChanges) {
-        this.stopChanges = stopChanges;
-    }
+    private List<StopChange> stopChanges = new ArrayList<>();
 
     public List<StopChange> getStopChanges() {
         return stopChanges;
+    }
+
+    public void addStopChange(StopChange stopChange) {
+        stopChanges.add(stopChange);
+    }
+
+    public int size() {
+        return stopChanges.size();
     }
 }

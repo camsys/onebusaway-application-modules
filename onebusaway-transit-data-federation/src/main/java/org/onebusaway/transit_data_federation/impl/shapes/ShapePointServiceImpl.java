@@ -56,4 +56,9 @@ public class ShapePointServiceImpl implements ShapePointService {
   public boolean addShape(ShapePoints shape) {
     return _narrativeService.addShape(shape);
   }
+
+  @Override
+  public void removeShape(AgencyAndId shapeId) {
+    _narrativeService.removeShape(shapeId);
+  }
 }
