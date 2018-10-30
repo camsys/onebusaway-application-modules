@@ -358,10 +358,8 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
     _tripEntriesById.put(trip.getId(), trip);
     _trips.add(trip);
     // update block
-    if (!_blockEntriesById.containsKey(trip.getBlock().getId())) {
-      // new block
-      _blockEntriesById.put(trip.getBlock().getId(), trip.getBlock());
-    }
+    _blockEntriesById.put(trip.getBlock().getId(), trip.getBlock());
+
     boolean foundBlock = false;
 
     for (int i = 0; i < _blocks.size(); i++) {
