@@ -36,13 +36,13 @@ import org.onebusaway.gtfs.model.Stop;
 import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
-import org.onebusaway.transit_data_federation.bundle.tasks.ShapePointHelper;
 import org.onebusaway.transit_data_federation.bundle.tasks.UniqueServiceImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.ShapePointsFactory;
+import org.onebusaway.transit_data_federation.services.shapes.BasicShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 
 public class TripEntriesFactoryTest {
@@ -114,13 +114,13 @@ public class TripEntriesFactoryTest {
     shapePointsFactory.addPoint(47.66868172192725, -122.3661729186096);
     ShapePoints shapePoints = shapePointsFactory.create();
 
-    ShapePointHelper shapePointHelper = Mockito.mock(ShapePointHelper.class);
-    Mockito.when(shapePointHelper.getShapePointsForShapeId(shapeId)).thenReturn(
+    BasicShapePointService shapePointService = Mockito.mock(BasicShapePointService.class);
+    Mockito.when(shapePointService.getShapePointsForShapeId(shapeId)).thenReturn(
         shapePoints);
 
     TripEntriesFactory factory = new TripEntriesFactory();
     factory.setGtfsDao(gtfsDao);
-    factory.setShapePointHelper(shapePointHelper);
+    factory.setShapePointHelper(shapePointService);
     factory.setUniqueService(new UniqueServiceImpl());
 
     StopTimeEntriesFactory stopTimeEntriesFactory = new StopTimeEntriesFactory();

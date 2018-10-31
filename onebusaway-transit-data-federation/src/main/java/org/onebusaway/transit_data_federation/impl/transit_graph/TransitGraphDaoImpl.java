@@ -21,7 +21,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -36,6 +38,7 @@ import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.transit_data_federation.services.BlockConfigurationEntriesProcessor;
 import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
 import org.onebusaway.transit_data_federation.services.StopTimeEntriesProcessor;
@@ -91,6 +94,8 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
   private StopTimeEntriesProcessor _stopTimesFactory;
 
+  private BlockConfigurationEntriesProcessor _blockConfigurationEntriesProcessor;
+
   @Autowired
   public void setBundle(FederatedTransitDataBundle bundle) {
     _bundle = bundle;
@@ -143,6 +148,11 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   @Autowired
   public void setStopTimesFactory(StopTimeEntriesProcessor stopTimesFactory) {
     _stopTimesFactory = stopTimesFactory;
+  }
+
+  @Autowired
+  public void setBlockConfigurationEntriesProcessor(BlockConfigurationEntriesProcessor blockConfigurationEntriesProcessor) {
+    _blockConfigurationEntriesProcessor = blockConfigurationEntriesProcessor;
   }
 
   @PostConstruct
@@ -302,7 +312,33 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     }
     trip.setStopTimes(new ArrayList<>(processedStopTimeEntries));
 
+    // Deal with block.
+
+    BlockEntryImpl block = (BlockEntryImpl) _graph.getBlockEntryForId(trip.getBlock().getId());
+    if (block == null) {
+      block = trip.getBlock();
+      if (block.getConfigurations() == null) {
+        block.setConfigurations(new ArrayList<>());
+      }
+      _graph.addBlock(block);
+    } else {
+      trip.setBlock(block);
+    }
+
+    // Recalculate block config.
+
+    Map<AgencyAndId, TripEntryImpl> tripById = trip.getBlock().getConfigurations().stream()
+            .flatMap(bce -> bce.getTrips().stream())
+            .map(bt -> (TripEntryImpl) bt.getTrip())
+            .collect(Collectors.toMap(TripEntry::getId, Function.identity()));
+    tripById.put(trip.getId(), trip);
+    List<TripEntryImpl> trips = new ArrayList<>(tripById.values());
+
+    // Possible optimization to add: if the trip is not new, we don't necessarily need to rebuild block configs.
+    _blockConfigurationEntriesProcessor.processBlockConfigurations(trip.getBlock(), trips);
+
     boolean rc = _graph.addTripEntry(trip);
+
     // adding a trip requires updating other parts of the TDS
     if (rc && _narrativeService != null) {
        _narrativeService.addTrip(trip, narrative);

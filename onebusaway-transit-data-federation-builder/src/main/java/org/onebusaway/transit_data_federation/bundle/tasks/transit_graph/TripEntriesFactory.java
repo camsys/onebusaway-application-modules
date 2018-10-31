@@ -29,12 +29,12 @@ import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
 import org.onebusaway.transit_data_federation.bundle.services.UniqueService;
-import org.onebusaway.transit_data_federation.bundle.tasks.ShapePointHelper;
 import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
+import org.onebusaway.transit_data_federation.services.shapes.BasicShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.Logger;
@@ -53,7 +53,7 @@ public class TripEntriesFactory {
 
   private StopTimeEntriesFactory _stopTimeEntriesFactory;
 
-  private ShapePointHelper _shapePointsHelper;
+  private BasicShapePointService _shapePointsService;
 
   private boolean _throwExceptionOnInvalidStopToShapeMappingException = true;
 
@@ -63,8 +63,8 @@ public class TripEntriesFactory {
   }
 
   @Autowired
-  public void setShapePointHelper(ShapePointHelper shapePointsHelper) {
-    _shapePointsHelper = shapePointsHelper;
+  public void setShapePointHelper(BasicShapePointService shapePointsService) {
+    _shapePointsService = shapePointsService;
   }
 
   @Autowired
@@ -148,7 +148,7 @@ public class TripEntriesFactory {
     ShapePoints shapePoints = null;
 
     if (trip.getShapeId() != null)
-      shapePoints = _shapePointsHelper.getShapePointsForShapeId(trip.getShapeId());
+      shapePoints = _shapePointsService.getShapePointsForShapeId(trip.getShapeId());
 
     Agency agency = trip.getRoute().getAgency();
     TimeZone tz = TimeZone.getTimeZone(agency.getTimezone());

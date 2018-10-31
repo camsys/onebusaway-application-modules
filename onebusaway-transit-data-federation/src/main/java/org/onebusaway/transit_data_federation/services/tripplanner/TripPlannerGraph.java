@@ -20,6 +20,7 @@ import java.util.List;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.services.transit_graph.AgencyEntry;
@@ -56,6 +57,8 @@ public interface TripPlannerGraph {
   public boolean addTripEntry(TripEntryImpl trip);
 
   public boolean removeTripEntryForId(AgencyAndId id);
+
+  public boolean addBlock(BlockEntryImpl block);
 
   public StopEntry getStopEntryForId(AgencyAndId id);
   

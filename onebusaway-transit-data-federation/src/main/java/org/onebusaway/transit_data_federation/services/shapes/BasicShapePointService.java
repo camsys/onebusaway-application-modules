@@ -15,8 +15,6 @@
  */
 package org.onebusaway.transit_data_federation.services.shapes;
 
-import java.util.List;
-
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.ShapePoint;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
@@ -29,16 +27,13 @@ import org.onebusaway.transit_data_federation.model.ShapePoints;
  * @see ShapePoint
  * @see ShapePoints
  */
-public interface ShapePointService extends BasicShapePointService {
-  
+public interface BasicShapePointService {
+
   /**
-   * @param shapeIds the target shape ids in order
-   * @return the set of shape points for the specified shape ids
-   * @throws IllegalStateException if a shape id could not be found
+   * @param shapeId the target shape id
+   * @return the set of shape points for the specified shape id, or null if the
+   *         shape was not found
    */
-  public ShapePoints getShapePointsForShapeIds(List<AgencyAndId> shapeIds);
+  public ShapePoints getShapePointsForShapeId(AgencyAndId shapeId);
 
-  public boolean addShape(ShapePoints shape);
-
-  public void removeShape(AgencyAndId shapeId);
 }

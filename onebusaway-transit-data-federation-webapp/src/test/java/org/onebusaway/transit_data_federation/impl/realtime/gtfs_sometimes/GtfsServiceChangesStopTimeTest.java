@@ -402,6 +402,10 @@ public class GtfsServiceChangesStopTimeTest {
         assertNotNull(blockConfigA.getServiceIds());
         assertFalse(blockConfigA.getServiceIds().getActiveServiceIds().isEmpty());
 
+        // update the calendar info
+        String[] tripIds = {"tripA"};
+        addCalendarSeeData(Arrays.asList(tripIds));
+
         assertTrue(_dao.addTripEntry(tripA));
 
         assertTrue(_revenueSearchService.stopHasRevenueService("1", "1_a"));
@@ -436,10 +440,6 @@ public class GtfsServiceChangesStopTimeTest {
 
         StopEntryImpl stopD = stop("d", 47.53, -122.52);
         assertTrue(_dao.addStopEntry(stopD));
-
-        // update the calendar info
-        String[] tripIds = {"tripA"};
-        addCalendarSeeData(Arrays.asList(tripIds));
 
 
         // we have two stop times

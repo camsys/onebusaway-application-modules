@@ -34,6 +34,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
+import org.onebusaway.transit_data_federation.services.shapes.BasicShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -51,7 +52,7 @@ class ShapeGeospatialIndexTask implements Runnable {
 
   private TransitGraphDao _transitGraphDao;
 
-  private ShapePointHelper _shapePointHelper;
+  private BasicShapePointService _shapePointService;
 
   private FederatedTransitDataBundle _bundle;
 
@@ -65,8 +66,8 @@ class ShapeGeospatialIndexTask implements Runnable {
   }
 
   @Autowired
-  public void setShapePointHelper(ShapePointHelper shapePointHelper) {
-    _shapePointHelper = shapePointHelper;
+  public void setShapePointService(BasicShapePointService shapePointService) {
+    _shapePointService = shapePointService;
   }
 
   @Autowired
@@ -140,7 +141,7 @@ class ShapeGeospatialIndexTask implements Runnable {
 
     for (AgencyAndId shapeId : allShapeIds) {
 
-      ShapePoints shapePoints = _shapePointHelper.getShapePointsForShapeId(shapeId);
+      ShapePoints shapePoints = _shapePointService.getShapePointsForShapeId(shapeId);
 
       for (int i = 0; i < shapePoints.getSize(); i++) {
 
