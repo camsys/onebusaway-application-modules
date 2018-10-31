@@ -339,39 +339,29 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
   public boolean addTripEntry(TripEntryImpl trip) {
     if (!valid(trip)) return false;
 
-    // Create block configurations if they do not exist
-    if (trip.getBlock().getConfigurations() == null) {
-      BlockEntryImpl block = trip.getBlock();
-      block.setConfigurations(new ArrayList<>());
-      BlockConfigurationEntryImpl.Builder builder = BlockConfigurationEntryImpl.builder();
-      builder.setBlock(block);
-      builder.setTrips(Collections.singletonList(trip));
-      builder.setTripGapDistances(new double[]{0});
-      builder.setServiceIds(new ServiceIdActivation(trip.getServiceId()));
-      block.getConfigurations().add(builder.create());
-    }
-
-
     if (_tripEntriesById.containsKey(trip.getId()))
       return false;
 
     _tripEntriesById.put(trip.getId(), trip);
     _trips.add(trip);
-    // update block
-    _blockEntriesById.put(trip.getBlock().getId(), trip.getBlock());
 
     boolean foundBlock = false;
 
     for (int i = 0; i < _blocks.size(); i++) {
-      BlockEntryImpl bce = _blocks.get(i);
-      if (bce.getId().equals(trip.getBlock().getId())) {
+      BlockEntryImpl block = _blocks.get(i);
+      if (block.getId().equals(trip.getBlock().getId())) {
         foundBlock = true;
-
-        _blocks.set(i, trip.getBlock());
+        trip.setBlock(block);
       }
     }
+
     if (!foundBlock) {
+      BlockEntryImpl block = trip.getBlock();
+      if (block.getConfigurations() == null) {
+        block.setConfigurations(new ArrayList<>());
+      }
       _blocks.add(trip.getBlock());
+      _blockEntriesById.put(trip.getBlock().getId(), trip.getBlock());
     }
 
     // update route
@@ -492,11 +482,15 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
     List<BlockConfigurationEntry> newBlockConfigs = new ArrayList<BlockConfigurationEntry>();
     if (tripEntry.getBlock() == null || tripEntry.getBlock().getConfigurations() == null)
       return false;
+    boolean addedTrip = false;
     for (BlockConfigurationEntry bce : tripEntry.getBlock().getConfigurations()) {
+      if (!bce.getServiceIds().getActiveServiceIds().contains(tripEntry.getServiceId())) {
+        newBlockConfigs.add(bce);
+        continue;
+      }
       BlockConfigurationEntryImpl.Builder builder = BlockConfigurationEntryImpl.builder();
       // the builder computes blockTrips
       builder.setBlock(getBlockEntryForId(tripEntry.getBlock().getId()));
-
       builder.setServiceIds(bce.getServiceIds());
       ArrayList<TripEntry> mergedTrips = new ArrayList<TripEntry>();
       boolean foundTrip = false;
@@ -507,6 +501,7 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
               // update our trip
               foundTrip = true;
               mergedTrips.add(tripEntry);
+              addedTrip = true;
             } else {
               mergedTrips.add(bte.getTrip());
             }
@@ -515,11 +510,20 @@ public class TransitGraphImpl implements Serializable, TripPlannerGraph {
       }
       if (!foundTrip) {
         mergedTrips.add(tripEntry);
+        addedTrip = true;
       }
       builder.setTrips(mergedTrips);
       builder.setTripGapDistances(new double[mergedTrips.size()]);
       BlockConfigurationEntry blockConfig = builder.create();
       newBlockConfigs.add(blockConfig);
+    }
+    if (!addedTrip) {
+      BlockConfigurationEntryImpl.Builder builder = BlockConfigurationEntryImpl.builder();
+      builder.setBlock(tripEntry.getBlock());
+      builder.setTrips(Collections.singletonList(tripEntry));
+      builder.setTripGapDistances(new double[]{0});
+      builder.setServiceIds(new ServiceIdActivation(tripEntry.getServiceId()));
+      newBlockConfigs.add(builder.create());
     }
     // now replace existing block configs with our regenerated block configs
     tripEntry.getBlock().setConfigurations(newBlockConfigs);

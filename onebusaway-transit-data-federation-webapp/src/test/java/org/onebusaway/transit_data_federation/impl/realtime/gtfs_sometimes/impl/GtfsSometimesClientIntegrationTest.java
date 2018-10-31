@@ -38,6 +38,7 @@ import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
+import org.onebusaway.transit_data.model.blocks.BlockBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
@@ -55,6 +56,7 @@ import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.beans.TripBeanService;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
+import org.onebusaway.transit_data_federation.testing.UnitTestingSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -684,7 +686,7 @@ public class GtfsSometimesClientIntegrationTest {
         ServiceChange addTrip = serviceChange(Table.TRIPS,
                 ServiceChangeType.ADD,
                 null,
-                tripsFieldsList("tripA", "S86", "CA_C8-Weekday", "S860022", "my headsign"),
+                tripsFieldsList("tripA", "S86", "CA_C8-Weekday", "S860022", "my headsign", null),
                 dateDescriptors(LocalDate.of(2018, 8, 23)));
 
         ServiceChange stop0 = serviceChange(Table.STOP_TIMES,
@@ -728,6 +730,7 @@ public class GtfsSometimesClientIntegrationTest {
     public void testDeleteTrip() {
 
         String tripId = "CA_G8-Weekday-096000_MISC_545";
+        String blockId = AgencyAndId.convertFromString(getTripDetails(tripId).getTrip().getBlockId()).getId();
 
         assertNotNull(getTripDetails(tripId));
         ServiceChange change = serviceChange(Table.TRIPS,
@@ -752,11 +755,81 @@ public class GtfsSometimesClientIntegrationTest {
         }
         assertFalse(found);
 
+        // Test block
+        assertNull(_tds.getBlockForId("MTA NYCT_fake"));
+        BlockBean block = _tds.getBlockForId("MTA NYCT_" + blockId);
+        // either null or doesn't contain trips...
+        if (block != null) {
+          if (!block.getConfigurations().isEmpty()) {
+              assertEquals(1, block.getConfigurations().size());
+              assertTrue(block.getConfigurations().get(0).getTrips().isEmpty());
+          }
+        }
+
         // Revert
         revertPreviousChanges();
         TripDetailsBean tripDetails = getTripDetails(tripId);
         assertNotNull(tripDetails);
         assertEquals(71, tripDetails.getSchedule().getStopTimes().size());
+    }
+
+    @Test
+    @DirtiesContext
+    public void testMultipleChangesOneBlock() {
+
+        String tripId = "CA_G8-Weekday-096000_MISC_545";
+        String blockId = AgencyAndId.convertFromString(getTripDetails(tripId).getTrip().getBlockId()).getId();
+
+        ServiceChange deleteTrip = serviceChange(Table.TRIPS,
+                ServiceChangeType.DELETE,
+                Collections.singletonList(tripEntity(tripId)),
+                null,
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
+
+        ServiceChange addTrip = serviceChange(Table.TRIPS,
+                ServiceChangeType.ADD,
+                null,
+                tripsFieldsList("tripA", "S86", "CA_G8-Weekday", "S860022", "my headsign", blockId),
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
+
+        ServiceChange stop0 = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.ADD,
+                null,
+                stopTimesFieldsList("tripA",
+                        time(16, 5, 0), time(16, 5, 0),
+                        "805163", 0),
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
+
+        ServiceChange stop1 = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.ADD,
+                null,
+                stopTimesFieldsList("tripA",
+                        time(16, 5, 42), time(16, 5, 42),
+                        "200176", 1),
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
+
+        ServiceChange stop2 = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.ADD,
+                null,
+                stopTimesFieldsList("tripA",
+                        time(16, 6, 38), time(16, 6, 38),
+                        "805163", 0),
+                dateDescriptors(LocalDate.of(2018, 8, 23)));
+
+        assertTrue(_handler.handleServiceChanges(Arrays.asList(deleteTrip, addTrip, stop0, stop1, stop2)) > 0);
+        assertNull(getTripDetails(tripId));
+        assertNotNull(getTripDetails("tripA"));
+
+        BlockBean block = _tds.getBlockForId("MTA NYCT_" + blockId);
+        assertEquals(1, block.getConfigurations().size());
+        assertEquals(1, block.getConfigurations().get(0).getTrips().size());
+
+        // Revert delete trip, but keep added trips
+        assertTrue(_handler.handleServiceChanges(Arrays.asList(addTrip, stop0, stop1, stop2)) > 0);
+
+        block = _tds.getBlockForId("MTA NYCT_" + blockId);
+        assertEquals(1, block.getConfigurations().size());
+        assertEquals(2, block.getConfigurations().get(0).getTrips().size());
     }
 
     private TripDetailsBean getTripDetails(String tripId) {
