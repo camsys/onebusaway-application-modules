@@ -122,18 +122,19 @@ public class ServiceChangeUnitTestingSupport {
         return fields;
     }
 
-    public static TripsFields tripsFields(String tripId, String routeId, String serviceId, String shapeId, String headsign) {
+    public static TripsFields tripsFields(String tripId, String routeId, String serviceId, String shapeId, String headsign, String blockId) {
         TripsFields tripsFields = new TripsFields();
         tripsFields.setTripId(tripId);
         tripsFields.setRouteId(routeId);
         tripsFields.setServiceId(serviceId);
         tripsFields.setShapeId(shapeId);
         tripsFields.setTripHeadsign(headsign);
+        tripsFields.setBlockId(blockId);
         return tripsFields;
     }
 
-    public static List<AbstractFieldDescriptor> tripsFieldsList(String tripId, String routeId, String serviceId, String shapeId, String headsign) {
-        return Collections.singletonList(tripsFields(tripId, routeId, serviceId, shapeId, headsign));
+    public static List<AbstractFieldDescriptor> tripsFieldsList(String tripId, String routeId, String serviceId, String shapeId, String headsign, String blockId) {
+        return Collections.singletonList(tripsFields(tripId, routeId, serviceId, shapeId, headsign, blockId));
     }
 
     public static ServiceChange serviceChange(Table table, ServiceChangeType type, List<EntityDescriptor> entities,

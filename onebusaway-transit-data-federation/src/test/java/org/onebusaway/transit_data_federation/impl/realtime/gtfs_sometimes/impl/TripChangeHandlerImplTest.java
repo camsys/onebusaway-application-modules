@@ -228,7 +228,7 @@ public class TripChangeHandlerImplTest {
         ServiceChange addTrip = serviceChange(Table.TRIPS,
                 ServiceChangeType.ADD,
                 null,
-                tripsFieldsList("tripA", "routeA", "serviceA", "shapeA", null),
+                tripsFieldsList("tripA", "routeA", "serviceA", "shapeA", null, null),
                 dateDescriptors(LocalDate.of(2018, 7, 1)));
 
         ServiceChange stop0 = serviceChange(Table.STOP_TIMES,
@@ -509,7 +509,7 @@ public class TripChangeHandlerImplTest {
     @Test
     public void testAddedTripChange() {
         TripChange change = new TripChange("tripX");
-        change.setAddedTripsFields(tripsFields("tripX", null, "serviceA", "shapeA", "headsign"));
+        change.setAddedTripsFields(tripsFields("tripX", null, "serviceA", "shapeA", "headsign", null));
         TripChangeSet changeset = handler.getChangeset(Collections.singletonList(change));
         AddTrip addTrip = getSingleAddTrip(changeset);
         assertEquals("1_tripX", addTrip.getTripId().toString());
