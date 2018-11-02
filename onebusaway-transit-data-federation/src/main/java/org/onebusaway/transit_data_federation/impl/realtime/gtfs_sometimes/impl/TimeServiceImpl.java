@@ -20,7 +20,10 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 @Component
@@ -53,6 +56,13 @@ public class TimeServiceImpl implements TimeService {
 
     public void setTime(long time) {
         _time = time;
+    }
+
+    public void setTime(String timeString) {
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        LocalDateTime ldt = LocalDateTime.parse(timeString, fmt);
+        ZonedDateTime zdt = ZonedDateTime.ofLocal(ldt, _timeZone, null);
+        setTime(zdt.toEpochSecond() * 1000);
     }
 
     public void setTimeZone(ZoneId timeZone) {

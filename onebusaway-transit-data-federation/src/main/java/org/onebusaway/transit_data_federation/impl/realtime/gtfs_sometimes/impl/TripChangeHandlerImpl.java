@@ -41,17 +41,23 @@ import org.onebusaway.transit_data_federation.model.narrative.RouteCollectionNar
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.EntityIdService;
 import org.onebusaway.transit_data_federation.services.StopTimeService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
+import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.transit_data_federation.services.tripplanner.StopTimeInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -61,6 +67,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+
+import static org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.impl.GtfsServiceChangeLibrary.*;
 
 @Component
 public class TripChangeHandlerImpl implements TripChangeHandler {
@@ -76,6 +84,8 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
     private StopTimeService _stopTimeService;
 
     private TimeService _timeService;
+
+    private BlockCalendarService _blockCalendarService;
 
     @Autowired
     public void setTransitGraphDao(TransitGraphDao dao) {
@@ -102,6 +112,11 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
         _timeService = timeService;
     }
 
+    @Autowired
+    public void setBlockCalendarService(BlockCalendarService blockCalendarService) {
+        _blockCalendarService = blockCalendarService;
+    }
+
     @Override
     public TripChangeSet getAllTripChanges(Collection<ServiceChange> changes) {
         return getChangeset(getTripChanges(changes));
@@ -112,9 +127,9 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
         for (TripChange change : changes) {
             String trip = change.getTripId();
             AgencyAndId tripId = _entityIdService.getTripId(trip);
-            if (change.isDelete()) {
+            if (change.isDelete() && validateTripOnDate(change)) {
                 changeset.addDeletedTrip(tripId);
-            } else if (change.isAdded()) {
+            } else if (change.isAdded() && validateAddedTripOnDate(change)) {
                 TripEntryImpl tripEntry = convertTripFieldsToTripEntry(change.getAddedTripsFields());
                 List<StopTimeEntry> stopTimes = new ArrayList<>();
                 stopTimes = computeNewStopTimes(change, tripEntry, stopTimes);
@@ -125,7 +140,7 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
                 addTrip.setTripEntry(tripEntry);
                 addTrip.setTripNarrative(narrative);
                 changeset.addAddedTrip(addTrip);
-            } else {
+            } else if (change.isModify() && validateTripOnDate(change)) {
                 TripEntryImpl tripEntry = (TripEntryImpl) _dao.getTripEntryForId(tripId);
                 if (tripEntry == null) {
                     _log.info("No trip found for trip change {}", tripId);
@@ -165,7 +180,9 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
                             String tripId = desc.getTripId();
                             if (tripId != null) {
                                 AgencyAndId shape = _entityIdService.getShapeId(shapeId);
-                                changesByTrip.computeIfAbsent(tripId, TripChange::new).setNewShapeId(shape);
+                                TripChange change = changesByTrip.computeIfAbsent(tripId, TripChange::new);
+                                change.setNewShapeId(shape);
+                                change.setDates(serviceChange.getAffectedDates());
                             }
                         }
                     }
@@ -174,14 +191,18 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
                         TripsFields tripsFields = (TripsFields) fd;
                         String tripId = tripsFields.getTripId();
                         if (tripId != null) {
-                            changesByTrip.computeIfAbsent(tripId, TripChange::new).setAddedTripsFields(tripsFields);
+                            TripChange change = changesByTrip.computeIfAbsent(tripId, TripChange::new);
+                            change.setAddedTripsFields(tripsFields);
+                            change.setDates(serviceChange.getAffectedDates());
                         }
                     }
                 } else if (ServiceChangeType.DELETE.equals(serviceChange.getServiceChangeType())) {
                     for (EntityDescriptor desc : serviceChange.getAffectedEntity()) {
                         String tripId = desc.getTripId();
                         if (tripId != null) {
-                            changesByTrip.computeIfAbsent(tripId, TripChange::new).setDelete();
+                            TripChange change = changesByTrip.computeIfAbsent(tripId, TripChange::new);
+                            change.setDelete();
+                            change.setDates(serviceChange.getAffectedDates());
                         }
                     }
                 }
@@ -191,7 +212,9 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
                         for (AbstractFieldDescriptor desc : serviceChange.getAffectedField()) {
                             StopTimesFields stopTimesFields = (StopTimesFields) desc;
                             if (stopTimesFields.getTripId() != null) {
-                                changesByTrip.computeIfAbsent(stopTimesFields.getTripId(), TripChange::new).addInsertedStop(stopTimesFields);
+                                TripChange change = changesByTrip.computeIfAbsent(stopTimesFields.getTripId(), TripChange::new);
+                                change.addInsertedStop(stopTimesFields);
+                                change.setDates(serviceChange.getAffectedDates());
                             }
                         }
                         break;
@@ -205,7 +228,9 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
                             fields.setTripId(tripId);
                             fields.setStopId(desc.getStopId());
                             if (tripId != null) {
-                                changesByTrip.computeIfAbsent(tripId, TripChange::new).addModifiedStop(fields);
+                                TripChange change = changesByTrip.computeIfAbsent(tripId, TripChange::new);
+                                change.addModifiedStop(fields);
+                                change.setDates(serviceChange.getAffectedDates());
                             }
                         }
                         break;
@@ -214,7 +239,9 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
                             String tripId = descriptor.getTripId();
                             String stopId = descriptor.getStopId();
                             if (tripId != null && stopId != null) {
-                                changesByTrip.computeIfAbsent(tripId, TripChange::new).addDeletedStop(descriptor);
+                                TripChange change = changesByTrip.computeIfAbsent(tripId, TripChange::new);
+                                change.addDeletedStop(descriptor);
+                                change.setDates(serviceChange.getAffectedDates());
                             }
                         }
                         break;
@@ -229,7 +256,10 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
                 if (stopsFields.getStopLat() != null || stopsFields.getStopLon() != null) {
                     for (DateDescriptor date : serviceChange.getAffectedDates()) {
                         for (AgencyAndId tripId : getTripsForStopAndDateRange(stopId, date)) {
-                            changesByTrip.computeIfAbsent(tripId.getId(), TripChange::new);
+                            TripChange change = changesByTrip.computeIfAbsent(tripId.getId(), TripChange::new);
+                            if (change.getDates() == null) {
+                                change.setDates(serviceChange.getAffectedDates());
+                            }
                         }
                     }
                 }
@@ -346,7 +376,6 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
         return stopTimes;
     }
 
-
     private List<AgencyAndId> getTripsForStopAndDateRange(AgencyAndId stopId, DateDescriptor range) {
         Date from, to;
         LocalDate fromDate = range.getFrom() != null ? range.getFrom() : range.getDate();
@@ -448,5 +477,35 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
         modify.setStopTimes(tripEntry.getStopTimes());
         modify.setTripEntry(tripEntry);
         return modify;
+    }
+
+    private boolean validateAddedTripOnDate(TripChange change) {
+        long time = _timeService.getCurrentTime();
+        LocalDateTime now = Instant.ofEpochMilli(time).atZone(_timeService.getTimeZone()).toLocalDateTime();
+        LocalDate today = _timeService.getCurrentDate();
+        LocalDate yesterday = today.minus(1, ChronoUnit.DAYS);
+        // Find the next active "block" (just this trip), and use that time.
+        int maxTime = change.getInsertedStops().stream().mapToInt(StopTimesFields::getArrivalTime).max().getAsInt();
+        if (yesterday.atStartOfDay().plus(maxTime, ChronoUnit.SECONDS).isAfter(now)) {
+            if (dateIsApplicable(yesterday, change.getDates())) {
+                return true;
+            }
+        }
+        return dateIsApplicable(today, change.getDates());
+    }
+
+    private boolean validateTripOnDate(TripChange change) {
+        // Trip is valid if the next service date for the trip is valid for any of the dates.
+        AgencyAndId tripId = _entityIdService.getTripId(change.getTripId());
+        TripEntry trip = _dao.getTripEntryForId(tripId);
+        if (trip == null) {
+            return false;
+        }
+        List<BlockInstance> blocks = _blockCalendarService.getActiveBlocks(trip.getBlock().getId(), _timeService.getCurrentTime(), _timeService.getCurrentTime() + 24 * 3600 * 1000);
+        if (blocks.isEmpty())
+            return false;
+        BlockInstance block = blocks.get(0);
+        LocalDate serviceDate = toLocalDate(block.getServiceDate(), _timeService.getTimeZone());
+        return dateIsApplicable(serviceDate, change.getDates());
     }
 }

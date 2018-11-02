@@ -17,6 +17,7 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.serv
 
 import com.camsys.transit.servicechange.ServiceChange;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.ShapeChangeSet;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChangeSet;
 
 import java.util.Collection;
 
@@ -34,4 +35,12 @@ public interface ShapeChangeHandler {
      * @return changes that would revert the supplied changes.
      */
     ShapeChangeSet handleShapeChanges(ShapeChangeSet changeset);
+
+    /**
+     * Filter ShapeChangeSet - only keep shapes which are referenced by the given trips.
+     *
+     * @param shapes shapes to filter
+     * @param trips relevant trips
+     */
+    void filterShapeChanges(ShapeChangeSet shapes, TripChangeSet trips);
 }
