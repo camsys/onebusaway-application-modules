@@ -25,7 +25,10 @@ import com.google.common.collect.Multimap;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.ShapePoint;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.AddShape;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.AddTrip;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.ModifyTrip;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.ShapeChangeSet;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChangeSet;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.ShapeChangeHandler;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.EntityIdService;
@@ -36,7 +39,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class ShapeChangeHandlerImpl implements ShapeChangeHandler {
@@ -114,6 +119,24 @@ public class ShapeChangeHandlerImpl implements ShapeChangeHandler {
             _dao.removeShape(shapeId);
         }
         return revertSet;
+    }
+
+    @Override
+    public void filterShapeChanges(ShapeChangeSet shapes, TripChangeSet trips) {
+        Set<AgencyAndId> shapesIds = new HashSet<>();
+        for (AddTrip addTrip : trips.getAddedTrips()) {
+            AgencyAndId shapeId = addTrip.getTripEntry().getShapeId();
+            if (shapeId != null) {
+                shapesIds.add(shapeId);
+            }
+        }
+        for (ModifyTrip modifyTrip : trips.getModifiedTrips()) {
+            AgencyAndId shapeId = modifyTrip.getShapeId();
+            if (shapeId != null) {
+                shapesIds.add(shapeId);
+            }
+        }
+        shapes.getAddedShapes().removeIf(shape -> !shapesIds.contains(shape.getShapeId()));
     }
 
     private boolean handleShapeChange(AddShape addShape) {

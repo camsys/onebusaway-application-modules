@@ -56,7 +56,6 @@ import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.beans.TripBeanService;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
-import org.onebusaway.transit_data_federation.testing.UnitTestingSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,7 +112,7 @@ public class GtfsSometimesClientIntegrationTest {
     public void loadGtfsData() throws IOException {
 
         GtfsReader reader = new GtfsReader();
-        String path = getClass().getResource("/gtfs_sometimes/gtfs_staten_island_S86.zip").getPath();
+        String path = getClass().getResource("/gtfs_sometimes/gtfs_staten_island_S86_SIM1C.zip").getPath();
         reader.setDefaultAgencyId("MTA");
         reader.setInputLocation(new File(path));
         GtfsRelationalDaoImpl dao = new GtfsRelationalDaoImpl();
@@ -189,8 +188,8 @@ public class GtfsSometimesClientIntegrationTest {
         _handler.forceFlush();
 
         // set handler time
-        _timeService.setTime(dateAsLong("2018-08-23 12:00"));
         _timeService.setTimeZone(ZoneId.of("America/New_York"));
+        _timeService.setTime("2018-08-23 12:00");
     }
 
     private TripNarrative tripNarrative(Trip trip) {
@@ -239,7 +238,7 @@ public class GtfsSometimesClientIntegrationTest {
         ServiceChange change = serviceChange(Table.STOP_TIMES,
                 ServiceChangeType.DELETE,
                 Arrays.asList(stopTimeEntity("CA_G8-Weekday-096000_MISC_545", "201645"),
-                        stopTimeEntity("CA_C8-Weekday-099000_S7686_307", "203190")),
+                        stopTimeEntity("CA_G8-Weekday-099000_S7686_305", "203190")),
                 null,
                 dateDescriptors(LocalDate.of(2018, 8, 23)));
         assertTrue(_handler.handleServiceChange(change));
@@ -253,7 +252,7 @@ public class GtfsSometimesClientIntegrationTest {
         assertEquals(time(16, 10, 20), stop1.getArrivalTime());
         assertEquals(time(16, 10, 20), stop1.getDepartureTime());
 
-        TripDetailsBean tripDetails2 = getTripDetails("CA_C8-Weekday-099000_S7686_307");
+        TripDetailsBean tripDetails2 = getTripDetails("CA_G8-Weekday-099000_S7686_305");
         assertEquals(70, tripDetails2.getSchedule().getStopTimes().size());
         List<TripStopTimeBean> stopTimes2 = tripDetails2.getSchedule().getStopTimes();
         TripStopTimeBean stop2 = stopTimes2.get(4);
@@ -269,7 +268,7 @@ public class GtfsSometimesClientIntegrationTest {
         assertEquals(71, stopTimes1.size());
         stop1 = stopTimes1.get(15);
         assertEquals("MTA_201645", stop1.getStop().getId());
-        tripDetails2 = getTripDetails("CA_C8-Weekday-099000_S7686_307");
+        tripDetails2 = getTripDetails("CA_G8-Weekday-099000_S7686_305");
         stopTimes2 = tripDetails2.getSchedule().getStopTimes();
         assertEquals(71, stopTimes2.size());
         stop2 = stopTimes2.get(4);
@@ -830,6 +829,72 @@ public class GtfsSometimesClientIntegrationTest {
         block = _tds.getBlockForId("MTA NYCT_" + blockId);
         assertEquals(1, block.getConfigurations().size());
         assertEquals(2, block.getConfigurations().get(0).getTrips().size());
+    }
+
+    // Test calendar applicability.
+    // This trip runs Monday to Friday 20181008-20190104, from 25:15 to 26:41.
+    // Since applicability is based on *service_date*...
+
+    @Test
+    @DirtiesContext
+    public void testCalendarApplicability_BeforeDate() {
+        String tripId = "YU_Q8-Weekday-SDon-151500_MISC_189";
+        ServiceChange change = serviceChange(Table.TRIPS,
+                ServiceChangeType.DELETE,
+                Collections.singletonList(tripEntity(tripId)),
+                null,
+                dateDescriptors(LocalDate.of(2018, 10, 24)));
+
+        // Do not apply the change on 10/23
+        _timeService.setTime("2018-10-23 12:00");
+        assertFalse(_handler.handleServiceChange(change));
+
+    }
+
+    @Test
+    @DirtiesContext
+    public void testCalendarApplicability_EarlyOnDay() {
+        String tripId = "YU_Q8-Weekday-SDon-151500_MISC_189";
+        ServiceChange change = serviceChange(Table.TRIPS,
+                ServiceChangeType.DELETE,
+                Collections.singletonList(tripEntity(tripId)),
+                null,
+                dateDescriptors(LocalDate.of(2018, 10, 24)));
+
+        // Apply the change on 10/24
+        _timeService.setTime("2018-10-24 12:00");
+        assertTrue(_handler.handleServiceChange(change));
+    }
+
+    @Test
+    @DirtiesContext
+    public void testCalendarApplicability_EarlyNextDay() {
+        String tripId = "YU_Q8-Weekday-SDon-151500_MISC_189";
+        ServiceChange change = serviceChange(Table.TRIPS,
+                ServiceChangeType.DELETE,
+                Collections.singletonList(tripEntity(tripId)),
+                null,
+                dateDescriptors(LocalDate.of(2018, 10, 24)));
+
+        // Apply the change on 10/25 after midnight
+        _timeService.setTime("2018-10-25 01:00");
+        assertTrue(_handler.handleServiceChange(change));
+
+    }
+
+    @Test
+    @DirtiesContext
+    public void testCalendarApplicability_LateNextDay() {
+        String tripId = "YU_Q8-Weekday-SDon-151500_MISC_189";
+        ServiceChange change = serviceChange(Table.TRIPS,
+                ServiceChangeType.DELETE,
+                Collections.singletonList(tripEntity(tripId)),
+                null,
+                dateDescriptors(LocalDate.of(2018, 10, 24)));
+
+        // Do not apply the change on 10/25 after 3:00am
+        _timeService.setTime("2018-10-25 03:00");
+        assertFalse(_handler.handleServiceChange(change));
     }
 
     private TripDetailsBean getTripDetails(String tripId) {

@@ -15,7 +15,6 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.impl;
 
-import com.camsys.transit.servicechange.DateDescriptor;
 import com.camsys.transit.servicechange.ServiceChange;
 import org.onebusaway.container.cache.CacheableMethodManager;
 import org.onebusaway.container.refresh.RefreshService;
@@ -26,7 +25,6 @@ import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.GtfsSometimesHandler;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.ShapeChangeHandler;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.StopChangeHandler;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.TimeService;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.TripChangeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -56,8 +53,6 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     private StopChangeHandler _stopChangeHandler;
 
     private TripChangeHandler _tripChangeHandler;
-
-    private TimeService _timeService;
 
     private boolean _isApplying = false;
 
@@ -99,11 +94,6 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         _tripChangeHandler = tripChangeHandler;
     }
 
-    @Autowired
-    public void setTimeService(TimeService timeService) {
-        _timeService = timeService;
-    }
-
     @Override
     public int handleServiceChanges(Collection<ServiceChange> serviceChanges) {
         _isApplying = true;
@@ -129,6 +119,10 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         ShapeChangeSet shapesChanges = _shapeChangeHandler.getAllShapeChanges(activeChanges);
         StopChangeSet stopChanges = _stopChangeHandler.getAllStopChanges(activeChanges);
         TripChangeSet tripChanges = _tripChangeHandler.getAllTripChanges(activeChanges);
+
+        // Supecedes date applicability check for shapes. We only handle ADDED shapes anyhow. Remove shapes
+        // which don't refer to trips.
+        _shapeChangeHandler.filterShapeChanges(shapesChanges, tripChanges);
 
         revertShapeChanges = _shapeChangeHandler.handleShapeChanges(shapesChanges);
         revertStopChanges = _stopChangeHandler.handleStopChanges(stopChanges);
@@ -159,10 +153,6 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     boolean isServiceChangeOk(ServiceChange change) {
         if (!validateServiceChange(change)) {
             _log.debug("service change is invalid");
-            return false;
-        }
-        if (!dateIsApplicable(change)) {
-            _log.debug("Service change is not applicable to date.");
             return false;
         }
         return true;
@@ -215,32 +205,6 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                 return !change.getAffectedEntity().isEmpty() && change.getAffectedField().size() == 1;
             case DELETE:
                 return !change.getAffectedEntity().isEmpty() && change.getAffectedField().isEmpty();
-        }
-        return false;
-    }
-
-    private boolean dateIsApplicable(ServiceChange change) {
-        LocalDate date = _timeService.getCurrentDate();
-        for (DateDescriptor dateDescriptor : change.getAffectedDates()) {
-            if (dateDescriptor.getDate() != null && dateDescriptor.getDate().isEqual(date)) {
-                return true;
-            }
-            if (dateDescriptor.getFrom() != null) {
-                if (dateDescriptor.getTo() != null) {
-                    LocalDate from = dateDescriptor.getFrom();
-                    LocalDate to = dateDescriptor.getTo();
-                    if ((date.isEqual(from) || date.isAfter(from)) && (date.isEqual(to) || date.isBefore(to))) {
-                        return true;
-                    }
-                } else {
-                    LocalDate from = dateDescriptor.getFrom();
-                    if ((date.isEqual(from) || date.isAfter(from))) {
-                        return true;
-                    }
-                }
-            } else if (dateDescriptor.getTo() != null) {
-                _log.error("Not supported: to-date with no from-date specified.");
-            }
         }
         return false;
     }

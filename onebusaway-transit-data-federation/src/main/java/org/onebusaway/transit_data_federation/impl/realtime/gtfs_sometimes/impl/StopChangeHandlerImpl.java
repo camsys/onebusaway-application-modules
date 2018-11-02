@@ -15,6 +15,7 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.impl;
 
+import com.camsys.transit.servicechange.DateDescriptor;
 import com.camsys.transit.servicechange.EntityDescriptor;
 import com.camsys.transit.servicechange.ServiceChange;
 import com.camsys.transit.servicechange.ServiceChangeType;
@@ -24,6 +25,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.StopChange;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.StopChangeSet;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.StopChangeHandler;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.TimeService;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.model.narrative.StopNarrative;
 import org.onebusaway.transit_data_federation.services.EntityIdService;
@@ -35,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.Collection;
 
 @Component
@@ -47,6 +50,8 @@ public class StopChangeHandlerImpl implements StopChangeHandler {
     private TransitGraphDao _dao;
 
     private NarrativeService _narrativeService;
+
+    private TimeService _timeService;
 
     @Autowired
     public void setEntityIdService(EntityIdService entityIdService) {
@@ -63,10 +68,18 @@ public class StopChangeHandlerImpl implements StopChangeHandler {
         _narrativeService = narrativeService;
     }
 
+    @Autowired
+    public void setTimeService(TimeService timeService) {
+        _timeService = timeService;
+    }
+
     @Override
     public StopChangeSet getAllStopChanges(Collection<ServiceChange> changes) {
         StopChangeSet changeset = new StopChangeSet();
         for (ServiceChange change : changes) {
+            if (!dateIsApplicable(change)) {
+                continue;
+            }
             if (Table.STOPS.equals(change.getTable())) {
                 if (ServiceChangeType.ALTER.equals(change.getServiceChangeType())) {
                     for (EntityDescriptor entity : change.getAffectedEntity()) {
@@ -130,5 +143,10 @@ public class StopChangeHandlerImpl implements StopChangeHandler {
         change.setStopLat(stopEntry.getStopLat());
         change.setStopLon(stopEntry.getStopLon());
         return change;
+    }
+
+    boolean dateIsApplicable(ServiceChange change) {
+        LocalDate date = _timeService.getCurrentDate();
+        return GtfsServiceChangeLibrary.dateIsApplicable(date, change.getAffectedDates());
     }
 }

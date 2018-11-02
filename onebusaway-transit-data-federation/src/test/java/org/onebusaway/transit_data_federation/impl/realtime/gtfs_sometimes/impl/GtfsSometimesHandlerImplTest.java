@@ -23,9 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 
 import static org.junit.Assert.assertFalse;
@@ -35,21 +33,9 @@ import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.
 
 public class GtfsSometimesHandlerImplTest {
 
-    private GtfsSometimesHandlerImpl handler;
+    private GtfsSometimesHandlerImpl handler = new GtfsSometimesHandlerImpl();
 
-    @Before
-    public void setup() {
-        handler = new GtfsSometimesHandlerImpl();
-
-        TimeServiceImpl timeService = new TimeServiceImpl();
-        Calendar cal = Calendar.getInstance();
-        cal.set(2018, Calendar.JULY, 1, 13, 0, 0);
-        timeService.setTime(cal.getTimeInMillis());
-        timeService.setTimeZone(ZoneId.of("America/New_York"));
-        handler.setTimeService(timeService);
-    }
-
-    // Validation and date range tests
+    // Validation tests
 
     @Test
     public void deleteStopTimesValidationTest() {
@@ -78,36 +64,6 @@ public class GtfsSometimesHandlerImplTest {
                 Collections.singletonList(stopTimeEntity("tripA", "stopA")),
                 null,
                 Collections.emptyList());
-        assertFalse(handler.isServiceChangeOk(change));
-    }
-
-    @Test
-    public void deleteStopTimesWrongDateTest() {
-        ServiceChange change = serviceChange(Table.STOP_TIMES,
-                ServiceChangeType.DELETE,
-                Collections.singletonList(stopTimeEntity("tripA", "stopA")),
-                null,
-                dateDescriptors(LocalDate.of(2018, 7, 2)));
-        assertFalse(handler.isServiceChangeOk(change));
-    }
-
-    @Test
-    public void deleteStopTimesDateRangeTest() {
-        ServiceChange change = serviceChange(Table.STOP_TIMES,
-                ServiceChangeType.DELETE,
-                Collections.singletonList(stopTimeEntity("tripA", "stopA")),
-                null,
-                dateDescriptorsRange(LocalDate.of(2018, 6, 1), LocalDate.of(2018, 8, 1)));
-        assertTrue(handler.isServiceChangeOk(change));
-    }
-
-    @Test
-    public void deleteStopTimesWrongDateRangeTest() {
-        ServiceChange change = serviceChange(Table.STOP_TIMES,
-                ServiceChangeType.DELETE,
-                Collections.singletonList(stopTimeEntity("tripA", "stopA")),
-                null,
-                dateDescriptorsRange(LocalDate.of(2018, 7, 2), LocalDate.of(2018, 8, 1)));
         assertFalse(handler.isServiceChangeOk(change));
     }
 

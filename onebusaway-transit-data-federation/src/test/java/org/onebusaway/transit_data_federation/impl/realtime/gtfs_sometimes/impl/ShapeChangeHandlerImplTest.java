@@ -22,7 +22,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.transit_data_federation.impl.MockEntityIdServiceImpl;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.AddShape;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.AddTrip;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.ModifyTrip;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.ShapeChangeSet;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChangeSet;
+import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 
 import java.time.LocalDate;
@@ -39,6 +44,8 @@ import static org.onebusaway.transit_data_federation.testing.ServiceChangeUnitTe
 import static org.onebusaway.transit_data_federation.testing.ServiceChangeUnitTestingSupport.shapeFields;
 
 import static org.mockito.Mockito.mock;
+import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.aid;
+
 
 public class ShapeChangeHandlerImplTest {
 
@@ -86,6 +93,39 @@ public class ShapeChangeHandlerImplTest {
         ShapeChangeSet revertset = handler.handleShapeChanges(changeset);
         assertTrue(revertset.getAddedShapes().isEmpty());
         assertEquals(3, revertset.getDeletedShapes().size());
+    }
+
+    // Filter
+    @Test
+    public void testFilterShapes() {
+        // Check null shape Ids don't break anything
+        AddTrip badAdd = new AddTrip();
+        badAdd.setTripEntry(new TripEntryImpl());
+        AddTrip addTrip = new AddTrip();
+        addTrip.setTripEntry(new TripEntryImpl());
+        addTrip.getTripEntry().setShapeId(aid("1_shapeA"));
+        ModifyTrip badMod = new ModifyTrip();
+        ModifyTrip modTrip = new ModifyTrip();
+        modTrip.setShapeId(aid("1_shapeB"));
+
+        TripChangeSet trips = new TripChangeSet();
+        trips.addAddedTrip(badAdd);
+        trips.addAddedTrip(addTrip);
+        trips.addModifiedTrip(modTrip);
+        trips.addModifiedTrip(badMod);
+
+        AddShape shapeA = new AddShape(aid("1_shapeA"), new ShapePoints());
+        AddShape shapeB = new AddShape(aid("1_shapeB"), new ShapePoints());
+        AddShape shapeC = new AddShape(aid("1_shapeC"), new ShapePoints());
+
+        ShapeChangeSet shapes = new ShapeChangeSet();
+        shapes.addAddedShape(shapeA);
+        shapes.addAddedShape(shapeB);
+        shapes.addAddedShape(shapeC);
+
+        handler.filterShapeChanges(shapes, trips);
+
+        assertEquals(Arrays.asList(shapeA, shapeB), shapes.getAddedShapes());
     }
 
 }
