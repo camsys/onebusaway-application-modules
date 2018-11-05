@@ -15,109 +15,16 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model;
 
-import com.camsys.transit.servicechange.DateDescriptor;
-import com.camsys.transit.servicechange.EntityDescriptor;
-import com.camsys.transit.servicechange.field_descriptors.StopTimesFields;
-import com.camsys.transit.servicechange.field_descriptors.TripsFields;
 import org.onebusaway.gtfs.model.AgencyAndId;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-/**
- * This is an object created while processing ServiceChanges into a TripChangeSet, to hold some
- * state created while reading through the ServiceChanges, before we know what the type is going
- * to be.
- */
-public class TripChange {
-    public enum TripChangeType { MODIFY, ADD, DELETE };
+public interface TripChange {
 
-    public TripChange(String tripId) {
-        this.tripId = tripId;
-    }
+    AgencyAndId getTripId();
 
-    private String tripId;
+    LocalDate getServiceDate();
 
-    private TripChangeType type = TripChangeType.MODIFY;
-
-    private TripsFields addedTripsFields;
-
-    private List<StopTimesFields> modifiedStops = new ArrayList<>();
-
-    private List<StopTimesFields> insertedStops = new ArrayList<>();
-
-    private List<EntityDescriptor> deletedStops = new ArrayList<>();
-
-    private List<DateDescriptor> dates;
-
-    private AgencyAndId newShapeId;
-
-    public String getTripId() {
-        return tripId;
-    }
-
-    public List<StopTimesFields> getModifiedStops() {
-        return modifiedStops;
-    }
-
-    public void addModifiedStop(StopTimesFields stop) {
-        modifiedStops.add(stop);
-    }
-
-    public List<StopTimesFields> getInsertedStops() {
-        return insertedStops;
-    }
-
-    public void addInsertedStop(StopTimesFields stop) {
-        insertedStops.add(stop);
-    }
-
-    public List<EntityDescriptor> getDeletedStops() {
-        return deletedStops;
-    }
-
-    public void addDeletedStop(EntityDescriptor stop) {
-        deletedStops.add(stop);
-    }
-
-    public AgencyAndId getNewShapeId() {
-        return newShapeId;
-    }
-
-    public void setNewShapeId(AgencyAndId newShapeId) {
-        this.newShapeId = newShapeId;
-    }
-
-    public TripsFields getAddedTripsFields() {
-        return addedTripsFields;
-    }
-
-    public void setAddedTripsFields(TripsFields addedTripsFields) {
-        this.addedTripsFields = addedTripsFields;
-        this.type = TripChangeType.ADD;
-    }
-
-    public List<DateDescriptor> getDates() {
-        return dates;
-    }
-
-    public void setDates(List<DateDescriptor> dates) {
-        this.dates = dates;
-    }
-
-    public void setDelete() {
-        this.type = TripChangeType.DELETE;
-    }
-
-    public boolean isAdded() {
-        return TripChangeType.ADD.equals(type);
-    }
-
-    public boolean isDelete() {
-        return TripChangeType.DELETE.equals(type);
-    }
-
-    public boolean isModify() {
-        return TripChangeType.MODIFY.equals(type);
-    }
+    LocalDateTime getEndTime();
 }

@@ -16,12 +16,15 @@
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 public interface TimeService {
-    long getCurrentTime();
+    LocalDateTime getCurrentTime();
 
     LocalDate getCurrentDate();
+
+    long getCurrentTimeAsEpochMs();
 
     ZoneId getTimeZone();
 }

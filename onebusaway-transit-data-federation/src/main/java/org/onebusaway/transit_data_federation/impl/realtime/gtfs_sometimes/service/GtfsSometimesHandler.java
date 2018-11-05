@@ -26,7 +26,7 @@ public interface GtfsSometimesHandler {
      * @param serviceChanges ServiceChanges to process
      * @return number of service changes fully successfully handled
      */
-    int handleServiceChanges(Collection<ServiceChange> serviceChanges);
+    int handleServiceChanges(long timestamp, Collection<ServiceChange> serviceChanges);
 
     /**
      * Process a single ServiceChange.

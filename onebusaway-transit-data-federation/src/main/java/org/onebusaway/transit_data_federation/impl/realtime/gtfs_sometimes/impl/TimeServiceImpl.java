@@ -24,25 +24,29 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 
 @Component
 public class TimeServiceImpl implements TimeService {
-    private long _time = -1;
+    private LocalDateTime _time = null;
 
     private ZoneId _timeZone;
 
     @Override
-    public long getCurrentTime() {
-        if (_time != -1)
+    public LocalDateTime getCurrentTime() {
+        if (_time != null)
             return _time;
-        return new Date().getTime();
+        return LocalDateTime.now(getTimeZone());
+    }
+
+    @Override
+    public long getCurrentTimeAsEpochMs() {
+        ZonedDateTime zdt = ZonedDateTime.ofLocal(getCurrentTime(), _timeZone, null);
+        return zdt.toEpochSecond() * 1000;
     }
 
     @Override
     public LocalDate getCurrentDate() {
-        return Instant.ofEpochMilli(getCurrentTime())
-                .atZone(getTimeZone()).toLocalDate();
+        return _time.toLocalDate();
     }
 
     @Override
@@ -55,7 +59,8 @@ public class TimeServiceImpl implements TimeService {
     }
 
     public void setTime(long time) {
-        _time = time;
+        _time = Instant.ofEpochMilli(time)
+                .atZone(getTimeZone()).toLocalDateTime();
     }
 
     public void setTime(String timeString) {

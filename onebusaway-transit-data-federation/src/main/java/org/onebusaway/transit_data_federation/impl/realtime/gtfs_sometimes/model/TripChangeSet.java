@@ -15,21 +15,20 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model;
 
-import org.onebusaway.gtfs.model.AgencyAndId;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class TripChangeSet {
 
-    private List<AgencyAndId> deletedTrips = new ArrayList<>();
+    private List<DeleteTrip> deletedTrips = new ArrayList<>();
 
     private List<ModifyTrip> modifiedTrips = new ArrayList<>();
 
     private List<AddTrip> addedTrips = new ArrayList<>();
 
-    public void addDeletedTrip(AgencyAndId id) {
-        deletedTrips.add(id);
+    public void addDeletedTrip(DeleteTrip trip) {
+        deletedTrips.add(trip);
     }
 
     public void addModifiedTrip(ModifyTrip trip) {
@@ -40,7 +39,7 @@ public class TripChangeSet {
         addedTrips.add(addTrip);
     }
 
-    public List<AgencyAndId> getDeletedTrips() {
+    public List<DeleteTrip> getDeletedTrips() {
         return deletedTrips;
     }
 
@@ -54,5 +53,13 @@ public class TripChangeSet {
 
     public int size() {
         return deletedTrips.size() + modifiedTrips.size() + addedTrips.size();
+    }
+
+    public List<TripChange> getAllChanges() {
+        List<TripChange> changes = new ArrayList<>();
+        changes.addAll(deletedTrips);
+        changes.addAll(modifiedTrips);
+        changes.addAll(addedTrips);
+        return changes;
     }
 }
