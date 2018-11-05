@@ -493,7 +493,7 @@ public class GtfsSometimesClientIntegrationTest {
                 Collections.singletonList(fields),
                 dateDescriptors(LocalDate.of(2018, 8, 23)));
 
-        assertEquals(2, _handler.handleServiceChanges(Arrays.asList(addShape, alterTrip)));
+        assertEquals(2, _handler.handleServiceChanges(-1, Arrays.asList(addShape, alterTrip)));
         assertNotNull(_graph.getShape(new AgencyAndId("MTA NYCT", "newShape")));
 
         List<TripStopTimeBean> oldSchedule = tripDetails.getSchedule().getStopTimes();
@@ -712,7 +712,7 @@ public class GtfsSometimesClientIntegrationTest {
                         "805163", 0),
                 dateDescriptors(LocalDate.of(2018, 8, 23)));
 
-        assertTrue(_handler.handleServiceChanges(Arrays.asList(addTrip, stop0, stop1, stop2)) > 0);
+        assertTrue(_handler.handleServiceChanges(-1, Arrays.asList(addTrip, stop0, stop1, stop2)) > 0);
 
         TripDetailsBean tripDetails = getTripDetails("tripA");
         assertEquals("MTA NYCT_S86", tripDetails.getTrip().getRoute().getId());
@@ -815,7 +815,7 @@ public class GtfsSometimesClientIntegrationTest {
                         "805163", 0),
                 dateDescriptors(LocalDate.of(2018, 8, 23)));
 
-        assertTrue(_handler.handleServiceChanges(Arrays.asList(deleteTrip, addTrip, stop0, stop1, stop2)) > 0);
+        assertTrue(_handler.handleServiceChanges(-1, Arrays.asList(deleteTrip, addTrip, stop0, stop1, stop2)) > 0);
         assertNull(getTripDetails(tripId));
         assertNotNull(getTripDetails("tripA"));
 
@@ -824,7 +824,7 @@ public class GtfsSometimesClientIntegrationTest {
         assertEquals(1, block.getConfigurations().get(0).getTrips().size());
 
         // Revert delete trip, but keep added trips
-        assertTrue(_handler.handleServiceChanges(Arrays.asList(addTrip, stop0, stop1, stop2)) > 0);
+        assertTrue(_handler.handleServiceChanges(-1, Arrays.asList(addTrip, stop0, stop1, stop2)) > 0);
 
         block = _tds.getBlockForId("MTA NYCT_" + blockId);
         assertEquals(1, block.getConfigurations().size());

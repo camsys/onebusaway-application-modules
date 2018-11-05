@@ -107,23 +107,7 @@ public class GtfsSometimesJsonClientImpl {
             _log.error("Feed incrementality not supported.");
             return;
         }
-        if (_lastUpdatedTimestamp == -1) { // first update
-            _log.info("First update for feed.");
-            if (feed.getFeedEntities().isEmpty()) {
-                _log.info("Feed is empty, ignoring.");
-                return;
-            }
-            handleNewFeed(feed);
-            _lastUpdatedTimestamp = feed.getFeedHeader().getTimestamp();
-        } else if (_lastUpdatedTimestamp == feed.getFeedHeader().getTimestamp()) {
-            _log.info("Feed is the same as previously processed, no action.");
-        } else if (_lastUpdatedTimestamp < feed.getFeedHeader().getTimestamp()) {
-            _log.info("Update feed.");
-            handleNewFeed(feed);
-            _lastUpdatedTimestamp = feed.getFeedHeader().getTimestamp();
-        } else {
-            _log.error("Non-increasing timestamps in feed!");
-        }
+        handleNewFeed(feed);
     }
 
     private void handleNewFeed(Feed feed) {
@@ -134,7 +118,7 @@ public class GtfsSometimesJsonClientImpl {
             }
         }
         int total = changes.size(),
-                success = _gtfsSometimesHandler.handleServiceChanges(changes);
+                success = _gtfsSometimesHandler.handleServiceChanges(feed.getFeedHeader().getTimestamp(), changes);
         _log.info("Service changes: processed {} service changes, corresponding to {} successful internal changes", total, success);
     }
 }

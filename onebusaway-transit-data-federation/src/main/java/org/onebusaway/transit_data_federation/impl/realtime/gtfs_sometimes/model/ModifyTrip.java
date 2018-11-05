@@ -19,9 +19,11 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
-public class ModifyTrip {
+public class ModifyTrip implements TripChange {
 
     private AgencyAndId tripId;
 
@@ -31,6 +33,9 @@ public class ModifyTrip {
 
     private TripEntryImpl tripEntry;
 
+    private LocalDate serviceDate;
+
+    @Override
     public AgencyAndId getTripId() {
         return tripId;
     }
@@ -61,5 +66,20 @@ public class ModifyTrip {
 
     public void setTripEntry(TripEntryImpl tripEntry) {
         this.tripEntry = tripEntry;
+    }
+
+    public void setServiceDate(LocalDate serviceDate) {
+        this.serviceDate = serviceDate;
+    }
+
+    @Override
+    public LocalDate getServiceDate() {
+        return serviceDate;
+    }
+
+    @Override
+    public LocalDateTime getEndTime() {
+        StopTimeEntry stopTime = tripEntry.getStopTimes().get(tripEntry.getStopTimes().size() - 1);
+        return serviceDate.atStartOfDay().plusSeconds(stopTime.getArrivalTime());
     }
 }

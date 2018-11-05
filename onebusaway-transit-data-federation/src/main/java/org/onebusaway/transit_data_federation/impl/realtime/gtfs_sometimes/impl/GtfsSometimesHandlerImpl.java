@@ -21,10 +21,12 @@ import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.ShapeChangeSet;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.StopChangeSet;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChange;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChangeSet;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.GtfsSometimesHandler;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.ShapeChangeHandler;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.StopChangeHandler;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.TimeService;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.TripChangeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +34,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -54,6 +58,8 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     private TripChangeHandler _tripChangeHandler;
 
+    private TimeService _timeService;
+
     private boolean _isApplying = false;
 
     private TripChangeSet revertTripChanges;
@@ -61,6 +67,10 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     private ShapeChangeSet revertShapeChanges;
 
     private StopChangeSet revertStopChanges;
+
+    private long _lastUpdatedTimestamp = -1;
+
+    private LocalDateTime _reapplyTime;
 
     @Autowired
     public void setRefreshService(RefreshService refreshService) {
@@ -94,8 +104,19 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         _tripChangeHandler = tripChangeHandler;
     }
 
+    @Autowired
+    public void setTimeService(TimeService timeService) {
+        _timeService = timeService;
+    }
+
     @Override
-    public int handleServiceChanges(Collection<ServiceChange> serviceChanges) {
+    public int handleServiceChanges(long timestamp, Collection<ServiceChange> serviceChanges) {
+
+        // Check whether changes should be re-applied
+        if (!shouldApplyChanges(timestamp, serviceChanges)) {
+            return 0;
+        }
+
         _isApplying = true;
 
         revertPreviousChanges();
@@ -104,10 +125,10 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         Currently handled:
          * adding shapes (do this first so trips can use the new shapes)
          * trip modifications:
-         *   inserted stop times
-         *   deleted stop times
-         *   altered stop times
-         *   shape ID change
+         *   insert/delete/alter stop times
+         *   shape ID change, added shapes
+         *   added trips / deleted trips
+         *   moved stops / stop name change
          */
         List<ServiceChange> activeChanges = filterServiceChanges(serviceChanges);
 
@@ -133,12 +154,16 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
             forceFlush();
         }
         _isApplying = false;
+
+        _lastUpdatedTimestamp = timestamp;
+        _reapplyTime = getReapplyTime(tripChanges.getAllChanges());
+
         return nSuccess;
     }
 
     @Override
     public boolean handleServiceChange(ServiceChange change) {
-        return handleServiceChanges(Collections.singleton(change)) > 0;
+        return handleServiceChanges(-1, Collections.singleton(change)) > 0;
     }
 
     @Override
@@ -207,6 +232,46 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                 return !change.getAffectedEntity().isEmpty() && change.getAffectedField().isEmpty();
         }
         return false;
+    }
+
+    boolean shouldApplyChanges(long timestamp, Collection<ServiceChange> serviceChanges) {
+        if (timestamp == -1) {
+            // testing
+            return true;
+        }
+        if (_lastUpdatedTimestamp == -1) { // first update
+            _log.info("First update for feed.");
+            if (serviceChanges.isEmpty()) {
+                _log.info("Feed is empty, ignoring.");
+                return false;
+            }
+            return true;
+        } else if (_lastUpdatedTimestamp < timestamp) {
+            _log.info("Update feed.");
+            return true;
+        } else if (_lastUpdatedTimestamp == timestamp) {
+            _log.info("Feed is the same as previously processed, check reapply time.");
+            return _timeService.getCurrentTime().isAfter(_reapplyTime);
+        } else {
+            _log.error("Non-increasing timestamps in feed!");
+            return false;
+        }
+    }
+
+    // Re-apply time is earliest of: midnight tonight, or (future) end time of a trip that begins on the previous service day.
+    LocalDateTime getReapplyTime(List<TripChange> tripChanges) {
+        LocalDate today = _timeService.getCurrentDate();
+        LocalDateTime now = _timeService.getCurrentTime();
+        LocalDateTime reapplyTime = today.atStartOfDay().plusDays(1); // midnight tonight
+        for (TripChange tripChange : tripChanges) {
+            if (tripChange.getServiceDate().isBefore(today)) {
+                LocalDateTime endTime = tripChange.getEndTime();
+                if (endTime.isAfter(now) && endTime.isBefore(reapplyTime)) {
+                    reapplyTime = endTime;
+                }
+            }
+        }
+        return reapplyTime;
     }
 }
 

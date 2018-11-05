@@ -16,46 +16,21 @@
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
-import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
-import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public class AddTrip implements TripChange {
+public class DeleteTrip implements TripChange {
 
     private AgencyAndId tripId;
 
-    private TripEntryImpl tripEntry;
-
-    private TripNarrative tripNarrative;
-
     private LocalDate serviceDate;
+
+    private LocalDateTime endTime;
 
     @Override
     public AgencyAndId getTripId() {
         return tripId;
-    }
-
-    public void setTripId(AgencyAndId tripId) {
-        this.tripId = tripId;
-    }
-
-    public TripEntryImpl getTripEntry() {
-        return tripEntry;
-    }
-
-    public void setTripEntry(TripEntryImpl tripEntry) {
-        this.tripEntry = tripEntry;
-    }
-
-    public TripNarrative getTripNarrative() {
-        return tripNarrative;
-    }
-
-    public void setTripNarrative(TripNarrative tripNarrative) {
-        this.tripNarrative = tripNarrative;
     }
 
     @Override
@@ -63,13 +38,14 @@ public class AddTrip implements TripChange {
         return serviceDate;
     }
 
-    public void setServiceDate(LocalDate serviceDate) {
-        this.serviceDate = serviceDate;
-    }
-
     @Override
     public LocalDateTime getEndTime() {
-        StopTimeEntry stopTime = tripEntry.getStopTimes().get(tripEntry.getStopTimes().size() - 1);
-        return serviceDate.atStartOfDay().plusSeconds(stopTime.getArrivalTime());
+        return endTime;
+    }
+
+    public DeleteTrip(AgencyAndId tripId, LocalDate serviceDate, LocalDateTime endTime) {
+        this.tripId = tripId;
+        this.serviceDate = serviceDate;
+        this.endTime = endTime;
     }
 }
