@@ -154,7 +154,7 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
 
             } else if (change.isModify()) {
                 LocalDate serviceDate = getServiceDateForTrip(change);
-                if (!dateIsApplicable(serviceDate, change.getDates())) {
+                if (serviceDate == null || !dateIsApplicable(serviceDate, change.getDates())) {
                     continue;
                 }
                 TripEntryImpl tripEntry = (TripEntryImpl) _dao.getTripEntryForId(tripId);

@@ -40,7 +40,7 @@ public class TimeServiceImpl implements TimeService {
 
     @Override
     public long getCurrentTimeAsEpochMs() {
-        ZonedDateTime zdt = ZonedDateTime.ofLocal(getCurrentTime(), _timeZone, null);
+        ZonedDateTime zdt = ZonedDateTime.ofLocal(getCurrentTime(), getTimeZone(), null);
         return zdt.toEpochSecond() * 1000;
     }
 
