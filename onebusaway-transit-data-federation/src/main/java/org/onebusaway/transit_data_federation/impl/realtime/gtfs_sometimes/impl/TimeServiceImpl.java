@@ -46,7 +46,7 @@ public class TimeServiceImpl implements TimeService {
 
     @Override
     public LocalDate getCurrentDate() {
-        return _time.toLocalDate();
+        return getCurrentTime().toLocalDate();
     }
 
     @Override
