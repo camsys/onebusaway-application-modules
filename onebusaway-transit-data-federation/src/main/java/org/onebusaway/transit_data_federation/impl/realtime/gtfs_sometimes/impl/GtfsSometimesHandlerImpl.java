@@ -18,6 +18,7 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.impl
 import com.camsys.transit.servicechange.ServiceChange;
 import org.onebusaway.container.cache.CacheableMethodManager;
 import org.onebusaway.container.refresh.RefreshService;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.ShapeChangeSet;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.StopChangeSet;
@@ -141,7 +142,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         StopChangeSet stopChanges = _stopChangeHandler.getAllStopChanges(activeChanges);
         TripChangeSet tripChanges = _tripChangeHandler.getAllTripChanges(activeChanges);
 
-        // Supecedes date applicability check for shapes. We only handle ADDED shapes anyhow. Remove shapes
+        // Supersedes date applicability check for shapes. We only handle ADDED shapes anyhow. Remove shapes
         // which don't refer to trips.
         _shapeChangeHandler.filterShapeChanges(shapesChanges, tripChanges);
 
@@ -272,6 +273,15 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
             }
         }
         return reapplyTime;
+    }
+
+    // for testing
+    void setLastUpdatedTimestamp(long timestamp) {
+        _lastUpdatedTimestamp = timestamp;
+    }
+
+    void setReapplyTime(LocalDateTime reapplyTime) {
+        _reapplyTime = reapplyTime;
     }
 }
 
