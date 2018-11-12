@@ -251,7 +251,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
             _log.info("Update feed.");
             return true;
         } else if (_lastUpdatedTimestamp == timestamp) {
-            _log.info("Feed is the same as previously processed, check reapply time.");
+            _log.info("Feed is the same as previously processed, check reapply time ({})", _reapplyTime);
             return _timeService.getCurrentTime().isAfter(_reapplyTime);
         } else {
             _log.error("Non-increasing timestamps in feed!");
