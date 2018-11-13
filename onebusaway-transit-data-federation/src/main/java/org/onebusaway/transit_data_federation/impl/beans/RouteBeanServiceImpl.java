@@ -284,6 +284,9 @@ class RouteBeanServiceImpl implements RouteBeanService {
       StopEntry prev = null;
       for (StopEntry stop : sequence.getStops()) {
         if (prev != null) {
+          // Normalize stop in case there are service changes
+          stop = _transitGraphDao.getStopEntryForId(stop.getId());
+
           // We do this to avoid cycles
           if (!graph.isConnected(stop, prev))
             graph.addEdge(prev, stop);
