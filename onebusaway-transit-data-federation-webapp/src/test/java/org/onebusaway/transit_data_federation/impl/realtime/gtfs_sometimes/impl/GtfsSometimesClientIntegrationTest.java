@@ -560,6 +560,9 @@ public class GtfsSometimesClientIntegrationTest {
         double oldLat = stopBean.getLat();
         double oldLon = stopBean.getLon();
 
+        StopsForRouteBean stopsForRoute = _tds.getStopsForRoute("MTA NYCT_S86");
+        List<String> stopGroupStops = stopsForRoute.getStopGroupings().get(0).getStopGroups().get(0).getStopIds();
+
         double newLat = 40.557318, newLon = -74.1141876;
         ServiceChange change = serviceChange(Table.STOPS,
                 ServiceChangeType.ALTER,
@@ -578,6 +581,10 @@ public class GtfsSometimesClientIntegrationTest {
         TripStopTimeBean stop = tripDetails.getSchedule().getStopTimes().get(67);
         assertEquals(newLat, stop.getStop().getLat(), 0.00001);
         assertEquals(newLon, stop.getStop().getLon(), 0.00001);
+
+        // List of stops should stay the same.
+        stopsForRoute = _tds.getStopsForRoute("MTA NYCT_S86");
+        List<String> stopGroupStopsAltered = stopsForRoute.getStopGroupings().get(0).getStopGroups().get(0).getStopIds();
 
         revertPreviousChanges();
         stopBean = _tds.getStop("MTA_203564");
@@ -605,6 +612,11 @@ public class GtfsSometimesClientIntegrationTest {
             assertEquals(oldStopTime.getGtfsSequence(), revertStopTime.getGtfsSequence());
             assertEquals(oldStopTime.getDistanceAlongTrip(), revertStopTime.getDistanceAlongTrip(), 0.00001);
         }
+
+        stopsForRoute = _tds.getStopsForRoute("MTA NYCT_S86");
+        List<String> stopGroupStopsFinal = stopsForRoute.getStopGroupings().get(0).getStopGroups().get(0).getStopIds();
+        assertEquals(stopGroupStops, stopGroupStopsAltered);
+        assertEquals(stopGroupStops, stopGroupStopsFinal);
     }
 
     // Test whether location change is successfully reverted and new change is applied
