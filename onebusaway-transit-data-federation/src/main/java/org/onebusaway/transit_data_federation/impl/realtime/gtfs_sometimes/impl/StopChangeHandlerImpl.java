@@ -127,7 +127,8 @@ public class StopChangeHandlerImpl implements StopChangeHandler {
         StopEntryImpl stopEntry = new StopEntryImpl(stopId, lat, lon);
         stopEntry.setIndex(index);
         stopEntry.setWheelchairBoarding(oldStopEntry.getWheelchairBoarding());
-        _narrativeService.addStop(stopEntry, stopName);
+        StopNarrative newNarrative = newStopNarrative(narrative, stopName);
+        _narrativeService.addStop(stopId, newNarrative);
         if (change.hasStopLat() || change.hasStopLon()) {
             _dao.removeStopEntry(stopId);
             _dao.addStopEntry(stopEntry);
@@ -148,5 +149,16 @@ public class StopChangeHandlerImpl implements StopChangeHandler {
     boolean dateIsApplicable(ServiceChange change) {
         LocalDate date = _timeService.getCurrentDate();
         return GtfsServiceChangeLibrary.dateIsApplicable(date, change.getAffectedDates());
+    }
+
+    private StopNarrative newStopNarrative(StopNarrative narrative, String name) {
+        StopNarrative.Builder builder = StopNarrative.builder();
+        builder.setName(name);
+        builder.setCode(narrative.getCode());
+        builder.setDescription(narrative.getDescription());
+        builder.setDirection(narrative.getDirection());
+        builder.setLocationType(narrative.getLocationType());
+        builder.setUrl(narrative.getUrl());
+        return builder.create();
     }
 }

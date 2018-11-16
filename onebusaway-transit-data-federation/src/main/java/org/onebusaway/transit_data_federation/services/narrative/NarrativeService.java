@@ -72,7 +72,7 @@ public interface NarrativeService {
 
   public TripNarrative removeTrip(TripEntryImpl trip);
 
-  public void addStop(StopEntry stop, String stopName);
+  public void addStop(AgencyAndId stopId, StopNarrative stopNarrative);
 
   public void addStopTime(StopTimeEntryImpl stopTime);
 
