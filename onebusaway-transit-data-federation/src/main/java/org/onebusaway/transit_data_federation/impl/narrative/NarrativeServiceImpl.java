@@ -114,8 +114,8 @@ public class NarrativeServiceImpl implements NarrativeService {
   }
 
   @Override
-  public void addStop(StopEntry stop, String stopName) {
-    _provider.addStop(stop, stopName);
+  public void addStop(AgencyAndId stopId, StopNarrative stopNarrative) {
+    _provider.setNarrativeForStop(stopId, stopNarrative);
   }
 
   @Override
