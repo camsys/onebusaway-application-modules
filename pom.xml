@@ -7,7 +7,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>onebusaway-application-modules</artifactId>
-  <version>1.1.13.12-gtfs-SNAPSHOT</version>
+  <version>1.1.13.14</version>
   <packaging>pom</packaging>
 
   <name>onebusaway-application-modules</name>
@@ -16,7 +16,7 @@
 
   <!-- Common Software Dependency Versions -->
   <properties>
-    <struts-version>2.3.32</struts-version>
+    <struts-version>2.3.35</struts-version>
     <gwt-version>2.4.0</gwt-version>
     <spring-version>4.3.8.RELEASE</spring-version>
     <csv-entities-version>1.0.3</csv-entities-version>

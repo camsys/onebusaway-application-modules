@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
+import com.opensymphony.xwork2.ActionInvocation;
 import org.apache.struts2.rest.handler.ContentTypeHandler;
 import org.onebusaway.api.model.ResponseBean;
 
@@ -26,14 +27,26 @@ import com.google.protobuf.Message;
 
 public class CustomProtocolBufferTextHandler implements ContentTypeHandler {
 
+  @Deprecated
   @Override
   public void toObject(Reader in, Object target) throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
+  public void toObject(ActionInvocation actionInvocation, Reader in, Object target) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Deprecated
+  @Override
   public String fromObject(Object obj, String resultCode, Writer stream)
       throws IOException {
+    return null;
+  }
+
+  @Override
+  public String fromObject(ActionInvocation actionInvocation, Object obj, String resultCode, Writer stream) throws IOException {
     ResponseBean response = (ResponseBean) obj;
     if (response.getData() != null && response.getData() instanceof Message) {
       Message message = (Message) response.getData();
