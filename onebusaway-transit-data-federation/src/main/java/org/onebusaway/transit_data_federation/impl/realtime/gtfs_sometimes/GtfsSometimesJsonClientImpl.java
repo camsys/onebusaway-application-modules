@@ -107,6 +107,13 @@ public class GtfsSometimesJsonClientImpl {
             _log.error("Feed incrementality not supported.");
             return;
         }
+        String feedName = feed.getFeedHeader().getFeedName();
+        if (feedName != null) {
+            if (!_transitDataService.getActiveBundleId().equals(feedName)) {
+                _log.error("Feed is for a different bundle");
+                return;
+            }
+        }
         handleNewFeed(feed);
     }
 
