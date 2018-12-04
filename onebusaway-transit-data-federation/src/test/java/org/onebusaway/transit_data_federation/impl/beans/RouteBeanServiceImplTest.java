@@ -18,6 +18,7 @@ package org.onebusaway.transit_data_federation.impl.beans;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.aid;
 import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.block;
 import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.blockTripIndices;
 import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.linkBlockTrips;
@@ -177,6 +178,10 @@ public class RouteBeanServiceImplTest {
     StopEntryImpl stopB = stop("stopB", 47.1, -122.1);
     StopEntryImpl stopC = stop("stopC", 47.2, -122.2);
 
+    Mockito.when(_transitGraphDao.getStopEntryForId(aid("stopA"))).thenReturn(stopA);
+    Mockito.when(_transitGraphDao.getStopEntryForId(aid("stopB"))).thenReturn(stopB);
+    Mockito.when(_transitGraphDao.getStopEntryForId(aid("stopC"))).thenReturn(stopC);
+    
     BlockEntryImpl blockA = block("blockA");
     TripEntryImpl tripA = trip("tripA", "sidA");
     TripEntryImpl tripB = trip("tripB", "sidA");
