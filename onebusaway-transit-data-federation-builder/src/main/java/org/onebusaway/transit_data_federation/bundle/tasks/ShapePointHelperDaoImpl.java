@@ -22,6 +22,7 @@ import org.onebusaway.gtfs.services.GtfsRelationalDao;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.shapes.BasicShapePointService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+@Primary
 public class ShapePointHelperDaoImpl implements BasicShapePointService {
 
   private GtfsRelationalDao _gtfsDao;
