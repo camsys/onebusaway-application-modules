@@ -536,6 +536,8 @@ public class BlockIndexServiceImpl implements BlockIndexService {
 
     for (BlockStopTimeIndex index : indices) {
       StopEntryImpl stop = (StopEntryImpl) index.getStop();
+      // normalize stop- some old references are left in the block
+      stop = (StopEntryImpl) _graphDao.getStopEntryForId(stop.getId());
       stop.addStopTimeIndex(index);
     }
 
