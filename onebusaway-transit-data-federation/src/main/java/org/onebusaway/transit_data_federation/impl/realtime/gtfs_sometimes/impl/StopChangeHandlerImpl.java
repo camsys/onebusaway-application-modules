@@ -129,10 +129,8 @@ public class StopChangeHandlerImpl implements StopChangeHandler {
         stopEntry.setWheelchairBoarding(oldStopEntry.getWheelchairBoarding());
         StopNarrative newNarrative = newStopNarrative(narrative, stopName);
         _narrativeService.addStop(stopId, newNarrative);
-        if (change.hasStopLat() || change.hasStopLon()) {
-            _dao.removeStopEntry(stopId);
-            _dao.addStopEntry(stopEntry);
-        }
+        _dao.removeStopEntry(stopId);
+        _dao.addStopEntry(stopEntry);
         return true;
     }
 
