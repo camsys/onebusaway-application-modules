@@ -53,6 +53,8 @@ public class GtfsSometimesJsonClientImpl {
 
     private long _lastUpdatedTimestamp = -1;
 
+    private boolean _disabled = false;
+
     @Autowired
     public void setUrl(String url) {
         _gtfsSometimesUrl = url;
@@ -77,9 +79,15 @@ public class GtfsSometimesJsonClientImpl {
         _transitDataService = transitDataService;
     }
 
+    public void setDisabled(boolean disabled) {
+        _disabled = disabled;
+    }
+
     @PostConstruct
     public void init() {
-        _scheduledExecutorService.scheduleAtFixedRate(this::update, 0, _refreshInterval, TimeUnit.SECONDS);
+        if (!_disabled) {
+            _scheduledExecutorService.scheduleAtFixedRate(this::update, 0, _refreshInterval, TimeUnit.SECONDS);
+        }
     }
 
     public void update() {
