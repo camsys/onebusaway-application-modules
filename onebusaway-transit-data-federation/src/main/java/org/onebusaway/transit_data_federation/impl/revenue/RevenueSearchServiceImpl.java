@@ -195,9 +195,13 @@ public class RevenueSearchServiceImpl implements RevenueSearchService {
   }
 
   private void clearCache(String agencyId, String stopId, String routeId, String directionId) {
-    String stopRouteKey = getCacheKey(agencyId, stopId, routeId, directionId);
-    _stopHasRevenueServiceOnRouteCache.remove(stopRouteKey);
-    String stopCacheKey = getCacheKey(agencyId, stopId);
-    _stopHasRevenueServiceCache.remove(stopCacheKey);
+    if (_stopHasRevenueServiceOnRouteCache != null) {
+      String stopRouteKey = getCacheKey(agencyId, stopId, routeId, directionId);
+      _stopHasRevenueServiceOnRouteCache.remove(stopRouteKey);
+    }
+    if (_stopHasRevenueServiceCache != null) {
+      String stopCacheKey = getCacheKey(agencyId, stopId);
+      _stopHasRevenueServiceCache.remove(stopCacheKey);
+    }
   }
 }
