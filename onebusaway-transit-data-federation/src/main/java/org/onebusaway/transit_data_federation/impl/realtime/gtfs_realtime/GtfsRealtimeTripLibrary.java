@@ -792,9 +792,8 @@ public class GtfsRealtimeTripLibrary {
         return (int) ((t - serviceDate) / 1000 - departure.getDelay());
       }
     }
-    throw new IllegalStateException(
-        "expected at least an arrival or departure time or delay for update: "
-            + stopTimeUpdate);
+    // this is allowed for SKIPPED/NO_DATA
+    return -1;
   }
 
   private int computeArrivalTime(StopTimeEntry stopTime,
@@ -819,8 +818,8 @@ public class GtfsRealtimeTripLibrary {
       return stopTime.getDepartureTime() + departure.getDelay();
     if (departure.hasTime())
       return (int) (departure.getTime() - serviceDate / 1000);
-    throw new IllegalStateException(
-        "expected departure delay or time for stopTimeUpdate " + stopTimeUpdate);
+    // this is allowed for SKIPPED/NO_DATA
+    return -1;
   }
 
   private void updateBestScheduleDeviation(int currentTime,
