@@ -20,20 +20,9 @@ import com.camsys.transit.servicechange.ServiceChangeType;
 import com.camsys.transit.servicechange.Table;
 import com.camsys.transit.servicechange.field_descriptors.AbstractFieldDescriptor;
 import com.camsys.transit.servicechange.field_descriptors.TripsFields;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
-import org.onebusaway.gtfs.impl.calendar.CalendarServiceDataFactoryImpl;
-import org.onebusaway.gtfs.model.Agency;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.model.ShapePoint;
-import org.onebusaway.gtfs.model.Stop;
-import org.onebusaway.gtfs.model.Trip;
-import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
-import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
-import org.onebusaway.gtfs.serialization.GtfsReader;
-import org.onebusaway.gtfs.services.calendar.CalendarServiceDataFactory;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
@@ -45,15 +34,7 @@ import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.StopTimeEntriesFactory;
-import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphDaoImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
-import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.beans.TripBeanService;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.slf4j.Logger;
@@ -65,17 +46,11 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import java.io.File;
-import java.io.IOException;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 import static org.onebusaway.transit_data_federation.testing.ServiceChangeUnitTestingSupport.*;
@@ -86,117 +61,24 @@ import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.
 @WebAppConfiguration()
 @ContextConfiguration(locations = "classpath:org/onebusaway/transit_data_federation/tds-test-with-gtfs-sometimes-client.xml")
 @TestPropertySource(properties = { "bundlePath = /tmp/foo"})
-public class GtfsSometimesClientIntegrationTest {
+public class GtfsSometimesClientIntegrationTest extends AbstractGtfsSometimesClientTest {
 
     @Autowired
     private TransitDataService _tds;
 
     @Autowired
-    private TransitGraphDao _graph;
-
-    @Autowired
-    private GtfsSometimesHandlerImpl _handler;
-
-    @Autowired
     private TripBeanService _tripBeanService;
-
-    @Autowired
-    private StopTimeEntriesFactory _stopTimesEntriesFactory;
-
-    @Autowired
-    private TimeServiceImpl _timeService;
 
     private static final Logger _log = LoggerFactory.getLogger(GtfsSometimesClientIntegrationTest.class);
 
-    @Before
-    public void loadGtfsData() throws IOException {
-
-        GtfsReader reader = new GtfsReader();
-        String path = getClass().getResource("/gtfs_sometimes/gtfs_staten_island_S86_SIM1C.zip").getPath();
-        reader.setDefaultAgencyId("MTA");
-        reader.setInputLocation(new File(path));
-        GtfsRelationalDaoImpl dao = new GtfsRelationalDaoImpl();
-        reader.setEntityStore(dao);
-        reader.run();
-
-        for (Agency agency : dao.getAllAgencies()) {
-            AgencyEntryImpl aei = new AgencyEntryImpl();
-            aei.setId(agency.getId());
-            assertTrue(_graph.addAgencyEntry(aei));
-        }
-
-        AgencyEntryImpl defaultAgency = new AgencyEntryImpl();
-        defaultAgency.setId("MTA");
-        assertTrue(_graph.addAgencyEntry(defaultAgency));
-
-        for (AgencyAndId shapeId : dao.getAllShapeIds()) {
-            List<ShapePoint> points = new ArrayList<>(dao.getShapePointsForShapeId(shapeId));
-            points.sort(Comparator.comparingInt(ShapePoint::getSequence));
-            int size = points.size();
-            double[] lat = new double[size];
-            double[] lon = new double[size];
-            double[] distance = new double[size];
-            for (int i = 0; i < size; i++) {
-                ShapePoint pt = points.get(i);
-                lat[i] = pt.getLat();
-                lon[i] = pt.getLon();
-                distance[i] = pt.getDistTraveled();
-            }
-            ShapePoints shapePoints = new ShapePoints();
-            shapePoints.setLats(lat);
-            shapePoints.setLons(lon);
-            shapePoints.setShapeId(shapeId);
-            shapePoints.setDistTraveled(distance);
-            shapePoints.ensureDistTraveled();
-            assertTrue(_graph.addShape(shapePoints));
-        }
-
-        Map<String, StopEntryImpl> stopById = new HashMap<>();
-
-        for (Stop stop : dao.getAllStops()) {
-            StopEntryImpl sei = new StopEntryImpl(stop.getId(), stop.getLat(), stop.getLon());
-            assertTrue(_graph.addStopEntry(sei));
-            stopById.put(stop.getId().getId(), sei);
-        }
-
-        CalendarServiceDataFactory csdf = new CalendarServiceDataFactoryImpl(dao);
-        CalendarServiceData csd = csdf.createData();
-        _graph.updateCalendarServiceData(csd);
-
-        for (Trip trip : dao.getAllTrips()) {
-            LocalizedServiceId lsi = new LocalizedServiceId(trip.getServiceId(), csd.getTimeZoneForAgencyId(trip.getId().getAgencyId()));
-            TripEntryImpl tei = new TripEntryImpl();
-            tei.setId(trip.getId());
-            tei.setDirectionId(trip.getDirectionId());
-            tei.setServiceId(lsi);
-            tei.setShapeId(trip.getShapeId());
-            BlockEntryImpl bei = new BlockEntryImpl();
-            bei.setId(trip.getId());
-
-            tei.setBlock(bei);
-            RouteEntryImpl rei = new RouteEntryImpl();
-            rei.setTrips(new ArrayList<>());
-            rei.getTrips().add(tei);
-            rei.setId(trip.getRoute().getId());
-            tei.setRoute(rei);
-            ShapePoints shape = _graph.getShape(trip.getShapeId());
-            List<StopTimeEntryImpl> stopTimes = _stopTimesEntriesFactory.processStopTimes(((TransitGraphDaoImpl) _graph).getGraph(),
-                    dao.getStopTimesForTrip(trip), tei, shape);
-            tei.setStopTimes(new ArrayList<>(stopTimes));
-            assertTrue(_graph.addTripEntry(tei, tripNarrative(trip)));
-        }
-        _handler.forceFlush();
-
-        // set handler time
-        _timeService.setTimeZone(ZoneId.of("America/New_York"));
-        _timeService.setTime("2018-08-23 12:00");
+    @Override
+    String getPath() {
+        return getClass().getResource("/gtfs_sometimes/gtfs_staten_island_S86_SIM1C.zip").getPath();
     }
 
-    private TripNarrative tripNarrative(Trip trip) {
-        return TripNarrative.builder()
-                .setRouteShortName(trip.getRouteShortName())
-                .setTripHeadsign(trip.getTripHeadsign())
-                .setTripShortName(trip.getTripShortName()).create();
+    @Override
+    String getTime() {
+        return "2018-08-23 12:00";
     }
 
     @Test

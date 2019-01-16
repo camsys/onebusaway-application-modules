@@ -154,6 +154,9 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
 
             } else if (change.isModify()) {
                 LocalDate serviceDate = getServiceDateForTrip(change);
+                // This is tricky: the dateIsApplicable check means that some blocks will have some stops with older data,
+                // if there is a StopEntryImpl change. Currently handled via normalizing the StopEntry when creating
+                // indices in BlockIndexServiceImpl, but could also pull the dateIsApplicable check here.
                 if (serviceDate == null || !dateIsApplicable(serviceDate, change.getDates())) {
                     continue;
                 }
@@ -270,7 +273,7 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
                 StopsFields stopsFields = (StopsFields) serviceChange.getAffectedField().get(0);
                 String bareStopId = serviceChange.getAffectedEntity().get(0).getStopId();
                 AgencyAndId stopId = _entityIdService.getStopId(bareStopId);
-                if (stopsFields.getStopLat() != null || stopsFields.getStopLon() != null) {
+                if (stopsFields.getStopLat() != null || stopsFields.getStopLon() != null || stopsFields.getStopName() != null) {
                     for (DateDescriptor date : serviceChange.getAffectedDates()) {
                         for (AgencyAndId tripId : getTripsForStopAndDateRange(stopId, date)) {
                             IntermediateTripChange change = changesByTrip.computeIfAbsent(tripId.getId(), IntermediateTripChange::new);
@@ -524,6 +527,8 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
         return getServiceDateForTrip(trip);
     }
 
+    // Note: If current time is 3pm, and a block ends at 12pm: it's next service date is tomorrow.
+    // This has implications for block consistency.
     private LocalDate getServiceDateForTrip(TripEntry trip) {
         long now = _timeService.getCurrentTimeAsEpochMs();
         List<BlockInstance> blocks = _blockCalendarService.getActiveBlocks(trip.getBlock().getId(), now, now + (24 * 3600 * 1000));
