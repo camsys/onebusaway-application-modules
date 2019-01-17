@@ -455,7 +455,7 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
       // Can't look at the stop time index directly because it hasn't been rebuilt yet.
       for (BlockConfigurationEntry entry : index.getBlockConfigs()) {
         for (BlockTripEntry trip : entry.getTrips()) {
-          if (trip.getTrip().getId().equals(tripId) || trip.getTrip().getRoute().getId().equals(routeId)) {
+          if (trip.getTrip().getId().equals(tripId) || !trip.getTrip().getRoute().getId().equals(routeId)) {
             continue;
           }
           for (BlockStopTimeEntry bst : trip.getStopTimes()) {
