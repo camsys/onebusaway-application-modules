@@ -166,7 +166,7 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
       graph.empty();
       _graph = null;
     }
-    
+
     if (path.exists()) {
       TransitGraphImpl graph = ObjectSerializationLibrary.readObject(path);
       graph.initialize();
@@ -469,6 +469,9 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
             continue;
           }
           for (BlockStopTimeEntry bst : trip.getStopTimes()) {
+            if (bst == null) {
+              continue;
+            }
             if (bst.getStopTime().getStop().getId().equals(stop.getId())) {
               return true;
             }
