@@ -121,7 +121,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
         _isApplying = true;
 
-        revertPreviousChanges();
+        int nReverted = revertPreviousChanges();
 
         /*
         Currently handled:
@@ -152,7 +152,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         revertTripChanges = _tripChangeHandler.handleTripChanges(tripChanges);
 
         int nSuccess = revertShapeChanges.size() + revertStopChanges.size() + revertTripChanges.size();
-        if (nSuccess > 0) {
+        if (nSuccess > 0 || nReverted > 0) {
             forceFlush();
         }
         _isApplying = false;
@@ -160,7 +160,8 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         _lastUpdatedTimestamp = timestamp;
         _reapplyTime = getReapplyTime(tripChanges.getAllChanges());
 
-        _log.info("Done with changes, reapply time is {}, last updated is {}", _reapplyTime, _lastUpdatedTimestamp);
+        _log.info("Done with changes. Total internal changes: {}. Total reverted changes: {}. " +
+                "Reapply time is {}, last updated is {}", nSuccess, nReverted, _reapplyTime, _lastUpdatedTimestamp);
 
         return nSuccess;
     }
@@ -187,25 +188,30 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         return true;
     }
 
-    void revertPreviousChanges() {
+    int revertPreviousChanges() {
+        int nTotal = 0;
         if (revertShapeChanges != null) {
             int success = _shapeChangeHandler.handleShapeChanges(revertShapeChanges).size();
             if (success != revertShapeChanges.size()) {
                 _log.error("Error reverting some shapes!");
             }
+            nTotal += success;
         }
         if (revertStopChanges != null) {
             int success = _stopChangeHandler.handleStopChanges(revertStopChanges).size();
             if (success != revertStopChanges.size()) {
                 _log.error("Error reverting some stops!");
             }
+            nTotal += success;
         }
         if (revertTripChanges != null) {
             int success = _tripChangeHandler.handleTripChanges(revertTripChanges).size();
             if (success != revertTripChanges.size()) {
                 _log.error("Error reverting some trips!");
             }
+            nTotal += success;
         }
+        return nTotal;
     }
 
     void forceFlush() {
