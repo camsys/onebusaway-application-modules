@@ -26,6 +26,8 @@ import com.camsys.transit.servicechange.field_descriptors.StopsFields;
 import com.camsys.transit.servicechange.field_descriptors.TripsFields;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
+import org.onebusaway.gtfs.model.calendar.ServiceDate;
+import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.AddTrip;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.DeleteTrip;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.IntermediateTripChange;
@@ -89,6 +91,8 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
 
     private BlockCalendarService _blockCalendarService;
 
+    private CalendarService _calendarService;
+
     @Autowired
     public void setTransitGraphDao(TransitGraphDao dao) {
         _dao = dao;
@@ -119,6 +123,11 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
         _blockCalendarService = blockCalendarService;
     }
 
+    @Autowired
+    public void setCalendarService(CalendarService calendarService) {
+        _calendarService = calendarService;
+    }
+
     @Override
     public TripChangeSet getAllTripChanges(Collection<ServiceChange> changes) {
         return getChangeset(getTripChanges(changes));
@@ -140,6 +149,10 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
             } else if (change.isAdded()) {
                 LocalDate serviceDate = getServiceDateForAddedTrip(change);
                 if (!dateIsApplicable(serviceDate, change.getDates())) {
+                    continue;
+                }
+                if (change.getAddedTripsFields().getServiceId() == null) {
+                    _log.info("No service ID, skipping.");
                     continue;
                 }
                 TripEntryImpl tripEntry = convertTripFieldsToTripEntry(change.getAddedTripsFields());
@@ -216,6 +229,11 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
                             IntermediateTripChange change = changesByTrip.computeIfAbsent(tripId, IntermediateTripChange::new);
                             change.setAddedTripsFields(tripsFields);
                             change.setDates(serviceChange.getAffectedDates());
+                            if (change.getAddedTripsFields().getServiceId() == null) {
+                                String serviceId = lookupActiveServiceId();
+                                change.getAddedTripsFields().setServiceId(serviceId);
+                                _log.warn("Added serviceId={} to added trip={}", serviceId, tripId);
+                            }
                         }
                     }
                 } else if (ServiceChangeType.DELETE.equals(serviceChange.getServiceChangeType())) {
@@ -539,5 +557,11 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
         // Get BlockInstance which is active with minimum service date
         BlockInstance block = Collections.min(blocks, Comparator.comparingLong(BlockInstance::getServiceDate));
         return toLocalDate(block.getServiceDate(), _timeService.getTimeZone());
+    }
+
+    private String lookupActiveServiceId() {
+        ServiceDate today = toServiceDate(_timeService.getCurrentDate());
+        Set<AgencyAndId> serviceIds = _calendarService.getServiceIdsOnDate(today);
+        return serviceIds.isEmpty() ? null : serviceIds.iterator().next().getId();
     }
 }

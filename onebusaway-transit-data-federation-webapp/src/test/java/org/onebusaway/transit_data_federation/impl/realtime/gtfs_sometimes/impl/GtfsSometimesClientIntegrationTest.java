@@ -576,10 +576,11 @@ public class GtfsSometimesClientIntegrationTest extends AbstractGtfsSometimesCli
     public void testAddTrip() {
         assertNull(getTripDetails("tripA"));
 
+        // test that service id is created
         ServiceChange addTrip = serviceChange(Table.TRIPS,
                 ServiceChangeType.ADD,
                 null,
-                tripsFieldsList("tripA", "S86", "CA_C8-Weekday", "S860022", "my headsign", null),
+                tripsFieldsList("tripA", "S86", null, "S860022", "my headsign", null),
                 dateDescriptors(LocalDate.of(2018, 8, 23)));
 
         ServiceChange stop0 = serviceChange(Table.STOP_TIMES,
@@ -613,6 +614,8 @@ public class GtfsSometimesClientIntegrationTest extends AbstractGtfsSometimesCli
         assertEquals(3, tripDetails.getSchedule().getStopTimes().size());
         assertEquals("my headsign", tripDetails.getTrip().getTripHeadsign());
         assertEquals("S86", tripDetails.getTrip().getRouteShortName());
+        // possible service ID for 8-12-2018: CA_G8-Weekday
+        assertEquals("MTA_CA_G8-Weekday", tripDetails.getTrip().getServiceId());
 
         revertPreviousChanges();
         assertNull(getTripDetails("tripA"));
