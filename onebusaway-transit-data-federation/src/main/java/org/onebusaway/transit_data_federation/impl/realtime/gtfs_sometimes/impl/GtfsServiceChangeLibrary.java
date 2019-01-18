@@ -16,6 +16,7 @@
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.impl;
 
 import com.camsys.transit.servicechange.DateDescriptor;
+import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,5 +55,12 @@ public class GtfsServiceChangeLibrary {
 
     static LocalDate toLocalDate(long epochTime, ZoneId timeZone) {
         return Instant.ofEpochMilli(epochTime).atZone(timeZone).toLocalDate();
+    }
+
+    static ServiceDate toServiceDate(LocalDate date) {
+        int year = date.getYear();
+        int month = date.getMonthValue();
+        int day = date.getDayOfMonth();
+        return new ServiceDate(year, month, day);
     }
 }

@@ -305,6 +305,10 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     // Calculate distance along shape
     AgencyAndId shapeId = trip.getShapeId();
     ShapePoints shape = getShape(shapeId);
+    if (shape == null) {
+      _log.error("Shape does not exist for trip={}, shape={}", trip.getId(), trip.getShapeId());
+      trip.setShapeId(null);
+    }
     List<StopTimeEntryImpl> processedStopTimeEntries;
     try {
       processedStopTimeEntries = _stopTimesFactory.processStopTimeEntries(_graph, trip.getStopTimes(), trip, shape);
@@ -363,9 +367,15 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
       AgencyAndId originalShapeId = trip.getShapeId();
       TripNarrative narrative = _narrativeService.removeTrip(trip);
       trip.setShapeId(shapeId);
-
       // recalculate distance along shape
       ShapePoints shape = getShape(shapeId);
+      if (shape == null) {
+        _log.error("New shapeId does not exist, reverting to original. tripId={}, original shapeId={}, " +
+                "new shapeId={}", trip.getId(), originalShapeId, shapeId);
+        shapeId = originalShapeId;
+        trip.setShapeId(shapeId);
+        shape = getShape(shapeId);
+      }
       List<StopTimeEntry> oldStopTimeEntries = trip.getStopTimes();
       List<StopTimeEntryImpl> processedStopTimeEntries;
       try {
