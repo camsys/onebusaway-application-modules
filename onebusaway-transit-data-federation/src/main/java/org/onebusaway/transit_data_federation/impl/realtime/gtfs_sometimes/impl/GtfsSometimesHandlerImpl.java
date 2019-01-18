@@ -115,6 +115,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
         // Check whether changes should be re-applied
         if (!shouldApplyChanges(timestamp, serviceChanges)) {
+            _log.info("Not applying changes.");
             return 0;
         }
 
@@ -158,6 +159,8 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
         _lastUpdatedTimestamp = timestamp;
         _reapplyTime = getReapplyTime(tripChanges.getAllChanges());
+
+        _log.info("Done with changes, reapply time is {}, last updated is {}", _reapplyTime, _lastUpdatedTimestamp);
 
         return nSuccess;
     }
@@ -251,7 +254,8 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
             _log.info("Update feed.");
             return true;
         } else if (_lastUpdatedTimestamp == timestamp) {
-            _log.info("Feed is the same as previously processed, check reapply time ({})", _reapplyTime);
+            _log.info("Feed is the same as previously processed, check reapply time ({}), current time = {}",
+                    _reapplyTime, _timeService.getCurrentTime());
             return _timeService.getCurrentTime().isAfter(_reapplyTime);
         } else {
             _log.error("Non-increasing timestamps in feed!");

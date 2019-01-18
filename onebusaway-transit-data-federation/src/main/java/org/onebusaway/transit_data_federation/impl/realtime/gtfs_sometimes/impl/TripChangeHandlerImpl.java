@@ -60,6 +60,8 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -527,14 +529,15 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
         return getServiceDateForTrip(trip);
     }
 
-    // Note: If current time is 3pm, and a block ends at 12pm: it's next service date is tomorrow.
+    // Note: If current time is 3pm, and a block ends at 1pm: it's next service date is tomorrow.
     // This has implications for block consistency.
     private LocalDate getServiceDateForTrip(TripEntry trip) {
         long now = _timeService.getCurrentTimeAsEpochMs();
         List<BlockInstance> blocks = _blockCalendarService.getActiveBlocks(trip.getBlock().getId(), now, now + (24 * 3600 * 1000));
         if (blocks.isEmpty())
             return null;
-        BlockInstance block = blocks.get(0);
+        // Get BlockInstance which is active with minimum service date
+        BlockInstance block = Collections.min(blocks, Comparator.comparingLong(BlockInstance::getServiceDate));
         return toLocalDate(block.getServiceDate(), _timeService.getTimeZone());
     }
 }

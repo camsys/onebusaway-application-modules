@@ -15,6 +15,7 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.impl;
 
+import com.camsys.transit.servicechange.EntityDescriptor;
 import com.camsys.transit.servicechange.ServiceChange;
 import com.camsys.transit.servicechange.ServiceChangeType;
 import com.camsys.transit.servicechange.Table;
@@ -25,6 +26,7 @@ import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.services.StopTimeService;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.transit_data_federation.services.tripplanner.StopTimeInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
@@ -34,6 +36,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -70,16 +73,10 @@ public class GtfsSometimesBlocksTest extends AbstractGtfsSometimesClientTest {
         String oldName = _tds.getStop("MTA_303479").getName();
 
         long time = _timeService.getCurrentTimeAsEpochMs();
-        Date serviceStart = new Date(time - 10 * 1000);
-        Date serviceEnd = new Date(time + 3600 * 1000);
 
         StopBean stopBean = _tds.getStop("MTA_303479");
         assertEquals(oldName, stopBean.getName());
-        StopEntry stopEntry = _graph.getStopEntryForId(AgencyAndId.convertFromString(stopBean.getId()));
-        assertNotNull(stopEntry);
-        List<StopTimeInstance> stis = _stopTimeService.getStopTimeInstancesInTimeRange(
-                stopEntry, serviceStart, serviceEnd,
-                StopTimeService.EFrequencyStopTimeBehavior.INCLUDE_UNSPECIFIED);
+        List<StopTimeInstance> stis = getStopTimesInstances(stopBean.getId(), time);
         assertFalse(stis.isEmpty());
 
         ServiceChange change = serviceChange(Table.STOPS,
@@ -91,12 +88,53 @@ public class GtfsSometimesBlocksTest extends AbstractGtfsSometimesClientTest {
 
         stopBean = _tds.getStop("MTA_303479");
         assertEquals(newName, stopBean.getName());
-        stopEntry = _graph.getStopEntryForId(AgencyAndId.convertFromString(stopBean.getId()));
-        assertNotNull(stopEntry);
-        stis = _stopTimeService.getStopTimeInstancesInTimeRange(
-                stopEntry, serviceStart, serviceEnd,
-                StopTimeService.EFrequencyStopTimeBehavior.INCLUDE_UNSPECIFIED);
+        stis = getStopTimesInstances(stopBean.getId(), time);
 
         assertFalse(stis.isEmpty());
+    }
+
+    @Test
+    @DirtiesContext
+    public void testReapplyTime() {
+
+        String stopId = "MTA_303479";
+        List<EntityDescriptor> entities = new ArrayList<>();
+        for (TripEntry trip : _graph.getAllTrips()) {
+            if (trip.getDirectionId().equals("1")) {
+                entities.add(stopTimeEntity(trip.getId().getId(), "303479"));
+            }
+        }
+
+        ServiceChange change = serviceChange(Table.STOP_TIMES,
+                ServiceChangeType.DELETE,
+                entities,
+                null,
+                dateDescriptors(LocalDate.of(2018, 12, 10)));
+
+        long publishTime = _timeService.getCurrentTimeAsEpochMs() / 1000;
+
+        _timeService.setTime("2018-12-10 12:00");
+        _handler.handleServiceChanges(publishTime, Collections.singletonList(change));
+        List<StopTimeInstance> stis = getStopTimesInstances(stopId, _timeService.getCurrentTimeAsEpochMs());
+        assertTrue(stis.isEmpty());
+
+        _timeService.setTime("2018-12-11 00:30");
+        _handler.handleServiceChanges(publishTime, Collections.singletonList(change));
+        stis = getStopTimesInstances(stopId, _timeService.getCurrentTimeAsEpochMs());
+        assertTrue(stis.isEmpty());
+
+        _timeService.setTime("2018-12-11 04:00");
+        _handler.handleServiceChanges(publishTime, Collections.singletonList(change));
+        stis = getStopTimesInstances(stopId, _timeService.getCurrentTimeAsEpochMs());
+        assertFalse(stis.isEmpty());
+    }
+
+    private List<StopTimeInstance> getStopTimesInstances(String id, long time) {
+        StopEntry stopEntry = _graph.getStopEntryForId(AgencyAndId.convertFromString(id));
+        Date serviceStart = new Date(time - 10 * 1000);
+        Date serviceEnd = new Date(time + 3600 * 1000);
+        return _stopTimeService.getStopTimeInstancesInTimeRange(
+                stopEntry, serviceStart, serviceEnd,
+                StopTimeService.EFrequencyStopTimeBehavior.INCLUDE_UNSPECIFIED);
     }
 }
