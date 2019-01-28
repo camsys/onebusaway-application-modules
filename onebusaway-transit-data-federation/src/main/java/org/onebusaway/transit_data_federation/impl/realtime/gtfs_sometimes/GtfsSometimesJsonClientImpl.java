@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class GtfsSometimesJsonClientImpl {
+public class GtfsSometimesJsonClientImpl implements GtfsSometimesClient{
 
     private static final Logger _log = LoggerFactory.getLogger(GtfsSometimesJsonClientImpl.class);
 
@@ -90,6 +90,7 @@ public class GtfsSometimesJsonClientImpl {
         }
     }
 
+    @Override
     public void update() {
         try {
             URL url = new URL(_gtfsSometimesUrl);
