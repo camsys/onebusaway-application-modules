@@ -19,8 +19,10 @@ import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.exceptions.ServiceException;
+import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
@@ -35,6 +37,9 @@ public class StopsForRouteAction extends ApiActionSupport {
 
   @Autowired
   private TransitDataService _service;
+
+  @Autowired
+  private ConfigurationService _configService;
 
   private String _id;
 
@@ -60,11 +65,15 @@ public class StopsForRouteAction extends ApiActionSupport {
 
 
   public DefaultHttpHeaders show() throws ServiceException {
-
     if (hasErrors())
       return setValidationErrorsResponse();
-
-    StopsForRouteBean result = _service.getStopsForRoute(_id);
+    boolean serviceDateFilterOn = Boolean.parseBoolean(_configService.getConfigurationValueAsString("display.serviceDateFiltering", "false"));
+    StopsForRouteBean result;
+    if (serviceDateFilterOn) {
+      result = _service.getStopsForRouteForServiceDate(_id, new ServiceDate());
+    } else {
+      result = _service.getStopsForRoute(_id);
+    }
 
     if (result == null)
       return setResourceNotFoundResponse();
