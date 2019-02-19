@@ -21,7 +21,7 @@ import java.io.Serializable;
 
 public class TripStopTimeBean implements Serializable {
 
-  private static final long serialVersionUID = 2L;
+  private static final long serialVersionUID = 3L;
 
   private int arrivalTime;
 
