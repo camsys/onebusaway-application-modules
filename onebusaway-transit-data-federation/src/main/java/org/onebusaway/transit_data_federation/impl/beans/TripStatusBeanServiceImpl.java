@@ -25,6 +25,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.EVehicleStatus;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.TripStopTimesBean;
@@ -39,6 +40,7 @@ import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
+import org.onebusaway.transit_data_federation.impl.realtime.apc.VehicleOccupancyRecordCache;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.beans.ServiceAlertsBeanService;
 import org.onebusaway.transit_data_federation.services.beans.StopBeanService;
@@ -78,6 +80,8 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
 
   private ServiceAlertsBeanService _serviceAlertBeanService;
 
+  private VehicleOccupancyRecordCache _vehicleOccupancyRecordCache;
+
   @Autowired
   public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
     _transitGraphDao = transitGraphDao;
@@ -108,6 +112,11 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
   public void setServiceAlertBeanService(
       ServiceAlertsBeanService serviceAlertBeanService) {
     _serviceAlertBeanService = serviceAlertBeanService;
+  }
+
+  @Autowired
+  public void setVehicleOccupancyRecordCache(VehicleOccupancyRecordCache vehicleOccupancyRecordCache){
+    _vehicleOccupancyRecordCache = vehicleOccupancyRecordCache;
   }
 
   /****
@@ -316,6 +325,25 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
 
     if (blockLocation.getVehicleType() != null)
       bean.setVehicleType(blockLocation.getVehicleType().toLabel());
+
+    // if we have trip info, check for apc data
+    String routeId = null;
+    String directionId = null;
+    AgencyAndId vehicleId = blockLocation.getVehicleId();
+    if (activeTripInstance != null
+            && activeTripInstance.getBlockTrip() != null
+            && activeTripInstance.getBlockTrip().getTrip() != null
+            && activeTripInstance.getBlockTrip().getTrip().getRoute() != null) {
+      routeId = activeTripInstance.getBlockTrip().getTrip().getRoute().getId().getId();
+      directionId = activeTripInstance.getBlockTrip().getTrip().getDirectionId();
+    }
+    if(vehicleId != null){
+      VehicleOccupancyRecord vehicleOccupancyRecord =
+              _vehicleOccupancyRecordCache.getRecordForVehicleIdAndRoute(vehicleId, routeId, directionId);
+      if (vehicleOccupancyRecord != null && vehicleOccupancyRecord.getOccupancyStatus() != null) {
+        bean.setOccupancyStatus(vehicleOccupancyRecord.getOccupancyStatus().valueOf());
+      }
+    }
 
     bean.setPredicted(blockLocation.isPredicted());
 

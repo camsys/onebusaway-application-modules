@@ -35,6 +35,7 @@ import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.OccupancyStatusBean;
 import org.onebusaway.transit_data.model.*;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
@@ -391,6 +392,15 @@ public interface TransitDataService extends FederatedService {
   List<OccupancyStatusBean> getHistoricalRidershipsForRoute(AgencyAndId routeId, long serviceDate);
   List<OccupancyStatusBean> getHistoricalRiderships(AgencyAndId routeId, AgencyAndId tripId, AgencyAndId stopId, long serviceDate);
 
+
+  @FederatedByEntityIdMethod(propertyExpression = "vehicleId")
+  public void addVehicleOccupancyRecord(VehicleOccupancyRecord vehicleOccupancyRecord);
+
+  @FederatedByEntityIdMethod
+  public VehicleOccupancyRecord getLastVehicleOccupancyRecordForVehicleId(AgencyAndId vehicleId);
+
+  @FederatedByEntityIdMethod
+  public VehicleOccupancyRecord getVehicleOccupancyRecordForVehicleIdAndRoute(AgencyAndId vehicleId, String routeId, String directionId);
 
   /****
    * Service Alert Methods

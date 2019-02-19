@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011 Brian Ferris <bdferris@onebusaway.org>
+ * Copyright (C) 2017 Metropolitan Transportation Authority
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.transit_data_federation.services.bundle;
+package org.onebusaway.transit_data_federation.impl.realtime.apc;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
-import org.onebusaway.transit_data.services.TransitDataService;
 
-public interface TransitDataServiceTemplate{
+/**
+ * Interface for APC record cache.
+ */
+public interface VehicleOccupancyRecordCache {
+    void addRecord(VehicleOccupancyRecord vehicleOccupancyRecord);
 
+    VehicleOccupancyRecord getLastRecordForVehicleId(AgencyAndId vehicleId);
+
+    VehicleOccupancyRecord getRecordForVehicleIdAndRoute(AgencyAndId vehicleId, String routeId, String directionId);
+
+    boolean clearRecordForVehicle(AgencyAndId vehicleId);
+    boolean clearRecord(VehicleOccupancyRecord vehicleOccupancyRecord);
 }

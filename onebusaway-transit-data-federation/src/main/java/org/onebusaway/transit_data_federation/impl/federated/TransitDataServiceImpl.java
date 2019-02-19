@@ -47,6 +47,7 @@ import org.onebusaway.transit_data.model.realtime.CurrentVehicleEstimateBean;
 import org.onebusaway.transit_data.model.realtime.CurrentVehicleEstimateQueryBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordQueryBean;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertRecordBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
@@ -410,6 +411,21 @@ public class TransitDataServiceImpl implements TransitDataService {
     blockUntilBundleIsReady();
     _transitDataService.resetVehicleLocation(vehicleId);
   }
+
+    @Override
+    public void addVehicleOccupancyRecord(VehicleOccupancyRecord vehicleOccupancyRecord) {
+        _transitDataService.addVehicleOccupancyRecord(vehicleOccupancyRecord);
+    }
+
+    @Override
+    public VehicleOccupancyRecord getLastVehicleOccupancyRecordForVehicleId(AgencyAndId vehicleId) {
+        return _transitDataService.getLastVehicleOccupancyRecordForVehicleId(vehicleId);
+    }
+
+    @Override
+    public VehicleOccupancyRecord getVehicleOccupancyRecordForVehicleIdAndRoute(AgencyAndId vehicleId, String routeId, String directionId) {
+        return _transitDataService.getVehicleOccupancyRecordForVehicleIdAndRoute(vehicleId, routeId, directionId);
+    }
 
   /****
    * Service Alert Methods

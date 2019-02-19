@@ -23,6 +23,9 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
+import org.onebusaway.realtime.api.VehicleOccupancyListener;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
+import org.onebusaway.transit_data_federation.impl.realtime.apc.VehicleOccupancyRecordCache;
 import org.onebusaway.transit_data_federation.services.blocks.BlockVehicleLocationListener;
 import org.onebusaway.transit_data_federation.services.realtime.VehicleLocationCacheElement;
 import org.onebusaway.transit_data_federation.services.realtime.VehicleLocationCacheElements;
@@ -37,6 +40,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 class VehicleStatusServiceImpl implements VehicleLocationListener,
+        VehicleOccupancyListener,
     VehicleStatusService {
 
   private ConcurrentHashMap<AgencyAndId, VehicleLocationRecord> _vehicleRecordsById = new ConcurrentHashMap<AgencyAndId, VehicleLocationRecord>();
@@ -46,6 +50,8 @@ class VehicleStatusServiceImpl implements VehicleLocationListener,
   private BlockVehicleLocationListener _blockVehicleLocationService;
 
   private VehicleLocationRecordCache _vehicleLocationRecordCache;
+
+  private VehicleOccupancyRecordCache _vehicleOccupanycRecordCache;
 
   @Autowired
   public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
@@ -63,6 +69,13 @@ class VehicleStatusServiceImpl implements VehicleLocationListener,
       VehicleLocationRecordCache vehicleLocationRecordCache) {
     _vehicleLocationRecordCache = vehicleLocationRecordCache;
   }
+
+  @Autowired
+  public void setVehicleOccupancyRecordCache(
+          VehicleOccupancyRecordCache vehicleOccupancyRecordCache) {
+    _vehicleOccupanycRecordCache = vehicleOccupancyRecordCache;
+  }
+
 
   /****
    * {@link VehicleLocationListener} Interface
@@ -102,6 +115,24 @@ class VehicleStatusServiceImpl implements VehicleLocationListener,
         _blockVehicleLocationService.resetVehicleLocation(record.getVehicleId());
       }
     }
+  }
+
+  @Override
+  public void handleVehicleOccupancyRecord(VehicleOccupancyRecord record) {
+    _vehicleOccupanycRecordCache.addRecord(record);
+  }
+
+  @Override
+  public void handleVehicleOccupancyRecords(List<VehicleOccupancyRecord> records) {
+    if (records == null) return;
+    for (VehicleOccupancyRecord vor : records) {
+      _vehicleOccupanycRecordCache.addRecord(vor);
+    }
+  }
+
+  @Override
+  public void resetVehicleOccupancy(AgencyAndId vehicleId) {
+    _vehicleOccupanycRecordCache.clearRecordForVehicle(vehicleId);
   }
 
   @Override
@@ -155,6 +186,7 @@ class VehicleStatusServiceImpl implements VehicleLocationListener,
     VehicleStatus status = new VehicleStatus();
     status.setRecord(record);
     status.setAllRecords(records);
+    status.setOccupancyRecord(_vehicleOccupanycRecordCache.getLastRecordForVehicleId(vehicleId));
 
     return status;
   }
@@ -166,7 +198,10 @@ class VehicleStatusServiceImpl implements VehicleLocationListener,
       VehicleStatus status = new VehicleStatus();
       status.setRecord(record);
       statuses.add(status);
+      status.setOccupancyRecord(_vehicleOccupanycRecordCache.getLastRecordForVehicleId(record.getVehicleId()));
     }
     return statuses;
   }
 }
+
+

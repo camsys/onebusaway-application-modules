@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011 Google, Inc.
+ * Copyright (C) 2017 Metropolitan Transportation Authority
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.transit_data_federation.impl.realtime.apc;
+package org.onebusaway.realtime.api;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 
-public interface MonitoredDataSource {
+import java.util.List;
 
-  MonitoredResult getMonitoredResult();
-  String getFeedId();
+/**
+ * Integrate with APC.
+ */
+public interface VehicleOccupancyListener {
+
+    public void handleVehicleOccupancyRecord(VehicleOccupancyRecord record);
+
+    public void handleVehicleOccupancyRecords(List<VehicleOccupancyRecord> records);
+
+    public void resetVehicleOccupancy(AgencyAndId vehicleId);
 }

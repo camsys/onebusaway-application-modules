@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime;
+package org.onebusaway.transit_data_federation.impl.realtime.apc;
 
 public interface GtfsRealtimeNegativeArrivals {
 

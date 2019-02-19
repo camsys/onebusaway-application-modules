@@ -26,6 +26,7 @@ import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.OccupancyStatusBean;
 import org.onebusaway.transit_data.model.*;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
@@ -42,6 +43,7 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertRecordBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
 import org.onebusaway.transit_data.model.trips.*;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.transit_data_federation.impl.realtime.apc.VehicleOccupancyRecordCache;
 import org.onebusaway.transit_data_federation.model.bundle.HistoricalRidership;
 import org.onebusaway.transit_data_federation.services.*;
 import org.onebusaway.transit_data_federation.services.beans.*;
@@ -118,6 +120,9 @@ public class TransitDataServiceTemplateImpl implements TransitDataServiceTemplat
 
   @Autowired
   private VehicleStatusBeanService _vehicleStatusBeanService;
+
+  @Autowired
+  private VehicleOccupancyRecordCache _vehicleOccupancyRecordCache;
 
   @Autowired
   private PredictionHelperService _predictionHelperService;
@@ -500,6 +505,21 @@ public class TransitDataServiceTemplateImpl implements TransitDataServiceTemplat
     
     AgencyAndId id = AgencyAndIdLibrary.convertFromString(vehicleId);
     _vehicleStatusBeanService.resetVehicleLocation(id);
+  }
+
+  //@Override
+  public void addVehicleOccupancyRecord(VehicleOccupancyRecord vehicleOccupancyRecord) {
+    _vehicleOccupancyRecordCache.addRecord(vehicleOccupancyRecord);
+  }
+
+  //@Override
+  public VehicleOccupancyRecord getLastVehicleOccupancyRecordForVehicleId(AgencyAndId vehicleId) {
+      return _vehicleOccupancyRecordCache.getLastRecordForVehicleId(vehicleId);
+  }
+
+  //@Override
+  public VehicleOccupancyRecord getVehicleOccupancyRecordForVehicleIdAndRoute(AgencyAndId vehicleId, String routeId, String directionId) {
+      return _vehicleOccupancyRecordCache.getRecordForVehicleIdAndRoute(vehicleId, routeId, directionId);
   }
 
   /****

@@ -56,6 +56,8 @@ public final class TripStatusBean implements Serializable {
 
   private String vehicleType;
 
+  private Integer occupancyStatus;
+
   private double distanceAlongTrip = Double.NaN;
 
   private CoordinatePoint location;
@@ -179,6 +181,12 @@ public final class TripStatusBean implements Serializable {
   public String getVehicleType() { return vehicleType; }
 
   public void setVehicleType(String vehicleType) { this.vehicleType = vehicleType; }
+
+  public Integer getOccupancyStatus() { return occupancyStatus; }
+
+  public void setOccupancyStatus(Integer occupancyStatus) {
+    this.occupancyStatus = occupancyStatus;
+  }
 
   /**
    * @return true if {@link #getDistanceAlongTrip()} has been set
