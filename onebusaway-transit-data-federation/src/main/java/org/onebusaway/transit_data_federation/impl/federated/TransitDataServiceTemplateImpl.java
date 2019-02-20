@@ -50,6 +50,7 @@ import org.onebusaway.transit_data_federation.services.beans.*;
 import org.onebusaway.transit_data_federation.services.bundle.TransitDataServiceTemplate;
 import org.onebusaway.transit_data_federation.services.realtime.CurrentVehicleEstimationService;
 import org.onebusaway.transit_data_federation.services.reporting.UserReportingService;
+import org.onebusaway.transit_data_federation.services.revenue.RevenueSearchService;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -129,6 +130,9 @@ public class TransitDataServiceTemplateImpl implements TransitDataServiceTemplat
   
   @Autowired
   private ScheduleHelperService _scheduleHelperService;
+
+  @Autowired
+  private RevenueSearchService _revenueSearchService;
 
   @Autowired
   private ConsolidatedStopsService _consolidatedStopsService;
@@ -714,11 +718,11 @@ public class TransitDataServiceTemplateImpl implements TransitDataServiceTemplat
   }
   
   public Boolean stopHasRevenueServiceOnRoute(String stopAgencyId, String stopId, String routeId, String directionId) {
-      return _scheduleHelperService.stopHasRevenueServiceOnRoute(stopAgencyId, stopId, routeId, directionId);
+      return _revenueSearchService.stopHasRevenueServiceOnRoute(stopAgencyId, stopId, routeId, directionId);
   }
   
   public Boolean stopHasRevenueService(String agencyId, String stopId) {
-      return _scheduleHelperService.stopHasRevenueService(agencyId, stopId);    
+      return _revenueSearchService.stopHasRevenueService(agencyId, stopId);
   }
   
   public List<StopBean> getAllRevenueStops(AgencyWithCoverageBean agency) {

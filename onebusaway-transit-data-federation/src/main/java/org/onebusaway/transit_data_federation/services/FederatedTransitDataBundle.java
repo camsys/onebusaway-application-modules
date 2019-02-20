@@ -93,6 +93,10 @@ public class FederatedTransitDataBundle {
   }
 
   /* NYC specific additions */
+  public File getRevenueStopRouteIndicesPath() {
+    return new File(_path, "RevenueStopRouteIndices.obj");
+  }
+
   public File getNonRevenueMoveLocationsPath() {
     return new File(_path, "NonRevenueMoveLocations.obj");
   }
