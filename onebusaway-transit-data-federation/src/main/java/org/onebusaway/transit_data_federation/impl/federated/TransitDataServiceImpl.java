@@ -414,16 +414,19 @@ public class TransitDataServiceImpl implements TransitDataService {
 
     @Override
     public void addVehicleOccupancyRecord(VehicleOccupancyRecord vehicleOccupancyRecord) {
+      blockUntilBundleIsReady();
         _transitDataService.addVehicleOccupancyRecord(vehicleOccupancyRecord);
     }
 
     @Override
     public VehicleOccupancyRecord getLastVehicleOccupancyRecordForVehicleId(AgencyAndId vehicleId) {
+      blockUntilBundleIsReady();
         return _transitDataService.getLastVehicleOccupancyRecordForVehicleId(vehicleId);
     }
 
     @Override
     public VehicleOccupancyRecord getVehicleOccupancyRecordForVehicleIdAndRoute(AgencyAndId vehicleId, String routeId, String directionId) {
+      blockUntilBundleIsReady();
         return _transitDataService.getVehicleOccupancyRecordForVehicleIdAndRoute(vehicleId, routeId, directionId);
     }
 
@@ -625,28 +628,33 @@ public class TransitDataServiceImpl implements TransitDataService {
 
   @Override
   public Boolean stopHasRevenueServiceOnRoute(String agencyId, String stopId, String routeId, String directionId) {
-          return _transitDataService.stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId);
+      blockUntilBundleIsReady();
+      return _transitDataService.stopHasRevenueServiceOnRoute(agencyId, stopId, routeId, directionId);
   }
 
   @Override
   public Boolean stopHasRevenueService(String agencyId, String stopId) {
-          return _transitDataService.stopHasRevenueService(agencyId, stopId);    
+      blockUntilBundleIsReady();
+      return _transitDataService.stopHasRevenueService(agencyId, stopId);
   }
 
   @Override
   public List<StopBean> getAllRevenueStops(AgencyWithCoverageBean agency) {
-    return _transitDataService.getAllRevenueStops(agency);
+      blockUntilBundleIsReady();
+      return _transitDataService.getAllRevenueStops(agency);
   }
 
   @Override
   public ListBean<ConsolidatedStopMapBean> getAllConsolidatedStops() {
+    blockUntilBundleIsReady();
     return _transitDataService.getAllConsolidatedStops();
   }
 
-@Override
-public ServiceAlertBean copyServiceAlert(String agencyId,
+  @Override
+  public ServiceAlertBean copyServiceAlert(String agencyId,
 	      ServiceAlertBean situation) {
-	return _transitDataService.copyServiceAlert(agencyId, situation);
-}
+    blockUntilBundleIsReady();
+    return _transitDataService.copyServiceAlert(agencyId, situation);
+  }
   
 }
