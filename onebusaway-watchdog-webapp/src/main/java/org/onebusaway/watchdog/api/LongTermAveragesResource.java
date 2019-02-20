@@ -37,7 +37,6 @@ import cern.colt.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 public class LongTermAveragesResource extends MetricResource {
 	  protected static final Logger _log = LoggerFactory.getLogger(LongTermAveragesResource.class);
