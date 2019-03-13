@@ -19,17 +19,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.Lob;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.Cache;
@@ -102,6 +92,7 @@ public class User extends IdentityBean<Integer> {
 
   private Date lastAccessTime;
 
+  @Column(columnDefinition="BIT")
   private boolean temporary;
 
   @Lob
