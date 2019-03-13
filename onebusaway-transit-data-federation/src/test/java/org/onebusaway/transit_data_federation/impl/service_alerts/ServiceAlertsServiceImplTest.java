@@ -49,14 +49,13 @@ import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.BlockTripInstance;
 import org.onebusaway.transit_data_federation.services.blocks.InstanceState;
-import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlertsService;
+import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlertRecordsService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -68,7 +67,7 @@ public class ServiceAlertsServiceImplTest extends AbstractTransactionalJUnit4Spr
 
 
     @Autowired
-    private ServiceAlertsService _service;
+    private ServiceAlertRecordsService _service;
     private ServiceAlertsPersistenceDB _persister;
     private SessionFactory _sessionFactory;
 
@@ -81,10 +80,10 @@ public class ServiceAlertsServiceImplTest extends AbstractTransactionalJUnit4Spr
     @Before
     public void setup() throws IOException {
         ServiceAlertsCache cache = new ServiceAlertsCacheInMemoryImpl();
-        _service = new ServiceAlertsServiceImpl();
-        ((ServiceAlertsServiceImpl)_service).setServiceAlertsCache(cache);
+        _service = new ServiceAlertRecordsServiceImpl();
+        ((ServiceAlertRecordsServiceImpl)_service).setServiceAlertsCache(cache);
         _persister = new ServiceAlertsPersistenceDB();
-        ((ServiceAlertsServiceImpl)_service).setServiceAlertsPersistence(_persister);
+        ((ServiceAlertRecordsServiceImpl)_service).setServiceAlertsPersistence(_persister);
         _persister._refreshInterval = 1000;
         _persister.setSessionFactory(_sessionFactory);
 

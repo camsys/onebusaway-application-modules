@@ -16,6 +16,8 @@
  */
 package org.onebusaway.transit_data_federation.impl.service_alerts;
 
+import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -33,6 +35,22 @@ class AffectsAgencyKeyFactory implements AffectsKeyFactory<String> {
       if (affects.getAgencyId() != null
           && !(affects.getDirectionId() != null || affects.getRouteId() != null
               || affects.getStopId() != null || affects.getTripId() != null)) {
+        agencyIds.add(affects.getAgencyId());
+      }
+    }
+
+    return agencyIds;
+  }
+
+  @Override
+  public Set<String> getKeysForAffects(ServiceAlerts.ServiceAlert serviceAlert) {
+
+    Set<String> agencyIds = new HashSet<String>();
+
+    for (ServiceAlerts.Affects affects : serviceAlert.getAffectsList()) {
+      if (affects.hasAgencyId()
+              && !(affects.hasDirectionId() || affects.hasRouteId()
+              || affects.hasStopId() || affects.hasTripId())) {
         agencyIds.add(affects.getAgencyId());
       }
     }

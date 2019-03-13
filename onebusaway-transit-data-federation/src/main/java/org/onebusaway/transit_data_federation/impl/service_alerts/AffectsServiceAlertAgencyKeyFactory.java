@@ -16,6 +16,8 @@
  */
 package org.onebusaway.transit_data_federation.impl.service_alerts;
 
+import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,6 +31,15 @@ class AffectsServiceAlertAgencyKeyFactory implements AffectsKeyFactory<String> {
     Set<String> v = new HashSet<String>();
     if( serviceAlert != null)
       v.add(serviceAlert.getAgencyId());
+    return v;
+  }
+
+  @Override
+  public Set<String> getKeysForAffects(ServiceAlerts.ServiceAlert serviceAlert) {
+
+    Set<String> v = new HashSet<String>();
+    if( serviceAlert != null)
+      v.add(serviceAlert.getId().getAgencyId());
     return v;
   }
 

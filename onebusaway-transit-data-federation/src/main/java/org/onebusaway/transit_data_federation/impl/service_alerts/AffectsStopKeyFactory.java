@@ -17,6 +17,7 @@
 package org.onebusaway.transit_data_federation.impl.service_alerts;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,6 +36,23 @@ class AffectsStopKeyFactory implements AffectsKeyFactory<AgencyAndId> {
           && !(affects.getDirectionId() != null
               || affects.getRouteId() != null || affects.getTripId() != null)) {
         AgencyAndId stopId = ServiceAlertLibrary.agencyAndIdAndId(affects.getAgencyId(), affects.getStopId());
+        stopIds.add(stopId);
+      }
+    }
+
+    return stopIds;
+  }
+
+  @Override
+  public Set<AgencyAndId> getKeysForAffects(ServiceAlerts.ServiceAlert serviceAlert) {
+
+    Set<AgencyAndId> stopIds = new HashSet<AgencyAndId>();
+
+    for (ServiceAlerts.Affects affects : serviceAlert.getAffectsList()) {
+      if (affects.hasStopId()
+              && !(affects.hasAgencyId() || affects.hasDirectionId()
+              || affects.hasRouteId() || affects.hasTripId())) {
+        AgencyAndId stopId = ServiceAlertLibrary.agencyAndId(affects.getStopId().getAgencyId(), affects.getStopId().getId());
         stopIds.add(stopId);
       }
     }

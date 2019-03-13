@@ -15,8 +15,12 @@
  */
 package org.onebusaway.transit_data_federation.impl.service_alerts;
 
+import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts;
+
 import java.util.Set;
 
 interface AffectsKeyFactory<T> {
   public Set<T> getKeysForAffects(ServiceAlertRecord serviceAlert);
+
+  public Set<T> getKeysForAffects(ServiceAlerts.ServiceAlert serviceAlert);
 }

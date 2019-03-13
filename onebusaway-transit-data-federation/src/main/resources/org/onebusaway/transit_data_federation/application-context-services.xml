@@ -116,5 +116,7 @@
     <property name="stopHasRevenueServiceCache" ref="stopHasRevenueCache" />
     <property name="stopHasRevenueServiceOnRouteCache" ref="stopHasRevenueOnRouteCache" />
   </bean>
-  
+
+  <bean id="serviceAlertsBeanService" class="org.onebusaway.transit_data_federation.impl.beans.ServiceAlertRecordsBeanServiceImpl"/>
+
 </beans>
