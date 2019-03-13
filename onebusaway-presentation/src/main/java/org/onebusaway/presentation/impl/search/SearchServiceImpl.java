@@ -67,7 +67,7 @@ import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
  * @author jmaki
  *
  */
-@Component
+
 public class SearchServiceImpl implements SearchService {
 
     private static final Logger _log = LoggerFactory.getLogger(SearchServiceImpl.class);

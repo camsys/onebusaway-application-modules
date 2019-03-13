@@ -26,6 +26,7 @@ import org.onebusaway.transit_data_federation.siri.SiriDistanceExtension;
 import org.onebusaway.util.SystemTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
@@ -33,7 +34,7 @@ import org.springframework.stereotype.Component;
  * @author jmaki
  *
  */
-@Component
+
 public class PresentationServiceImpl implements PresentationService {
 
   private static Logger _log = LoggerFactory.getLogger(PresentationServiceImpl.class);

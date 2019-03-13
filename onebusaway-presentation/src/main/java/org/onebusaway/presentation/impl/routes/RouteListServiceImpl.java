@@ -34,11 +34,12 @@ import org.springframework.stereotype.Component;
 /**
  *
  */
-@Component
+
 public class RouteListServiceImpl implements RouteListService {
 
     @Autowired
     private ConfigurationService _configurationService;
+
     @Autowired
     private TransitDataService _transitDataService;
 
