@@ -489,6 +489,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       Properties cmdOverrides = new Properties();
       cmdOverrides.setProperty(ARG_THROW_EXCEPTION_INVALID_STOPS, "false");
       cmdOverrides.setProperty(ARG_LENIENT_ARRIVAL_DEPARTURE,  "true");
+      cmdOverrides.setProperty("configurationServiceClient.configFile", "/stopt/products/oba/config.json");
       if (this.getStopVerificationURL() != null) {
         cmdOverrides.setProperty("stopVerificationTask.path", this.getStopVerificationURL());
         cmdOverrides.setProperty("stopVerificationDistanceTask.path", this.getStopVerificationURL());
