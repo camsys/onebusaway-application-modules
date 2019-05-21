@@ -182,14 +182,17 @@ public class GtfsPersistorImpl implements GtfsPersistor, ApplicationListener {
       List<TripUpdateModel> records = new ArrayList<TripUpdateModel>();
       int count = _tripUpdates.drainTo(records, _batchSize);
       _log.info("drained " + records.size() + " trip updates");
+      int i = 0;
       while (records.size() > 0) {
         try {
           _tripUpdateDao.saveOrUpdate(records.toArray(new TripUpdateModel[0]));
+          i++;
         } catch (Exception e) {
           _log.error("error persisting trip updates=", e);
         }
         records.clear();
-        count = _tripUpdates.drainTo(records, _batchSize);
+        if (i < 3)
+          count = _tripUpdates.drainTo(records, _batchSize);
         if (count > 0) _log.info("drained " + records.size() + " trip updates");
 
       }
@@ -203,16 +206,19 @@ public class GtfsPersistorImpl implements GtfsPersistor, ApplicationListener {
       List<VehiclePositionModel> records = new ArrayList<VehiclePositionModel>();
       int count = _vehiclePositions.drainTo(records, _batchSize);
       _log.info("drained " + records.size() + " vehicle positions");
+      int i = 0;
       while (count > 0) {
 
         try {
           _vehiclePositionDao.saveOrUpdate(
                   records.toArray(new VehiclePositionModel[0]));
+          i++;
         } catch (Exception e) {
           _log.error("error persisting vehiclePositions=", e);
         }
         records.clear();
-        count = _vehiclePositions.drainTo(records, _batchSize);
+        if (i < 3)
+          count = _vehiclePositions.drainTo(records, _batchSize);
         if (count > 0) _log.info("drained " + records.size() + " vehicle positions");
       }
     }
@@ -225,14 +231,17 @@ public class GtfsPersistorImpl implements GtfsPersistor, ApplicationListener {
       List<AlertModel> records = new ArrayList<AlertModel>();
       int count = _alerts.drainTo(records, _batchSize);
       _log.info("drained " + records.size() + " alerts");
+      int i = 0;
       while (count > 0) {
         try {
           _alertDao.saveOrUpdate(records.toArray(new AlertModel[0]));
+          i++;
         } catch (Exception e) {
           _log.error("error persisting alerts=", e);
         }
         records.clear();
-        count = _alerts.drainTo(records, _batchSize);
+        if (i < 3)
+          count = _alerts.drainTo(records, _batchSize);
         if (count > 0) _log.info("drained " + records.size() + " alerts");
 
       }
@@ -246,14 +255,17 @@ public class GtfsPersistorImpl implements GtfsPersistor, ApplicationListener {
       List<LinkAVLData> records = new ArrayList<LinkAVLData>();
       int count =_linkAvlData.drainTo(records, _batchSize);
       _log.info("drained " + records.size() + " link AVL records");
+      int i = 0;
       while (count > 0) {
         try {
           _linkAvlDao.saveOrUpdate(records.toArray(new LinkAVLData[0]));
+          i++;
         } catch (Exception e) {
           _log.error("error persisting link AVL data=", e);
         }
         records.clear();
-        count =_linkAvlData.drainTo(records, _batchSize);
+        if (i < 3)
+          count =_linkAvlData.drainTo(records, _batchSize);
         if (count > 0) _log.info("drained " + records.size() + " link AVL records");
       }
     }
