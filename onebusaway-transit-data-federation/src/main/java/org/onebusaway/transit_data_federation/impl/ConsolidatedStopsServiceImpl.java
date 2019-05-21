@@ -22,6 +22,8 @@ import org.onebusaway.transit_data.model.ConsolidatedStopMapBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.ConsolidatedStopsService;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -38,6 +40,7 @@ import java.util.Map;
 
 @Component
 public class ConsolidatedStopsServiceImpl implements ConsolidatedStopsService {
+    private static Logger _log = LoggerFactory.getLogger(ConsolidatedStopsServiceImpl.class);
     private FederatedTransitDataBundle _bundle;
 
     private Map<AgencyAndId, ConsolidatedStopMapBean> _index;
@@ -49,6 +52,7 @@ public class ConsolidatedStopsServiceImpl implements ConsolidatedStopsService {
 
     @Override
     public Collection<ConsolidatedStopMapBean> getAllConsolidatedStops() {
+        if (_index == null) return new ArrayList<ConsolidatedStopMapBean>();
         return _index.values();
     }
 
@@ -61,7 +65,12 @@ public class ConsolidatedStopsServiceImpl implements ConsolidatedStopsService {
 
     @Refreshable(dependsOn = RefreshableResources.STOP_CONSOLIDATION_FILE)
     public void init() throws IOException {
-        buildIndex(_bundle.getStopConsolidationFile());
+        File stopFile = _bundle.getStopConsolidationFile();
+        if ( stopFile.exists() && stopFile.isFile()) {
+            buildIndex(_bundle.getStopConsolidationFile());
+        } else {
+            _log.warn("missing Stop Consolidation File; skipping");
+        }
     }
 
     private void buildIndex(File file) throws IOException {

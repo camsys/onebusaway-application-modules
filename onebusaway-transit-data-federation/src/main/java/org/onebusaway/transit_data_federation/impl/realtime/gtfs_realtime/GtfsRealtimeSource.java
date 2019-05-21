@@ -36,6 +36,9 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import com.google.transit.realtime.GtfsRealtime;
+import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
@@ -49,6 +52,8 @@ import org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertsS
 import org.onebusaway.transit_data_federation.services.AgencyService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
+import org.onebusaway.transit_data_federation.services.realtime.BlockLocation;
+import org.onebusaway.transit_data_federation.services.realtime.BlockLocationService;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.ServiceAlert;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlertsService;
@@ -90,6 +95,8 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
 
   private BlockCalendarService _blockCalendarService;
 
+  private BlockLocationService _blockLocationService;
+
   private VehicleLocationListener _vehicleLocationListener;
 
   private ServiceAlertsService _serviceAlertService;
@@ -111,7 +118,9 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   private String _sftpAlertsUrl;
 
   private int _refreshInterval = 30;
-  
+
+  private Integer _maxDeltaLocationMeters = null; // by default don't validate
+
   private boolean _showNegativeScheduledArrivals = true;
 
   private Map<String,String> _headersMap;
@@ -167,6 +176,11 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   @Autowired
   public void setBlockCalendarService(BlockCalendarService blockCalendarService) {
     _blockCalendarService = blockCalendarService;
+  }
+
+  @Autowired
+  public void setBlockLocationService(BlockLocationService blockLocationService) {
+    _blockLocationService = blockLocationService;
   }
 
   @Autowired
@@ -239,6 +253,15 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   public int getRefreshInterval() {
     return _refreshInterval;
   }
+
+  /**
+   * add validation to drop record if difference between calculated and reported positions is greater
+   * than max.  If null, validation is not applied.  Distance is in meters.
+   * @param max
+   */
+  public void setMaxDeltaLocationMeters(Integer max) { _maxDeltaLocationMeters = max; }
+
+  public Integer getMaxDeltaLocationMeters() { return _maxDeltaLocationMeters; }
 
   public void setHeadersMap(Map<String,String> headersMap) {
 	_headersMap = headersMap;
@@ -407,6 +430,10 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
           _log.debug("discarding v: " + vehicleId + " as block not active");
           continue;
         }
+        if (!isValidLocation(record, update)) {
+          _log.debug("discarding v: " + vehicleId + " as location is bad");
+          continue;
+        }
         seenVehicles.add(vehicleId);
         Date timestamp = new Date(record.getTimeOfRecord());
         Date prev = _lastVehicleUpdate.get(vehicleId);
@@ -440,6 +467,23 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
     result.setLastUpdate(newestUpdate);
     _log.info("Agency " + this.getAgencyIds().get(0) + " has active vehicles=" + seenVehicles.size() 
         + " for updates=" + updates.size() + " with most recent timestamp " + new Date(newestUpdate));
+  }
+
+  private boolean isValidLocation(VehicleLocationRecord record, CombinedTripUpdatesAndVehiclePosition update) {
+    if (_maxDeltaLocationMeters == null) return true; // validation turned off
+    CoordinatePoint reported = new CoordinatePoint(update.vehiclePosition.getPosition().getLatitude(),
+            update.vehiclePosition.getPosition().getLongitude());
+
+    BlockLocation blockLocation = _blockLocationService.getScheduledLocationForBlockInstance(update.block.getBlockInstance(), record.getTimeOfRecord());
+      if (blockLocation == null) return true; // this record will be tossed for other reasons
+    CoordinatePoint calculated = blockLocation.getLocation();
+    double delta = SphericalGeometryLibrary.distanceFaster(reported.getLat(), reported.getLon(),
+            calculated.getLat(), calculated.getLon());
+    if (delta < _maxDeltaLocationMeters)
+      return true;
+    _log.info("dropped vehicle {} has distance of {} with deviation {} when limit is {}",
+            record.getVehicleId(), delta, record.getScheduleDeviation(), _maxDeltaLocationMeters);
+    return false;
   }
 
   private boolean blockNotActive(VehicleLocationRecord record) {
