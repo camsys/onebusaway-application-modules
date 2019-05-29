@@ -139,6 +139,7 @@ jQuery(function() {
 
     $(".close").click(function(e){
         e.preventDefault();
+        $(this).parent().parent().find(".checkmark").hide();
         $(this).parent().parent().find(".custom-combobox-input").val("");
     });
 
