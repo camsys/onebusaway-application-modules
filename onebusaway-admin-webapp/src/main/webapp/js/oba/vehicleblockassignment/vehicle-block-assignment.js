@@ -29,7 +29,7 @@ jQuery(function() {
     var table = $('#blockSummaryTable').DataTable({
         "paging":false,
         "order": [[ 2, "asc" ]],
-        columnDefs: [ { orderable: false, targets: [4,6,7] }]
+        columnDefs: [ { orderable: false, targets: [4,6] }]
     });
 
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {

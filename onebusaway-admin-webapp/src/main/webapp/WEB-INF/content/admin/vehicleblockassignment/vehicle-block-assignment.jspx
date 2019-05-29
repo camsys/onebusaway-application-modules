@@ -129,7 +129,6 @@
                                     <th style="width: 70px;"></th>
                                     <th >Vehicle</th>
                                     <th style="width: 110px;"></th>
-                                    <th style="width: 100px;">Clear Vehicle</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -146,6 +145,7 @@
                                             </div>
                                             <s:hidden class="vehicleName" value="model[%{#rowStatus.index}].vehicleId" theme="simple"/>
                                             <s:hidden class="savedVehicleIdValue" value="%{vehicleId}" theme="simple"/>
+                                            <div class="close" style="margin:0 auto;"></div>
                                         </td>
                                         <td>
                                             <s:if test="%{duplicateVehicleId}">
@@ -157,9 +157,6 @@
                                             <s:else>
                                                 <div class="validation"/>
                                             </s:else>
-                                        </td>
-                                        <td >
-                                            <div class="validation close" style="width: 100px; margin:0 auto;"></div>
                                         </td>
                                     </tr>
                                 </s:iterator>
