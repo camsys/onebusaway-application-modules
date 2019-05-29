@@ -182,6 +182,11 @@
     display: block;
 }
 
+.clearAll {
+    font-size: 11px;
+    float: right;
+}
+
 .error {
     width: 20px;
     height: 20px;

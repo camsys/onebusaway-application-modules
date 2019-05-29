@@ -29,7 +29,7 @@ jQuery(function() {
     var table = $('#blockSummaryTable').DataTable({
         "paging":false,
         "order": [[ 2, "asc" ]],
-        columnDefs: [ { orderable: false, targets: [4,6] }]
+        columnDefs: [ { orderable: false, targets: [4,6,7] }]
     });
 
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
@@ -140,8 +140,15 @@ jQuery(function() {
     $(".close").click(function(e){
         e.preventDefault();
         $(this).parent().parent().find(".custom-combobox-input").val("");
+    });
 
-    })
+
+    $(".clearAll").click(function (e) {
+        e.preventDefault();
+        document.getElementsByName("vehicleAssignmentForm")[0].reset();
+    });
+
+
 });
 
 $( function() {

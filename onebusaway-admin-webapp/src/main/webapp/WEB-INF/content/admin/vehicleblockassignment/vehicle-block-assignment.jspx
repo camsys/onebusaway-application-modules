@@ -129,7 +129,7 @@
                                     <th style="width: 70px;"></th>
                                     <th >Vehicle</th>
                                     <th style="width: 110px;"></th>
-                                    <th style="width: 70px;"></th>
+                                    <th style="width: 70px;">Clear Row</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -169,6 +169,7 @@
 
                     <s:select id="hiddenVehicles" list="activeVehicles" style="display:none" />
                     <s:submit id="saveBottom" value="Save Changes" class="button" theme="simple"/>
+                    <div class="button clearAll" theme="simple">Clear All</div>
                 </s:form>
             </div>
         </div>
