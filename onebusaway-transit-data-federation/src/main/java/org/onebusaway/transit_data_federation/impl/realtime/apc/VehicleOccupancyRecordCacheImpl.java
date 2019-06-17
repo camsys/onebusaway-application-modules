@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class VehicleOccupancyRecordCacheImpl implements VehicleOccupancyRecordCache {
 
-    private static int DEFAULT_CACHE_TIMEOUT_SECONDS = 15 * 60;
+    private static int DEFAULT_CACHE_TIMEOUT_SECONDS = 6 * 60;
     private int _cacheTimeoutSeconds = DEFAULT_CACHE_TIMEOUT_SECONDS;
     private Cache<String, VehicleOccupancyRecord> _routeCache;
     private Cache<AgencyAndId, VehicleOccupancyRecord> _vehicleCache;
