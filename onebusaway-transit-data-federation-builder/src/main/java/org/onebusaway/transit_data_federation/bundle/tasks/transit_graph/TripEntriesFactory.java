@@ -16,7 +16,10 @@
  */
 package org.onebusaway.transit_data_federation.bundle.tasks.transit_graph;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.TimeZone;
 
 import org.onebusaway.container.ConfigurationParameter;
 import org.onebusaway.gtfs.model.Agency;
@@ -136,13 +139,11 @@ public class TripEntriesFactory {
 
   private TripEntryImpl processTrip(TransitGraphImpl graph, Trip trip) {
 
-    List<StopTime> originalStopTimes = _gtfsDao.getStopTimesForTrip(trip);
+    List<StopTime> stopTimes = _gtfsDao.getStopTimesForTrip(trip);
 
     // A trip without stop times is a trip we don't care about
-    if (originalStopTimes.isEmpty())
+    if (stopTimes.isEmpty())
       return null;
-
-    List<StopTime> stopTimes = removeNonRevenueStopTimes(originalStopTimes);
 
     ShapePoints shapePoints = null;
 
@@ -175,16 +176,6 @@ public class TripEntriesFactory {
     graph.putTripEntry(tripEntry);
 
     return tripEntry;
-  }
-
-  private List<StopTime> removeNonRevenueStopTimes(List<StopTime> stopTimes){
-    List<StopTime> filteredNonRevenueStopTimes = new ArrayList<StopTime>();
-    for(StopTime stopTime : stopTimes){
-      if(stopTime.getPickupType() == 0 && stopTime.getDropOffType() == 0){
-        filteredNonRevenueStopTimes.add(stopTime);
-      }
-    }
-    return filteredNonRevenueStopTimes;
   }
 
   private List<StopTimeEntry> cast(List<StopTimeEntryImpl> stopTimesForTrip) {
