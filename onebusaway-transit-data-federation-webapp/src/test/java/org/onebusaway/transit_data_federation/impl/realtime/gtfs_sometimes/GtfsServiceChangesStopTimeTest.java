@@ -19,6 +19,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.onebusaway.container.cache.CacheableMethodManager;
@@ -152,6 +153,7 @@ public class GtfsServiceChangesStopTimeTest {
     public void setupRun() {
     }
 
+    @Ignore
     @Test
     @Transactional
     @DirtiesContext
