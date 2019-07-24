@@ -13,22 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.api.impl;
+package org.onebusaway.api.serializers.pb;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
-import javax.servlet.http.HttpServletResponse;
-
 import com.opensymphony.xwork2.ActionInvocation;
-import org.apache.struts2.ServletActionContext;
 import org.apache.struts2.rest.handler.ContentTypeHandler;
 import org.onebusaway.api.model.ResponseBean;
 
 import com.google.protobuf.Message;
 
-public class CustomProtocolBufferHandler implements ContentTypeHandler {
+public class CustomProtocolBufferTextHandler implements ContentTypeHandler {
 
   @Deprecated
   @Override
@@ -53,13 +50,7 @@ public class CustomProtocolBufferHandler implements ContentTypeHandler {
     ResponseBean response = (ResponseBean) obj;
     if (response.getData() != null && response.getData() instanceof Message) {
       Message message = (Message) response.getData();
-      /**
-       * Instead of writing to the output Writer, we write directly to the
-       * HttpServletResponse output stream. That way, we can avoid any weirdness
-       * with encoding the serialized protobuf to a String.
-       */
-      HttpServletResponse res = ServletActionContext.getResponse();
-      message.writeTo(res.getOutputStream());
+      stream.write(message.toString());
     } else {
       stream.write(response.getText());
     }
@@ -68,11 +59,11 @@ public class CustomProtocolBufferHandler implements ContentTypeHandler {
 
   @Override
   public String getContentType() {
-    return "application/x-google-protobuf";
+    return "text/plain";
   }
 
   @Override
   public String getExtension() {
-    return "pb";
+    return "pbtext";
   }
 }

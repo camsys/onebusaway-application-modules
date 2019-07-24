@@ -19,11 +19,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+import org.apache.struts2.dispatcher.HttpParameters;
+import org.apache.struts2.dispatcher.Parameter;
 import org.apache.struts2.interceptor.SessionAware;
 import org.onebusaway.presentation.model.NextAction;
 
-import com.opensymphony.xwork2.ActionContext;
-import com.opensymphony.xwork2.ActionSupport;
 
 public abstract class NextActionSupport extends ActionSupport implements
     SessionAware {
@@ -58,10 +60,15 @@ public abstract class NextActionSupport extends ActionSupport implements
     NextAction next = stack.remove(stack.size() - 1);
 
     Map<String, String[]> params = next.getParameters();
+
     if (params != null && !params.isEmpty()) {
       ActionContext context = ActionContext.getContext();
-      Map<String, Object> contextParameters = context.getParameters();
-      contextParameters.putAll(params);
+
+      HttpParameters parameters = context.getParameters();
+
+      for (Map.Entry<String,String[]> entry :params.entrySet()){
+        parameters.put(entry.getKey(), new Parameter.Request(entry.getKey(), entry.getValue()));
+      }
     }
 
     return next.getAction();

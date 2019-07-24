@@ -45,7 +45,7 @@
 <s:if test="getNLSValue(descriptions) != null">
 <tr>
   <td class="label"><oba:message key="Description"/>:</td>
-  <td><s:property escape="false" value="getNLSValue(descriptions)"/></td>
+  <td><s:property escapeHtml="false" value="getNLSValue(descriptions)"/></td>
 </tr>
 </s:if>
 

@@ -126,7 +126,7 @@
   <!-- ?chxr=0,6,12 -->
 </s:url>
 <jsp:element name="img">
-  <jsp:attribute name="src"><s:property value="%{url}" escape="false"/></jsp:attribute>
+  <jsp:attribute name="src"><s:property value="%{url}" escapeHtml="false"/></jsp:attribute>
 </jsp:element>
 </s:push>
 </s:else>

@@ -15,9 +15,11 @@
  */
 package org.onebusaway.presentation.impl.users;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.struts2.dispatcher.Parameter;
 import org.springframework.web.context.request.AbstractRequestAttributes;
 
 import com.opensymphony.xwork2.ActionContext;
@@ -98,7 +100,15 @@ public class XWorkRequestAttributes extends AbstractRequestAttributes {
   private Map<String, Object> getScopedMap(int scope) {
     switch (scope) {
       case SCOPE_REQUEST:
-        return _context.getParameters();
+        if(_context.getParameters() != null){
+          Map<String, Object> parameters = new HashMap<>();
+          for(Map.Entry<String, Parameter> param : _context.getParameters().entrySet()){
+            if(param.getValue() != null) {
+              parameters.put(param.getKey(), param.getValue().getObject());
+            }
+          }
+          return parameters;
+        }
       case SCOPE_SESSION:
         return _context.getSession();
       case SCOPE_GLOBAL_SESSION:

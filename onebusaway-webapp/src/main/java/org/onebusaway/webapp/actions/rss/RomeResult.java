@@ -18,11 +18,11 @@ package org.onebusaway.webapp.actions.rss;
 import java.io.Writer;
 
 import org.apache.struts2.ServletActionContext;
-import org.apache.struts2.dispatcher.StrutsResultSupport;
 
 import com.opensymphony.xwork2.ActionInvocation;
 import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.io.SyndFeedOutput;
+import org.apache.struts2.result.StrutsResultSupport;
 
 public class RomeResult extends StrutsResultSupport {
 

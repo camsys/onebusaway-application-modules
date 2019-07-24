@@ -74,7 +74,9 @@ public class JsonComponent extends ContextBean {
 
     try {
       Collection<Pattern> empty = Collections.emptyList();
-      json = JSONUtil.serialize(value, empty, empty, _ignoreHierarchy, _excludeNullProperties);
+      JSONUtil jsonUtil = new JSONUtil();
+
+      json = jsonUtil.serialize(value, empty, empty, _ignoreHierarchy, _excludeNullProperties);
     } catch (JSONException ex) {
       LOG.error("Could not generate json from value", ex);
     }

@@ -26,7 +26,7 @@
 <h2 class="wikiTitle"><s:property value="page.title"/></h2>
 
 <div class="wiki">
-  <s:property escape="false" value="renderedContent"/>
+  <s:property escapeHtml="false" value="renderedContent"/>
 </div>
 
 <s:if test="admin">

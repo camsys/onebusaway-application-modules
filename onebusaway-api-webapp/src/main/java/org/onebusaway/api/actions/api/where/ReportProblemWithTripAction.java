@@ -19,8 +19,6 @@ package org.onebusaway.api.actions.api.where;
 import java.io.IOException;
 import java.util.Date;
 
-import net.sf.json.JSONObject;
-
 import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.exceptions.ServiceException;
@@ -68,16 +66,6 @@ public class ReportProblemWithTripAction extends ApiActionSupport {
     _model.setStopId(stopId);
   }
 
-  /**
-   * @deprecated use {@link #setCode(String)} instead
-   */
-  @Deprecated
-  public void setData(String data) {
-    JSONObject json = JSONObject.fromObject(data);
-    if (json.has("code")) {
-      _model.setCode(json.getString("code"));
-    }
-  }
 
   public void setCode(String code) {
     _model.setCode(code);

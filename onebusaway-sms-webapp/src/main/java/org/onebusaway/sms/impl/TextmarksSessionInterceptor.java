@@ -17,6 +17,8 @@ package org.onebusaway.sms.impl;
 
 import java.util.Map;
 
+import org.apache.struts2.dispatcher.HttpParameters;
+import org.apache.struts2.dispatcher.Parameter;
 import org.apache.struts2.interceptor.SessionAware;
 import org.onebusaway.presentation.impl.users.XWorkRequestAttributes;
 import org.onebusaway.sms.services.SessionManager;
@@ -49,9 +51,13 @@ public class TextmarksSessionInterceptor extends AbstractInterceptor {
   public String intercept(ActionInvocation invocation) throws Exception {
 
     ActionContext context = invocation.getInvocationContext();
-    Map<String, Object> parameters = context.getParameters();
+    HttpParameters parameters = context.getParameters();
+    Parameter phoneNumberParam = parameters.get(_phoneNumberParameterName);
 
-    Object phoneNumber = parameters.get(_phoneNumberParameterName);
+    if(phoneNumberParam == null)
+      return invocation.invoke();
+
+    Object phoneNumber = phoneNumberParam.getObject();
 
     if (phoneNumber == null)
       return invocation.invoke();
