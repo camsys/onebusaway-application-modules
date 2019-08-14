@@ -16,7 +16,7 @@
 
 -->
 <html xmlns:jsp="http://java.sun.com/JSP/Page"
-	xmlns:c="http://java.sun.com/jsp/jstl/core" 
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
 	xmlns:s="/struts-tags"
 	xmlns:wiki="/oba-wiki-tags">
 <jsp:directive.page contentType="text/html" />
@@ -154,12 +154,14 @@
 		</s:if>
 
 		<s:if test="%{results.matches.size&gt;0}">
-			<div id="mapHider" class="map">
-				<div id="mapExpander">
-					<span id="showMapSpan">SHOW MAP</span>
+			<s:if test="results.resultType.notequals('GeocodeResult')">
+				<div id="mapHider" class="map">
+					<div id="mapExpander">
+						<span id="showMapSpan">SHOW MAP</span>
+					</div>
+					<div id="map"><!-- //prevent jspx minimization --></div>
 				</div>
-				<div id="map"><!-- //prevent jspx minimization --></div>
-			</div>
+			</s:if>
 		</s:if>
 
 		<s:if test="%{results.empty}">
