@@ -12,7 +12,7 @@
 	<properties>
 		<xwiki.version>2.3.1</xwiki.version>
 		<xwiki.integration.version>1.0.1</xwiki.integration.version>
-		<geotools.version>11-beta</geotools.version>
+		<geotools.version>21-RC</geotools.version>
 		<spring.security.version>4.2.10.RELEASE</spring.security.version>
 		<bundle.builtPath>/var/lib/oba/bundles/builder</bundle.builtPath>
 		<bundle.stagedPath>/var/lib/oba/bundles/staged</bundle.stagedPath>
@@ -107,7 +107,8 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.17</version>
+			<version>8.0.13</version>
+			<!--<version>5.1.17</version>-->
 		</dependency>
 		<dependency>
 			<groupId>org.tuckey</groupId>
@@ -226,12 +227,17 @@
 		<!--  gtfs validation -->
 	<dependency>
 		<groupId>org.geotools</groupId>
-		<artifactId>gt-api</artifactId>
+		<artifactId>gt-main</artifactId>
 		<version>${geotools.version}</version>
 	</dependency>
 	<dependency>
 		<groupId>org.geotools</groupId>
 		<artifactId>gt-main</artifactId>
+		<version>${geotools.version}</version>
+	</dependency>
+	<dependency>
+		<groupId>org.geotools</groupId>
+		<artifactId>gt-metadata</artifactId>
 		<version>${geotools.version}</version>
 	</dependency>
 	<dependency>
@@ -301,7 +307,7 @@
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
 			<scope>provided</scope>
-			<version>1.4</version>
+			<version>1.5.0-b01</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.googlecode.java-diff-utils</groupId>
@@ -349,6 +355,12 @@
             <version>${project.version}</version>
             <type>war</type>
         </dependency>
+
+		<dependency>
+			<groupId>com.sun.activation</groupId>
+			<artifactId>javax.activation</artifactId>
+			<version>1.2.0</version>
+		</dependency>
 
     </dependencies>
 

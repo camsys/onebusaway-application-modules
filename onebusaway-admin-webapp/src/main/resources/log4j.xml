@@ -26,7 +26,7 @@
 
 	<appender name="ROLL" class="org.apache.log4j.rolling.RollingFileAppender">
 		<rollingPolicy class="org.apache.log4j.rolling.TimeBasedRollingPolicy">
-			<param name="FileNamePattern" value="/var/log/tomcat6/admin-webapp.%d.log" />
+			<param name="FileNamePattern" value="/var/log/tomcat8/admin-webapp.%d.log" />
 		</rollingPolicy>
 
 		<layout class="org.apache.log4j.PatternLayout">
@@ -48,8 +48,8 @@
 	<!-- 0 or 1 root elements -->
 
 	<root>
-		<priority value="${log4j.priority}" />
-		<appender-ref ref="${log4j.appender}" />
+		<priority value="info" />
+		<appender-ref ref="ROLL" />
 	</root>
 
 	<!-- 0 or 1 categoryFactory elements -->

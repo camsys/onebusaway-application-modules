@@ -24,9 +24,9 @@ import org.onebusaway.transit_data_federation.services.beans.RouteBeanService;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.index.ItemVisitor;
-import com.vividsolutions.jts.index.strtree.STRtree;
+import com.locationtech.jts.geom.Envelope;
+import com.locationtech.jts.index.ItemVisitor;
+import com.locationtech.jts.index.strtree.STRtree;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

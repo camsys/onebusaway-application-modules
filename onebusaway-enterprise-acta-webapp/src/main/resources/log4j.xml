@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+q<?xml version="1.0" encoding="UTF-8" ?>
 <!--
 
     Copyright (C) 2011 Metropolitan Transportation Authority
@@ -26,7 +26,7 @@
 
 	<appender name="ROLL" class="org.apache.log4j.rolling.RollingFileAppender">
 		<rollingPolicy class="org.apache.log4j.rolling.TimeBasedRollingPolicy">
-			<param name="FileNamePattern" value="/var/log/tomcat6/${project.artifactId}.%d.log" />
+			<param name="FileNamePattern" value="/var/log/tomcat8/${project.artifactId}.%d.log" />
 		</rollingPolicy>
 
 		<layout class="org.apache.log4j.PatternLayout">

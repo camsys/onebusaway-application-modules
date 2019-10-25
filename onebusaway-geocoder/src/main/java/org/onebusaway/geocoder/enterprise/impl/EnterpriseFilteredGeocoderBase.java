@@ -20,12 +20,12 @@ import org.onebusaway.geocoder.enterprise.services.EnterpriseGeocoderService;
 import org.onebusaway.geocoder.model.GeocoderResults;
 import org.onebusaway.geocoder.services.GeocoderService;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKTReader;
+import com.locationtech.jts.geom.Coordinate;
+import com.locationtech.jts.geom.Geometry;
+import com.locationtech.jts.geom.GeometryFactory;
+import com.locationtech.jts.geom.Polygon;
+import com.locationtech.jts.io.ParseException;
+import com.locationtech.jts.io.WKTReader;
 
 import org.geotools.geometry.jts.JTSFactoryFinder;
 

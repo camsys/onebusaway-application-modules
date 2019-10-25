@@ -54,7 +54,7 @@
 				<s:if test="!anonymousUser">
 					<div id="navigation">
 						<s:url var="url" namespace="/" action="logout"></s:url>
-						<s:form action="%{url}"
+						<s:form action="logout.action"
 								method="post">
 							<input type="submit"
 								   class="logoutButton"

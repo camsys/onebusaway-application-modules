@@ -21,8 +21,8 @@ import java.util.Map;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.index.strtree.STRtree;
+import com.locationtech.jts.geom.Envelope;
+import com.locationtech.jts.index.strtree.STRtree;
 
 public class HierarchicalSTRtreeFactory<T> {
 

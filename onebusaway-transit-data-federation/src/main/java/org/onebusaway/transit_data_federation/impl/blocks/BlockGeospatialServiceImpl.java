@@ -67,8 +67,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.index.strtree.STRtree;
+import com.locationtech.jts.geom.Envelope;
+import com.locationtech.jts.index.strtree.STRtree;
 
 @Component
 class BlockGeospatialServiceImpl implements BlockGeospatialService {

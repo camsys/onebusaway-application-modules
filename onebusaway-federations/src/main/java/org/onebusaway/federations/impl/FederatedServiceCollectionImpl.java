@@ -31,9 +31,9 @@ import org.onebusaway.federations.FederatedServiceCollection;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.index.ItemVisitor;
-import com.vividsolutions.jts.index.strtree.STRtree;
+import com.locationtech.jts.geom.Envelope;
+import com.locationtech.jts.index.ItemVisitor;
+import com.locationtech.jts.index.strtree.STRtree;
 
 /**
  * A basic {@link FederatedServiceCollection} implementation that provides

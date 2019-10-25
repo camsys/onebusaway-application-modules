@@ -20,8 +20,8 @@ import java.util.List;
 
 import org.onebusaway.geospatial.model.CoordinateBounds;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.index.strtree.STRtree;
+import com.locationtech.jts.geom.Envelope;
+import com.locationtech.jts.index.strtree.STRtree;
 
 public class HierarchicalSTRtree<T> {
 
