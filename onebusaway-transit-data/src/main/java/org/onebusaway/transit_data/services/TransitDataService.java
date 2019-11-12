@@ -267,7 +267,10 @@ public interface TransitDataService extends FederatedService {
   public void addVehicleOccupancyRecord(VehicleOccupancyRecord vehicleOccupancyRecord);
 
   @FederatedByEntityIdMethod
-  public VehicleOccupancyRecord getVehicleOccupancyRecordForVehicleId(AgencyAndId vehicleId);
+  public VehicleOccupancyRecord getLastVehicleOccupancyRecordForVehicleId(AgencyAndId vehicleId);
+
+  @FederatedByEntityIdMethod
+  public VehicleOccupancyRecord getVehicleOccupancyRecordForVehicleIdAndRoute(AgencyAndId vehicleId, String routeId, String directionId);
 
   /**
    * 

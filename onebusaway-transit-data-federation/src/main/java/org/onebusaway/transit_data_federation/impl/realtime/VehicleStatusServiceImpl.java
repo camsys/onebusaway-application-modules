@@ -132,7 +132,7 @@ class VehicleStatusServiceImpl implements VehicleLocationListener,
 
   @Override
   public void resetVehicleOccupancy(AgencyAndId vehicleId) {
-    _vehicleOccupanycRecordCache.clearRecord(vehicleId);
+    _vehicleOccupanycRecordCache.clearRecordForVehicle(vehicleId);
   }
 
   @Override
@@ -186,7 +186,7 @@ class VehicleStatusServiceImpl implements VehicleLocationListener,
     VehicleStatus status = new VehicleStatus();
     status.setRecord(record);
     status.setAllRecords(records);
-    status.setOccupancyRecord(_vehicleOccupanycRecordCache.getRecordForVehicleId(vehicleId));
+    status.setOccupancyRecord(_vehicleOccupanycRecordCache.getLastRecordForVehicleId(vehicleId));
 
     return status;
   }
@@ -198,7 +198,7 @@ class VehicleStatusServiceImpl implements VehicleLocationListener,
       VehicleStatus status = new VehicleStatus();
       status.setRecord(record);
       statuses.add(status);
-      status.setOccupancyRecord(_vehicleOccupanycRecordCache.getRecordForVehicleId(record.getVehicleId()));
+      status.setOccupancyRecord(_vehicleOccupanycRecordCache.getLastRecordForVehicleId(record.getVehicleId()));
     }
     return statuses;
   }

@@ -327,6 +327,18 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
       bean.setVehicleType(blockLocation.getVehicleType().toLabel());
 
     VehicleOccupancyRecord vehicleOccupancyRecord = _vehicleOccupancyRecordCache.getRecordForVehicleId(blockLocation.getVehicleId());
+    
+    // if we have trip info, check for apc data
+    String routeId = null;
+    String directionId = null;
+    if (activeTripInstance != null
+            && activeTripInstance.getBlockTrip() != null
+            && activeTripInstance.getBlockTrip().getTrip() != null
+            && activeTripInstance.getBlockTrip().getTrip().getRoute() != null) {
+      routeId = activeTripInstance.getBlockTrip().getTrip().getRoute().getId().getId();
+      directionId = activeTripInstance.getBlockTrip().getTrip().getDirectionId();
+    }
+
     if (vehicleOccupancyRecord != null && vehicleOccupancyRecord.getOccupancyStatus() != null) {
       bean.setOccupancyStatus(vehicleOccupancyRecord.getOccupancyStatus().valueOf());
     }
