@@ -47,6 +47,7 @@ import org.onebusaway.transit_data.model.realtime.CurrentVehicleEstimateBean;
 import org.onebusaway.transit_data.model.realtime.CurrentVehicleEstimateQueryBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordQueryBean;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertRecordBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
@@ -59,6 +60,19 @@ import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.VehicleOccupancyRecordCache;
+import org.onebusaway.transit_data_federation.services.ArrivalAndDepartureAlarmService;
+import org.onebusaway.transit_data_federation.services.PredictionHelperService;
+import org.onebusaway.transit_data_federation.services.ScheduleHelperService;
+import org.onebusaway.transit_data_federation.services.beans.ArrivalsAndDeparturesBeanService;
+import org.onebusaway.transit_data_federation.services.beans.BlockBeanService;
+import org.onebusaway.transit_data_federation.services.beans.RoutesBeanService;
+import org.onebusaway.transit_data_federation.services.beans.ServiceAlertsBeanService;
+import org.onebusaway.transit_data_federation.services.beans.ShapeBeanService;
+import org.onebusaway.transit_data_federation.services.beans.StopsBeanService;
+import org.onebusaway.transit_data_federation.services.beans.TripBeanService;
+import org.onebusaway.transit_data_federation.services.beans.TripDetailsBeanService;
+import org.onebusaway.transit_data_federation.services.beans.VehicleStatusBeanService;
 import org.onebusaway.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.transit_data_federation.services.bundle.BundleSearchService;
 import org.slf4j.Logger;
@@ -113,6 +127,44 @@ public class TransitDataServiceImpl implements TransitDataService {
     }
   }
 
+  @Autowired
+  private ArrivalsAndDeparturesBeanService _arrivalsAndDeparturesBeanService;
+
+  @Autowired
+  private ArrivalAndDepartureAlarmService _arrivalAndDepartureAlarmService;
+
+  @Autowired
+  private StopsBeanService _stopsBeanService;
+
+  @Autowired
+  private RoutesBeanService _routesBeanService;
+
+  @Autowired
+  private TripBeanService _tripBeanService;
+
+  @Autowired
+  private TripDetailsBeanService _tripDetailsBeanService;
+
+  @Autowired
+  private BlockBeanService _blockBeanService;
+
+  @Autowired
+  private ShapeBeanService _shapeBeanService;
+
+  @Autowired
+  private ServiceAlertsBeanService _serviceAlertsBeanService;
+
+  @Autowired
+  private VehicleStatusBeanService _vehicleStatusBeanService;
+
+  @Autowired
+  private VehicleOccupancyRecordCache _vehicleOccupancyRecordCache;
+
+  @Autowired(required=false)
+  private PredictionHelperService _predictionHelperService;
+  
+  @Autowired
+  private ScheduleHelperService _scheduleHelperService;
   /****
    * {@link TransitDataService} Interface
    ****/
@@ -416,7 +468,18 @@ public class TransitDataServiceImpl implements TransitDataService {
     _transitDataService.resetVehicleLocation(vehicleId);
   }
 
-  /****
+  @Override
+  public void addVehicleOccupancyRecord(VehicleOccupancyRecord vehicleOccupancyRecord) {
+    _vehicleOccupancyRecordCache.addRecord(vehicleOccupancyRecord);
+  }
+
+
+  @Override
+  public VehicleOccupancyRecord getVehicleOccupancyRecordForVehicleId(AgencyAndId vehicleId) {
+    return _vehicleOccupancyRecordCache.getRecordForVehicleId(vehicleId);
+  }
+
+    /****
    * Service Alert Methods
    ****/
 

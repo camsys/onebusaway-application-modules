@@ -33,8 +33,10 @@ import org.onebusaway.federations.annotations.FederatedByEntityIdMethod;
 import org.onebusaway.federations.annotations.FederatedByEntityIdsMethod;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.OccupancyStatusBean;
 import org.onebusaway.transit_data.model.*;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
@@ -261,6 +263,12 @@ public interface TransitDataService extends FederatedService {
   @FederatedByEntityIdMethod
   public void resetVehicleLocation(String vehicleId);
 
+  @FederatedByEntityIdMethod(propertyExpression = "vehicleId")
+  public void addVehicleOccupancyRecord(VehicleOccupancyRecord vehicleOccupancyRecord);
+
+  @FederatedByEntityIdMethod
+  public VehicleOccupancyRecord getVehicleOccupancyRecordForVehicleId(AgencyAndId vehicleId);
+
   /**
    * 
    * @param query determines the vehicle and time of the trip query
@@ -273,8 +281,7 @@ public interface TransitDataService extends FederatedService {
 
   /**
    * @param stopId
-   * @param timeFrom
-   * @param timeTo
+   * @param query
    * @return stop with arrival and departure information for the specified stop
    *         and time range, or null if not found
    * @throws ServiceException
@@ -286,8 +293,7 @@ public interface TransitDataService extends FederatedService {
 
   /**
    * @param stopIds
-   * @param timeFrom
-   * @param timeTo
+   * @param query
    * @return stops with arrival and departure information for the specified
    *         stops and time range
    * @throws ServiceException

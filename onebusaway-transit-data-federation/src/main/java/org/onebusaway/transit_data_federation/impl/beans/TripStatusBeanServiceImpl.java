@@ -25,6 +25,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.EVehicleStatus;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.TripStopTimesBean;
@@ -39,6 +40,7 @@ import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.VehicleOccupancyRecordCache;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.beans.ServiceAlertsBeanService;
 import org.onebusaway.transit_data_federation.services.beans.StopBeanService;
@@ -78,6 +80,8 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
 
   private ServiceAlertsBeanService _serviceAlertBeanService;
 
+  private VehicleOccupancyRecordCache _vehicleOccupancyRecordCache;
+
   @Autowired
   public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
     _transitGraphDao = transitGraphDao;
@@ -108,6 +112,11 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
   public void setServiceAlertBeanService(
       ServiceAlertsBeanService serviceAlertBeanService) {
     _serviceAlertBeanService = serviceAlertBeanService;
+  }
+
+  @Autowired
+  public void setVehicleOccupancyRecordCache(VehicleOccupancyRecordCache vehicleOccupancyRecordCache){
+    _vehicleOccupancyRecordCache = vehicleOccupancyRecordCache;
   }
 
   /****
@@ -316,6 +325,11 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
 
     if (blockLocation.getVehicleType() != null)
       bean.setVehicleType(blockLocation.getVehicleType().toLabel());
+
+    VehicleOccupancyRecord vehicleOccupancyRecord = _vehicleOccupancyRecordCache.getRecordForVehicleId(blockLocation.getVehicleId());
+    if (vehicleOccupancyRecord != null) {
+      bean.setOccupancyStatus(vehicleOccupancyRecord.getOccupancyStatus());
+    }
 
     bean.setPredicted(blockLocation.isPredicted());
 
