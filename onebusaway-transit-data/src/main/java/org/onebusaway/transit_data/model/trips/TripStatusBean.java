@@ -55,7 +55,7 @@ public final class TripStatusBean implements Serializable {
 
   private String status;
 
-  private OccupancyStatus occupancyStatus;
+  private Integer occupancyStatus;
 
   private String vehicleType;
 
@@ -183,9 +183,9 @@ public final class TripStatusBean implements Serializable {
 
   public void setVehicleType(String vehicleType) { this.vehicleType = vehicleType; }
 
-  public OccupancyStatus getOccupancyStatus() { return occupancyStatus; }
+  public Integer getOccupancyStatus() { return occupancyStatus; }
 
-  public void setOccupancyStatus(OccupancyStatus occupancyStatus) {
+  public void setOccupancyStatus(Integer occupancyStatus) {
     this.occupancyStatus = occupancyStatus;
   }
 
