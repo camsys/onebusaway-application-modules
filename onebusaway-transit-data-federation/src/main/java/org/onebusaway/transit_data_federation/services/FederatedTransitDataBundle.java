@@ -76,12 +76,16 @@ public class FederatedTransitDataBundle {
     return new File(_path, "FrequencyBlockTripIndices.obj");
   }
 
+  public File getStopTransfersPath() {
+    return new File(_path, "StopTransfers.obj");
+  }
+  
   public File getShapeGeospatialIndexDataPath() {
     return new File(_path, "ShapeGeospatialIndexData.obj.gz");
   }
 
-  public File getServiceAlertsPath() {
-    return new File(_path, "ServiceAlerts.xml");
+  public File getRevenueStopRouteIndicesPath() {
+    return new File(_path, "RevenueStopRouteIndices.obj");
   }
 
   public File getCachePath() {

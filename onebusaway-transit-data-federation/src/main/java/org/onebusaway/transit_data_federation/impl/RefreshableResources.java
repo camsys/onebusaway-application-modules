@@ -36,6 +36,8 @@ public final class RefreshableResources {
   public static final String SHAPE_GEOSPATIAL_INDEX = "shapeGeospatialIndex";
 
   public static final String NARRATIVE_DATA = "narrativeData";
+  
+  public static final String REVENUE_STOP_ROUTE_INDEX = "revenueStopRouteIndex";
 
   public static final String STOP_CONSOLIDATION_FILE = "stopConsolidationFile";
 
