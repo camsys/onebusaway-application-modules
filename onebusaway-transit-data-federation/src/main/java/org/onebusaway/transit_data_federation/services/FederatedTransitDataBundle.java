@@ -141,5 +141,9 @@ public class FederatedTransitDataBundle {
     return new File(_path, "StopConsolidation.txt");
   }
 
+  public File getServiceAlertsPath() {
+    return new File(_path, "ServiceAlerts.xml");
+  }
+
   public File getHistoricalRidershipPath() { return new File(_path, "HistoricalRiderships.obj"); }
 }

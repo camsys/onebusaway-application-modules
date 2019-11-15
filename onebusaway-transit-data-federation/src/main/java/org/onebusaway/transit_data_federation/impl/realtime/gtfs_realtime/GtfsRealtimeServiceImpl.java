@@ -35,7 +35,7 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockStatusService
 import org.onebusaway.transit_data_federation.services.realtime.BlockLocation;
 import org.onebusaway.transit_data_federation.services.realtime.VehicleStatus;
 import org.onebusaway.transit_data_federation.services.realtime.VehicleStatusService;
-import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlertsService;
+import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlertsRecordService;
 import org.onebusaway.transit_data_federation.services.transit_graph.*;
 import org.onebusaway.util.SystemTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +51,7 @@ class GtfsRealtimeServiceImpl implements GtfsRealtimeService {
 
   private BlockStatusService _blockStatusService;
 
-  private ServiceAlertsService _serviceAlertsService;
+  private ServiceAlertsRecordService _serviceAlertsRecordService;
 
   @Autowired
   public void setVehicleStatusService(VehicleStatusService vehicleStatusService) {
@@ -64,8 +64,8 @@ class GtfsRealtimeServiceImpl implements GtfsRealtimeService {
   }
 
   @Autowired
-  public void setServiceAlertsService(ServiceAlertsService serviceAlertsService) {
-    _serviceAlertsService = serviceAlertsService;
+  public void setServiceAlertsService(ServiceAlertsRecordService serviceAlertsRecordService) {
+    _serviceAlertsRecordService = serviceAlertsRecordService;
   }
 
   @Override
@@ -208,7 +208,7 @@ class GtfsRealtimeServiceImpl implements GtfsRealtimeService {
   @Override
   public FeedMessage getAlerts() {
     FeedMessage.Builder feedMessage = createFeedWithDefaultHeader();
-    List<ServiceAlertRecord> serviceAlerts = _serviceAlertsService.getAllServiceAlerts();
+    List<ServiceAlertRecord> serviceAlerts = _serviceAlertsRecordService.getAllServiceAlerts();
     for (ServiceAlertRecord serviceAlert : serviceAlerts) {
 
       Alert.Builder alert = Alert.newBuilder();

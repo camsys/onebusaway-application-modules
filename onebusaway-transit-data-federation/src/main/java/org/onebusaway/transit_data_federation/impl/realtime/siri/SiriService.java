@@ -32,7 +32,7 @@ import org.onebusaway.transit_data_federation.impl.service_alerts.*;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
-import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlertsService;
+import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlertsRecordService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -61,7 +61,7 @@ public class SiriService {
 
   private TransitGraphDao _transitGraphDao;
 
-  private ServiceAlertsService _serviceAlertsService;
+  private ServiceAlertsRecordService _serviceAlertsRecordService;
 
   private VehicleLocationListener _vehicleLocationListener;
 
@@ -83,8 +83,8 @@ public class SiriService {
   }
 
   @Autowired
-  public void setServiceAlertService(ServiceAlertsService serviceAlertsService) {
-    _serviceAlertsService = serviceAlertsService;
+  public void setServiceAlertService(ServiceAlertsRecordService serviceAlertsRecordService) {
+    _serviceAlertsRecordService = serviceAlertsRecordService;
   }
 
   @Autowired
@@ -277,10 +277,10 @@ public class SiriService {
 
     for (ServiceAlertRecord serviceAlert : serviceAlertsToUpdate){
       serviceAlert.setAgencyId(defaultAgencyId);
-      _serviceAlertsService.createOrUpdateServiceAlert(serviceAlert);
+      _serviceAlertsRecordService.createOrUpdateServiceAlert(serviceAlert);
     }
 
-    _serviceAlertsService.removeServiceAlerts(serviceAlertIdsToRemove);
+    _serviceAlertsRecordService.removeServiceAlerts(serviceAlertIdsToRemove);
   }
 
   private ServiceAlertRecord getPtSituationAsServiceAlert(

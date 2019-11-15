@@ -33,6 +33,10 @@ public class ServiceAlertLibrary {
     return new AgencyAndId(agencyId, id);
   }
 
+  public static final AgencyAndId agencyAndId(Id id) {
+    return new AgencyAndId(id.getAgencyId(), id.getId());
+  }
+
   /**
    * Id may have agencyId duplicated -- do the right thing
    * @return a valid, non duplicated AgencyAndId

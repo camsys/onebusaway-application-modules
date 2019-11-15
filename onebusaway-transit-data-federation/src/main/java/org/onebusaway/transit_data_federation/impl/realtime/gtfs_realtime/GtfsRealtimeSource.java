@@ -56,7 +56,7 @@ import org.onebusaway.transit_data_federation.services.realtime.BlockLocation;
 import org.onebusaway.transit_data_federation.services.realtime.BlockLocationService;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.ServiceAlert;
-import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlertsService;
+import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlertsRecordService;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,7 +99,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
 
   private VehicleLocationListener _vehicleLocationListener;
 
-  private ServiceAlertsService _serviceAlertService;
+  private ServiceAlertsRecordService _serviceAlertService;
 
   private ScheduledExecutorService _scheduledExecutorService;
 
@@ -140,7 +140,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
 
   /**
    * We keep track of alerts, only pushing them to the underlying
-   * {@link ServiceAlertsService} when they've been updated, since we'll often
+   * {@link ServiceAlertsRecordService} when they've been updated, since we'll often
    * see the same alert every time we poll the alert URL
    */
   private Map<AgencyAndId, ServiceAlert> _alertsById = new HashMap<AgencyAndId, ServiceAlerts.ServiceAlert>();
@@ -192,7 +192,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   }
 
   @Autowired
-  public void setServiceAlertService(ServiceAlertsService serviceAlertService) {
+  public void setServiceAlertService(ServiceAlertsRecordService serviceAlertService) {
     _serviceAlertService = serviceAlertService;
   }
 

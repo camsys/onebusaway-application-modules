@@ -49,14 +49,13 @@ import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.BlockTripInstance;
 import org.onebusaway.transit_data_federation.services.blocks.InstanceState;
-import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlertsService;
+import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlertsRecordService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -64,11 +63,11 @@ import org.springframework.transaction.annotation.Transactional;
     "classpath:org/onebusaway/transit_data_federation/application-context-services.xml"})
 @TestPropertySource(properties = { "bundlePath = /tmp/foo"})
 @Transactional(transactionManager = "transactionManager")
-public class ServiceAlertsServiceImplTest extends AbstractTransactionalJUnit4SpringContextTests {
+public class ServiceAlertsRecordServiceDBImplTest extends AbstractTransactionalJUnit4SpringContextTests {
 
 
     @Autowired
-    private ServiceAlertsService _service;
+    private ServiceAlertsRecordService _service;
     private ServiceAlertsPersistenceDB _persister;
     private SessionFactory _sessionFactory;
 
@@ -81,10 +80,10 @@ public class ServiceAlertsServiceImplTest extends AbstractTransactionalJUnit4Spr
     @Before
     public void setup() throws IOException {
         ServiceAlertsCache cache = new ServiceAlertsCacheInMemoryImpl();
-        _service = new ServiceAlertsServiceImpl();
-        ((ServiceAlertsServiceImpl)_service).setServiceAlertsCache(cache);
+        _service = new ServiceAlertsRecordServiceImpl();
+        ((ServiceAlertsRecordServiceImpl)_service).setServiceAlertsCache(cache);
         _persister = new ServiceAlertsPersistenceDB();
-        ((ServiceAlertsServiceImpl)_service).setServiceAlertsPersistence(_persister);
+        ((ServiceAlertsRecordServiceImpl)_service).setServiceAlertsPersistence(_persister);
         _persister._refreshInterval = 1000;
         _persister.setSessionFactory(_sessionFactory);
 
