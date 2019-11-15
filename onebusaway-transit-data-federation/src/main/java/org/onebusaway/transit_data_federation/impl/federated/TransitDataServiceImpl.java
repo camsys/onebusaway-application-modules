@@ -423,17 +423,20 @@ public class TransitDataServiceImpl implements TransitDataService {
 
   @Override
   public void addVehicleOccupancyRecord(VehicleOccupancyRecord vehicleOccupancyRecord) {
-    _vehicleOccupancyRecordCache.addRecord(vehicleOccupancyRecord);
+    blockUntilBundleIsReady();
+    _transitDataService.addVehicleOccupancyRecord(vehicleOccupancyRecord);
   }
 
   @Override
   public VehicleOccupancyRecord getLastVehicleOccupancyRecordForVehicleId(AgencyAndId vehicleId) {
-    return _vehicleOccupancyRecordCache.getLastRecordForVehicleId(vehicleId);
+    blockUntilBundleIsReady();
+    return _transitDataService.getLastVehicleOccupancyRecordForVehicleId(vehicleId);
   }
 
   @Override
   public VehicleOccupancyRecord getVehicleOccupancyRecordForVehicleIdAndRoute(AgencyAndId vehicleId, String routeId, String directionId) {
-    return _vehicleOccupancyRecordCache.getRecordForVehicleIdAndRoute(vehicleId, routeId, directionId);
+    blockUntilBundleIsReady();
+    return _transitDataService.getVehicleOccupancyRecordForVehicleIdAndRoute(vehicleId, routeId, directionId);
   }
 
     /****

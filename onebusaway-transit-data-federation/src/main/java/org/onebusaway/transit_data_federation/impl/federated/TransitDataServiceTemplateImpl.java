@@ -26,6 +26,7 @@ import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.OccupancyStatusBean;
 import org.onebusaway.transit_data.model.*;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
@@ -42,6 +43,7 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertRecordBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
 import org.onebusaway.transit_data.model.trips.*;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.transit_data_federation.impl.realtime.apc.VehicleOccupancyRecordCache;
 import org.onebusaway.transit_data_federation.model.bundle.HistoricalRidership;
 import org.onebusaway.transit_data_federation.services.*;
 import org.onebusaway.transit_data_federation.services.beans.*;
@@ -56,9 +58,11 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+@Component
 public class TransitDataServiceTemplateImpl implements TransitDataServiceTemplate {
   
   private static Logger _log = LoggerFactory.getLogger(TransitDataServiceTemplateImpl.class);
@@ -134,6 +138,9 @@ public class TransitDataServiceTemplateImpl implements TransitDataServiceTemplat
 
   @Autowired
   private RidershipService _ridershipService;
+
+  @Autowired
+  private VehicleOccupancyRecordCache _vehicleOccupancyRecordCache;
 
   /****
    * {@link TransitDataService} Interface
@@ -748,6 +755,18 @@ public class TransitDataServiceTemplateImpl implements TransitDataServiceTemplat
     Collection<ConsolidatedStopMapBean> beans = _consolidatedStopsService.getAllConsolidatedStops();
     ret.setList(new ArrayList<ConsolidatedStopMapBean>(beans));
     return ret;
+  }
+
+  public void addVehicleOccupancyRecord(VehicleOccupancyRecord vehicleOccupancyRecord) {
+    _vehicleOccupancyRecordCache.addRecord(vehicleOccupancyRecord);
+  }
+
+  public VehicleOccupancyRecord getLastVehicleOccupancyRecordForVehicleId(AgencyAndId vehicleId) {
+    return _vehicleOccupancyRecordCache.getLastRecordForVehicleId(vehicleId);
+  }
+
+  public VehicleOccupancyRecord getVehicleOccupancyRecordForVehicleIdAndRoute(AgencyAndId vehicleId, String routeId, String directionId) {
+    return _vehicleOccupancyRecordCache.getRecordForVehicleIdAndRoute(vehicleId, routeId, directionId);
   }
 
   /****

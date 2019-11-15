@@ -326,8 +326,6 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
     if (blockLocation.getVehicleType() != null)
       bean.setVehicleType(blockLocation.getVehicleType().toLabel());
 
-    VehicleOccupancyRecord vehicleOccupancyRecord = _vehicleOccupancyRecordCache.getRecordForVehicleId(blockLocation.getVehicleId());
-    
     // if we have trip info, check for apc data
     String routeId = null;
     String directionId = null;
@@ -373,7 +371,6 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
       }
       bean.setTimepointPredictions(timepointPredictions);
     }
-    // bean.setRealtimeOccupancy(_realtimeOccupancyService.getRealtimeOccupancyForBlockLocation(blockLocation));
 
     return bean;
   }
