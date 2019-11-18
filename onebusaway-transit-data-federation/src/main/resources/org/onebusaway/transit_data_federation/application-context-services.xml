@@ -28,6 +28,8 @@
   <import resource="classpath:org/onebusaway/transit_data_federation/application-context-common.xml" />
 
   <context:component-scan base-package="org.onebusaway.transit_data_federation.impl" />
+
+  <bean id="transitDataServiceImpl" class="org.onebusaway.transit_data_federation.impl.federated.TransitDataServiceImpl" />
     
   <!--
       List of Hibernate annotated classes: classes configured for Hibernate using annotations, as opposed to a
