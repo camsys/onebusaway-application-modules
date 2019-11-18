@@ -28,6 +28,8 @@
   <import resource="classpath:org/onebusaway/transit_data_federation/application-context-common.xml" />
 
   <context:component-scan base-package="org.onebusaway.transit_data_federation.impl" />
+
+  <bean id="transitDataServiceImpl" class="org.onebusaway.transit_data_federation.impl.federated.TransitDataServiceImpl" />
     
   <!--
       List of Hibernate annotated classes: classes configured for Hibernate using annotations, as opposed to a
@@ -128,6 +130,12 @@
     <property name="stopHasRevenueServiceOnRouteCache" ref="stopHasRevenueOnRouteCache" />
   </bean>
 
+  <bean id="serviceAlertsRecordService" class="org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertsRecordServiceImpl" />
+
   <bean id="serviceAlertsBeanService" class="org.onebusaway.transit_data_federation.impl.beans.ServiceAlertRecordBeanServiceImpl" />
+
+  <bean id="gtfsRealtimeService" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeServiceImpl" />
+
+  <bean id="siriService" class="org.onebusaway.transit_data_federation.impl.realtime.siri.SiriService" />
 
 </beans>

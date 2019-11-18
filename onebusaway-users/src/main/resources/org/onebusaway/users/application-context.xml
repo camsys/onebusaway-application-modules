@@ -150,6 +150,17 @@
         </property>
     </bean>
 
+    <bean id="passwordCryptoEncoderV1" class="org.onebusaway.users.impl.authentication.VersionedCryptoPasswordEncoder">
+        <property name="versionId" value="v1" />
+        <property name="passwordEncoder">
+            <bean id="encoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
+        </property>
+    </bean>
+
+    <bean id="userService" class="org.onebusaway.users.impl.UserServiceImpl">
+        <property name="passwordEncoder" ref="passwordEncoderV1" />
+    </bean>
+
     <bean id="userLastAccessTimeServiceCache" class="org.onebusaway.container.spring.ehcache.EhCacheFactoryBean">
         <property name="cacheManager" ref="cacheManager" />
         <property name="cacheName" value="org.onebusaway.users.impl.internal.UserLastAccessTimeServiceImpl.cache" />
