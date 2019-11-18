@@ -33,6 +33,7 @@ import org.onebusaway.container.cache.Cacheable;
 import org.onebusaway.container.cache.CacheableArgument;
 import org.onebusaway.users.client.model.UserBean;
 import org.onebusaway.users.client.model.UserIndexBean;
+import org.onebusaway.users.impl.authentication.AdaptivePasswordEncoder;
 import org.onebusaway.users.model.User;
 import org.onebusaway.users.model.UserIndex;
 import org.onebusaway.users.model.UserIndexKey;
@@ -53,8 +54,8 @@ import org.springframework.security.authentication.encoding.PasswordEncoder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
-@Component
 public class UserServiceImpl implements UserService {
 
   private UserDao _userDao;
@@ -68,6 +69,8 @@ public class UserServiceImpl implements UserService {
   private UserIndexRegistrationService _userIndexRegistrationService;
 
   private PasswordEncoder _passwordEncoder;
+  
+  private boolean _hasCryptoEncoder = false;
 
   private ExecutorService _executors;
 
@@ -98,9 +101,20 @@ public class UserServiceImpl implements UserService {
     _userIndexRegistrationService = userIndexRegistrationService;
   }
 
-  @Autowired
-  public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+
+  private void setPasswordEncoder(PasswordEncoder passwordEncoder) {
     _passwordEncoder = passwordEncoder;
+  }
+  
+  public void setPasswordEncoder(Object passwordEncoder) {
+      Assert.notNull(passwordEncoder, "passwordEncoder cannot be null");
+      
+      if (passwordEncoder instanceof org.springframework.security.crypto.password.PasswordEncoder) {
+    	  _hasCryptoEncoder = true;
+      }
+      
+      AdaptivePasswordEncoder adpativePasswordEncoder = new AdaptivePasswordEncoder();
+      setPasswordEncoder(adpativePasswordEncoder.getPasswordEncoder(passwordEncoder));
   }
 
   @PostConstruct
@@ -118,27 +132,32 @@ public class UserServiceImpl implements UserService {
    ****/
 
   @Override
+  @Transactional(readOnly=true)
   public int getNumberOfUsers() {
     return _userDao.getNumberOfUsers();
   }
 
   @Override
+  @Transactional
   public List<Integer> getAllUserIds() {
     return _userDao.getAllUserIds();
   }
 
   @Override
+  @Transactional(readOnly=true)
   public List<Integer> getAllUserIdsInRange(int offset, int limit) {
     return _userDao.getAllUserIdsInRange(offset, limit);
   }
 
   @Override
+  @Transactional(readOnly=true)
   public int getNumberOfAdmins() {
     UserRole admin = _authoritiesService.getAdministratorRole();
     return _userDao.getNumberOfUsersWithRole(admin);
   }
 
   @Override
+  @Transactional(readOnly=true)
   public User getUserForId(int userId) {
     return _userDao.getUserForId(userId);
   }
@@ -194,6 +213,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional
   public void deleteUser(User user) {
     _userDao.deleteUser(user);
   }
@@ -209,6 +229,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional
   public void enableAdminRoleForUser(User user, boolean onlyIfNoOtherAdmins) {
 
     UserRole adminRole = _authoritiesService.getUserRoleForName(StandardAuthoritiesService.ADMINISTRATOR);
@@ -225,6 +246,7 @@ public class UserServiceImpl implements UserService {
       _userDao.saveOrUpdateUser(user);
   }
 
+  @Transactional
   public void disableAdminRoleForUser(User user, boolean onlyIfOtherAdmins) {
 
     UserRole adminRole = _authoritiesService.getUserRoleForName(StandardAuthoritiesService.ADMINISTRATOR);
@@ -242,21 +264,26 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional(readOnly=true)
   public List<String> getUserIndexKeyValuesForKeyType(String keyType) {
     return _userDao.getUserIndexKeyValuesForKeyType(keyType);
   }
 
   @Override
+  @Transactional(readOnly=true)
   public Integer getApiKeyCount(){
     return _userDao.getUserKeyCount(UserIndexTypes.API_KEY);
   }
 
   @Override
+  @Transactional(readOnly=true)
   public List<User> getApiKeys(final int start, final int maxResults){
     return _userDao.getUsersForKeyType(start, maxResults, UserIndexTypes.API_KEY);
   }
 
+
   @Override
+  @Transactional
   public UserIndex getOrCreateUserForIndexKey(UserIndexKey key,
       String credentials, boolean isAnonymous) {
 
@@ -289,15 +316,18 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional
   public UserIndex getOrCreateUserForUsernameAndPassword(String username,
       String password) {
-
-    String credentials = _passwordEncoder.encodePassword(password, username);
+	
+	String salt = _hasCryptoEncoder ? null : username; 
+    String credentials = _passwordEncoder.encodePassword(password, salt);
     UserIndexKey key = new UserIndexKey(UserIndexTypes.USERNAME, username);
     return getOrCreateUserForIndexKey(key, credentials, false);
   }
 
   @Override
+  @Transactional(readOnly=true)
   public UserIndex getUserIndexForId(UserIndexKey key) {
     return _userDao.getUserIndexForId(key);
   }
@@ -306,24 +336,25 @@ public class UserServiceImpl implements UserService {
   public UserIndex getUserIndexForUsername(String username)
           throws UsernameNotFoundException {
 
-      int index = username.indexOf('_');
-      if (index == -1)
-          throw new UsernameNotFoundException(
-                  "username did not take the form type_value: " + username);
+    int index = username.indexOf('_');
+    if (index == -1)
+      throw new UsernameNotFoundException(
+              "username did not take the form type_value: " + username);
 
-      String type = username.substring(0, index);
-      String value = username.substring(index + 1);
+    String type = username.substring(0, index);
+    String value = username.substring(index + 1);
 
-      UserIndexKey key = new UserIndexKey(type, value);
-      UserIndex userIndex = getUserIndexForId(key);
+    UserIndexKey key = new UserIndexKey(type, value);
+    UserIndex userIndex = getUserIndexForId(key);
 
-      if (userIndex == null)
-          throw new UsernameNotFoundException(key.toString());
+    if (userIndex == null)
+      throw new UsernameNotFoundException(key.toString());
 
-      return userIndex;
+    return userIndex;
   }
 
   @Override
+  @Transactional
   public UserIndex addUserIndexToUser(User user, UserIndexKey key,
       String credentials) {
     UserIndex index = new UserIndex();
@@ -336,6 +367,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional
   public void removeUserIndexForUser(User user, UserIndexKey key) {
     for (UserIndex index : user.getUserIndices()) {
       if (index.getId().equals(key)) {
@@ -349,26 +381,30 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional
   public void setCredentialsForUserIndex(UserIndex userIndex, String credentials) {
     userIndex.setCredentials(credentials);
     _userDao.saveOrUpdateUserIndex(userIndex);
   }
 
   @Override
+  @Transactional
   public void setPasswordForUsernameUserIndex(UserIndex userIndex,
       String password) {
-
+	
     UserIndexKey id = userIndex.getId();
     if (!UserIndexTypes.USERNAME.equals(id.getType()))
       throw new IllegalArgumentException("expected UserIndex of type "
           + UserIndexTypes.USERNAME);
 
-    String credentials = _passwordEncoder.encodePassword(password,
-        id.getValue());
+	String salt = _hasCryptoEncoder ? null : id.getValue(); 
+	
+	String credentials = _passwordEncoder.encodePassword(password, salt);
     setCredentialsForUserIndex(userIndex, credentials);
   }
 
   @Override
+  @Transactional
   public void mergeUsers(User sourceUser, User targetUser) {
 
     if (sourceUser.equals(targetUser))
@@ -414,6 +450,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional
   public UserIndex completePhoneNumberRegistration(UserIndex userIndex,
       String registrationCode) {
 
@@ -508,6 +545,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional(readOnly=true)
   public long getNumberOfStaleUsers() {
     Calendar c = Calendar.getInstance();
     c.add(Calendar.MONTH, -1);
@@ -557,7 +595,8 @@ public class UserServiceImpl implements UserService {
    * 
    * @param lastAccessTime
    */
-  private void deleteStaleUsers(Date lastAccessTime) {
+  @Transactional
+  public void deleteStaleUsers(Date lastAccessTime) {
 
     while (true) {
       List<Integer> userIds = _userDao.getStaleUserIdsInRange(lastAccessTime,
