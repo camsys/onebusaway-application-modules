@@ -54,7 +54,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
-@Component
 public class SiriService {
 
   private static final Logger _log = LoggerFactory.getLogger(SiriService.class);

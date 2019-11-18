@@ -34,7 +34,6 @@ import javax.annotation.PreDestroy;
 
 import java.util.*;
 
-@Component
 class ServiceAlertsRecordServiceImpl implements ServiceAlertsRecordService {
 
   private static Logger _log = LoggerFactory.getLogger(ServiceAlertsRecordServiceImpl.class);
