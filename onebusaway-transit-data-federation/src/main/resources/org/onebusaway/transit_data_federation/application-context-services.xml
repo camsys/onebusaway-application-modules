@@ -130,6 +130,8 @@
     <property name="stopHasRevenueServiceOnRouteCache" ref="stopHasRevenueOnRouteCache" />
   </bean>
 
+  <bean id="bundleSearchService" class="org.onebusaway.transit_data_federation.impl.bundle.BundleSearchServiceImpl" />
+
   <bean id="serviceAlertsRecordService" class="org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertsRecordServiceImpl" />
 
   <bean id="serviceAlertsBeanService" class="org.onebusaway.transit_data_federation.impl.beans.ServiceAlertRecordBeanServiceImpl" />

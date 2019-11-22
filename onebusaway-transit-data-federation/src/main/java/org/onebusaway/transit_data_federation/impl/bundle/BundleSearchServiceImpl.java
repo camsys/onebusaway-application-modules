@@ -46,7 +46,7 @@ import org.springframework.stereotype.Component;
  * @author asutula
  *
  */
-@Component
+
 public class BundleSearchServiceImpl implements BundleSearchService, ApplicationListener {
 
 	@Autowired
