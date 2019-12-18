@@ -324,6 +324,10 @@ public class BlockLocationServiceImpl implements BlockLocationService,
                 instance, record, scheduledBlockLocation);
       }
 
+      if (record.isSpooky()) {
+        scheduledBlockLocation.setIsSpooky(true);
+      }
+
       putBlockLocationRecord(instance, record, scheduledBlockLocation, samples);
     }
   }
