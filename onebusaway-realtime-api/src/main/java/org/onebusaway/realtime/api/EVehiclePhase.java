@@ -60,6 +60,11 @@ public enum EVehiclePhase {
   LAYOVER_AFTER,
 
   /**
+   * A "Ghost" Vehicle which may or may not exist but is intended to be displayed
+   */
+  SPOOKING,
+
+  /**
    * The vehicle is doing something unexpected
    */
   UNKNOWN;
@@ -70,7 +75,7 @@ public enum EVehiclePhase {
 
   private static EnumSet<EVehiclePhase> _activeDuringBlock = EnumSet.of(
       EVehiclePhase.IN_PROGRESS, EVehiclePhase.DEADHEAD_DURING,
-      EVehiclePhase.LAYOVER_DURING);
+      EVehiclePhase.LAYOVER_DURING, EVehiclePhase.SPOOKING);
 
   private static EnumSet<EVehiclePhase> _activeAfterBlock = EnumSet.of(
       EVehiclePhase.DEADHEAD_AFTER, EVehiclePhase.LAYOVER_AFTER);
