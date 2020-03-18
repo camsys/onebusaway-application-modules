@@ -16,6 +16,9 @@
 
   <!-- Common Software Dependency Versions -->
   <properties>
+    <nyc_site_id>build.staging.obanyc.com</nyc_site_id>
+    <nyc_site_deployment_base>scp://${nyc_site_id}/var/www/sites/developer/modules</nyc_site_deployment_base>
+    <nyc_site_url>${site_deployment_base}/${project.name}/${project.version}</nyc_site_url>
     <struts-version>2.3.35</struts-version>
     <gwt-version>2.4.0</gwt-version>
     <spring-version>4.3.18.RELEASE</spring-version>
@@ -80,18 +83,16 @@
 
   <distributionManagement>
     <repository>
-      <id>releases-obaweb-repo</id>
-      <name>OneBusAway OBAWEB Release Repo</name>
-      <url>http://repo.obaweb.org:8080/archiva/repository/releases/</url>
+      <id>releases-mvn-repo</id>
+      <url>http://build.staging.obanyc.com/archiva/repository/releases/</url>
     </repository>
     <snapshotRepository>
-      <id>snapshots-obaweb-repo</id>
-      <name>OneBusAway OBAWEB Snapshot Repo</name>
-      <url>http://repo.obaweb.org:8080/archiva/repository/snapshots/</url>
+      <id>snapshots-mvn-repo</id>
+      <url>http://build.staging.obanyc.com/archiva/repository/snapshots/</url>
     </snapshotRepository>
     <site>
-      <id>${site_id}</id>
-      <url>${site_url}</url>
+      <id>${nyc_site_id}</id>
+      <url>${nyc_site_deployment_base}/onebusaway-nyc/${project.version}</url>
     </site>
   </distributionManagement>
   <modules>
