@@ -37,10 +37,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class TrivialPredictionHelperService implements PredictionHelperService {
 
-	
-	@Autowired
-	private TransitDataService _transitDataService;
-
 	@Override
 	public List<TimepointPredictionRecord> getPredictionRecordsForTrip(String agencyId,
 			TripStatusBean tripStatus) {

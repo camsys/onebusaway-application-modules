@@ -78,6 +78,18 @@ public class GtfsRealtimeTripLibrary {
   private BlockCalendarService _blockCalendarService;
    
   private BlockGeospatialService _blockGeospatialService;
+
+  private String[] _agencyIds = {};
+  void setAgencyIds(List<String> agencies) {
+    if (agencies != null) {
+      _agencyIds = agencies.toArray(_agencyIds);
+    }
+  }
+
+  private boolean _stripAgencyPrefix = true;
+  public void setStripAgencyPrefix(boolean remove) {
+    _stripAgencyPrefix = remove;
+  }
   
   /**
    * This is primarily here to assist with unit testing.
@@ -449,12 +461,20 @@ public class GtfsRealtimeTripLibrary {
     if (blockDescriptor.getVehicleId() != null) {
       String agencyId = record.getBlockId().getAgencyId();
       record.setVehicleId(new AgencyAndId(agencyId,
-          blockDescriptor.getVehicleId()));
+              parseVehicleId(blockDescriptor.getVehicleId())));
     }
 
     return record;
   }
 
+  // parse out the vehicle id in a null safe manner
+  private String parseVehicleId(String rawVehicleId) {
+    if (rawVehicleId == null) return null;
+    String[] strings = rawVehicleId.split("_");
+    if (strings == null || strings.length < 2) return rawVehicleId;
+    return strings[strings.length-1];
+
+  }
 
   private int getBlockStartTimeForTripStartTime(BlockInstance instance,
       AgencyAndId tripId, int tripStartTime) {
@@ -579,7 +599,7 @@ public class GtfsRealtimeTripLibrary {
     for (BlockTripEntry blockTrip : blockTrips) {
       TripEntry trip = blockTrip.getTrip();
       AgencyAndId tripId = trip.getId();
-      List<TripUpdate> updatesForTrip = tripUpdatesByTripId.get(tripId.getId());
+      List<TripUpdate> updatesForTrip = findUpdatesForTrip(tripUpdatesByTripId, tripId);
       
       boolean tripUpdateHasDelay = false;
 
@@ -646,8 +666,7 @@ public class GtfsRealtimeTripLibrary {
             StopTimeEntry stopTime = blockStopTime.getStopTime();
 
             TimepointPredictionRecord tpr = new TimepointPredictionRecord();
-            tpr.setTimepointId(stopTime.getStop().getId());
-            tpr.setTripId(stopTime.getTrip().getId());
+            tpr.setTimepointId(new AgencyAndId(stopTime.getStop().getId().getAgencyId(), idOnly(stopTime.getStop().getId().getId())));            tpr.setTripId(stopTime.getTrip().getId());
             tpr.setTimepointScheduledTime(instance.getServiceDate() + stopTime.getArrivalTime() * 1000);
             if (stopTimeUpdate.hasStopSequence()) {
               tpr.setStopSequence(stopTimeUpdate.getStopSequence());
@@ -670,7 +689,9 @@ public class GtfsRealtimeTripLibrary {
 
               long timepointPredictedTime = instance.getServiceDate() + (currentArrivalTime * 1000L);
               tpr.setTimepointPredictedArrivalTime(timepointPredictedTime);
-            } 
+            }  else {
+              currentArrivalTime = currentDepartureTime;
+            }
 
             if (currentDepartureTime >= 0) {
               if (onBestTrip) {
@@ -726,7 +747,7 @@ public class GtfsRealtimeTripLibrary {
                     && (predictedDepartureTime > time
                     && scheduledArrivalTime <= lastStopScheduleTime))) {
             TimepointPredictionRecord tpr = new TimepointPredictionRecord();
-            tpr.setTimepointId(stopTime.getStop().getId());
+            tpr.setTimepointId(new AgencyAndId(stopTime.getStop().getId().getAgencyId(), idOnly(stopTime.getStop().getId().getId())));
             tpr.setTripId(stopTime.getTrip().getId());
             tpr.setStopSequence(stopTime.getGtfsSequence());
             tpr.setTimepointPredictedArrivalTime(predictedArrivalTime);
@@ -755,6 +776,19 @@ public class GtfsRealtimeTripLibrary {
     record.setTimepointPredictions(timepointPredictions);
   }
 
+  private List<TripUpdate> findUpdatesForTrip(Map<String, List<TripUpdate>> tripUpdatesByTripId, AgencyAndId tripId) {
+    if (_stripAgencyPrefix) {
+      for (String s : _agencyIds) {
+        List<TripUpdate> updates = tripUpdatesByTripId.get(s + "_" + tripId.getId());
+        if (updates != null) {
+          return updates;
+        }
+      }
+      return null;
+    }
+    return tripUpdatesByTripId.get(tripId.getId());
+  }
+
   private BlockStopTimeEntry getBlockStopTimeForStopTimeUpdate(MonitoredResult result,
       TripUpdate tripUpdate, StopTimeUpdate stopTimeUpdate,
       List<BlockStopTimeEntry> stopTimes, long serviceDate) {
@@ -772,7 +806,7 @@ public class GtfsRealtimeTripLibrary {
           }
           return blockStopTime;
         }
-        String stopTimeUpdateStopId = convertStopId(stopTimeUpdate.getStopId());
+        String stopTimeUpdateStopId = convertStopId(idOnly(stopTimeUpdate.getStopId()));
         if (blockStopTime.getStopTime().getStop().getId().getId().equals(
             stopTimeUpdateStopId)) {
           if (result != null) {
@@ -793,7 +827,7 @@ public class GtfsRealtimeTripLibrary {
 
     if (stopTimeUpdate.hasStopId()) {
       int time = getTimeForStopTimeUpdate(stopTimeUpdate, serviceDate);
-      String stopId = convertStopId(stopTimeUpdate.getStopId());
+      String stopId = convertStopId(idOnly(stopTimeUpdate.getStopId()));
       // There could be loops, meaning a stop could appear multiple times along
       // a trip. To get around this.
       Min<BlockStopTimeEntry> bestMatches = new Min<BlockStopTimeEntry>();
@@ -827,6 +861,14 @@ public class GtfsRealtimeTripLibrary {
     return _stopModificationStrategy.convertStopId(stopId);
   }
 
+  private String idOnly(String s) {
+    if (s == null || !_stripAgencyPrefix) return s;
+    for (String t : _agencyIds) {
+      s = s.replace(t+"_", "");
+    }
+    return s;
+  }
+
   private int getTimeForStopTimeUpdate(StopTimeUpdate stopTimeUpdate,
       long serviceDate) {
     long t = currentTime();
@@ -858,8 +900,9 @@ public class GtfsRealtimeTripLibrary {
 
   private int computeArrivalTime(StopTimeEntry stopTime,
       StopTimeUpdate stopTimeUpdate, long serviceDate) {
-    if (!stopTimeUpdate.hasArrival())
+    if (!stopTimeUpdate.hasArrival()) {
       return -1;
+    }
     StopTimeEvent arrival = stopTimeUpdate.getArrival();
     if (arrival.hasDelay())
       return stopTime.getArrivalTime() + arrival.getDelay();
