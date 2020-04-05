@@ -88,6 +88,8 @@ public class GtfsRealtimeTripLibrary {
     }
   }
 
+
+
   private boolean _stripAgencyPrefix = true;
   public void setStripAgencyPrefix(boolean remove) {
     _stripAgencyPrefix = remove;
@@ -112,8 +114,14 @@ public class GtfsRealtimeTripLibrary {
 
   private boolean _useLabelAsVehicleId = false;
 
+  private GtfsRealtimeEntitySource _entitySource;
+
   public void setEntityIdService(EntityIdService entityIdService) {
     _entityIdService = entityIdService;
+  }
+
+  public void setEntitySource(GtfsRealtimeEntitySource entitySource) {
+    _entitySource = entitySource;
   }
 
   public void setBlockCalendarService(BlockCalendarService blockCalendarService) {
