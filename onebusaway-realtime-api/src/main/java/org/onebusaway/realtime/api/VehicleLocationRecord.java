@@ -262,6 +262,8 @@ public class VehicleLocationRecord implements Serializable {
     return phase;
   }
 
+  public boolean isSpooky() { return this.phase.equals(EVehiclePhase.SPOOKING); }
+
   public void setPhase(EVehiclePhase phase) {
     this.phase = phase;
   }

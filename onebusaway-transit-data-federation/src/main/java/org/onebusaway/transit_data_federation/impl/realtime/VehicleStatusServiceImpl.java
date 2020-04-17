@@ -25,6 +25,7 @@ import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.realtime.api.VehicleOccupancyListener;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data_federation.impl.realtime.apc.VehicleOccupancyRecordCache;
+import org.onebusaway.transit_data_federation.services.AgencyService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockVehicleLocationListener;
 import org.onebusaway.transit_data_federation.services.realtime.VehicleLocationCacheElement;
 import org.onebusaway.transit_data_federation.services.realtime.VehicleLocationCacheElements;
@@ -52,6 +53,8 @@ class VehicleStatusServiceImpl implements VehicleLocationListener,
 
   private VehicleOccupancyRecordCache _vehicleOccupanycRecordCache;
 
+  private AgencyService _agencyService;
+
   @Autowired
   public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
     _transitGraphDao = transitGraphDao;
@@ -75,6 +78,11 @@ class VehicleStatusServiceImpl implements VehicleLocationListener,
     _vehicleOccupanycRecordCache = vehicleOccupancyRecordCache;
   }
 
+  @Autowired
+  public void setAgencyService(AgencyService agencyService) {
+    _agencyService = agencyService;
+  }
+
 
   /****
    * {@link VehicleLocationListener} Interface
@@ -94,11 +102,19 @@ class VehicleStatusServiceImpl implements VehicleLocationListener,
     if (blockId == null) {
       AgencyAndId tripId = record.getTripId();
       if (tripId != null) {
-        TripEntry tripEntry = _transitGraphDao.getTripEntryForId(tripId);
-        if (tripEntry == null)
-          throw new IllegalArgumentException("trip not found with id=" + tripId);
-        BlockEntry block = tripEntry.getBlock();
-        blockId = block.getId();
+        for (String agency : _agencyService.getAllAgencyIds()) {
+          AgencyAndId tempTripId = new AgencyAndId(agency, tripId.getId());
+          TripEntry tripEntry = _transitGraphDao.getTripEntryForId(tempTripId);
+          if (tripEntry == null){
+            //_log.debug("trip not found with id=" + tempTripId);
+            // throw new IllegalArgumentException("trip not found with id=" + tripId);
+            continue;
+          }
+          record.setTripId(tempTripId);
+          BlockEntry block = tripEntry.getBlock();
+          blockId = block.getId();
+          break;
+        }
       }
     }
 

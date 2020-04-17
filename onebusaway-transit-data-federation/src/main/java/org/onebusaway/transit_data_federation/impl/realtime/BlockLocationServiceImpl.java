@@ -302,6 +302,10 @@ public class BlockLocationServiceImpl implements BlockLocationService,
       ScheduleDeviationSamples samples = _realTimeHistoryService.sampleScheduleDeviationsForVehicle(
           instance, record, scheduledBlockLocation);
 
+      if (record.isSpooky()) {
+        scheduledBlockLocation.setIsSpooky(true);
+      }
+
       putBlockLocationRecord(instance, record, scheduledBlockLocation, samples);
     }
   }
