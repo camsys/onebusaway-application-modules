@@ -21,7 +21,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,7 +38,6 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.gtfs.serialization.mappings.InvalidStopTimeException;
 import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
-import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
@@ -433,6 +431,7 @@ public class GtfsRealtimeTripLibrary {
     if (update.block == null) return null;
     String vehicleId = update.block.getVehicleId();
     record.setBlockId(blockDescriptor.getBlockInstance().getBlock().getBlock().getId());
+    // this is the default, trip updates may cancel this trip
     record.setStatus(blockDescriptor.getScheduleRelationship().toString());
 
     applyTripUpdatesToRecord(result, blockDescriptor, update.tripUpdates, record, vehicleId, update.bestTrip);
@@ -666,7 +665,8 @@ public class GtfsRealtimeTripLibrary {
             StopTimeEntry stopTime = blockStopTime.getStopTime();
 
             TimepointPredictionRecord tpr = new TimepointPredictionRecord();
-            tpr.setTimepointId(new AgencyAndId(stopTime.getStop().getId().getAgencyId(), idOnly(stopTime.getStop().getId().getId())));            tpr.setTripId(stopTime.getTrip().getId());
+            tpr.setTimepointId(stopTime.getStop().getId());
+            tpr.setTripId(stopTime.getTrip().getId());
             tpr.setTimepointScheduledTime(instance.getServiceDate() + stopTime.getArrivalTime() * 1000);
             if (stopTimeUpdate.hasStopSequence()) {
               tpr.setStopSequence(stopTimeUpdate.getStopSequence());
@@ -747,12 +747,13 @@ public class GtfsRealtimeTripLibrary {
                     && (predictedDepartureTime > time
                     && scheduledArrivalTime <= lastStopScheduleTime))) {
             TimepointPredictionRecord tpr = new TimepointPredictionRecord();
-            tpr.setTimepointId(new AgencyAndId(stopTime.getStop().getId().getAgencyId(), idOnly(stopTime.getStop().getId().getId())));
+            tpr.setTimepointId(stopTime.getStop().getId());
             tpr.setTripId(stopTime.getTrip().getId());
             tpr.setStopSequence(stopTime.getGtfsSequence());
             tpr.setTimepointPredictedArrivalTime(predictedArrivalTime);
             tpr.setTimepointPredictedDepartureTime(predictedDepartureTime);
             tpr.setTimepointScheduledTime(scheduledArrivalTime);
+            tpr.setScheduleRealtionship(StopTimeUpdate.ScheduleRelationship.SCHEDULED_VALUE);
             timepointPredictions.add(tpr);
           }
         }
