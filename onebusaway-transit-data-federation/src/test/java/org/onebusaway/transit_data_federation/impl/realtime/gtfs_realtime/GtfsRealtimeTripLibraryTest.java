@@ -65,6 +65,7 @@ public class GtfsRealtimeTripLibraryTest {
   @Before
   public void before() {
     _library = new GtfsRealtimeTripLibrary();
+    _library.setStripAgencyPrefix(false);
     _library.setCurrentTime(8 * 60 * 60 * 1000);
     _library.setValidateCurrentTime(false);  // tell library its a test
     _entitySource = Mockito.mock(GtfsRealtimeEntitySource.class);
@@ -334,7 +335,7 @@ public class GtfsRealtimeTripLibraryTest {
     CombinedTripUpdatesAndVehiclePosition update = updates.get(0);
         
     VehicleLocationRecord record = _library.createVehicleLocationRecordForUpdate(update);
-    
+    assertTrue(!record.getTimepointPredictions().isEmpty());
     TimepointPredictionRecord tpr = record.getTimepointPredictions().get(0);
     long departure = tpr.getTimepointPredictedDepartureTime();
     assertEquals(departure, time(7, 33) * 1000 + day); // 7:30 + 3 min delay + on next day
