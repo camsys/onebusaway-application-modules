@@ -307,7 +307,7 @@ public class GtfsRealtimeTripLibraryTest {
     
     Mockito.when(
         _blockCalendarService.getActiveBlocks(Mockito.eq(blockA.getId()),
-            Mockito.anyLong(), Mockito.longThat(new ArgumentMatcher<Long>() {
+            Mockito.anyLong(), Mockito.longThat(new ArgumentMatcher() {
               @Override
               public boolean matches(Object argument) {
                 return ((Long) argument) < day;
@@ -316,7 +316,7 @@ public class GtfsRealtimeTripLibraryTest {
     
     Mockito.when(
         _blockCalendarService.getActiveBlocks(Mockito.eq(blockA.getId()),
-            Mockito.anyLong(), Mockito.longThat(new ArgumentMatcher<Long>() {
+            Mockito.anyLong(), Mockito.longThat(new ArgumentMatcher() {
               @Override
               public boolean matches(Object argument) {
                 return ((Long) argument) >= day;

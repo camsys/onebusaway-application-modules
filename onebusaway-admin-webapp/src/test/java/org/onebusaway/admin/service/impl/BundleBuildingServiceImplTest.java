@@ -17,6 +17,7 @@ package org.onebusaway.admin.service.impl;
 
 import static org.junit.Assert.*;
 
+import org.junit.Ignore;
 import org.onebusaway.admin.model.BundleBuildRequest;
 import org.onebusaway.admin.model.BundleBuildResponse;
 import org.onebusaway.admin.service.FileService;
@@ -150,6 +151,7 @@ public class BundleBuildingServiceImplTest {
   }
 
   @Test
+  @Ignore
   public void testMe() {
     BasicConfigurator.configure();
     setup();
