@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.Response;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.CoordinatePoint;

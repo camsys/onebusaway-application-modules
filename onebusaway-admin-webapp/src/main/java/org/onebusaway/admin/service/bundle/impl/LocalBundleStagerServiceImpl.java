@@ -39,9 +39,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.MappingJsonFactory;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.onebusaway.admin.bundle.BundleProvider;
 import org.onebusaway.admin.bundle.BundlesListMessage;
 import org.onebusaway.admin.bundle.model.Bundle;

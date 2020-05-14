@@ -27,8 +27,8 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.onebusaway.agency_metadata.model.AgencyMetadata;
 import org.onebusaway.enterprise.webapp.actions.status.model.IcingaItem;
 import org.onebusaway.enterprise.webapp.actions.status.model.IcingaResponse;
@@ -162,9 +162,7 @@ public class StatusProviderImpl implements StatusProvider {
       client.executeMethod(method);
       InputStream result = method.getResponseBodyAsStream();
       ObjectMapper mapper = new ObjectMapper();
-      JsonNode tree = mapper.readTree(result);
-      JsonNode value = tree.findValue("data");
-      response = mapper.readValue(value, AgencyMetadata[].class);
+      response = mapper.readValue(result, AgencyMetadata[].class);
     } catch (IOException e) {
       _log.error("Exception getting AgencyMetadata" + e);
       group.addItem(exceptionStatus(e));
