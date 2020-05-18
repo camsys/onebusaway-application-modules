@@ -18,7 +18,7 @@
   <properties>
     <struts-version>2.3.35</struts-version>
     <gwt-version>2.4.0</gwt-version>
-    <spring-version>4.3.18.RELEASE</spring-version>
+    <spring-version>5.2.6.RELEASE</spring-version>
     <csv-entities-version>1.1.6</csv-entities-version>
     <gtfs-version>1.3.61</gtfs-version>
     <gtfs-api-version>1.2.3</gtfs-api-version>
@@ -27,7 +27,6 @@
     <onebusaway-siri-2-api-version>1.0.3</onebusaway-siri-2-api-version>
     <wiki_integration_version>1.0.1</wiki_integration_version>
     <slf4j.version>1.7.5</slf4j.version>
-    <guava-version>16.0.1</guava-version>
     <!--  These properties are primarily used in configuring joint integration tests -->
     <org_onebusaway_test_port>9900</org_onebusaway_test_port>
     <org_onebusaway_test_ajp_port>9901</org_onebusaway_test_ajp_port>
@@ -354,9 +353,9 @@
       </dependency>
 
       <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>${guava-version}</version>
+        <groupId>com.github.ben-manes.caffeine</groupId>
+        <artifactId>caffeine</artifactId>
+        <version>2.8.2</version>
       </dependency>
 
       <dependency>

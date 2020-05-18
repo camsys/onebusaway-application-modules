@@ -15,8 +15,8 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.apc;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -102,7 +102,7 @@ public class VehicleOccupancyRecordCacheImpl implements VehicleOccupancyRecordCa
 
     private Cache<String, VehicleOccupancyRecord> getRouteCache() {
         if (_routeCache == null) {
-            _routeCache = CacheBuilder.newBuilder()
+            _routeCache = Caffeine.newBuilder()
                     .expireAfterWrite(_cacheTimeoutSeconds, TimeUnit.SECONDS).build();
         }
         return _routeCache;
@@ -110,7 +110,7 @@ public class VehicleOccupancyRecordCacheImpl implements VehicleOccupancyRecordCa
 
     private Cache<AgencyAndId, VehicleOccupancyRecord> getVehicleCache() {
         if (_vehicleCache == null) {
-            _vehicleCache = CacheBuilder.newBuilder()
+            _vehicleCache = Caffeine.newBuilder()
                     .expireAfterWrite(_cacheTimeoutSeconds, TimeUnit.SECONDS).build();
         }
         return _vehicleCache;
