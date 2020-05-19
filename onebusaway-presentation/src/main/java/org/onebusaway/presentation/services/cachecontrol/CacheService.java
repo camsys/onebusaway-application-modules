@@ -30,8 +30,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 public abstract class CacheService<K, V> {
 
@@ -72,7 +72,7 @@ public abstract class CacheService<K, V> {
     if (_cache == null) {
       _log.info("creating initial " + type + " cache with timeout " + timeout
           + "...");
-      _cache = CacheBuilder.newBuilder().expireAfterWrite(timeout,
+      _cache = Caffeine.newBuilder().expireAfterWrite(timeout,
           TimeUnit.SECONDS).build();
       _log.info("done");
     }
@@ -171,7 +171,7 @@ public abstract class CacheService<K, V> {
   public void logStatus() {
     _log.info(getCache().stats().toString() + "; disabled=" + _disabled
         + "; useMemcached=" + useMemcached
-        + "; Local Size=" + _cache.size()
+        + "; Local Size=" + _cache.estimatedSize()
         + "; Memcached Size=" + (memcache==null?"[null]":memcache.getStats("sizes")));
   }
 
