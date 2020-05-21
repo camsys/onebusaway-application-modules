@@ -21,7 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
-import org.onebusaway.guava.util.common.ComparisonChain;
+import com.google.common.collect.ComparisonChain;
 
 /**
  * This represents the part of a trip which is on a single run
