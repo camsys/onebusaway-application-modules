@@ -15,8 +15,8 @@
  */
 package org.onebusaway.admin.service.api;
 
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -204,7 +204,7 @@ public class VehicleAssignmentResourceTest {
     @Test
     public void testGetAssignments() throws IOException {
         ObjectMapper _mapper = new ObjectMapper();
-        _mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        _mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 
         VehicleAssignmentServiceImpl vas = new VehicleAssignmentServiceImpl();

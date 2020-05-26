@@ -41,7 +41,7 @@ import org.onebusaway.users.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.encoding.PasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -258,7 +258,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 		//Update user password
 		if(StringUtils.isNotBlank(userDetail.getPassword())) {
-			String credentials = passwordEncoder.encodePassword(userDetail.getPassword(), userDetail.getUsername());
+			String credentials = passwordEncoder.encode(userDetail.getPassword());
 			for(UserIndex userIndex : user.getUserIndices()) {
 				userIndex.setCredentials(credentials);
 			}

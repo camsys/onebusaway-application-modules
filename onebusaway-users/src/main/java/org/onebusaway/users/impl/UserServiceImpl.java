@@ -33,11 +33,9 @@ import org.onebusaway.container.cache.Cacheable;
 import org.onebusaway.container.cache.CacheableArgument;
 import org.onebusaway.users.client.model.UserBean;
 import org.onebusaway.users.client.model.UserIndexBean;
-import org.onebusaway.users.impl.authentication.AdaptivePasswordEncoder;
 import org.onebusaway.users.model.User;
 import org.onebusaway.users.model.UserIndex;
 import org.onebusaway.users.model.UserIndexKey;
-import org.onebusaway.users.model.UserPropertiesV1;
 import org.onebusaway.users.model.UserRole;
 import org.onebusaway.users.model.properties.UserPropertiesV4;
 import org.onebusaway.users.services.StandardAuthoritiesService;
@@ -50,11 +48,9 @@ import org.onebusaway.users.services.UserService;
 import org.onebusaway.users.services.internal.UserIndexRegistrationService;
 import org.onebusaway.users.services.internal.UserRegistration;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.encoding.PasswordEncoder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Component;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 public class UserServiceImpl implements UserService {
 
@@ -102,20 +98,10 @@ public class UserServiceImpl implements UserService {
   }
 
 
-  private void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+  public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
     _passwordEncoder = passwordEncoder;
   }
-  
-  public void setPasswordEncoder(Object passwordEncoder) {
-      Assert.notNull(passwordEncoder, "passwordEncoder cannot be null");
-      
-      if (passwordEncoder instanceof org.springframework.security.crypto.password.PasswordEncoder) {
-    	  _hasCryptoEncoder = true;
-      }
-      
-      AdaptivePasswordEncoder adpativePasswordEncoder = new AdaptivePasswordEncoder();
-      setPasswordEncoder(adpativePasswordEncoder.getPasswordEncoder(passwordEncoder));
-  }
+
 
   @PostConstruct
   public void start() {
@@ -320,8 +306,7 @@ public class UserServiceImpl implements UserService {
   public UserIndex getOrCreateUserForUsernameAndPassword(String username,
       String password) {
 	
-	String salt = _hasCryptoEncoder ? null : username; 
-    String credentials = _passwordEncoder.encodePassword(password, salt);
+    String credentials = _passwordEncoder.encode(password);
     UserIndexKey key = new UserIndexKey(UserIndexTypes.USERNAME, username);
     return getOrCreateUserForIndexKey(key, credentials, false);
   }
@@ -399,7 +384,7 @@ public class UserServiceImpl implements UserService {
 
 	String salt = _hasCryptoEncoder ? null : id.getValue(); 
 	
-	String credentials = _passwordEncoder.encodePassword(password, salt);
+	String credentials = _passwordEncoder.encode(password);
     setCredentialsForUserIndex(userIndex, credentials);
   }
 

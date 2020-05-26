@@ -101,8 +101,6 @@ public class XWorkRequestAttributes extends AbstractRequestAttributes {
         return _context.getParameters();
       case SCOPE_SESSION:
         return _context.getSession();
-      case SCOPE_GLOBAL_SESSION:
-        return _context.getApplication();
       default:
         throw new IllegalStateException("unknown scope=" + scope);
     }
