@@ -55,8 +55,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
 @RunWith(MockitoJUnitRunner.class)
 public class VehicleAssignmentResourceTest {
 
@@ -86,7 +86,7 @@ public class VehicleAssignmentResourceTest {
         var.setVehicleAssignmentService(vasSpy);
 
         doNothing().when(assignmentDao).save(any(Assignment.class));
-        doNothing().when(assignmentConfigService).setConfigValue(anyString(), anyString());
+        lenient().doNothing().when(assignmentConfigService).setConfigValue(anyString(), anyString());
 
         String blockId = "block_1";
         String vehicleId = "vehicle_1";
@@ -111,7 +111,7 @@ public class VehicleAssignmentResourceTest {
         Assignment assignment = new Assignment(blockId, vehicleId, today());
 
         doNothing().when(assignmentDao).save(any(Assignment.class));
-        doNothing().when(assignmentConfigService).setConfigValue(anyString(), anyString());
+        lenient().doNothing().when(assignmentConfigService).setConfigValue(anyString(), anyString());
 
         String vehicleIdAssignment = var.getAssignmentByBlockId(blockId);
 
@@ -218,7 +218,7 @@ public class VehicleAssignmentResourceTest {
         var.setVehicleAssignmentService(vasSpy);
 
         doNothing().when(assignmentDao).save(any(Assignment.class));
-        doNothing().when(assignmentConfigService).setConfigValue(anyString(), anyString());
+        lenient().doNothing().when(assignmentConfigService).setConfigValue(anyString(), anyString());
 
         String blockId = "1_block1";
         String vehicleId = "1_vehicle1";
