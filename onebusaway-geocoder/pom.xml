@@ -8,10 +8,6 @@
     <artifactId>onebusaway-geocoder</artifactId>
 
     <name>onebusaway-geocoder</name>
-    
-    <properties>
-    	<geotools.version>11-beta</geotools.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -66,7 +62,7 @@
         <dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-main</artifactId>
-			<version>${geotools.version}</version>
+            <version>${geotools.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>

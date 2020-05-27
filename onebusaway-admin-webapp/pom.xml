@@ -12,7 +12,6 @@
 	<properties>
 		<xwiki.version>2.3.1</xwiki.version>
 		<xwiki.integration.version>1.0.1</xwiki.integration.version>
-		<geotools.version>11-beta</geotools.version>
 		<spring.security.version>5.3.2.RELEASE</spring.security.version>
 		<bundle.builtPath>/var/lib/oba/bundles/builder</bundle.builtPath>
 		<bundle.stagedPath>/var/lib/oba/bundles/staged</bundle.stagedPath>
@@ -226,7 +225,7 @@
 	<dependency>
 		<groupId>org.geotools</groupId>
 		<artifactId>gt-api</artifactId>
-		<version>${geotools.version}</version>
+		<version>20.5</version>
 	</dependency>
 	<dependency>
 		<groupId>org.geotools</groupId>
