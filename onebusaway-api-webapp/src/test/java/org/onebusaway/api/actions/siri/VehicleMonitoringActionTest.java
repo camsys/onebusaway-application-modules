@@ -86,7 +86,6 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
   GoogleAnalyticsServiceImpl gaService;
   
   @Test
-  @Ignore
   public void testExecuteByRoute() throws Exception {
     
     when(request.getParameter(eq("LineRef"))).thenReturn("40_100479");
@@ -101,7 +100,7 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
     when(servletResponse.getWriter()).thenReturn(nothingPrintWriter);
     
     List<VehicleActivityStructure> vehicleActivities = new ArrayList<VehicleActivityStructure>();
-    when(realtimeService.getVehicleActivityForRoute(eq("40_100479"), anyString(), eq(0), anyLong(), eq(false))).thenReturn(vehicleActivities);
+    when(realtimeService.getVehicleActivityForRoute(eq("40_100479"), any(), eq(0), anyLong(), eq(false))).thenReturn(vehicleActivities);
     
     VehicleActivityStructure vehicleActivity = new VehicleActivityStructure();
     vehicleActivities.add(vehicleActivity);
@@ -140,7 +139,12 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
     action.setServletResponse(servletResponse);
     action.index();
     String monitoring = action.getVehicleMonitoring();
-    assertTrue("Result XML does not match expected", monitoring.matches("(?s).*<ServiceDelivery><ResponseTimestamp>.+</ResponseTimestamp><VehicleMonitoringDelivery><ResponseTimestamp>.+</ResponseTimestamp><ValidUntil>.+</ValidUntil><VehicleActivity><MonitoredVehicleJourney><SituationRef><SituationSimpleRef>situation ref</SituationSimpleRef></SituationRef><VehicleLocation><Longitude>89.0</Longitude><Latitude>88.0</Latitude></VehicleLocation></MonitoredVehicleJourney></VehicleActivity></VehicleMonitoringDelivery><SituationExchangeDelivery><Situations><PtSituationElement><SituationNumber>1_1</SituationNumber><Summary xml:lang=\"EN\">summary</Summary><Description xml:lang=\"EN\">description</Description><Affects><VehicleJourneys><AffectedVehicleJourney><LineRef>1_100277</LineRef><DirectionRef>0</DirectionRef></AffectedVehicleJourney><AffectedVehicleJourney><LineRef>1_100277</LineRef><DirectionRef>1</DirectionRef></AffectedVehicleJourney><AffectedVehicleJourney><LineRef>1_100194</LineRef><DirectionRef>0</DirectionRef></AffectedVehicleJourney><AffectedVehicleJourney><LineRef>1_100194</LineRef><DirectionRef>1</DirectionRef></AffectedVehicleJourney></VehicleJourneys></Affects></PtSituationElement></Situations></SituationExchangeDelivery></ServiceDelivery></Siri>.*"));
+    String expectedRegex = "(?s).*<ServiceDelivery><ResponseTimestamp>.+</ResponseTimestamp><VehicleMonitoringDelivery><ResponseTimestamp>.+</ResponseTimestamp><ValidUntil>.+</ValidUntil><VehicleActivity><MonitoredVehicleJourney><SituationRef><SituationSimpleRef>situation ref</SituationSimpleRef></SituationRef><VehicleLocation><Longitude>89.0</Longitude><Latitude>88.0</Latitude></VehicleLocation></MonitoredVehicleJourney></VehicleActivity></VehicleMonitoringDelivery><SituationExchangeDelivery><Situations><PtSituationElement><SituationNumber>1_1</SituationNumber><Summary xml:lang=\"EN\">summary</Summary><Description xml:lang=\"EN\">description</Description><Affects><VehicleJourneys><AffectedVehicleJourney><LineRef>1_100277</LineRef><DirectionRef>0</DirectionRef></AffectedVehicleJourney><AffectedVehicleJourney><LineRef>1_100277</LineRef><DirectionRef>1</DirectionRef></AffectedVehicleJourney><AffectedVehicleJourney><LineRef>1_100194</LineRef><DirectionRef>0</DirectionRef></AffectedVehicleJourney><AffectedVehicleJourney><LineRef>1_100194</LineRef><DirectionRef>1</DirectionRef></AffectedVehicleJourney></VehicleJourneys></Affects></PtSituationElement></Situations></SituationExchangeDelivery></ServiceDelivery></Siri>.*";
+    boolean match = monitoring.matches(expectedRegex);
+    if (!match) {
+      System.out.println(monitoring + " != " +expectedRegex);
+    }
+    assertTrue("Result XML does not match expected", match);
   }
 
   @Test
