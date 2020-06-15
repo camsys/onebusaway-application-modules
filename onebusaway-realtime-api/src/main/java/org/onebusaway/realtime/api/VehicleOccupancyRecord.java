@@ -31,6 +31,8 @@ public class VehicleOccupancyRecord implements Serializable {
     private OccupancyStatus occupancyStatus;
     private String routeId;
     private String directionId;
+    private Integer rawCount;
+    private Integer capacity;
 
 
     public AgencyAndId getVehicleId() {
@@ -70,9 +72,37 @@ public class VehicleOccupancyRecord implements Serializable {
             timestamp = new Date();
     }
 
+    public Integer getRawCount() {
+        return rawCount;
+    }
+
+    public void setRawCount(Integer rawCount) {
+        this.rawCount = rawCount;
+    }
+
+    public Integer getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(Integer capacity) {
+        this.capacity = capacity;
+    }
+
     public String toString() {
         return "Occupancy[" + vehicleId + "]{"
                 + occupancyStatus + ":" + timestamp
                 + "}";
+    }
+
+    public VehicleOccupancyRecord deepCopy() {
+        VehicleOccupancyRecord vor = new VehicleOccupancyRecord();
+        vor.capacity = capacity;
+        vor.rawCount = rawCount;
+        vor.directionId = directionId;
+        vor.occupancyStatus = occupancyStatus;
+        vor.routeId = routeId;
+        vor.timestamp = timestamp;
+        vor.vehicleId = vehicleId;
+        return vor;
     }
 }
