@@ -93,6 +93,9 @@ public class VehicleOccupancyRecordCacheImpl implements VehicleOccupancyRecordCa
     }
 
     private String hash(AgencyAndId vehicleId, String routeId, String directionId) {
+        if (!routeId.contains("_")) { // ensure we use qualified route_id
+            routeId = new AgencyAndId(vehicleId.getAgencyId(), routeId).toString();
+        }
         return vehicleId.toString() + "." + routeId + "." + directionId;
     }
 
