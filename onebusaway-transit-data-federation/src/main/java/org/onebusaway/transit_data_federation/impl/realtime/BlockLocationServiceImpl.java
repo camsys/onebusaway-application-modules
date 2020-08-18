@@ -324,7 +324,7 @@ public class BlockLocationServiceImpl implements BlockLocationService,
                 instance, record, scheduledBlockLocation);
       }
 
-      if (record.isSpooky()) {
+      if (scheduledBlockLocation != null && record.isSpooky()) {
         scheduledBlockLocation.setIsSpooky(true);
       }
 
