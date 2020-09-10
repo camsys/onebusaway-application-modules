@@ -248,6 +248,8 @@ class VehicleStatusBeanServiceImpl implements VehicleStatusBeanService {
     VehicleOccupancyRecord vor = status.getOccupancyRecord();
     if (vor != null) {
       bean.setOccupancyStatus(vor.getOccupancyStatus());
+      bean.setOccupancyCount(vor.getRawCount());
+      bean.setOccupancyCapacity(vor.getCapacity());
     }
 
     return bean;

@@ -26,7 +26,7 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
 public final class TripStatusBean implements Serializable {
 
-  private static final long serialVersionUID = 3L;
+  private static final long serialVersionUID = 4L;
 
   /****
    * These are fields that we can supply from schedule data
@@ -56,6 +56,10 @@ public final class TripStatusBean implements Serializable {
   private String status;
 
   private Integer occupancyStatus;
+
+  private Integer occupancyCount;
+
+  private Integer occupancyCapacity;
 
   private String vehicleType;
 
@@ -187,6 +191,22 @@ public final class TripStatusBean implements Serializable {
 
   public void setOccupancyStatus(Integer occupancyStatus) {
     this.occupancyStatus = occupancyStatus;
+  }
+
+  public Integer getOccupancyCount() {
+    return occupancyCount;
+  }
+
+  public void setOccupancyCount(Integer occupancyCount) {
+    this.occupancyCount = occupancyCount;
+  }
+
+  public Integer getOccupancyCapacity() {
+    return occupancyCapacity;
+  }
+
+  public void setOccupancyCapacity(Integer occupancyCapacity) {
+    this.occupancyCapacity = occupancyCapacity;
   }
 
   /**
