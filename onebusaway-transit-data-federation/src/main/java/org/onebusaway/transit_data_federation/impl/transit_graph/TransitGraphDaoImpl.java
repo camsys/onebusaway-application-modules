@@ -165,4 +165,17 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   public boolean deleteStopTime(AgencyAndId tripId, AgencyAndId stopId) {
     return _graph.deleteStopTime(tripId, stopId);
   }
+
+  @Override
+  public boolean updateStopTime(AgencyAndId tripId, AgencyAndId stopId, int originalArrivalTime, int originalDepartureTime,
+                                int newArrivalTime, int newDepartureTime) {
+    return _graph.updateStopTime(tripId, stopId, originalArrivalTime, originalDepartureTime, newArrivalTime, newDepartureTime);
+  }
+
+  @Override
+  public boolean insertStopTime(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime, int shapeDistanceTravelled) {
+    return _graph.insertStopTime(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled);
+  }
+
+
 }

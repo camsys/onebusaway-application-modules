@@ -23,6 +23,7 @@ import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphDao
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import static junit.framework.TestCase.assertNotNull;
@@ -60,7 +61,7 @@ public class TransitGraphDaoImplTest {
         tripI = trip("tripI", "serviceId");
         tripJ = trip("tripJ", "serviceId");
 
-        stopAA = stopTime(0, stopA, tripA, 30, 90, 0);
+        stopAA = stopTime(0, stopA, tripA, 30, 90, 25);
         stopBA = stopTime(1, stopB, tripA, 120, 120, 100);
         stopCA = stopTime(2, stopC, tripA, 180, 210, 200);
 
@@ -78,15 +79,24 @@ public class TransitGraphDaoImplTest {
         stopCD = stopTime(8, stopC, tripD, 420, 420, 800);
 
         graph.putTripEntry(tripA);
-        // we need to manually build index!
+        graph.putTripEntry(tripB);
+        graph.putTripEntry(tripC);
+        graph.putTripEntry(tripD);
+        graph.putStopEntry(stopA);
+        graph.putStopEntry(stopB);
+        graph.putStopEntry(stopC);
+        // we need to manually build trip index!
         graph.refreshTripMapping();
+        // we need to manually build stop index!
+        graph.refreshStopMapping();
 
     }
     @Test
+
     public void testDeleteTrip() {
 
         assertNotNull(dao.getAllTrips());
-        assertEquals(1, dao.getAllTrips().size());
+        assertEquals(4, dao.getAllTrips().size());
         assertEquals("tripA", dao.getAllTrips().get(0).getId().getId());
 
         assertNotNull(dao.getTripEntryForId(aid("tripA")));
@@ -96,13 +106,13 @@ public class TransitGraphDaoImplTest {
         assertTrue(dao.deleteTripEntryForId(aid("tripA")));
 
         assertNotNull(dao.getAllTrips());
-        assertEquals(0, dao.getAllTrips().size());
+        assertEquals(3, dao.getAllTrips().size());
     }
 
     @Test
     public void testDeleteStopTime() {
         assertNotNull(dao.getAllTrips());
-        assertEquals(1, dao.getAllTrips().size());
+        assertEquals(4, dao.getAllTrips().size());
         TripEntry tripEntry = dao.getAllTrips().get(0);
         assertEquals("tripA", tripEntry.getId().getId());
 
@@ -122,6 +132,170 @@ public class TransitGraphDaoImplTest {
         assertEquals(2, dao.getTripEntryForId(aid("tripA")).getStopTimes().size());
         StopEntry stopEntry = dao.getStopEntryForId(stopA.getId());
 
-
     }
+
+    @Test
+    public void testUpdateStopTime() {
+
+        TripEntry tripA = dao.getTripEntryForId(aid("tripA"));
+        assertEquals(3, tripA.getStopTimes().size());
+
+        StopTimeEntry stopTimeEntry = tripA.getStopTimes().get(2);
+        assertEquals(stopCA.getStop().getId().getId(), stopTimeEntry.getStop().getId().getId());
+        assertEquals(180, stopTimeEntry.getArrivalTime());
+        dao.updateStopTime(aid("tripA"), stopCA.getStop().getId(), -1,-1,185, 186);
+
+        tripA = dao.getTripEntryForId(aid("tripA"));
+        assertEquals(185, tripA.getStopTimes().get(2).getArrivalTime());
+        assertEquals(186, tripA.getStopTimes().get(2).getDepartureTime());
+    }
+
+
+    @Test
+    public void testAddStopTime0Dist() {
+        // insert at 0 position
+        TripEntry tripA = dao.getTripEntryForId(aid("tripA"));
+        assertEquals(3, tripA.getStopTimes().size());
+
+        dao.insertStopTime(aid("tripA"), stopAD.getStop().getId(), 15, 60, 10);
+
+        assertEquals(4, tripA.getStopTimes().size());
+        tripA = dao.getTripEntryForId(aid("tripA"));
+        assertEquals(tripA.getStopTimes().get(0).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime1Dist() {
+        // insert at 1 position
+        TripEntry tripA = dao.getTripEntryForId(aid("tripA"));
+        assertEquals(3, tripA.getStopTimes().size());
+
+        dao.insertStopTime(aid("tripA"), stopAD.getStop().getId(), 45, 100, 75);
+
+        assertEquals(4, tripA.getStopTimes().size());
+        assertEquals(tripA.getStopTimes().get(1).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime2Dist() {
+        // insert at 2 position
+        TripEntry tripA = dao.getTripEntryForId(aid("tripA"));
+        assertEquals(3, tripA.getStopTimes().size());
+
+        dao.insertStopTime(aid("tripA"), stopAD.getStop().getId(), 150, 180, 150);
+
+        assertEquals(4, tripA.getStopTimes().size());
+        assertEquals(tripA.getStopTimes().get(2).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime3Dist() {
+        // insert at 3 position
+        TripEntry tripA = dao.getTripEntryForId(aid("tripA"));
+        assertEquals(3, tripA.getStopTimes().size());
+
+        dao.insertStopTime(aid("tripA"), stopAD.getStop().getId(), 220, 250, 300);
+
+        assertEquals(4, tripA.getStopTimes().size());
+        assertEquals(tripA.getStopTimes().get(3).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime0Arr() {
+        // insert at 0 position
+        TripEntry tripA = dao.getTripEntryForId(aid("tripA"));
+        assertEquals(3, tripA.getStopTimes().size());
+
+        dao.insertStopTime(aid("tripA"), stopAD.getStop().getId(), 15, 60, -1);
+
+        assertEquals(4, tripA.getStopTimes().size());
+        tripA = dao.getTripEntryForId(aid("tripA"));
+        assertEquals(tripA.getStopTimes().get(0).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime1Arr() {
+        // insert at 1 position
+        TripEntry tripA = dao.getTripEntryForId(aid("tripA"));
+        assertEquals(3, tripA.getStopTimes().size());
+
+        dao.insertStopTime(aid("tripA"), stopAD.getStop().getId(), 45, 100, -1);
+
+        assertEquals(4, tripA.getStopTimes().size());
+        assertEquals(tripA.getStopTimes().get(1).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime2Arr() {
+        // insert at 2 position
+        TripEntry tripA = dao.getTripEntryForId(aid("tripA"));
+        assertEquals(3, tripA.getStopTimes().size());
+
+        dao.insertStopTime(aid("tripA"), stopAD.getStop().getId(), 150, 180, -1);
+
+        assertEquals(4, tripA.getStopTimes().size());
+        assertEquals(tripA.getStopTimes().get(2).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime3Arr() {
+        // insert at 3 position
+        TripEntry tripA = dao.getTripEntryForId(aid("tripA"));
+        assertEquals(3, tripA.getStopTimes().size());
+
+        dao.insertStopTime(aid("tripA"), stopAD.getStop().getId(), 220, 250, -1);
+
+        assertEquals(4, tripA.getStopTimes().size());
+        assertEquals(tripA.getStopTimes().get(3).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime0Dept() {
+        // insert at 0 position
+        TripEntry tripA = dao.getTripEntryForId(aid("tripA"));
+        assertEquals(3, tripA.getStopTimes().size());
+
+        dao.insertStopTime(aid("tripA"), stopAD.getStop().getId(), -1, 60, -1);
+
+        assertEquals(4, tripA.getStopTimes().size());
+        tripA = dao.getTripEntryForId(aid("tripA"));
+        assertEquals(tripA.getStopTimes().get(0).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime1Dept() {
+        // insert at 1 position
+        TripEntry tripA = dao.getTripEntryForId(aid("tripA"));
+        assertEquals(3, tripA.getStopTimes().size());
+
+        dao.insertStopTime(aid("tripA"), stopAD.getStop().getId(), -1, 100, -1);
+
+        assertEquals(4, tripA.getStopTimes().size());
+        assertEquals(tripA.getStopTimes().get(1).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime2Dept() {
+        // insert at 2 position
+        TripEntry tripA = dao.getTripEntryForId(aid("tripA"));
+        assertEquals(3, tripA.getStopTimes().size());
+
+        dao.insertStopTime(aid("tripA"), stopAD.getStop().getId(), -1, 180, -1);
+
+        assertEquals(4, tripA.getStopTimes().size());
+        assertEquals(tripA.getStopTimes().get(2).getStop().getId(), stopAD.getStop().getId());
+    }
+
+    @Test
+    public void testAddStopTime3Dept() {
+        // insert at 3 position
+        TripEntry tripA = dao.getTripEntryForId(aid("tripA"));
+        assertEquals(3, tripA.getStopTimes().size());
+
+        dao.insertStopTime(aid("tripA"), stopAD.getStop().getId(), -1, 250, -1);
+
+        assertEquals(4, tripA.getStopTimes().size());
+        assertEquals(tripA.getStopTimes().get(3).getStop().getId(), stopAD.getStop().getId());
+    }
+
 }
