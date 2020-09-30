@@ -341,6 +341,17 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
     }
   }
 
+  public boolean addAgencyEntry(AgencyEntryImpl agency) {
+    _lock.writeLock().lock();
+    try {
+      _agencyEntriesById.put(agency.getId(), agency);
+      _agencies.add(agency);
+    } finally {
+      _lock.writeLock().unlock();
+    }
+    return true;
+  }
+
   @Override
   public List<StopEntry> getAllStops() {
     _lock.readLock().lock();

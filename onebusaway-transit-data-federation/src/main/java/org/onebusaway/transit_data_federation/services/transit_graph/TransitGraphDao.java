@@ -20,6 +20,7 @@ import java.util.List;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
+import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
@@ -44,6 +45,8 @@ public interface TransitGraphDao {
    * @return the agency entry with the specified id, or null if not found
    */
   public AgencyEntry getAgencyForId(String id);
+
+  public boolean addAgencyEntry(AgencyEntryImpl aei);
 
   /**
    * @return the list of all stop entries in the transit graph
@@ -165,7 +168,6 @@ public interface TransitGraphDao {
   public void updateCalendarServiceData(CalendarServiceData data);
 
   public boolean addShape(ShapePoints shape);
-
 
   public List<AgencyAndId> getAllReferencedShapeIds();
 }
