@@ -386,7 +386,7 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   }
 
   @Override
-  public boolean insertStopTime(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime, int shapeDistanceTravelled) {
+  public boolean insertStopTime(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime, double shapeDistanceTravelled) {
     boolean rc = _graph.insertStopTime(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled);
     if (rc) {
       TripEntryImpl trip = (TripEntryImpl) getTripEntryForId(tripId);

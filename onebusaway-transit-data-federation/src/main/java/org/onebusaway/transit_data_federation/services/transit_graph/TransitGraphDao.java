@@ -165,7 +165,7 @@ public interface TransitGraphDao {
    * @param shapeDistanceTravelled
    * @return
    */
-  public boolean insertStopTime(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime, int shapeDistanceTravelled);
+  public boolean insertStopTime(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime, double shapeDistanceTravelled);
 
 
   public void updateCalendarServiceData(CalendarServiceData data);

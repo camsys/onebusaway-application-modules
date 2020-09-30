@@ -624,15 +624,17 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
 
   @Override
   public boolean insertStopTime(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime,
-                                int shapeDistanceTravelled) {
+                                double shapeDistanceTravelled) {
     _lock.writeLock().lock();
 
     try {
       TripEntryImpl tripEntry = _tripEntriesById.get(tripId);
       StopTimeEntry found = null;
+      double runningShapeDistTravelled = 0;
       if (tripEntry != null && tripEntry.getStopTimes() != null) {
         for (int i = tripEntry.getStopTimes().size()-1; i>= 0; i--) {
           StopTimeEntry ste = tripEntry.getStopTimes().get(i);
+          runningShapeDistTravelled = ste.getShapeDistTraveled();
           if (shapeDistanceTravelled >= 0) {
             // we have shape distance, use it to determine insertion position
             if (shapeDistanceTravelled > ste.getShapeDistTraveled()) {
@@ -642,13 +644,13 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
           } else if (arrivalTime >= 0) {
             // try arrivalTime
             if (arrivalTime > ste.getArrivalTime()) {
-              tripEntry.getStopTimes().add(i+1, createStopTimeEntry(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled));
+              tripEntry.getStopTimes().add(i+1, createStopTimeEntry(tripId, stopId, arrivalTime, departureTime, runningShapeDistTravelled));
               return updateBlockIndices(tripEntry);
             }
           } else {
             // use departureTime
             if (departureTime > ste.getDepartureTime()) {
-              tripEntry.getStopTimes().add(i+1, createStopTimeEntry(tripId, stopId, arrivalTime, departureTime, shapeDistanceTravelled));
+              tripEntry.getStopTimes().add(i+1, createStopTimeEntry(tripId, stopId, arrivalTime, departureTime, runningShapeDistTravelled));
               return updateBlockIndices(tripEntry);
             }
           }
@@ -721,7 +723,7 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
     return true;
   }
 
-  private StopTimeEntry createStopTimeEntry(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime, int shapeDistanceTravelled) {
+  private StopTimeEntry createStopTimeEntry(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime, double shapeDistanceTravelled) {
     StopTimeEntryImpl stei = new StopTimeEntryImpl();
     stei.setTrip(_tripEntriesById.get(tripId));
     if (stei.getTrip() == null) {
