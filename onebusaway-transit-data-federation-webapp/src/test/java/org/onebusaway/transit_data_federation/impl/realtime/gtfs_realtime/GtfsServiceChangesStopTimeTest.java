@@ -21,6 +21,9 @@ import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.onebusaway.geospatial.model.CoordinateBounds;
+import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.impl.calendar.CalendarServiceDataFactoryImpl;
 import org.onebusaway.gtfs.model.Agency;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -35,8 +38,11 @@ import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.model.ShapePoints;
+import org.onebusaway.transit_data_federation.model.ShapePointsFactory;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
 import org.onebusaway.transit_data_federation.services.beans.ArrivalsAndDeparturesBeanService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.transit_graph.AgencyEntry;
@@ -87,6 +93,9 @@ public class GtfsServiceChangesStopTimeTest {
 
     @Autowired
     private BlockIndexService _blockIndexService;
+
+    @Autowired
+    private BlockGeospatialService _blockGeospatialService;
 
     private FederatedTransitDataBundle _bundle;
 
@@ -182,6 +191,24 @@ public class GtfsServiceChangesStopTimeTest {
 
     }
 
+    @Test
+    public void testBlockGeospatialService() {
+        addSeedData();
+
+        TripEntryImpl tripA = (TripEntryImpl) _dao.getTripEntryForId(aid("tripA"));
+        tripA.setShapeId(_dao.getAllReferencedShapeIds().get(0));
+        _dao.updateTripEntry(tripA);
+
+        CoordinatePoint stopLocation = _dao.getAllStops().get(0).getStopLocation();
+
+        CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
+                stopLocation, 250 /*meters*/);
+
+        assertEquals(1, _dao.getAllReferencedShapeIds().size());
+        assertEquals(1, _blockGeospatialService.getBlockSequenceIndexPassingThroughBounds(bounds).size());
+
+    }
+
     private void addSeedData() {
         assertNotNull(_tds);
         assertNotNull(_dao);
@@ -273,7 +300,30 @@ public class GtfsServiceChangesStopTimeTest {
         // make sure block is updated with new stop times!!!
         assertEquals(3, blockConfigA.getStopTimes().size());
 
+        assertNotNull(_dao.getAllReferencedShapeIds());
+        assertEquals(0, _dao.getAllReferencedShapeIds().size());
 
+        assertTrue(_dao.addShape(createShapeFromStops(aid("shape1"), stopA, stopB, stopC, stopD)));
+
+        assertNotNull(_dao.getAllReferencedShapeIds());
+        // still 0 as its not referenced yet
+        assertEquals(0, _dao.getAllReferencedShapeIds().size());
+        TripEntryImpl tripA1 = (TripEntryImpl) _dao.getTripEntryForId(aid("tripA"));
+        tripA1.setShapeId(aid("shape1"));
+        _dao.updateTripEntry(tripA1);
+
+        assertEquals(1, _dao.getAllReferencedShapeIds().size());
+
+    }
+    public ShapePoints createShapeFromStops(AgencyAndId shapeId, StopEntryImpl... stops) {
+        ShapePointsFactory factory = new ShapePointsFactory();
+        factory.setShapeId(shapeId);
+
+        for (StopEntryImpl stop : stops) {
+            factory.addPoint(stop.getStopLat(), stop.getStopLon());
+        }
+
+        return factory.create();
     }
 
     private void addCalendarSeeData(List<String> tripAgencyIds) {

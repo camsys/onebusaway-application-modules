@@ -69,7 +69,13 @@ public interface NarrativeService {
 
   public void addTrip(TripEntryImpl trip);
 
+  public void removeTrip(TripEntryImpl trip);
+
   public void addStop(StopEntryImpl stop);
 
   public void addStopTime(StopTimeEntryImpl stopTime);
+
+  public boolean addShape(ShapePoints shape);
+
+
 }

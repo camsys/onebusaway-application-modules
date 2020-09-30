@@ -52,4 +52,8 @@ public class ShapePointServiceImpl implements ShapePointService {
     }
     return factory.create();
   }
+
+  public boolean addShape(ShapePoints shape) {
+    return _narrativeService.addShape(shape);
+  }
 }

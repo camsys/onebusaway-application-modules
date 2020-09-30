@@ -49,6 +49,7 @@ class ShapeGeospatialIndexTask implements Runnable {
   private static Logger _log = LoggerFactory.getLogger(ShapeGeospatialIndexTask.class);
   private static double MIN_LAT_LON = -360.0;
   private static double MAX_LAT_LON = 360.0;
+  private static double DEFAULT_GRID_SIZE = 500.0;
 
   private TransitGraphDao _transitGraphDao;
 
@@ -58,7 +59,7 @@ class ShapeGeospatialIndexTask implements Runnable {
 
   private RefreshService _refreshService;
 
-  private double _gridSize = 500;
+  private double _gridSize = DEFAULT_GRID_SIZE;
 
   @Autowired
   public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
@@ -132,7 +133,7 @@ class ShapeGeospatialIndexTask implements Runnable {
 
     if (fullBounds.isEmpty()) {
       return Collections.emptyMap();
-    }
+  }
 
     double centerLat = (fullBounds.getMinLat() + fullBounds.getMaxLat()) / 2;
     double centerLon = (fullBounds.getMinLon() + fullBounds.getMaxLon()) / 2;

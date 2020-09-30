@@ -134,6 +134,16 @@ public final class NarrativeProviderImpl implements Serializable {
     }
   }
 
+  public void removeTrip(TripEntryImpl trip) {
+    _tripNarratives.remove(trip.getId());
+    for (StopTimeEntry ste: trip.getStopTimes()) {
+      // don't orphan the stop times -- remove them as well
+      removeStopTime((StopTimeEntryImpl) ste);
+      // it clearly shouldn't delete the stops
+    }
+  }
+
+
   public void addStop(StopEntryImpl stop) {
     StopNarrative.Builder builder = StopNarrative.builder();
     builder.setName(stop.getId().getId());
@@ -149,4 +159,14 @@ public final class NarrativeProviderImpl implements Serializable {
     stopTimeNarratives.add(builder.create());
     _stopTimeNarrativesByTripIdAndStopTimeSequence.put(stopTime.getTrip().getId(), stopTimeNarratives);
   }
+
+  public void removeStopTime(StopTimeEntryImpl stopTime) {
+    _stopTimeNarrativesByTripIdAndStopTimeSequence.remove(stopTime.getTrip().getId());
+  }
+
+  public boolean addShape(ShapePoints shape) {
+    _shapePointsById.put(shape.getShapeId(), shape);
+    return true;
+  }
+
 }
