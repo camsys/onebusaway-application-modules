@@ -1,12 +1,33 @@
+/**
+ * Copyright (C) 2018 Cambridge Systematics, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.onebusaway.gtfs.impl.calendar.CalendarServiceDataFactoryImpl;
+import org.onebusaway.gtfs.model.Agency;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.ServiceCalendar;
+import org.onebusaway.gtfs.model.ServiceCalendarDate;
+import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
+import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
@@ -16,8 +37,12 @@ import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
 import org.onebusaway.transit_data_federation.services.beans.ArrivalsAndDeparturesBeanService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
+import org.onebusaway.transit_data_federation.services.transit_graph.AgencyEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.LoggerFactory;
@@ -29,7 +54,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
@@ -54,6 +85,8 @@ public class GtfsServiceChangesStopTimeTest {
     @Autowired
     private ArrivalsAndDeparturesBeanService _arrivalsAndDeparturesBeanService;
 
+    @Autowired
+    private BlockIndexService _blockIndexService;
 
     private FederatedTransitDataBundle _bundle;
 
@@ -106,9 +139,20 @@ public class GtfsServiceChangesStopTimeTest {
     @Test
     @Transactional
     @DirtiesContext
-    @Ignore
     public void testGetArrivalsAndDepartures() {
         addSeedData();
+
+        StopEntry stopEntry = _dao.getStopEntryForId(aid("a"));
+        assertNotNull(stopEntry);
+
+        StopEntryImpl stopEntryImpl = (StopEntryImpl) stopEntry;
+        assertNotNull(stopEntryImpl.getStopTimeIndices());
+        assertEquals(1, stopEntryImpl.getStopTimeIndices().size());
+
+        List<BlockStopTimeIndex> stopTimeIndicesForStop = _blockIndexService.getStopTimeIndicesForStop(stopEntry);
+        assertNotNull(stopTimeIndicesForStop);
+        assertEquals(1, stopTimeIndicesForStop.size());
+
         // now search for that trip
         ArrivalsAndDeparturesQueryBean query = new ArrivalsAndDeparturesQueryBean();
         query.setMinutesAfter(1440);
@@ -155,6 +199,8 @@ public class GtfsServiceChangesStopTimeTest {
 
         assertNotNull(blockConfigA.getStopTimes());
         assertEquals(2, blockConfigA.getStopTimes().size());
+        assertNotNull(blockConfigA.getServiceIds());
+        assertFalse(blockConfigA.getServiceIds().getActiveServiceIds().isEmpty());
 
         assertTrue(_dao.addTripEntry(tripA));
 
@@ -172,6 +218,9 @@ public class GtfsServiceChangesStopTimeTest {
 
         assertEquals(aid("tripA"), _dao.getTripEntryForId(aid("tripA")).getId());
 
+        StopEntryImpl blockCheck = (StopEntryImpl)_dao.getStopEntryForId(aid("a"));
+        assertEquals(1, blockCheck.getStopTimeIndices().size());
+
         // add a stop
         StopEntryImpl stopC = stop("c", 47.6, -122.8);
         assertTrue(_dao.addStopEntry(stopC));
@@ -181,6 +230,10 @@ public class GtfsServiceChangesStopTimeTest {
 
         StopEntryImpl stopD = stop("d", 47.8, -122.9);
         assertTrue(_dao.addStopEntry(stopD));
+
+        // update the calendar info
+        String[] tripIds = {aid("tripA").toString()};
+        addCalendarSeeData(Arrays.asList(tripIds));
 
 
         // we have two stop times
@@ -204,6 +257,46 @@ public class GtfsServiceChangesStopTimeTest {
         assertEquals(3, blockConfigA.getStopTimes().size());
 
 
+    }
+
+    private void addCalendarSeeData(List<String> tripAgencyIds) {
+        CalendarServiceData data;
+
+        ServiceDate dStart = new ServiceDate(2010, 2, 10);
+
+        ServiceDate dEnd = new ServiceDate(2030, 2, 24);
+
+        ServiceCalendar c1 = calendar(aid("sA"), dStart, dEnd, "1111111");
+        List<ServiceCalendar> calendars = new ArrayList<ServiceCalendar>();
+        calendars.add(c1);
+        List<ServiceCalendarDate> calendarDates = new ArrayList<ServiceCalendarDate>();
+
+        Map<AgencyAndId, List<String>> tripAgencyIdsReferencingServiceId = new HashMap<AgencyAndId, List<String>>();
+        tripAgencyIdsReferencingServiceId.put(aid("sA"), tripAgencyIds);
+        Map<String, TimeZone> timeZoneMapByAgencyId = new HashMap<String, TimeZone>();
+        TimeZone tz = TimeZone.getTimeZone("America/Los_Angeles");
+        assertNotNull(tz);
+        timeZoneMapByAgencyId.put(aid("tripA").getAgencyId(), tz);
+        CalendarServiceDataFactoryImpl csdfi = new CalendarServiceDataFactoryImpl();
+        data = csdfi.updateData(adapt(_dao.getAllAgencies()),
+                calendars,
+                calendarDates,
+                tripAgencyIdsReferencingServiceId,
+                timeZoneMapByAgencyId);
+        _dao.updateCalendarServiceData(data);
+    }
+
+    private Collection<Agency> adapt(List<AgencyEntry> allAgencies) {
+        Collection<Agency> agencies = new ArrayList<Agency>();
+        for (AgencyEntry ae : allAgencies) {
+            Agency a = new Agency();
+            a.setId(ae.getId());
+            TimeZone tz = TimeZone.getTimeZone("America/Los_Angeles");
+            assertNotNull(tz);
+            a.setTimezone(tz.getDisplayName());
+            agencies.add(a);
+        }
+        return agencies;
     }
 
 }

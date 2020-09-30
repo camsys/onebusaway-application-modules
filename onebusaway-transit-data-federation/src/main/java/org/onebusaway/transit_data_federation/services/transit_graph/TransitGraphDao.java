@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 
@@ -155,4 +156,5 @@ public interface TransitGraphDao {
   public boolean insertStopTime(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime, int shapeDistanceTravelled);
 
 
+  public void updateCalendarServiceData(CalendarServiceData data);
 }

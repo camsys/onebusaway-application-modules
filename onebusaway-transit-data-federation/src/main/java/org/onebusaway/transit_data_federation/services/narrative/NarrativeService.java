@@ -21,6 +21,8 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Stop;
 import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.Trip;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.narrative.AgencyNarrative;
@@ -66,4 +68,8 @@ public interface NarrativeService {
   public ShapePoints getShapePointsForId(AgencyAndId id);
 
   public void addTrip(TripEntryImpl trip);
+
+  public void addStop(StopEntryImpl stop);
+
+  public void addStopTime(StopTimeEntryImpl stopTime);
 }

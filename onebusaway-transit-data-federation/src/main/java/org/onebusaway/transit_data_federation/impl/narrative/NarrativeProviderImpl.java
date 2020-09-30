@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.narrative.AgencyNarrative;
@@ -126,8 +128,25 @@ public final class NarrativeProviderImpl implements Serializable {
     }
     _tripNarratives.put(trip.getId(), builder.create());
 
-    // todo -- for each stop on trip add stopNarrative
+    for (StopTimeEntry ste: trip.getStopTimes()) {
+      addStopTime((StopTimeEntryImpl) ste);
+      addStop((StopEntryImpl)ste.getStop());
+    }
+  }
 
-    // todo -- for each stop time add stopTimeNarrative
+  public void addStop(StopEntryImpl stop) {
+    StopNarrative.Builder builder = StopNarrative.builder();
+    builder.setName(stop.getId().getId());
+    _stopNarratives.put(stop.getId(), builder.create());
+  }
+
+  public void addStopTime(StopTimeEntryImpl stopTime) {
+    StopTimeNarrative.Builder builder = StopTimeNarrative.builder();
+    List<StopTimeNarrative> stopTimeNarratives = _stopTimeNarrativesByTripIdAndStopTimeSequence.get(stopTime.getTrip().getId());
+    if (stopTimeNarratives == null) {
+      stopTimeNarratives = new ArrayList<StopTimeNarrative>();
+    }
+    stopTimeNarratives.add(builder.create());
+    _stopTimeNarrativesByTripIdAndStopTimeSequence.put(stopTime.getTrip().getId(), stopTimeNarratives);
   }
 }

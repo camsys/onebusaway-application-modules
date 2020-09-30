@@ -24,6 +24,8 @@ import javax.annotation.PostConstruct;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.narrative.AgencyNarrative;
@@ -103,5 +105,15 @@ public class NarrativeServiceImpl implements NarrativeService {
   @Override
   public void addTrip(TripEntryImpl trip) {
     _provider.addTrip(trip);
+  }
+
+  @Override
+  public void addStop(StopEntryImpl stop) {
+    _provider.addStop(stop);
+  }
+
+  @Override
+  public void addStopTime(StopTimeEntryImpl stopTime) {
+    _provider.addStopTime(stopTime);
   }
 }
