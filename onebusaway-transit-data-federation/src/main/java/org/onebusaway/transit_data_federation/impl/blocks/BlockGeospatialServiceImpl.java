@@ -299,6 +299,11 @@ class BlockGeospatialServiceImpl implements BlockGeospatialService {
   }
 
   // todo do something smarter here
+  public boolean removeStop(AgencyAndId stopId) {
+    return rebuildFromGraph();
+  }
+
+  // todo do something smarter here
   public boolean addShape(AgencyAndId shapeId) {
     return rebuildFromGraph();
   }

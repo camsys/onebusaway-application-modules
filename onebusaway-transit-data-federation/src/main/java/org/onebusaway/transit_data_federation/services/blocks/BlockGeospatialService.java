@@ -49,5 +49,9 @@ public interface BlockGeospatialService {
 
   public boolean addStop(StopEntryImpl stop);
 
+  public boolean removeStop(AgencyAndId stopId);
+
   public boolean addShape(AgencyAndId shapeId);
+
+
 }

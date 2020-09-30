@@ -365,6 +365,21 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
     return true;
   }
 
+  @Override
+  public boolean removeStopEntry(AgencyAndId stopId) {
+    _lock.writeLock().lock();
+    try {
+      if (!_stopEntriesById.containsKey(stopId)) {
+        return false;
+      }
+      StopEntryImpl entry = _stopEntriesById.remove(stopId);
+      _stops.remove(entry);
+      return true;
+    } finally {
+      _lock.writeLock().unlock();
+    }
+  }
+
 
   @Override
   public List<TripEntry> getAllTrips() {

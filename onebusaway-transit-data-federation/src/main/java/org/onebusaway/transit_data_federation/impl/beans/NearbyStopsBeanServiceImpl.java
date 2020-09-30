@@ -72,7 +72,6 @@ class NearbyStopsBeanServiceImpl implements NearbyStopsBeanService {
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
             stopBean.getLat(), stopBean.getLon(), radius);
     List<AgencyAndId> ids = _geospatialBeanService.getStopsByBounds(bounds);
-
     List<AgencyAndId> excludingSource = new ArrayList<AgencyAndId>();
 
     for (AgencyAndId id : ids) {
