@@ -301,6 +301,17 @@ public class UnitTestingSupport {
   public static StopTimeEntryImpl stopTime(int id, StopEntryImpl stop,
       TripEntryImpl trip, int arrivalTime, int departureTime,
       double shapeDistTraveled, int shapeIndex) {
+    return stopTime(id, stop, trip, arrivalTime, departureTime, shapeDistTraveled, shapeIndex, -1);
+  }
+
+  public static StopTimeEntryImpl stopTime(int id, StopEntryImpl stop,
+      TripEntryImpl trip, int time, double shapeDistTraveled) {
+    return stopTime(id, stop, trip, time, time, shapeDistTraveled);
+  }
+
+  public static StopTimeEntryImpl stopTime(int id, StopEntryImpl stop,
+                                           TripEntryImpl trip, int arrivalTime, int departureTime,
+                                           double shapeDistTraveled, int shapeIndex, int sequence) {
 
     StopTimeEntryImpl stopTime = new StopTimeEntryImpl();
     stopTime.setId(id);
@@ -309,7 +320,12 @@ public class UnitTestingSupport {
     stopTime.setArrivalTime(arrivalTime);
     stopTime.setDepartureTime(departureTime);
     stopTime.setShapeDistTraveled(shapeDistTraveled);
-    stopTime.setShapePointIndex(shapeIndex);
+
+    if (shapeIndex > -1)
+      stopTime.setShapePointIndex(shapeIndex);
+
+    if (sequence > -1)
+      stopTime.setGtfsSequence(sequence);
 
     if (trip != null)
       addStopTime(trip, stopTime);

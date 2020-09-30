@@ -130,16 +130,13 @@ public class GtfsSometimesClientIntegrationTest {
             tei.setBlock(bei);
             RouteEntryImpl rei = new RouteEntryImpl();
             rei.setId(trip.getRoute().getId());
-            RouteCollectionEntryImpl rcei = new RouteCollectionEntryImpl();
-            rcei.setId(rei.getId());
-            rcei.setChildren(Collections.singletonList(rei));
-            rei.setParent(rcei);
             tei.setRoute(rei);
             List<StopTimeEntry> stopTimes = new ArrayList<>();
             for (StopTime stopTime : dao.getStopTimesForTrip(trip)) {
                 String stopId = stopTime.getStop().getId().getId();
                 stopTimes.add(UnitTestingSupport.stopTime(stopTime.getId(), stopById.get(stopId), tei,
-                        stopTime.getArrivalTime(), stopTime.getDepartureTime(), (int) Math.round(stopTime.getShapeDistTraveled())));
+                        stopTime.getArrivalTime(), stopTime.getDepartureTime(), (int) Math.round(stopTime.getShapeDistTraveled()),
+                        -1, stopTime.getStopSequence()));
             }
             tei.setStopTimes(stopTimes);
             builder.setBlock(bei);
@@ -159,6 +156,10 @@ public class GtfsSometimesClientIntegrationTest {
     public void testLoadSuccess() {
         TripDetailsBean tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
         assertEquals(71, tripDetails.getSchedule().getStopTimes().size());
+        List<TripStopTimeBean> stopTimes = tripDetails.getSchedule().getStopTimes();
+        TripStopTimeBean prev = stopTimes.get(14);
+        assertEquals("MTA_201644", prev.getStop().getId());
+        assertEquals(15, prev.getGtfsSequence());
     }
 
     @Test
@@ -175,12 +176,12 @@ public class GtfsSometimesClientIntegrationTest {
         // 201645 is the 16th stop
         List<TripStopTimeBean> stopTimes = tripDetails.getSchedule().getStopTimes();
         TripStopTimeBean prev = stopTimes.get(14);
-        assertEquals("201644", prev.getStop().getId());
+        assertEquals("MTA_201644", prev.getStop().getId());
         assertEquals(15, prev.getGtfsSequence());
-        assertEquals(time(16, 9, 47), prev.getArrivalTime());
-        assertEquals(time(16, 9, 47), prev.getDepartureTime());
+        assertEquals(time(16, 9, 14), prev.getArrivalTime());
+        assertEquals(time(16, 9, 14), prev.getDepartureTime());
         TripStopTimeBean next = stopTimes.get(15);
-        assertEquals("201646", next.getStop().getId());
+        assertEquals("MTA_201646", next.getStop().getId());
         assertEquals(17, next.getGtfsSequence());
         assertEquals(time(16, 10, 20), next.getArrivalTime());
         assertEquals(time(16, 10, 20), next.getDepartureTime());
