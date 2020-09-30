@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.narrative.AgencyNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.RouteCollectionNarrative;
@@ -115,5 +116,18 @@ public final class NarrativeProviderImpl implements Serializable {
 
   public ShapePoints getShapePointsForId(AgencyAndId id) {
     return _shapePointsById.get(id);
+  }
+
+  public void addTrip(TripEntryImpl trip) {
+    TripNarrative.Builder builder = TripNarrative.builder();
+    if (_routeCollectionNarratives.containsKey(trip.getRoute().getId())) {
+      // we have a route short name
+      builder.setRouteShortName(_routeCollectionNarratives.get(trip.getRoute().getId()).getShortName());
+    }
+    _tripNarratives.put(trip.getId(), builder.create());
+
+    // todo -- for each stop on trip add stopNarrative
+
+    // todo -- for each stop time add stopTimeNarrative
   }
 }

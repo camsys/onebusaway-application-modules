@@ -29,6 +29,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
+import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
 import org.onebusaway.transit_data_federation.services.transit_graph.AgencyEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
@@ -48,6 +49,8 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
   private TransitGraph _graph;
 
+  private NarrativeService _narrativeService;
+
   @Autowired
   public void setBundle(FederatedTransitDataBundle bundle) {
     _bundle = bundle;
@@ -56,6 +59,12 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   public void setTransitGraph(TransitGraph graph) {
     _graph = graph;
   }
+
+  @Autowired
+  public void setNarrativeService(NarrativeService narrativeService) {
+    _narrativeService = narrativeService;
+  }
+
 
   @PostConstruct
   @Refreshable(dependsOn = RefreshableResources.TRANSIT_GRAPH)
@@ -117,6 +126,11 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   }
 
   @Override
+  public boolean addStopEntry(StopEntryImpl stop) {
+    return _graph.addStopEntry(stop);
+  }
+
+  @Override
   public List<BlockEntry> getAllBlocks() {
     return _graph.getAllBlocks();
   }
@@ -164,6 +178,16 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   @Override
   public boolean deleteStopTime(AgencyAndId tripId, AgencyAndId stopId) {
     return _graph.deleteStopTime(tripId, stopId);
+  }
+
+  @Override
+  public boolean addTripEntry(TripEntryImpl trip) {
+    boolean rc = _graph.addTripEntry(trip);
+    // adding a trip requires updating other parts of the TDS
+    if (rc && _narrativeService != null) {
+       _narrativeService.addTrip(trip);
+    }
+    return rc;
   }
 
   @Override

@@ -55,8 +55,9 @@
 
     <dependency>
       <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-      <scope>provided</scope>
+      <artifactId>javax.servlet-api</artifactId>
+      <scope>test</scope>
+      <version>3.0.1</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
