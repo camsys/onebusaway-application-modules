@@ -104,5 +104,21 @@ public interface TransitGraphDao {
    * @param id a route id to query
    * @return the route entry with the specified id, or null if not found
    */
+
   public RouteEntry getRouteForId(AgencyAndId id);
+
+  /**
+   * delete the trip represented by the given id
+   * @param tripId tripId to delete
+   * @return true if deletion was successful
+   */
+  public boolean deleteTripEntryForId(AgencyAndId tripId);
+
+  /**
+   * delete stop time for the given trip and stop pair
+   * @param tripId trip to delete from
+   * @param stopId stop to delete
+   * @return true if deltion was successful
+   */
+  public boolean deleteStopTime(AgencyAndId tripId, AgencyAndId stopId);
 }

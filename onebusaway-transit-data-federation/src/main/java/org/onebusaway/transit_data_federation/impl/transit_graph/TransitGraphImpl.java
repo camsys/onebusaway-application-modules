@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.onebusaway.collections.adapter.IAdapter;
 import org.onebusaway.collections.adapter.ListAdapter;
@@ -37,6 +39,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.transit_data_federation.model.transit_graph.TransitGraph;
 import org.slf4j.Logger;
@@ -92,11 +95,14 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
 
   private transient Map<AgencyAndId, RouteEntryImpl> _routeEntriesById = new HashMap<AgencyAndId, RouteEntryImpl>();
 
+  private transient ReadWriteLock _lock = new ReentrantReadWriteLock();
+
   public TransitGraphImpl() {
 
   }
 
   public void empty() {
+    _lock.writeLock().lock();
     _agencyEntriesById.clear();
     _stopEntriesById.clear();
     _tripEntriesById.clear();
@@ -111,10 +117,16 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
     _routes.clear();
     _agencies.clear();
 
-    _stopLocationTree = null;        
+    _stopLocationTree = null;
+    _lock.writeLock().unlock();
   }
   
   public void initialize() {
+    // serialization invocation may not have this
+    if (_lock ==  null) {
+      _lock = new ReentrantReadWriteLock();
+    }
+    _lock.writeLock().lock();
     if (_stopLocationTree == null) {
       System.out.println("initializing transit graph...");
 
@@ -167,92 +179,141 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
     int i = 0;
     for (StopEntryImpl stop : _stops)
       stop.setIndex(i++);
+    _lock.writeLock().unlock();
   }
 
   public void initializeFromExistinGraph(TransitGraphImpl graph) {
+    _lock.writeLock().lock();
     _agencies.addAll(graph._agencies);
     _stops.addAll(graph._stops);
     _routes.addAll(graph._routes);
     _routeCollections.addAll(graph._routeCollections);
+    _lock.writeLock().lock();
     _trips.addAll(graph._trips);
+    _lock.writeLock().unlock();
     _blocks.addAll(graph._blocks);
     initialize();
+    _lock.writeLock().lock();
   }
 
   public void putAgencyEntry(AgencyEntryImpl agencyEntry) {
+    _lock.writeLock().lock();
     _agencies.add(agencyEntry);
+    _lock.writeLock().unlock();
   }
 
   public void putStopEntry(StopEntryImpl stopEntry) {
+    _lock.writeLock().lock();
     _stops.add(stopEntry);
+    _lock.writeLock().unlock();
   }
 
   public List<StopEntryImpl> getStops() {
-    return _stops;
+    _lock.readLock().lock();
+    try {
+      return new ArrayList<StopEntryImpl>(_stops);
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   public void putTripEntry(TripEntryImpl tripEntry) {
+    _lock.writeLock().lock();
     _trips.add(tripEntry);
+    _lock.writeLock().unlock();
   }
 
   public List<TripEntryImpl> getTrips() {
-    return _trips;
+    _lock.readLock().lock();
+    try {
+      return new ArrayList<TripEntryImpl>(_trips);
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   public void putBlockEntry(BlockEntryImpl blockEntry) {
+    _lock.writeLock().lock();
     _blocks.add(blockEntry);
+    _lock.writeLock().unlock();
   }
   
   public List<BlockEntryImpl> getBlocks() {
-    return _blocks;
+    _lock.readLock().lock();
+    try {
+      return new ArrayList<BlockEntryImpl>(_blocks);
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   public void putRouteEntry(RouteEntryImpl routeEntry) {
+    _lock.writeLock().lock();
     _routes.add(routeEntry);
+    _lock.writeLock().unlock();
   }
 
   public List<RouteEntryImpl> getRoutes() {
-    return _routes;
+    _lock.readLock().lock();
+    try {
+      return new ArrayList<RouteEntryImpl>(_routes);
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   public void putRouteCollectionEntry(RouteCollectionEntryImpl routeCollection) {
+    _lock.writeLock().lock();
     _routeCollections.add(routeCollection);
+    _lock.writeLock().unlock();
   }
 
   public void refreshAgencyMapping() {
+    _lock.writeLock().lock();
     _agencyEntriesById = new HashMap<String, AgencyEntryImpl>();
     for (AgencyEntryImpl entry : _agencies)
       _agencyEntriesById.put(entry.getId(), entry);
+    _lock.writeLock().unlock();
   }
 
   public void refreshTripMapping() {
+    _lock.writeLock().lock();
     _tripEntriesById = new HashMap<AgencyAndId, TripEntryImpl>();
     for (TripEntryImpl entry : _trips)
       _tripEntriesById.put(entry.getId(), entry);
+    _lock.writeLock().unlock();
   }
 
   public void refreshBlockMapping() {
+    _lock.writeLock().lock();
     _blockEntriesById = new HashMap<AgencyAndId, BlockEntryImpl>();
     for (BlockEntryImpl entry : _blocks)
       _blockEntriesById.put(entry.getId(), entry);
+    _lock.writeLock().unlock();
   }
 
   public void refreshStopMapping() {
+    _lock.writeLock().lock();
     _stopEntriesById = new HashMap<AgencyAndId, StopEntryImpl>();
     for (StopEntryImpl entry : _stops)
       _stopEntriesById.put(entry.getId(), entry);
+    _lock.writeLock().unlock();
   }
 
   public void refreshRouteMapping() {
+    _lock.writeLock().lock();
     _routeEntriesById = new HashMap<AgencyAndId, RouteEntryImpl>();
     for (RouteEntryImpl entry : _routes)
       _routeEntriesById.put(entry.getId(), entry);
+    _lock.writeLock().unlock();
   }
 
   public void refreshRouteCollectionMapping() {
+    _lock.writeLock().lock();
     _routeCollectionEntriesById = new HashMap<AgencyAndId, RouteCollectionEntryImpl>();
     for (RouteCollectionEntryImpl entry : _routeCollections)
       _routeCollectionEntriesById.put(entry.getId(), entry);
+    _lock.writeLock().unlock();
   }
 
   /****
@@ -260,76 +321,175 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
    ****/
 
   public List<AgencyEntry> getAllAgencies() {
-    return new ListAdapter<AgencyEntryImpl, AgencyEntry>(_agencies,
-        _agencyEntryAdapter);
+    _lock.readLock().lock();
+    try {
+      return new ListAdapter<AgencyEntryImpl, AgencyEntry>(new ArrayList<AgencyEntryImpl>(_agencies),
+              _agencyEntryAdapter);
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   public AgencyEntryImpl getAgencyForId(String id) {
-    return _agencyEntriesById.get(id);
+    _lock.readLock().lock();
+    try {
+      return _agencyEntriesById.get(id);
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   @Override
   public List<StopEntry> getAllStops() {
-    return new ListAdapter<StopEntryImpl, StopEntry>(_stops, _stopEntryAdapter);
+    _lock.readLock().lock();
+    try {
+      return new ListAdapter<StopEntryImpl, StopEntry>(new ArrayList<StopEntryImpl>(_stops), _stopEntryAdapter);
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   @Override
   public List<TripEntry> getAllTrips() {
-    return new ListAdapter<TripEntryImpl, TripEntry>(_trips, _tripEntryAdapter);
+    _lock.readLock().lock();
+    try {
+      return new ListAdapter<TripEntryImpl, TripEntry>(new ArrayList<TripEntryImpl>(_trips), _tripEntryAdapter);
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   @Override
   public List<BlockEntry> getAllBlocks() {
-    return new ListAdapter<BlockEntryImpl, BlockEntry>(_blocks,
-        _blockEntryAdapter);
+    _lock.readLock().lock();
+    try {
+      return new ListAdapter<BlockEntryImpl, BlockEntry>(new ArrayList<BlockEntryImpl>(_blocks),
+              _blockEntryAdapter);
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   @Override
   public List<RouteCollectionEntry> getAllRouteCollections() {
-    return new ListAdapter<RouteCollectionEntryImpl, RouteCollectionEntry>(
-        _routeCollections, _routeCollectionEntryAdapter);
+    _lock.readLock().lock();
+    try {
+      return new ListAdapter<RouteCollectionEntryImpl, RouteCollectionEntry>(
+              new ArrayList<RouteCollectionEntryImpl>(_routeCollections), _routeCollectionEntryAdapter);
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   @Override
   public List<RouteEntry> getAllRoutes() {
-    return new ListAdapter<RouteEntryImpl, RouteEntry>(_routes,
-        _routeEntryAdapter);
+    _lock.readLock().lock();
+    try {
+      return new ListAdapter<RouteEntryImpl, RouteEntry>(new ArrayList<RouteEntryImpl>(_routes),
+              _routeEntryAdapter);
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   @Override
   public StopEntryImpl getStopEntryForId(AgencyAndId id) {
-    return _stopEntriesById.get(id);
+    _lock.readLock().lock();
+    try {
+      return _stopEntriesById.get(id);
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   @Override
   public TripEntryImpl getTripEntryForId(AgencyAndId id) {
-    return _tripEntriesById.get(id);
+    _lock.readLock().lock();
+    try {
+      return _tripEntriesById.get(id);
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   @Override
+  public boolean deleteTripEntryForId(AgencyAndId id) {
+    _lock.writeLock().lock();
+    try {
+      TripEntryImpl tripEntry = _tripEntriesById.get(id);
+      if (tripEntry != null) {
+        _trips.remove(tripEntry);
+        return _tripEntriesById.remove(id) != null;
+      }
+      return false;
+    } finally {
+      _lock.writeLock().unlock();
+    }
+  }
+  public boolean deleteStopTime(AgencyAndId tripId, AgencyAndId stopId) {
+    _lock.writeLock().lock();
+    try {
+      TripEntryImpl tripEntry = _tripEntriesById.get(tripId);
+      StopTimeEntry found = null;
+      if (tripEntry != null) {
+        for (StopTimeEntry ste : tripEntry.getStopTimes()) {
+          if (ste.getStop().getId().equals(stopId)) {
+            found = ste;
+          }
+        }
+      }
+      if (found != null) {
+        return tripEntry.getStopTimes().remove(found);
+      }
+      return false;
+    } finally {
+      _lock.writeLock().unlock();
+    }
+  }
+  @Override
   public BlockEntry getBlockEntryForId(AgencyAndId blockId) {
-    return _blockEntriesById.get(blockId);
+    _lock.readLock().lock();
+    try {
+      return _blockEntriesById.get(blockId);
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   @Override
   public RouteCollectionEntry getRouteCollectionForId(AgencyAndId id) {
-    return _routeCollectionEntriesById.get(id);
+    _lock.readLock().lock();
+    try {
+      return _routeCollectionEntriesById.get(id);
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   @Override
   public RouteEntryImpl getRouteForId(AgencyAndId id) {
-    return _routeEntriesById.get(id);
+    _lock.readLock().lock();
+    try {
+      return _routeEntriesById.get(id);
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   @Override
   public List<StopEntry> getStopsByLocation(CoordinateBounds bounds) {
-    if (_stopLocationTree == null)
-      return Collections.emptyList();
-    Envelope r = new Envelope(bounds.getMinLon(), bounds.getMaxLon(),
-        bounds.getMinLat(), bounds.getMaxLat());
-    StopRTreeVisitor go = new StopRTreeVisitor();
-    _stopLocationTree.query(r, go);
-    return go.getStops();
+    _lock.readLock().lock();
+    try {
+      if (_stopLocationTree == null)
+        return Collections.emptyList();
+      Envelope r = new Envelope(bounds.getMinLon(), bounds.getMaxLon(),
+              bounds.getMinLat(), bounds.getMaxLat());
+      StopRTreeVisitor go = new StopRTreeVisitor();
+      _stopLocationTree.query(r, go);
+      return new ArrayList<StopEntry>(go.getStops());
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   private class StopRTreeVisitor implements ItemVisitor {

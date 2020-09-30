@@ -155,4 +155,14 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   public RouteEntry getRouteForId(AgencyAndId id) {
     return _graph.getRouteForId(id);
   }
+
+  @Override
+  public boolean deleteTripEntryForId(AgencyAndId id) {
+    return _graph.deleteTripEntryForId(id);
+  }
+
+  @Override
+  public boolean deleteStopTime(AgencyAndId tripId, AgencyAndId stopId) {
+    return _graph.deleteStopTime(tripId, stopId);
+  }
 }
