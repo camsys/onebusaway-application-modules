@@ -414,7 +414,6 @@ public class GtfsServiceChangesStopTimeTest {
         assertEquals(1, blockEntry.getConfigurations().size());
         assertEquals(2, blockEntry.getConfigurations().get(0).getStopTimes().size());
 
-
         assertEquals(1, _dao.getAllTrips().size());
         assertNotNull(_dao.getTripEntryForId(aid("tripA")));
         assertNotNull(_dao.getAllTrips().get(0));
@@ -482,7 +481,7 @@ public class GtfsServiceChangesStopTimeTest {
         assertEquals(0, _dao.getAllReferencedShapeIds().size());
         TripEntryImpl tripA1 = (TripEntryImpl) _dao.getTripEntryForId(aid("tripA"));
         tripA1.setShapeId(aid("shape1"));
-        _dao.updateTripEntry(tripA1);
+        _dao.updateStopTimesForTrip(tripA1, tripA1.getStopTimes(), aid("shape1"));
 
         assertEquals(1, _dao.getAllReferencedShapeIds().size());
 

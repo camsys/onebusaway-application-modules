@@ -130,8 +130,6 @@ public interface TransitGraphDao {
 
   public boolean addTripEntry(TripEntryImpl trip);
 
-  public boolean updateTripEntry(TripEntryImpl trip);
-
   public boolean removeTripEntry(TripEntryImpl trip);
 
   public void updateCalendarServiceData(CalendarServiceData data);

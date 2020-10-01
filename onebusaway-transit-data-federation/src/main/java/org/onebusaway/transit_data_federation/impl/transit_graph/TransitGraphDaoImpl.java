@@ -364,14 +364,6 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   }
 
   @Override
-  public boolean updateTripEntry(TripEntryImpl trip) {
-    if (_graph.getTripEntryForId(trip.getId()) != null) {
-      removeTripEntry(trip);
-    }
-    return addTripEntry(trip);
-  }
-
-  @Override
   public boolean removeTripEntry(TripEntryImpl trip) {
     if (_graph.getTripEntryForId(trip.getId()) == null) {
       return false;
