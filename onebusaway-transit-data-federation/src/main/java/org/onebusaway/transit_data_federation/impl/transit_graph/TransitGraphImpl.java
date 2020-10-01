@@ -38,7 +38,6 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -337,6 +336,17 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
   }
 
   @Override
+  public boolean addBlock(BlockEntryImpl block) {
+    // assume configs already set
+    if (getBlockEntryForId(block.getId()) != null) {
+      return false;
+    }
+    _blocks.add(block);
+    _blockEntriesById.put(block.getId(), block);
+    return true;
+  }
+
+  @Override
   public boolean addTripEntry(TripEntryImpl trip) {
     if (!valid(trip)) return false;
 
@@ -399,9 +409,7 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
         routeCollections.add(rcei);
       }
     }
-    // rebuild block indices
-    return updateBlockIndices(trip);
-
+    return true;
   }
 
   // maintain some minimum requirements to keep data structures consistent
@@ -483,17 +491,16 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
     List<BlockConfigurationEntry> newBlockConfigs = new ArrayList<BlockConfigurationEntry>();
     if (tripEntry.getBlock() == null || tripEntry.getBlock().getConfigurations() == null)
       return false;
-    boolean addedTrip = false;
-    for (BlockConfigurationEntry bce : tripEntry.getBlock().getConfigurations()) {
-      if (!bce.getServiceIds().getActiveServiceIds().contains(tripEntry.getServiceId())) {
-        newBlockConfigs.add(bce);
-        continue;
-      }
+
+    BlockEntryImpl block = _blockEntriesById.get(tripEntry.getBlock().getId());
+
+    // Update block indices to recalculate stop times
+    for (BlockConfigurationEntry bce : block.getConfigurations()) {
       BlockConfigurationEntryImpl.Builder builder = BlockConfigurationEntryImpl.builder();
       // the builder computes blockTrips
-      builder.setBlock(getBlockEntryForId(tripEntry.getBlock().getId()));
+      builder.setBlock(getBlockEntryForId(block.getId()));
       builder.setServiceIds(bce.getServiceIds());
-      ArrayList<TripEntry> mergedTrips = new ArrayList<TripEntry>();
+      ArrayList<TripEntry> mergedTrips = new ArrayList<>();
       boolean foundTrip = false;
       for (BlockTripEntry bte : bce.getTrips()) {
         if (bte != null) {
@@ -502,7 +509,6 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
               // update our trip
               foundTrip = true;
               mergedTrips.add(tripEntry);
-              addedTrip = true;
             } else {
               mergedTrips.add(bte.getTrip());
             }
@@ -511,31 +517,14 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
       }
       if (!foundTrip) {
         mergedTrips.add(tripEntry);
-        addedTrip = true;
       }
       builder.setTrips(mergedTrips);
       builder.setTripGapDistances(new double[mergedTrips.size()]);
       BlockConfigurationEntry blockConfig = builder.create();
       newBlockConfigs.add(blockConfig);
     }
-    if (!addedTrip) {
-      BlockConfigurationEntryImpl.Builder builder = BlockConfigurationEntryImpl.builder();
-      builder.setBlock(tripEntry.getBlock());
-      builder.setTrips(Collections.singletonList(tripEntry));
-      builder.setTripGapDistances(new double[]{0});
-      builder.setServiceIds(new ServiceIdActivation(tripEntry.getServiceId()));
-      newBlockConfigs.add(builder.create());
-    }
     // now replace existing block configs with our regenerated block configs
-    tripEntry.getBlock().setConfigurations(newBlockConfigs);
-    _blockEntriesById.put(tripEntry.getBlock().getId(), tripEntry.getBlock());
-    for (int i = _blocks.size()-1; i >= 0; i--) {
-      BlockEntryImpl entry = _blocks.get(i);
-      if (entry.getId().equals(tripEntry.getBlock().getId())) {
-        _blocks.set(i, tripEntry.getBlock());
-      }
-    }
-
+    block.setConfigurations(newBlockConfigs);
     return true;
   }
 

@@ -16,20 +16,21 @@
  */
 package org.onebusaway.transit_data_federation.bundle.tasks;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.ShapePoint;
+import org.onebusaway.gtfs.services.GtfsRelationalDao;
+import org.onebusaway.transit_data_federation.model.ShapePoints;
+import org.onebusaway.transit_data_federation.services.shapes.BasicShapePointService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.model.ShapePoint;
-import org.onebusaway.gtfs.services.GtfsRelationalDao;
-import org.onebusaway.transit_data_federation.model.ShapePoints;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 @Component
-public class ShapePointHelper {
+public class ShapePointHelperDaoImpl implements BasicShapePointService {
 
   private GtfsRelationalDao _gtfsDao;
 
@@ -40,6 +41,7 @@ public class ShapePointHelper {
     _gtfsDao = gtfsDao;
   }
 
+  @Override
   public ShapePoints getShapePointsForShapeId(AgencyAndId shapeId) {
 
     ShapePoints shapePoints = _cache.get(shapeId);
