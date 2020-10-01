@@ -30,6 +30,7 @@ import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.services.EntityIdService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
@@ -44,6 +45,7 @@ import com.google.transit.realtime.GtfsRealtime.TripUpdate;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate.StopTimeEvent;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate.StopTimeUpdate;
 import com.google.transit.realtime.GtfsRealtimeConstants;
+import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 
 
 import org.junit.Before;
@@ -56,11 +58,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.aid;
+
 public class GtfsRealtimeTripLibraryTest {
 
   private GtfsRealtimeTripLibrary _library;
-  private GtfsRealtimeEntitySource _entitySource;
+  private EntityIdService _entityIdService;
   private BlockCalendarService _blockCalendarService;
+  private TransitGraphDao _transitGraphDao;
 
   @Before
   public void before() {
@@ -70,6 +75,10 @@ public class GtfsRealtimeTripLibraryTest {
     _library.setValidateCurrentTime(false);  // tell library its a test
     _entitySource = Mockito.mock(GtfsRealtimeEntitySource.class);
     _library.setEntitySource(_entitySource);
+    _entityIdService = Mockito.mock(EntityIdService.class);
+    _library.setEntityIdService(_entityIdService);
+    _transitGraphDao = Mockito.mock(TransitGraphDao.class);
+    _library.setTransitGraphDao(_transitGraphDao);
 
     _blockCalendarService = Mockito.mock(BlockCalendarService.class);
     _library.setBlockCalendarService(_blockCalendarService);
@@ -102,10 +111,15 @@ public class GtfsRealtimeTripLibraryTest {
     stopTime(2, stopA, tripC, time(8, 30), 0.0);
     stopTime(3, stopB, tripD, time(9, 30), 0.0);
 
-    Mockito.when(_entitySource.getTrip("tripA")).thenReturn(tripA);
-    Mockito.when(_entitySource.getTrip("tripB")).thenReturn(tripB);
-    Mockito.when(_entitySource.getTrip("tripC")).thenReturn(tripC);
-    Mockito.when(_entitySource.getTrip("tripD")).thenReturn(tripD);
+    Mockito.when(_entityIdService.getTripId("tripA")).thenReturn(aid("1_tripA"));
+    Mockito.when(_entityIdService.getTripId("tripB")).thenReturn(aid("1_tripB"));
+    Mockito.when(_entityIdService.getTripId("tripC")).thenReturn(aid("1_tripC"));
+    Mockito.when(_entityIdService.getTripId("tripD")).thenReturn(aid("1_tripD"));
+
+    Mockito.when(_transitGraphDao.getTripEntryForId(aid("1_tripA"))).thenReturn(tripA);
+    Mockito.when(_transitGraphDao.getTripEntryForId(aid("1_tripB"))).thenReturn(tripB);
+    Mockito.when(_transitGraphDao.getTripEntryForId(aid("1_tripC"))).thenReturn(tripC);
+    Mockito.when(_transitGraphDao.getTripEntryForId(aid("1_tripD"))).thenReturn(tripD);
 
     BlockEntryImpl blockA = block("blockA");
     BlockEntryImpl blockB = block("blockB");

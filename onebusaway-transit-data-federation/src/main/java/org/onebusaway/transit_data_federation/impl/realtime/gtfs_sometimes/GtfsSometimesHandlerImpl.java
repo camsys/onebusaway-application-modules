@@ -30,9 +30,7 @@ import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.ShapePoint;
 import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
-import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeEntitySource;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.StopChange;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChange;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
@@ -44,7 +42,7 @@ import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.narrative.RouteCollectionNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.StopNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
-import org.onebusaway.transit_data_federation.services.AgencyService;
+import org.onebusaway.transit_data_federation.services.EntityIdService;
 import org.onebusaway.transit_data_federation.services.StopTimeService;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
@@ -57,7 +55,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -78,19 +75,13 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     private TransitGraphDao _dao;
 
-    private List<String> _agencyIds = new ArrayList<>();
-
-    private AgencyService _agencyService;
-
-    private GtfsRealtimeEntitySource _entitySource;
+    private EntityIdService _entityIdService;
 
     private NarrativeService _narrativeService;
 
     private RefreshService _refreshService;
 
     private StopTimeService _stopTimeService;
-
-    private CalendarService _calendarService;
 
     private CacheableMethodManager _cacheableMethodManager;
 
@@ -109,11 +100,6 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     }
 
     @Autowired
-    public void setAgencyService(AgencyService agencyService) {
-        _agencyService = agencyService;
-    }
-
-    @Autowired
     public void setNarrativeService(NarrativeService narrativeService) {
         _narrativeService = narrativeService;
     }
@@ -129,8 +115,8 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     }
 
     @Autowired
-    public void setCalendarService(CalendarService calendarService) {
-        _calendarService = calendarService;
+    public void setEntityIdService(EntityIdService entityIdService) {
+        _entityIdService = entityIdService;
     }
 
     @Autowired
@@ -145,43 +131,12 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         _cacheableAnnotationInterceptor = cacheableAnnotationInterceptor;
     }
 
-    public void setAgencyId(String agencyId) {
-        _agencyIds = Collections.singletonList(agencyId);
-    }
-
-    public void setAgencyIds(List<String> agencyIds) {
-        _agencyIds = agencyIds;
-    }
-
-    public void setEntitySource(GtfsRealtimeEntitySource entitySource) {
-        _entitySource = entitySource;
-    }
-
     public void setTime(long time) {
         _time = time;
     }
 
     public void setTimeZone(ZoneId timeZone) {
         _timeZone = timeZone;
-    }
-
-    @PostConstruct
-    public void init() {
-        // Borrowed from GtfsRealtimeSource. TODO - make this behavior reusbale.
-        if (_agencyIds.isEmpty()) {
-            _log.info("no agency ids specified for GtfsSometimesHandlerImpl, so defaulting to full agency id set");
-            List<String> agencyIds = _agencyService.getAllAgencyIds();
-            _agencyIds.addAll(agencyIds);
-            if (_agencyIds.size() > 3) {
-                _log.warn("The default agency id set is quite large (n="
-                        + _agencyIds.size()
-                        + ").  You might consider specifying the applicable agencies for your GtfsSometimesHandlerImpl.");
-            }
-        }
-        _entitySource = new GtfsRealtimeEntitySource();
-        _entitySource.setAgencyIds(_agencyIds);
-        _entitySource.setTransitGraphDao(_dao);
-        _entitySource.setCalendarService(_calendarService);
     }
 
     @Override
@@ -288,7 +243,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                     shapePoints.setLats(lat);
                     shapePoints.setLons(lon);
                     shapePoints.setDistTraveled(distTraveled);
-                    AgencyAndId shapeId = new AgencyAndId(_agencyIds.iterator().next(), shapeList.get(0).getShapeId());
+                    AgencyAndId shapeId = _entityIdService.getShapeId(shapeList.get(0).getShapeId());
                     shapePoints.setShapeId(shapeId);
                     shapePoints.ensureDistTraveled();
                     shapePointsList.add(shapePoints);
@@ -334,7 +289,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                         for (EntityDescriptor desc : serviceChange.getAffectedEntity()) {
                             String tripId = desc.getTripId();
                             if (tripId != null) {
-                                AgencyAndId shape = _entitySource.getObaShapeId(shapeId);
+                                AgencyAndId shape = _entityIdService.getShapeId(shapeId);
                                 changesByTrip.computeIfAbsent(tripId, TripChange::new).setNewShapeId(shape);
                             }
                         }
@@ -395,7 +350,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                 // So just make sure a TripChange object is created
                 StopsFields stopsFields = (StopsFields) serviceChange.getAffectedField().get(0);
                 String bareStopId = serviceChange.getAffectedEntity().get(0).getStopId();
-                AgencyAndId stopId = _entitySource.getObaStopId(bareStopId);
+                AgencyAndId stopId = _entityIdService.getStopId(bareStopId);
                 if (stopsFields.getStopLat() != null || stopsFields.getStopLon() != null) {
                     for (DateDescriptor date : serviceChange.getAffectedDates()) {
                         for (AgencyAndId tripId : getTripsForStopAndDateRange(stopId, date)) {
@@ -466,7 +421,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     private boolean handleTripChanges(TripChange change) {
         String trip = change.getTripId();
-        AgencyAndId tripId = _entitySource.getObaTripId(trip);
+        AgencyAndId tripId = _entityIdService.getTripId(trip);
         TripEntryImpl tripEntry;
         List<StopTimeEntry> stopTimes;
         if (change.isAdded()) {
@@ -515,7 +470,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
         Set<AgencyAndId> stopsToRemove = new HashSet<>();
         for (EntityDescriptor descriptor : change.getDeletedStops()) {
-            AgencyAndId stopId = _entitySource.getObaStopId(descriptor.getStopId());
+            AgencyAndId stopId = _entityIdService.getStopId(descriptor.getStopId());
             stopsToRemove.add(stopId);
         }
         if (!stopsToRemove.isEmpty()) {
@@ -527,7 +482,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         // Alter - only support changing arrival time/departure time
 
         for (StopTimesFields stopTimesFields : change.getModifiedStops()) {
-            AgencyAndId stopId = _entitySource.getObaStopId(stopTimesFields.getStopId());
+            AgencyAndId stopId = _entityIdService.getStopId(stopTimesFields.getStopId());
             for (int i = 0; i < stopTimes.size(); i++) {
                 StopTimeEntry stopTime = stopTimes.get(i);
                 if (stopTime.getStop().getId().equals(stopId)) {
@@ -543,7 +498,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         // Inserted stops
 
         for (StopTimesFields stopTimesFields : change.getInsertedStops()) {
-            AgencyAndId stopId = _entitySource.getObaStopId(stopTimesFields.getStopId());
+            AgencyAndId stopId = _entityIdService.getStopId(stopTimesFields.getStopId());
             StopEntryImpl stopEntry = (StopEntryImpl) _dao.getStopEntryForId(stopId);
             Double shapeDistanceTravelled = stopTimesFields.getShapeDistTraveled();
             int arrivalTime = stopTimesFields.getArrivalTime();
@@ -580,7 +535,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     }
 
     private boolean handleStopChange(StopChange change) {
-        AgencyAndId stopId = _entitySource.getObaStopId(change.getStopId());
+        AgencyAndId stopId = _entityIdService.getStopId(change.getStopId());
         StopEntry oldStopEntry = _dao.getStopEntryForId(stopId);
         StopNarrative narrative = _narrativeService.removeStop(stopId);
         String stopName = change.hasStopName() ? change.getStopName() : narrative.getName();
@@ -636,7 +591,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
             builder.setTripShortName(fields.getTripShortName());
         }
         if (fields.getRouteId() != null) {
-            AgencyAndId routeId = _entitySource.getObaRouteId(fields.getRouteId());
+            AgencyAndId routeId = _entityIdService.getRouteId(fields.getRouteId());
             RouteCollectionNarrative routeNarrative = _narrativeService.getRouteCollectionForId(routeId);
             builder.setRouteShortName(routeNarrative.getShortName());
         }
@@ -645,9 +600,9 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     private TripEntryImpl convertTripFieldsToTripEntry(TripsFields fields) {
         TripEntryImpl trip = new TripEntryImpl();
-        String agencyId = _entitySource.getDefaultAgencyId();
+        String agencyId = _entityIdService.getDefaultAgencyId();
         if (fields.getRouteId() != null) {
-            AgencyAndId routeId = _entitySource.getObaRouteId(fields.getRouteId());
+            AgencyAndId routeId = _entityIdService.getRouteId(fields.getRouteId());
             RouteEntry routeEntry = _dao.getRouteForId(routeId);
             trip.setRoute((RouteEntryImpl) routeEntry);
             agencyId = routeId.getAgencyId();
@@ -657,11 +612,11 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
         trip.setId(tripId);
 
         if (fields.getShapeId() != null) {
-            AgencyAndId shapeId = _entitySource.getObaShapeId(fields.getShapeId());
+            AgencyAndId shapeId = _entityIdService.getShapeId(fields.getShapeId());
             trip.setShapeId(shapeId);
         }
         if (fields.getServiceId() != null) {
-            AgencyAndId serviceId = _entitySource.getObaServiceId(fields.getServiceId());
+            AgencyAndId serviceId = _entityIdService.getServiceId(fields.getServiceId());
             trip.setServiceId(new LocalizedServiceId(serviceId, TimeZone.getDefault()));
         }
         BlockEntryImpl blockEntry = null;

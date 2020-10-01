@@ -121,6 +121,10 @@ public class GtfsSometimesClientIntegrationTest {
             assertTrue(_graph.addAgencyEntry(aei));
         }
 
+        AgencyEntryImpl defaultAgency = new AgencyEntryImpl();
+        defaultAgency.setId("MTA");
+        assertTrue(_graph.addAgencyEntry(defaultAgency));
+
         for (AgencyAndId shapeId : dao.getAllShapeIds()) {
             List<ShapePoint> points = new ArrayList<>(dao.getShapePointsForShapeId(shapeId));
             points.sort(Comparator.comparingInt(ShapePoint::getSequence));

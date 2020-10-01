@@ -47,15 +47,8 @@
     </bean>
 
 
-    <bean class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.GtfsSometimesHandlerImpl">
-        <property name="agencyIds">
-            <list>
-                <value>MTA NYCT</value>
-                <value>MTA</value>
-            </list>
-        </property>
-    </bean>
-
+    <bean class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.GtfsSometimesHandlerImpl" />
+    
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
             <props>
