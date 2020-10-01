@@ -18,13 +18,17 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes;
 import com.camsys.transit.servicechange.DateDescriptor;
 import com.camsys.transit.servicechange.EntityDescriptor;
 import com.camsys.transit.servicechange.ServiceChange;
-import com.camsys.transit.servicechange.ServiceChangeType;
 import com.camsys.transit.servicechange.field_descriptors.AbstractFieldDescriptor;
+import com.camsys.transit.servicechange.field_descriptors.ShapesFields;
 import com.camsys.transit.servicechange.field_descriptors.StopTimesFields;
+import com.camsys.transit.servicechange.field_descriptors.TripsFields;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeEntitySource;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphDaoImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.AgencyService;
+import org.onebusaway.transit_data_federation.services.shapes.ShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -39,8 +43,10 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
@@ -51,6 +57,8 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     private AgencyService _agencyService;
 
     private GtfsRealtimeEntitySource _entitySource;
+
+    private ShapePointService _shapePointsService;
 
     // for debugging
     private long _time = -1;
@@ -65,6 +73,11 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     @Autowired
     public void setAgencyService(AgencyService agencyService) {
         _agencyService = agencyService;
+    }
+
+    @Autowired
+    public void setShapePointsService(ShapePointService shapePointsService) {
+        _shapePointsService = shapePointsService;
     }
 
     public void setAgencyId(String agencyId) {
@@ -123,14 +136,22 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                 case STOPS:
                 case ROUTES:
                 case TRIPS:
+                    if (handleTripsChange(serviceChange)) {
+                        nSuccess++;
+                    }
                 case SHAPES:
+                    if (handleShapesChange(serviceChange)) {
+                        nSuccess++;
+                    }
                 case TRANSFERS:
                 default:
                     _log.error("Table not implemented: {}", serviceChange.getTable());
             }
         }
 
-        forceFlush();
+        if (nSuccess > 0) {
+            forceFlush();
+        }
         return nSuccess;
     }
 
@@ -268,6 +289,83 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
                 }
             }
             break;
+        }
+        return success;
+    }
+
+    private boolean handleShapesChange(ServiceChange change) {
+        switch(change.getServiceChangeType()) {
+            case ADD:
+                return handleAddShapesChange(change);
+            case ALTER:
+                _log.info("Alter shape not supported");
+            case DELETE:
+                _log.info("Delete shape not supported");
+            default:
+                return false;
+        }
+    }
+
+    private boolean handleAddShapesChange(ServiceChange change) {
+        Collection<List<ShapesFields>> shapesListCollection = change.getAffectedField().stream()
+                .filter(ShapesFields.class::isInstance)
+                .map(ShapesFields.class::cast)
+                .collect(Collectors.groupingBy(ShapesFields::getShapeId))
+                .values();
+
+        for (List<ShapesFields> shapeList : shapesListCollection) {
+            int nPoints = shapeList.size();
+            double[] lat = new double[nPoints];
+            double[] lon = new double[nPoints];
+            double[] distTraveled = new double[nPoints];
+            shapeList.sort(Comparator.comparingInt(ShapesFields::getShapePtSequence));
+            int i = 0;
+            for (ShapesFields fields : shapeList) {
+                lat[i] = fields.getShapePtLat();
+                lon[i] = fields.getShapePtLon();
+                if (fields.getShapeDistTraveled() != null) {
+                    distTraveled[i] = fields.getShapeDistTraveled();
+                }
+                i++;
+            }
+            ShapePoints shapePoints = new ShapePoints();
+            shapePoints.setLats(lat);
+            shapePoints.setLons(lon);
+            shapePoints.setDistTraveled(distTraveled);
+            AgencyAndId shapeId = new AgencyAndId(_agencyIds.iterator().next(), shapeList.get(0).getShapeId());
+            shapePoints.setShapeId(shapeId);
+            shapePoints.ensureDistTraveled();
+            _shapePointsService.addShape(shapePoints);
+        }
+
+        return true;
+    }
+
+    private boolean handleTripsChange(ServiceChange change) {
+        switch(change.getServiceChangeType()) {
+            case ADD:
+                _log.info("Add trip not supported");
+            case ALTER:
+                return handleAlterTrip(change);
+            case DELETE:
+                _log.info("Delete trip not supported");
+            default:
+                return false;
+        }
+    }
+
+    private boolean handleAlterTrip(ServiceChange change) {
+        TripsFields field = (TripsFields) change.getAffectedField().get(0);
+        if (field.getShapeId() == null) {
+            _log.info("Only alter trip shape supported");
+            return false;
+        }
+        AgencyAndId shapeId = _entitySource.getObaShapeId(field.getShapeId());
+        boolean success = true;
+        for (EntityDescriptor entityDescriptor : change.getAffectedEntity()) {
+            AgencyAndId tripId = _entitySource.getObaTripId(entityDescriptor.getTripId());
+            TripEntry trip = _dao.getTripEntryForId(tripId);
+            success &= _dao.updateShapeForTrip((TripEntryImpl) trip, shapeId);
         }
         return success;
     }

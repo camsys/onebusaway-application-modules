@@ -21,7 +21,9 @@ import com.camsys.transit.servicechange.ServiceChange;
 import com.camsys.transit.servicechange.ServiceChangeType;
 import com.camsys.transit.servicechange.Table;
 import com.camsys.transit.servicechange.field_descriptors.AbstractFieldDescriptor;
+import com.camsys.transit.servicechange.field_descriptors.ShapesFields;
 import com.camsys.transit.servicechange.field_descriptors.StopTimesFields;
+import com.camsys.transit.servicechange.field_descriptors.TripsFields;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -34,6 +36,12 @@ public class ServiceChangeUnitTestingSupport {
         EntityDescriptor desc = new EntityDescriptor();
         desc.setTripId(tripId);
         desc.setStopId(stopId);
+        return desc;
+    }
+
+    public static EntityDescriptor tripEntity(String tripId) {
+        EntityDescriptor desc = new EntityDescriptor();
+        desc.setTripId(tripId);
         return desc;
     }
 
@@ -84,6 +92,15 @@ public class ServiceChangeUnitTestingSupport {
     public static List<AbstractFieldDescriptor> stopTimesFieldsList(String tripId, LocalTime arrivalTime, LocalTime departureTime,
                                                             String stopId, int stopSequence) {
         return Collections.singletonList(stopTimesFieldDescriptor(tripId, arrivalTime, departureTime, stopId, stopSequence));
+    }
+
+    public static ShapesFields shapeFields(String shapeId, double lat, double lon, int sequence) {
+        ShapesFields fields = new ShapesFields();
+        fields.setShapeId(shapeId);
+        fields.setShapePtLat(lat);
+        fields.setShapePtLon(lon);
+        fields.setShapePtSequence(sequence);
+        return fields;
     }
 
     public static ServiceChange serviceChange(Table table, ServiceChangeType type, List<EntityDescriptor> entities,

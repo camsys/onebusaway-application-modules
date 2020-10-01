@@ -18,6 +18,8 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime;
 import com.camsys.transit.servicechange.ServiceChange;
 import com.camsys.transit.servicechange.ServiceChangeType;
 import com.camsys.transit.servicechange.Table;
+import com.camsys.transit.servicechange.field_descriptors.AbstractFieldDescriptor;
+import com.camsys.transit.servicechange.field_descriptors.TripsFields;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,8 +27,8 @@ import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
 import org.onebusaway.gtfs.impl.calendar.CalendarServiceDataFactoryImpl;
 import org.onebusaway.gtfs.model.Agency;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.ShapePoint;
 import org.onebusaway.gtfs.model.Stop;
-import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
@@ -40,6 +42,7 @@ import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.StopTimeEntriesFactory;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.GtfsSometimesHandler;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.GtfsSometimesHandlerImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
@@ -47,13 +50,14 @@ import org.onebusaway.transit_data_federation.impl.transit_graph.BlockConfigurat
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphDaoImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.beans.TripBeanService;
 import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
-import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
-import org.onebusaway.transit_data_federation.testing.UnitTestingSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,6 +74,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,10 +102,14 @@ public class GtfsSometimesClientIntegrationTest {
     @Autowired
     private TripBeanService _tripBeanService;
 
+    @Autowired
+    private StopTimeEntriesFactory _stopTimesEntriesFactory;
+
     private static final Logger _log = LoggerFactory.getLogger(GtfsSometimesClientIntegrationTest.class);
 
     @Before
     public void loadGtfsData() throws IOException {
+
         GtfsReader reader = new GtfsReader();
         String path = getClass().getResource("/gtfs_sometimes/gtfs_staten_island_S86.zip").getPath();
         reader.setDefaultAgencyId("MTA");
@@ -113,6 +122,28 @@ public class GtfsSometimesClientIntegrationTest {
             AgencyEntryImpl aei = new AgencyEntryImpl();
             aei.setId(agency.getId());
             assertTrue(_graph.addAgencyEntry(aei));
+        }
+
+        for (AgencyAndId shapeId : dao.getAllShapeIds()) {
+            List<ShapePoint> points = new ArrayList<>(dao.getShapePointsForShapeId(shapeId));
+            points.sort(Comparator.comparingInt(ShapePoint::getSequence));
+            int size = points.size();
+            double[] lat = new double[size];
+            double[] lon = new double[size];
+            double[] distance = new double[size];
+            for (int i = 0; i < size; i++) {
+                ShapePoint pt = points.get(i);
+                lat[i] = pt.getLat();
+                lon[i] = pt.getLon();
+                distance[i] = pt.getDistTraveled();
+            }
+            ShapePoints shapePoints = new ShapePoints();
+            shapePoints.setLats(lat);
+            shapePoints.setLons(lon);
+            shapePoints.setShapeId(shapeId);
+            shapePoints.setDistTraveled(distance);
+            shapePoints.ensureDistTraveled();
+            assertTrue(_graph.addShape(shapePoints));
         }
 
         Map<String, StopEntryImpl> stopById = new HashMap<>();
@@ -133,6 +164,7 @@ public class GtfsSometimesClientIntegrationTest {
             tei.setId(trip.getId());
             tei.setDirectionId(trip.getDirectionId());
             tei.setServiceId(lsi);
+            tei.setShapeId(trip.getShapeId());
             BlockEntryImpl bei = new BlockEntryImpl();
             bei.setId(trip.getId());
             bei.setConfigurations(new ArrayList<>());
@@ -144,14 +176,10 @@ public class GtfsSometimesClientIntegrationTest {
             rei.getTrips().add(tei);
             rei.setId(trip.getRoute().getId());
             tei.setRoute(rei);
-            List<StopTimeEntry> stopTimes = new ArrayList<>();
-            for (StopTime stopTime : dao.getStopTimesForTrip(trip)) {
-                String stopId = stopTime.getStop().getId().getId();
-                stopTimes.add(UnitTestingSupport.stopTime(stopTime.getId(), stopById.get(stopId), tei,
-                        stopTime.getArrivalTime(), stopTime.getDepartureTime(), (int) Math.round(stopTime.getShapeDistTraveled()),
-                        -1, stopTime.getStopSequence()));
-            }
-            tei.setStopTimes(stopTimes);
+            ShapePoints shape = _graph.getShape(trip.getShapeId());
+            List<StopTimeEntryImpl> stopTimes = _stopTimesEntriesFactory.processStopTimes(((TransitGraphDaoImpl) _graph).getGraph(),
+                    dao.getStopTimesForTrip(trip), tei, shape);
+            tei.setStopTimes(new ArrayList<>(stopTimes));
             builder.setBlock(bei);
             builder.setTrips(Collections.singletonList(tei));
             builder.setTripGapDistances(new double[] { 0 });
@@ -376,6 +404,62 @@ public class GtfsSometimesClientIntegrationTest {
         assertEquals(time(16, 47, 58), next.getDepartureTime());
     }
 
+    @Test
+    @DirtiesContext
+    public void testAlterTripChangeShape() {
+        TripDetailsBean tripDetails = getTripDetails("CA_G8-Weekday-096000_MISC_545");
+
+        //sneak in a detour between shape points 98 and 99 (stops 200184 and 200185)
+        AgencyAndId oldShapeId = AgencyAndId.convertFromString(tripDetails.getTrip().getShapeId());
+        ShapePoints oldShapePoints = _graph.getShape(oldShapeId);
+        int j = 0;
+        List<AbstractFieldDescriptor> newShapeFields = new ArrayList<>();
+        for (int i = 0; i < oldShapePoints.getSize(); i++) {
+            newShapeFields.add(shapeFields("newShape", oldShapePoints.getLatForIndex(i), oldShapePoints.getLonForIndex(i), j));
+            j++;
+            if (i == 98) {
+                // Added points: 40.626795, -74.074144; 40.626111, -74.073972
+                newShapeFields.add(shapeFields("newShape", 40.626795, -74.074144, j));
+                j++;
+                newShapeFields.add(shapeFields("newShape", 40.626111, -74.073972, j));
+                j++;
+            }
+        }
+
+        ServiceChange addShape = serviceChange(Table.SHAPES,
+                ServiceChangeType.ADD,
+               null,
+                newShapeFields,
+                dateDescriptors(LocalDate.of(2018, 8, 10)));
+
+        TripsFields fields = new TripsFields();
+        fields.setShapeId("newShape");
+        ServiceChange alterTrip = serviceChange(Table.TRIPS,
+                ServiceChangeType.ALTER,
+                Collections.singletonList(tripEntity("CA_G8-Weekday-096000_MISC_545")),
+                Collections.singletonList(fields),
+                dateDescriptors(LocalDate.of(2018, 8, 10)));
+
+        assertEquals(2, _handler.handleServiceChanges(Arrays.asList(addShape, alterTrip)));
+
+        List<TripStopTimeBean> oldSchedule = tripDetails.getSchedule().getStopTimes();
+        List<TripStopTimeBean> newSchedule = getTripDetails("CA_G8-Weekday-096000_MISC_545").getSchedule().getStopTimes();
+
+        // skip first stop - ends up with unset shape dist.
+        for (int i = 1; i < newSchedule.size(); i++) {
+            TripStopTimeBean oldStopTime = oldSchedule.get(i);
+            TripStopTimeBean newStopTime = newSchedule.get(i);
+
+            // before stop 200184 (10th stop), distance should be the same. After, the detour has happened.
+            assertEquals(oldStopTime.getStop().getId(), newStopTime.getStop().getId());
+            if (i <= 9) {
+                assertEquals(oldStopTime.getDistanceAlongTrip(), newStopTime.getDistanceAlongTrip(), 0.001);
+            } else {
+                assertTrue(oldStopTime.getDistanceAlongTrip() < newStopTime.getDistanceAlongTrip());
+            }
+        }
+    }
+
     private TripDetailsBean getTripDetails(String tripId) {
         TripDetailsQueryBean query = new TripDetailsQueryBean();
         query.setTripId("MTA NYCT_" + tripId);
@@ -384,4 +468,6 @@ public class GtfsSometimesClientIntegrationTest {
         assertEquals(1, tripDetailsList.getList().size());
         return tripDetailsList.getList().get(0);
     }
+
+
 }

@@ -64,4 +64,7 @@
         </property>
     </bean>
 
+    <bean class="org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.StopTimeEntriesFactory" />
+    <bean class="org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.DistanceAlongShapeLibrary" />
+
 </beans>
