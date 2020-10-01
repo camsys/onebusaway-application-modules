@@ -43,7 +43,6 @@ import org.onebusaway.transit_data_federation.impl.ProjectedPointFactory;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.impl.shapes.PointAndIndex;
 import org.onebusaway.transit_data_federation.impl.shapes.ShapePointsLibrary;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
@@ -152,6 +151,22 @@ class BlockGeospatialServiceImpl implements BlockGeospatialService {
     groupBlockSequenceIndicesByShapeIds();
 
     buildShapeSpatialIndexFromBundle();
+  }
+
+  @Refreshable(dependsOn = RefreshableResources.BLOCK_INDEX_DATA_GRAPH)
+  public boolean reloadFromGraph() {
+    Map<CoordinateBounds, List<AgencyAndId>> shapeIdsByGridCell = buildShapeSpatialIndexFromGraph();
+
+    try {
+      _blockSequenceIndicesByShapeId.clear();
+      groupBlockSequenceIndicesByShapeIds();
+
+      buildShapeSpatialIndex(shapeIdsByGridCell);
+    } catch (Exception e) {
+      _log.error("rebuild of index failed", e);
+      return false;
+    }
+    return true;
   }
 
   @Override
@@ -293,39 +308,9 @@ class BlockGeospatialServiceImpl implements BlockGeospatialService {
     return best.getMinElement();
   }
 
-  // todo do something smarter here
-  public boolean addStop(StopEntryImpl stop) {
-    return rebuildFromGraph();
-  }
-
-  // todo do something smarter here
-  public boolean removeStop(AgencyAndId stopId) {
-    return rebuildFromGraph();
-  }
-
-  // todo do something smarter here
-  public boolean addShape(AgencyAndId shapeId) {
-    return rebuildFromGraph();
-  }
-
   /****
    * Private Methods
    ****/
-
-  private boolean rebuildFromGraph() {
-    Map<CoordinateBounds, List<AgencyAndId>> shapeIdsByGridCell = buildShapeSpatialIndexFromGraph();
-
-    try {
-      _blockSequenceIndicesByShapeId.clear();
-      groupBlockSequenceIndicesByShapeIds();
-
-      buildShapeSpatialIndex(shapeIdsByGridCell);
-    } catch (Exception e) {
-      _log.error("rebuild of index failed", e);
-      return false;
-    }
-    return true;
-  }
 
   private void groupBlockSequenceIndicesByShapeIds() {
     List<BlockSequenceIndex> indices = _blockIndexService.getAllBlockSequenceIndices();

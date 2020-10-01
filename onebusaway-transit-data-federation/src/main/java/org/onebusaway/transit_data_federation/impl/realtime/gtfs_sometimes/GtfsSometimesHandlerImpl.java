@@ -25,10 +25,10 @@ import com.camsys.transit.servicechange.field_descriptors.ShapesFields;
 import com.camsys.transit.servicechange.field_descriptors.StopTimesFields;
 import com.camsys.transit.servicechange.field_descriptors.StopsFields;
 import com.camsys.transit.servicechange.field_descriptors.TripsFields;
+import org.onebusaway.container.cache.CacheableMethodManager;
 import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.ShapePoint;
-import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
 import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
@@ -39,7 +39,6 @@ import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphDaoImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.narrative.RouteCollectionNarrative;
@@ -57,6 +56,7 @@ import org.onebusaway.transit_data_federation.services.tripplanner.StopTimeInsta
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.annotation.PostConstruct;
 import java.time.Instant;
@@ -94,6 +94,10 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     private StopTimeService _stopTimeService;
 
     private CalendarService _calendarService;
+
+    private CacheableMethodManager _cacheableMethodManager;
+
+    private CacheableMethodManager _cacheableAnnotationInterceptor;
 
     // for debugging
     private long _time = -1;
@@ -135,6 +139,18 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     @Autowired
     public void setCalendarService(CalendarService calendarService) {
         _calendarService = calendarService;
+    }
+
+    @Autowired
+    @Qualifier("cacheableMethodManager")
+    public void setCacheableMethodManager(CacheableMethodManager cacheableMethodManager) {
+        _cacheableMethodManager = cacheableMethodManager;
+    }
+
+    @Autowired
+    @Qualifier("cacheableAnnotationInterceptor")
+    public void setCacheableAnnotationInterceptor(CacheableMethodManager cacheableAnnotationInterceptor) {
+        _cacheableAnnotationInterceptor = cacheableAnnotationInterceptor;
     }
 
     public void setAgencyId(String agencyId) {
@@ -401,12 +417,17 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     }
 
     private void forceFlush() {
-        // TODO - this ultimately should be part of the dao methods, and will be specific to a trip.
-        if (_dao instanceof TransitGraphDaoImpl) {
-            ((TransitGraphDaoImpl) _dao).updateBlockIndices(null);
-            ((TransitGraphDaoImpl) _dao).flushCache();
+        _refreshService.refresh(RefreshableResources.BLOCK_INDEX_DATA_GRAPH);
+        try {
+            if (_cacheableMethodManager != null) {
+                _cacheableMethodManager.flush();
+            }
+            if (_cacheableAnnotationInterceptor != null) {
+                _cacheableAnnotationInterceptor.flush();
+            }
+        } catch (Throwable t) {
+            _log.error("issue flushing cache:", t);
         }
-        _refreshService.refresh(RefreshableResources.BLOCK_SHAPE_DATA);
     }
 
     private boolean validateServiceChange(ServiceChange change) {

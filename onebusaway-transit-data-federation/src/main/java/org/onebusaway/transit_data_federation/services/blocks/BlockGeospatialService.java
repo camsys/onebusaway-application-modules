@@ -20,8 +20,6 @@ import java.util.Set;
 
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 
 public interface BlockGeospatialService {
 
@@ -46,12 +44,4 @@ public interface BlockGeospatialService {
   public ScheduledBlockLocation getBestScheduledBlockLocationForLocation(
       BlockInstance blockInstance, CoordinatePoint location, long timestamp,
       double blockDistanceFrom, double blockDistanceTo);
-
-  public boolean addStop(StopEntryImpl stop);
-
-  public boolean removeStop(AgencyAndId stopId);
-
-  public boolean addShape(AgencyAndId shapeId);
-
-
 }

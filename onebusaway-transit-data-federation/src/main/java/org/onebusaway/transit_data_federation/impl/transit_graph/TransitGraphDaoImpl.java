@@ -27,13 +27,10 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
 import com.google.common.collect.Sets;
-import org.onebusaway.container.cache.CacheableMethodManager;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.exceptions.NoSuchStopServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.model.Stop;
-import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
@@ -45,7 +42,6 @@ import org.onebusaway.transit_data_federation.services.StopTimeEntriesProcessor;
 import org.onebusaway.transit_data_federation.services.beans.GeospatialBeanService;
 import org.onebusaway.transit_data_federation.services.beans.NearbyStopsBeanService;
 import org.onebusaway.transit_data_federation.services.beans.RoutesBeanService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
@@ -67,7 +63,6 @@ import org.onebusaway.utility.ObjectSerializationLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -85,8 +80,6 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
   private BlockIndexService _blockIndexService;
 
-  private BlockGeospatialService _blockGeospatialService;
-
   private ShapePointService _shapePointService;
 
   private NearbyStopsBeanService _nearbyStopsBeanService;
@@ -98,14 +91,6 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   private RevenueSearchService _revenueSearchService;
 
   private StopTimeEntriesProcessor _stopTimesFactory;
-
-  @Autowired
-  @Qualifier("cacheableMethodManager")
-  private CacheableMethodManager _cacheableMethodManager;
-
-  @Autowired
-  @Qualifier("cacheableAnnotationInterceptor")
-  public CacheableMethodManager _cacheableAnnotationInterceptor;
 
   @Autowired
   public void setBundle(FederatedTransitDataBundle bundle) {
@@ -129,12 +114,6 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   @Autowired
   public void setBlockIndexService(BlockIndexService blockIndexService) {
     _blockIndexService = blockIndexService;
-  }
-
-  @Autowired
-  public void setBlockGeospatialService(
-          BlockGeospatialService blockGeospatialService) {
-    _blockGeospatialService = blockGeospatialService;
   }
 
   @Autowired
@@ -240,8 +219,6 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   public boolean addStopEntry(StopEntryImpl stop) {
     boolean rc = _graph.addStopEntry(stop);
     if (rc)
-      rc = _blockGeospatialService.addStop(stop);
-    if (rc)
       _nearbyStopsBeanService.clearCache();
 
     if (rc)
@@ -253,8 +230,6 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   public boolean removeStopEntry(AgencyAndId stopId) {
     if (getStopEntryForId(stopId) != null) {
       boolean rc = _graph.removeStopEntry(stopId);
-      if (rc)
-        rc = _blockGeospatialService.removeStop(stopId);
       if (rc)
          _nearbyStopsBeanService.clearCache();
       if (rc)
@@ -453,20 +428,6 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
     return false;
   }
 
-  /**
-   * todo this is a serious performance penalty
-   * todosheldonabrown
-   * this needs to be redesigned to support updates not just completely rebuilding
-   *
-   * @param trip
-   * @return
-   */
-  public boolean updateBlockIndices(TripEntryImpl trip) {
-    _blockIndexService.updateBlockIndices(trip);
-    _blockGeospatialService.addShape(null);
-    return true;
-  }
-
   public void updateCalendarServiceData(CalendarServiceData data) {
     _calendarService.setData(data);
   }
@@ -488,15 +449,6 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
       }
     }
     return new ArrayList<AgencyAndId>(shapeIds);
-  }
-
-  public void flushCache() {
-    try {
-      _cacheableMethodManager.flush();
-      _cacheableAnnotationInterceptor.flush();
-    } catch (Throwable t) {
-      _log.error("issue flushing cache:", t);
-    }
   }
 
   private boolean stopHasServiceOnRouteExcludingTrip(StopEntry stop, TripEntry trip) {

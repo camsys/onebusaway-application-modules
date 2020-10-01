@@ -27,7 +27,9 @@ public final class RefreshableResources {
 
   public static final String TRANSIT_GRAPH = "transitGraph";
 
-  public static final String BLOCK_INDEX_DATA = "blockIndexData";
+  public static final String BLOCK_INDEX_DATA_BUNDLE = "blockIndexDataBundle";
+
+  public static final String BLOCK_INDEX_DATA_GRAPH = "blockShapeDataGraph";
 
   public static final String BLOCK_INDEX_SERVICE = "blockIndexService";
 
@@ -43,9 +45,6 @@ public final class RefreshableResources {
 
   // for use on non-TDS tiers
   public static final String BUNDLE_SWAP = "bundleSwap";
-
-  // Possibly could be combined with BLOCK_INDEX_DATA
-  public static final String BLOCK_SHAPE_DATA = "blockShapeData";
 
   private RefreshableResources() {
 
