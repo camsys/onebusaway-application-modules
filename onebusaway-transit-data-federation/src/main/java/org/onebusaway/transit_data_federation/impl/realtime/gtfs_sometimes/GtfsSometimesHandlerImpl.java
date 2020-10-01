@@ -24,8 +24,10 @@ import com.camsys.transit.servicechange.field_descriptors.AbstractFieldDescripto
 import com.camsys.transit.servicechange.field_descriptors.ShapesFields;
 import com.camsys.transit.servicechange.field_descriptors.StopTimesFields;
 import com.camsys.transit.servicechange.field_descriptors.TripsFields;
+import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.ShapePoint;
+import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeEntitySource;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
@@ -70,6 +72,8 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
 
     private ShapePointService _shapePointsService;
 
+    private RefreshService _refreshService;
+
     // for debugging
     private long _time = -1;
 
@@ -88,6 +92,11 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
     @Autowired
     public void setShapePointsService(ShapePointService shapePointsService) {
         _shapePointsService = shapePointsService;
+    }
+
+    @Autowired
+    public void setRefreshService(RefreshService refreshService) {
+        _refreshService = refreshService;
     }
 
     public void setAgencyId(String agencyId) {
@@ -234,6 +243,7 @@ public class GtfsSometimesHandlerImpl implements GtfsSometimesHandler {
             ((TransitGraphDaoImpl) _dao).updateBlockIndices(null);
             ((TransitGraphDaoImpl) _dao).flushCache();
         }
+        _refreshService.refresh(RefreshableResources.BLOCK_SHAPE_DATA);
     }
 
     private boolean validateServiceChange(ServiceChange change) {

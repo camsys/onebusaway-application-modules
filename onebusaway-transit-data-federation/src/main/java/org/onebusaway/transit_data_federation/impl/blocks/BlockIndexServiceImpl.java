@@ -141,7 +141,12 @@ public class BlockIndexServiceImpl implements BlockIndexService {
 
   @Override
   public List<BlockTripIndex> getBlockTripIndices() {
-    return _blockTripIndices;
+    _lock.readLock().lock();
+    try {
+      return _blockTripIndices;
+    } finally {
+      _lock.readLock().unlock();
+    }
   }
 
   @Override

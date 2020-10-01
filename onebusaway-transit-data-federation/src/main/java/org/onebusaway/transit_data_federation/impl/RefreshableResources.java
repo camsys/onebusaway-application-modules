@@ -44,6 +44,9 @@ public final class RefreshableResources {
   // for use on non-TDS tiers
   public static final String BUNDLE_SWAP = "bundleSwap";
 
+  // Possibly could be combined with BLOCK_INDEX_DATA
+  public static final String BLOCK_SHAPE_DATA = "blockShapeData";
+
   private RefreshableResources() {
 
   }
