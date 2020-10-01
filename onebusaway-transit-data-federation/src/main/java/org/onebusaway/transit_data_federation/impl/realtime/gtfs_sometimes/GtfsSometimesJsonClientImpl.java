@@ -20,6 +20,7 @@ import com.camsys.transit.servicechange.FeedEntity;
 import com.camsys.transit.servicechange.FeedIncrementality;
 import com.camsys.transit.servicechange.ServiceChange;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.onebusaway.transit_data.services.TransitDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,8 @@ public class GtfsSometimesJsonClientImpl {
 
     private GtfsSometimesHandler _gtfsSometimesHandler;
 
+    private TransitDataService _transitDataService;
+
     private ObjectMapper _mapper = new ObjectMapper();
 
     private long _lastUpdatedTimestamp = -1;
@@ -66,6 +69,11 @@ public class GtfsSometimesJsonClientImpl {
     @Autowired
     public void setGtfsSometimesHandler(GtfsSometimesHandler gtfsSometimesHandler) {
         _gtfsSometimesHandler = gtfsSometimesHandler;
+    }
+
+    @Autowired
+    public void setTransitDataService(TransitDataService transitDataService) {
+        _transitDataService = transitDataService;
     }
 
     @PostConstruct
@@ -100,13 +108,23 @@ public class GtfsSometimesJsonClientImpl {
         }
         if (_lastUpdatedTimestamp == -1) { // first update
             _log.info("First update for feed.");
+            if (feed.getFeedEntities().isEmpty()) {
+                _log.info("Feed is empty, ignoring.");
+                return;
+            }
             handleNewFeed(feed);
             _lastUpdatedTimestamp = feed.getFeedHeader().getTimestamp();
         } else if (_lastUpdatedTimestamp == feed.getFeedHeader().getTimestamp()) {
             _log.info("Feed is the same as previously processed, no action.");
         } else if (_lastUpdatedTimestamp < feed.getFeedHeader().getTimestamp()) {
-            _log.error("New feed: not implemented");
-            // TODO bundle refresh...
+            _log.info("New feed: refresh bundle...");
+            if (_transitDataService.reloadBundle()) {
+                _log.info("Update feed.");
+                handleNewFeed(feed);
+                _lastUpdatedTimestamp = feed.getFeedHeader().getTimestamp();
+            } else {
+                _log.error("Unable to refresh bundle.");
+            }
         } else {
             _log.error("Non-increasing timestamps in feed!");
         }

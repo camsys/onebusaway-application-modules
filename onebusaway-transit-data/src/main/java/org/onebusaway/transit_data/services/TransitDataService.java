@@ -613,4 +613,11 @@ public interface TransitDataService extends FederatedService {
   @FederatedByAgencyIdMethod
   public ListBean<ServiceAlertRecordBean> getAllServiceAlertRecordsForAgencyId(
 		String agencyId);
+  /**
+   * Reload the current bundle. This is helpful if the bundle is modified, e.g.
+   * for GTFS Service Changes.
+   *
+   * @return true if bundle is successfully reloaded.
+   */
+  public Boolean reloadBundle();
 }

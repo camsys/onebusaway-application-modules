@@ -656,6 +656,11 @@ public class TransitDataServiceImpl implements TransitDataService {
 public ServiceAlertBean copyServiceAlert(String agencyId,
 	      ServiceAlertBean situation) {
 	return _transitDataService.copyServiceAlert(agencyId, situation);
+  // Not implemented
+  @Override
+  public Boolean reloadBundle() {
+    return false;
+  }
 }
   
 }
