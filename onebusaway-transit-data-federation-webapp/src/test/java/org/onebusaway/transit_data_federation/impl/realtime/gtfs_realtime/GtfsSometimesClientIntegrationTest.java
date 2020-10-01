@@ -41,6 +41,7 @@ import org.onebusaway.transit_data.model.TripStopTimeBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
+import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.StopTimeEntriesFactory;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.GtfsSometimesHandler;
@@ -521,7 +522,7 @@ public class GtfsSometimesClientIntegrationTest {
         ServiceChange addTrip = serviceChange(Table.TRIPS,
                 ServiceChangeType.ADD,
                 null,
-                tripsFieldsList("tripA", "S86", "CA_C8-Weekday", "S860022"),
+                tripsFieldsList("tripA", "S86", "CA_C8-Weekday", "S860022", "my headsign"),
                 dateDescriptors(LocalDate.of(2018, 8, 23)));
 
         ServiceChange stop0 = serviceChange(Table.STOP_TIMES,
@@ -553,12 +554,16 @@ public class GtfsSometimesClientIntegrationTest {
         TripDetailsBean tripDetails = getTripDetails("tripA");
         assertEquals("MTA NYCT_S86", tripDetails.getTrip().getRoute().getId());
         assertEquals(3, tripDetails.getSchedule().getStopTimes().size());
+        assertEquals("my headsign", tripDetails.getTrip().getTripHeadsign());
+        assertEquals("S86", tripDetails.getTrip().getRouteShortName());
     }
 
     @Test
     @DirtiesContext
     public void testDeleteTrip() {
+
         String tripId = "CA_G8-Weekday-096000_MISC_545";
+
         assertNotNull(getTripDetails(tripId));
         ServiceChange change = serviceChange(Table.TRIPS,
                 ServiceChangeType.DELETE,
@@ -567,6 +572,20 @@ public class GtfsSometimesClientIntegrationTest {
                 dateDescriptors(LocalDate.of(2018, 8, 23)));
         assertTrue(_handler.handleServiceChange(change));
         assertNull(getTripDetails(tripId));
+
+        // Test some logic in RealtimeServiceImpl
+        TripsForRouteQueryBean tripRouteQueryBean = new TripsForRouteQueryBean();
+        tripRouteQueryBean.setRouteId("MTA NYCT_S86");
+        tripRouteQueryBean.setTime(dateAsLong("2018-08-23 13:30"));
+        ListBean<TripDetailsBean> listBean = _tds.getTripsForRoute(tripRouteQueryBean);
+        boolean found = false;
+        for (TripDetailsBean bean : listBean.getList()) {
+            assertNotNull(bean);
+            if (bean.getTripId().equals("MTA NYCT_" + tripId)) {
+                found = true;
+            }
+        }
+        assertFalse(found);
     }
 
     private TripDetailsBean getTripDetails(String tripId) {

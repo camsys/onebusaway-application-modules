@@ -27,6 +27,8 @@ import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChange;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockTripEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.model.StopSequence;
+import org.onebusaway.transit_data_federation.model.StopSequenceCollection;
 import org.onebusaway.transit_data_federation.services.StopTimeService;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
@@ -309,7 +311,7 @@ public class GtfsSometimesHandlerImplTest {
         ServiceChange addTrip = serviceChange(Table.TRIPS,
                 ServiceChangeType.ADD,
                 null,
-                tripsFieldsList("tripA", "routeA", "serviceA", "shapeA"),
+                tripsFieldsList("tripA", "routeA", "serviceA", "shapeA", null),
                 dateDescriptors(LocalDate.of(2018, 7, 1)));
 
         ServiceChange stop0 = serviceChange(Table.STOP_TIMES,
