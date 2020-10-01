@@ -22,9 +22,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import com.google.common.collect.Sets;
 import org.onebusaway.container.cache.CacheableMethodManager;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.exceptions.NoSuchStopServiceException;
@@ -360,16 +362,40 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   @Override
   public boolean updateStopTimesForTrip(TripEntryImpl trip, List<StopTimeEntry> stopTimeEntries, AgencyAndId shapeId) {
     if (_graph.getTripEntryForId(trip.getId()) != null) {
-      _graph.removeTripEntryForId(trip.getId());
+      AgencyAndId originalShapeId = trip.getShapeId();
       TripNarrative narrative = _narrativeService.removeTrip(trip);
       trip.setShapeId(shapeId);
 
       // recalculate distance along shape
       ShapePoints shape = getShape(shapeId);
-      List<StopTimeEntryImpl> processedStopTimeEntries = _stopTimesFactory.processStopTimeEntries(_graph, stopTimeEntries, trip, shape);
-      trip.setStopTimes(new ArrayList<>(processedStopTimeEntries));
+      List<StopTimeEntry> oldStopTimeEntries = trip.getStopTimes();
+      List<StopTimeEntryImpl> processedStopTimeEntries;
+      try {
+        processedStopTimeEntries = _stopTimesFactory.processStopTimeEntries(_graph, stopTimeEntries, trip, shape);
+      } catch (Exception ex) {
+        // reset...
+        trip.setShapeId(originalShapeId);
+        _narrativeService.addTrip(trip, narrative);
+        return false;
+      }
 
-      return addTripEntry(trip, narrative);
+      trip.setStopTimes(new ArrayList<>(processedStopTimeEntries));
+      _narrativeService.addTrip(trip, narrative);
+
+      if (!processedStopTimeEntries.equals(oldStopTimeEntries)) {
+        Set<StopEntry> oldStops = oldStopTimeEntries.stream().map(StopTimeEntry::getStop).collect(Collectors.toSet());
+        Set<StopEntry> newStops = processedStopTimeEntries.stream().map(StopTimeEntry::getStop).collect(Collectors.toSet());
+        for (StopEntry stop : Sets.difference(oldStops, newStops)) {
+          if (!stopHasServiceOnRouteExcludingTrip(stop, trip)) {
+            removeRevenueService(trip, stop.getId());
+          }
+        }
+        for (StopEntry stop : Sets.difference(newStops, oldStops)) {
+          addRevenueService(trip, stop.getId());
+        }
+      }
+
+      return _graph.updateBlockIndices(trip);
     }
     return false;
   }

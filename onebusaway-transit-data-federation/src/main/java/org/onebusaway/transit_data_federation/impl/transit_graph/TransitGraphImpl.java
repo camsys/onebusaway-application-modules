@@ -678,7 +678,8 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
    *   for each block trip entry
    *     link trip to block
    */
-  private boolean updateBlockIndices(TripEntryImpl tripEntry) {
+  @Override
+  public boolean updateBlockIndices(TripEntryImpl tripEntry) {
     List<BlockConfigurationEntry> newBlockConfigs = new ArrayList<BlockConfigurationEntry>();
     if (tripEntry.getBlock() == null || tripEntry.getBlock().getConfigurations() == null) return false;
     for (BlockConfigurationEntry bce : tripEntry.getBlock().getConfigurations()) {
@@ -736,6 +737,7 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
     stei.setArrivalTime(arrivalTime);
     stei.setDepartureTime(departureTime);
     stei.setShapeDistTraveled(shapeDistanceTravelled);
+    stei.setGtfsSequence(-999);
     return stei;
   }
 
