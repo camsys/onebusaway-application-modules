@@ -30,6 +30,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Stop;
 import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
+import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.DistanceAlongShapeLibrary.DistanceAlongShapeException;
 import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.DistanceAlongShapeLibrary.StopIsTooFarFromShapeException;
 import org.onebusaway.transit_data_federation.impl.shapes.PointAndIndex;
@@ -239,6 +240,8 @@ private void removeDuplicateStopTimes(List<StopTime> stopTimes) {
       StopTime stopTime = new StopTime();
       stopTime.setStop(new Stop());
       stopTime.getStop().setId(entry.getStop().getId());
+      stopTime.setTrip(new Trip());
+      stopTime.getTrip().setId(entry.getTrip().getId());
       stopTime.setId(entry.getId());
       stopTime.setStopSequence(entry.getGtfsSequence());
       stopTime.setDropOffType(entry.getDropOffType());
@@ -535,6 +538,10 @@ private void removeDuplicateStopTimes(List<StopTime> stopTimes) {
   private static class StopTimeComparator implements Comparator<StopTime> {
 
     public int compare(StopTime o1, StopTime o2) {
+      // GTFS service changes added stops may not have sequence value provided
+      if (o1.getStopSequence() < 0 || o2.getStopSequence() < 0) {
+        return o1.getArrivalTime() - o2.getArrivalTime();
+      }
       return o1.getStopSequence() - o2.getStopSequence();
     }
   }

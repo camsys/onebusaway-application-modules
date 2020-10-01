@@ -177,4 +177,6 @@ public interface TransitGraphDao {
   public List<AgencyAndId> getAllReferencedShapeIds();
 
   public boolean updateShapeForTrip(TripEntryImpl trip, AgencyAndId shapeId);
+
+  public boolean updateStopTimesForTrip(TripEntryImpl trip, List<StopTimeEntry> stopTimeEntries, AgencyAndId shapeId);
 }
