@@ -33,6 +33,7 @@ public class VehicleOccupancyRecord implements Serializable {
     private String directionId;
     private Integer rawCount;
     private Integer capacity;
+    private String loadDescription;
 
 
     public AgencyAndId getVehicleId() {
@@ -88,6 +89,13 @@ public class VehicleOccupancyRecord implements Serializable {
         this.capacity = capacity;
     }
 
+    public String getLoadDescription() {
+        return loadDescription;
+    }
+    public void setLoadDescription(String description) {
+        this.loadDescription = description;
+    }
+
     public String toString() {
         return "Occupancy[" + vehicleId + "]{"
                 + occupancyStatus + ":" + timestamp
@@ -103,6 +111,7 @@ public class VehicleOccupancyRecord implements Serializable {
         vor.routeId = routeId;
         vor.timestamp = timestamp;
         vor.vehicleId = vehicleId;
+        vor.loadDescription = loadDescription;
         return vor;
     }
 }
