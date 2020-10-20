@@ -77,12 +77,12 @@ public class StopOnRoute {
     return vehicleIds;
   }
 
-public Boolean getHasRealtime() {
-	return hasRealtime;
-}
+  public Boolean getHasRealtime() {
+      return hasRealtime;
+  }
 
-public void setHasRealtime(Boolean hasRealtime) {
-	this.hasRealtime = hasRealtime;
-}
+  public void setHasRealtime(Boolean hasRealtime) {
+      this.hasRealtime = hasRealtime;
+  }
 
 }
