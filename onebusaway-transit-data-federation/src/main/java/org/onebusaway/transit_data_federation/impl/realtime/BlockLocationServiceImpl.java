@@ -313,9 +313,10 @@ public class BlockLocationServiceImpl implements BlockLocationService,
       ScheduledBlockLocation scheduledBlockLocation = getScheduledBlockLocationForVehicleLocationRecord(
           record, instance);
 
-      if (!record.isScheduleDeviationSet()) {
-        int deviation = (int) ((record.getTimeOfRecord() - record.getServiceDate()) / 1000 - scheduledBlockLocation.getScheduledTime());
-        record.setScheduleDeviation(deviation);
+      if (!record.isScheduleDeviationSet()  && scheduledBlockLocation != null) {
+          Integer deviation = (int) ((record.getTimeOfRecord() - record.getServiceDate()) / 1000 - scheduledBlockLocation.getScheduledTime());
+          if (deviation != null)
+            record.setScheduleDeviation(deviation);
       }
 
       ScheduleDeviationSamples samples = null;
