@@ -26,7 +26,7 @@ import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
 public final class VehicleStatusBean implements Serializable {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 2L;
 
   private String vehicleId;
 
@@ -35,6 +35,10 @@ public final class VehicleStatusBean implements Serializable {
   private String status;
 
   private OccupancyStatus occupancyStatus;
+
+  private Integer occupancyCount;
+
+  private Integer occupancyCapacity;
 
   private long lastUpdateTime;
 
@@ -75,6 +79,22 @@ public final class VehicleStatusBean implements Serializable {
   public OccupancyStatus getOccupancyStatus() { return occupancyStatus; }
 
   public void setOccupancyStatus(OccupancyStatus occupancyStatus) { this.occupancyStatus = occupancyStatus; }
+
+  public Integer getOccupancyCount() {
+    return occupancyCount;
+  }
+
+  public void setOccupancyCount(Integer occupancyCount) {
+    this.occupancyCount = occupancyCount;
+  }
+
+  public Integer getOccupancyCapacity() {
+    return occupancyCapacity;
+  }
+
+  public void setOccupancyCapacity(Integer occupancyCapacity) {
+    this.occupancyCapacity = occupancyCapacity;
+  }
 
   public long getLastUpdateTime() {
     return lastUpdateTime;
