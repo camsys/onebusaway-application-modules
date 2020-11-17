@@ -48,7 +48,7 @@ public class VehicleOccupancyRecordCacheImplTest {
         cache.setCacheTimeoutSeconds(CACHE_TIMEOUT);
 
         AgencyAndId vehicle = new AgencyAndId("ACTA", "1111");
-        String routeId = "a1";
+        String routeId = "1_a1";
         String directionId = null;
         assertNull(cache.getRecordForVehicleIdAndRoute(vehicle, routeId, directionId));
 
