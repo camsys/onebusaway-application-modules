@@ -15,6 +15,8 @@
  */
 package org.onebusaway.presentation.services.cachecontrol;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import net.spy.memcached.AddrUtil;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
@@ -29,9 +31,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
-
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 
 public abstract class CacheService<K, V> {
 
@@ -72,7 +71,7 @@ public abstract class CacheService<K, V> {
     if (_cache == null) {
       _log.info("creating initial " + type + " cache with timeout " + timeout
           + "...");
-      _cache = Caffeine.newBuilder().expireAfterWrite(timeout,
+      _cache = CacheBuilder.newBuilder().expireAfterWrite(timeout,
           TimeUnit.SECONDS).build();
       _log.info("done");
     }
@@ -171,7 +170,7 @@ public abstract class CacheService<K, V> {
   public void logStatus() {
     _log.info(getCache().stats().toString() + "; disabled=" + _disabled
         + "; useMemcached=" + useMemcached
-        + "; Local Size=" + _cache.estimatedSize()
+        + "; Local Size=" + _cache.size()
         + "; Memcached Size=" + (memcache==null?"[null]":memcache.getStats("sizes")));
   }
 

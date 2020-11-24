@@ -15,9 +15,8 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.apc;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
@@ -93,6 +92,9 @@ public class VehicleOccupancyRecordCacheImpl implements VehicleOccupancyRecordCa
     }
 
     private String hash(AgencyAndId vehicleId, String routeId, String directionId) {
+        if (!routeId.contains("_")) { // ensure we use qualified route_id
+            routeId = new AgencyAndId(vehicleId.getAgencyId(), routeId).toString();
+        }
         return vehicleId.toString() + "." + routeId + "." + directionId;
     }
 
@@ -102,7 +104,7 @@ public class VehicleOccupancyRecordCacheImpl implements VehicleOccupancyRecordCa
 
     private Cache<String, VehicleOccupancyRecord> getRouteCache() {
         if (_routeCache == null) {
-            _routeCache = Caffeine.newBuilder()
+            _routeCache = CacheBuilder.newBuilder()
                     .expireAfterWrite(_cacheTimeoutSeconds, TimeUnit.SECONDS).build();
         }
         return _routeCache;
@@ -110,7 +112,7 @@ public class VehicleOccupancyRecordCacheImpl implements VehicleOccupancyRecordCa
 
     private Cache<AgencyAndId, VehicleOccupancyRecord> getVehicleCache() {
         if (_vehicleCache == null) {
-            _vehicleCache = Caffeine.newBuilder()
+            _vehicleCache = CacheBuilder.newBuilder()
                     .expireAfterWrite(_cacheTimeoutSeconds, TimeUnit.SECONDS).build();
         }
         return _vehicleCache;

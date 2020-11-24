@@ -29,7 +29,7 @@ import org.hibernate.cfg.Settings;
  * setting the {@link CacheManager} from an existing instance. This allows us to
  * dynamically configure out CacheManager using Spring and then pass it into
  * Hibernate.
- * 
+ *
  * Unfortunately, the EhCacheRegionFactory cannot be passed as an instance
  * object to Hibernate, but instead as a class name to be created by Hibernate
  * itself. Thus, there is no easy way to connect it the Spring application
@@ -37,11 +37,11 @@ import org.hibernate.cfg.Settings;
  * {@link #setStaticCacheManagerInstance(CacheManager)} that can be called from
  * the Spring application context config to supply the {@link CacheManager}
  * instance. It's a hack, but I don't see any way around it.
- * 
+ *
  * @author bdferris
- * 
+ *
  */
-public class EhCacheRegionFactory extends org.hibernate.cache.ehcache.EhCacheRegionFactory {
+public class EhCacheRegionFactory extends org.hibernate.cache.ehcache.internal.EhcacheRegionFactory {
 
   private static CacheManager staticCacheManagerInstance;
 
@@ -49,22 +49,12 @@ public class EhCacheRegionFactory extends org.hibernate.cache.ehcache.EhCacheReg
     staticCacheManagerInstance = cacheManager;
   }
 
-  public EhCacheRegionFactory(Properties prop) {
-    super(prop);
+  @Override
+  protected CacheManager resolveCacheManager(SessionFactoryOptions settings, Map properties) {
+    if(staticCacheManagerInstance != null){
+      return staticCacheManagerInstance;
+    }
+    return super.resolveCacheManager(settings,properties);
   }
 
-  @Override
-  public void start(SessionFactoryOptions settings, Map<String, Object> configValues)
-      throws CacheException {
-    if (staticCacheManagerInstance != null)
-      manager = staticCacheManagerInstance;
-    else
-      super.start(settings, configValues);
-  }
-
-  @Override
-  public void stop() {
-    if (staticCacheManagerInstance == null)
-      super.stop();
-  }
 }
