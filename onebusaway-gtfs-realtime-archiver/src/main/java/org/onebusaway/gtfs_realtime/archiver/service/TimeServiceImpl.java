@@ -21,9 +21,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
+import com.google.common.cache.CacheBuilder;
 import org.springframework.stereotype.Component;
-
-import com.github.benmanes.caffeine.cache.Caffeine;
 
 @Component
 public class TimeServiceImpl implements TimeService {
@@ -32,7 +31,7 @@ public class TimeServiceImpl implements TimeService {
   
   @PostConstruct
   public void init() {
-    sessions = Caffeine.newBuilder()
+    sessions = CacheBuilder.newBuilder()
       .expireAfterAccess(1, TimeUnit.DAYS)
       .<String, Session>build()
       .asMap();
