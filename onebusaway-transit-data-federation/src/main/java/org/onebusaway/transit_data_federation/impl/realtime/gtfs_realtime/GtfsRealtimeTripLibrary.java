@@ -111,9 +111,7 @@ public class GtfsRealtimeTripLibrary {
   private boolean _scheduleAdherenceFromLocation = false;
 
   private boolean _useLabelAsVehicleId = false;
-  
-  public void setEntitySource(GtfsRealtimeEntitySource entitySource) {
-    _entitySource = entitySource;
+
   public void setEntityIdService(EntityIdService entityIdService) {
     _entityIdService = entityIdService;
   }
@@ -378,17 +376,6 @@ public class GtfsRealtimeTripLibrary {
     return updates;
   }
 
-
-  private long getTripStartTime(String tripId) {
-    TripEntry tripEntry = _entitySource.getTrip(tripId);
-    long min = Long.MAX_VALUE;
-    if (tripEntry == null) return min;
-    for (StopTimeEntry stopTime : tripEntry.getStopTimes()) {
-      if (stopTime.getArrivalTime() < min)
-        min = stopTime.getArrivalTime();
-    }
-    return min;
-  }
   
   private boolean tripMoreAppropriate(TripUpdate newTrip, TripUpdate original, String vehicleId) {
     long closestTemporalUpdateNewTrip = closestTemporalUpdate(newTrip);
