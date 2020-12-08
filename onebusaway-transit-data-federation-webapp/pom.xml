@@ -18,11 +18,11 @@
       <version>${project.version}</version>
     </dependency>
 
-    <dependency>
+    <!--<dependency>
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-transit-data-federation-common</artifactId>
       <version>${project.version}</version>
-    </dependency>
+    </dependency>-->
 
     <dependency>
       <groupId>org.onebusaway</groupId>
