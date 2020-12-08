@@ -370,11 +370,6 @@ public class UnitTestingSupport {
 
   }
 
-  public static StopTimeEntryImpl stopTime(int id, StopEntryImpl stop,
-      TripEntryImpl trip, int time, double shapeDistTraveled) {
-    return stopTime(id, stop, trip, time, time, shapeDistTraveled);
-  }
-
   public static BlockConfigurationEntry blockConfiguration(BlockEntry block,
       ServiceIdActivation serviceIds, TripEntry... trips) {
     Builder builder = BlockConfigurationEntryImpl.builder();

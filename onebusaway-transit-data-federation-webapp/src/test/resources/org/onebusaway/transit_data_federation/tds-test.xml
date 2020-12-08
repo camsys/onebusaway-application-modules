@@ -52,5 +52,11 @@
         </property>
     </bean>
 
+
+   <bean id="bundleManagementService" class="org.onebusaway.transit_data_federation.impl.bundle.BundleManagementServiceMock">
+        <property name="bundleStoreRoot" value="/tmp/foo" />
+        <property name="standaloneMode" value="true" />
+    </bean>
+
     <context:component-scan base-package="org.onebusaway.transit_data_federation.bundle.tasks.transit_graph"/>
 </beans>
