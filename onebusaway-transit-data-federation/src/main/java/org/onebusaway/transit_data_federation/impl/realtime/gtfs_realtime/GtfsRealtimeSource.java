@@ -361,7 +361,6 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
     _tripsLibrary.setAgencyIds(getAgencyIds());
     _tripsLibrary.setStripAgencyPrefix(_stripAgencyPrefixesFromFeed);
     _tripsLibrary.setBlockCalendarService(_blockCalendarService);
-    _tripsLibrary.setEntitySource(_entitySource);
     if (_stopModificationStrategy != null) {
       _tripsLibrary.setStopModificationStrategy(_stopModificationStrategy);
     }

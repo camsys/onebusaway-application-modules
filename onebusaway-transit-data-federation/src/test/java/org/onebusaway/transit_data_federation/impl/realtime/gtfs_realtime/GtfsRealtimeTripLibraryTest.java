@@ -73,8 +73,7 @@ public class GtfsRealtimeTripLibraryTest {
     _library.setStripAgencyPrefix(false);
     _library.setCurrentTime(8 * 60 * 60 * 1000);
     _library.setValidateCurrentTime(false);  // tell library its a test
-    _entitySource = Mockito.mock(GtfsRealtimeEntitySource.class);
-    _library.setEntitySource(_entitySource);
+
     _entityIdService = Mockito.mock(EntityIdService.class);
     _library.setEntityIdService(_entityIdService);
     _transitGraphDao = Mockito.mock(TransitGraphDao.class);
@@ -316,9 +315,10 @@ public class GtfsRealtimeTripLibraryTest {
         serviceIds("s1"), tripA);
     BlockInstance blockInstanceA = new BlockInstance(blockConfigA, 0L);
     BlockInstance blockInstanceB = new BlockInstance(blockConfigA, day);
-    
-    Mockito.when(_entitySource.getTrip("tripA")).thenReturn(tripA);
-    
+
+    Mockito.when(_entityIdService.getTripId("tripA")).thenReturn(aid("1_tripA"));
+    Mockito.when(_transitGraphDao.getTripEntryForId(aid("1_tripA"))).thenReturn(tripA);
+
     Mockito.when(
         _blockCalendarService.getActiveBlocks(Mockito.eq(blockA.getId()),
             Mockito.anyLong(), Mockito.longThat(new ArgumentMatcher<Long>() {
@@ -371,7 +371,8 @@ public class GtfsRealtimeTripLibraryTest {
     StopTimeUpdate.Builder stopTimeUpdateBuilder = stopTimeUpdateWithScheduleRelationship("stopB", 1);
     TripUpdate.Builder tripUpdateBuilder = tripUpdate("tripA", _library.getCurrentTime(), 0, stopTimeUpdateBuilder);
 
-    Mockito.when(_entitySource.getTrip("tripA")).thenReturn(tripA);
+    Mockito.when(_entityIdService.getTripId("tripA")).thenReturn(aid("1_tripA"));
+    Mockito.when(_transitGraphDao.getTripEntryForId(aid("1_tripA"))).thenReturn(tripA);
 
     Mockito.when(
         _blockCalendarService.getActiveBlocks(Mockito.eq(blockA.getId()),
@@ -437,9 +438,10 @@ public class GtfsRealtimeTripLibraryTest {
     
     StopTimeUpdate.Builder stopTimeUpdate = stopTimeUpdateWithDepartureDelay("stopB", 180);
     TripUpdate.Builder tripUpdate = tripUpdate("tripA", _library.getCurrentTime()/1000,  120, stopTimeUpdate);
-   
-    Mockito.when(_entitySource.getTrip("tripA")).thenReturn(tripA);
-    
+
+    Mockito.when(_entityIdService.getTripId("tripA")).thenReturn(aid("1_tripA"));
+    Mockito.when(_transitGraphDao.getTripEntryForId(aid("1_tripA"))).thenReturn(tripA);
+
     Mockito.when(
         _blockCalendarService.getActiveBlocks(Mockito.eq(blockA.getId()),
             Mockito.anyLong(), Mockito.anyLong())).thenReturn(Arrays.asList(blockInstanceA));
@@ -478,9 +480,9 @@ public class GtfsRealtimeTripLibraryTest {
     
     StopTimeUpdate.Builder stopTimeUpdate = stopTimeUpdateWithDepartureDelay("stopB", 180);
     TripUpdate.Builder tripUpdate = tripUpdate("tripA", _library.getCurrentTime()/1000,  120, stopTimeUpdate);
-   
-    Mockito.when(_entitySource.getTrip("tripA")).thenReturn(tripA);
-    
+
+    Mockito.when(_entityIdService.getTripId("tripA")).thenReturn(aid("1_tripA"));
+    Mockito.when(_transitGraphDao.getTripEntryForId(aid("1_tripA"))).thenReturn(tripA);
     Mockito.when(
         _blockCalendarService.getActiveBlocks(Mockito.eq(blockA.getId()),
             Mockito.anyLong(), Mockito.anyLong())).thenReturn(Arrays.asList(blockInstanceA));
@@ -516,9 +518,9 @@ public class GtfsRealtimeTripLibraryTest {
     
     StopTimeUpdate.Builder stopTimeUpdate = stopTimeUpdateWithDepartureDelay("stopA", 180);
     TripUpdate.Builder tripUpdate = tripUpdate("tripA", _library.getCurrentTime()/1000,  120, stopTimeUpdate);
-   
-    Mockito.when(_entitySource.getTrip("tripA")).thenReturn(tripA);
-    
+
+    Mockito.when(_entityIdService.getTripId("tripA")).thenReturn(aid("1_tripA"));
+    Mockito.when(_transitGraphDao.getTripEntryForId(aid("1_tripA"))).thenReturn(tripA);
     Mockito.when(
         _blockCalendarService.getActiveBlocks(Mockito.eq(blockA.getId()),
             Mockito.anyLong(), Mockito.anyLong())).thenReturn(Arrays.asList(blockInstanceA));
@@ -564,9 +566,8 @@ public class GtfsRealtimeTripLibraryTest {
     tuA.setVehicle(vehicle("bus1"));
     tuB.setVehicle(vehicle("bus1"));
 
-    Mockito.when(_entitySource.getTrip("tripA")).thenReturn(tripA);
-    Mockito.when(_entitySource.getTrip("tripB")).thenReturn(tripB);
-
+    Mockito.when(_entityIdService.getTripId("tripA")).thenReturn(aid("1_tripA"));
+    Mockito.when(_transitGraphDao.getTripEntryForId(aid("1_tripA"))).thenReturn(tripA);
     Mockito.when(
             _blockCalendarService.getActiveBlocks(Mockito.eq(blockA.getId()),
                     Mockito.anyLong(), Mockito.anyLong())).thenReturn(Arrays.asList(blockInstanceA));

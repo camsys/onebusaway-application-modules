@@ -495,7 +495,8 @@ public class GtfsRealtimeTripLibrary {
     if (!trip.hasTripId()) {
       return null;
     }
-    AgencyAndId tripId = _entityIdService.getTripId(trip.getTripId());
+    String tripIdString = trip.getTripId();
+    AgencyAndId tripId = _entityIdService.getTripId(tripIdString);
     TripEntry tripEntry = _dao.getTripEntryForId(tripId);
     if (tripEntry == null) {
       if (result != null) {

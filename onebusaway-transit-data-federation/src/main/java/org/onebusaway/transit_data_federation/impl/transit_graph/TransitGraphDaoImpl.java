@@ -494,7 +494,7 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
             trip.getRoute().getId().toString(), directionId);
   }
 
-  public TransitGraphImpl getGraph() {
+  public TransitGraph getGraph() {
     return _graph;
   }
 }

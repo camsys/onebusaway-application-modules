@@ -16,14 +16,14 @@
 package org.onebusaway.transit_data_federation.services;
 
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
+import org.onebusaway.transit_data_federation.model.transit_graph.TransitGraph;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 
 import java.util.List;
 
 public interface StopTimeEntriesProcessor {
-    List<StopTimeEntryImpl> processStopTimeEntries(TransitGraphImpl graph,
-                                             List<StopTimeEntry> stopTimes, TripEntryImpl tripEntry, ShapePoints shapePoints);
+    List<StopTimeEntryImpl> processStopTimeEntries(TransitGraph graph,
+                                                   List<StopTimeEntry> stopTimes, TripEntryImpl tripEntry, ShapePoints shapePoints);
 }

@@ -68,6 +68,13 @@ class NearbyStopsBeanServiceImpl implements NearbyStopsBeanService {
     return (List<AgencyAndId>) element.getValue();
   }
 
+  @Override
+  public void clearCache() {
+    if (_nearbyStopsCache != null) {
+      _nearbyStopsCache.removeAll();
+    }
+  }
+
   public List<AgencyAndId> getNearbyStopsUncached(StopBean stopBean, double radius) {
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
             stopBean.getLat(), stopBean.getLon(), radius);

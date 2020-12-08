@@ -271,6 +271,7 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
     return _agencyEntriesById.get(id);
   }
 
+  @Override
   public boolean addAgencyEntry(AgencyEntryImpl agency) {
     _agencyEntriesById.put(agency.getId(), agency);
     _agencies.add(agency);

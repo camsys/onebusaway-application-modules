@@ -48,7 +48,7 @@ public class SerializedCalendarServiceDataFactoryImpl implements
   }
 
   @Override
-  public CalendarServiceData updateData(Collection<Agency> allAgencies, Collection<ServiceCalendar> calendars, Collection<ServiceCalendarDate> calendarDates, Map<AgencyAndId, List<String>> tripAgencyIdsReferencingServiceId, Map<String, TimeZone> timeZoneMapByAgencyId) {
+  public CalendarServiceData updateData(Collection<Agency> allAgencies, Map<AgencyAndId, List<String>> tripAgencyIdsReferencingServiceId, Map<String, TimeZone> timeZoneMapByAgencyId) {
     throw new IllegalStateException("unsupported operation");
   }
 
