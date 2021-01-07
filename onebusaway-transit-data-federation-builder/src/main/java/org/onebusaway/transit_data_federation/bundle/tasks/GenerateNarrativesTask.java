@@ -53,6 +53,7 @@ import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundl
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
+import org.onebusaway.transit_data_federation.services.shapes.BasicShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
@@ -93,7 +94,7 @@ public class GenerateNarrativesTask implements Runnable {
 
   private Modifications _modifications;
 
-  private ShapePointHelper _shapePointsHelper;
+  private BasicShapePointService _shapePointsService;
 
   private UniqueService _uniqueService;
 
@@ -128,8 +129,8 @@ public class GenerateNarrativesTask implements Runnable {
   }
 
   @Autowired
-  public void setShapePointHelper(ShapePointHelper shapePointHelper) {
-    _shapePointsHelper = shapePointHelper;
+  public void setShapePointService(BasicShapePointService shapePointService) {
+    _shapePointsService = shapePointService;
   }
 
   @Autowired
@@ -226,7 +227,7 @@ public class GenerateNarrativesTask implements Runnable {
       if (index % logInterval == 0)
         _log.info("shapes=" + index);
       index++;
-      ShapePoints shapePoints = _shapePointsHelper.getShapePointsForShapeId(shapeId);
+      ShapePoints shapePoints = _shapePointsService.getShapePointsForShapeId(shapeId);
       provider.setShapePointsForId(shapeId, shapePoints);
     }
   }

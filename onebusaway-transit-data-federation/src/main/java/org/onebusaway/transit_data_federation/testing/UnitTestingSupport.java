@@ -30,6 +30,8 @@ import java.util.TreeSet;
 
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.ServiceCalendar;
+import org.onebusaway.gtfs.model.ServiceCalendarDate;
 import org.onebusaway.gtfs.model.ShapePoint;
 import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
@@ -299,6 +301,17 @@ public class UnitTestingSupport {
   public static StopTimeEntryImpl stopTime(int id, StopEntryImpl stop,
       TripEntryImpl trip, int arrivalTime, int departureTime,
       double shapeDistTraveled, int shapeIndex) {
+    return stopTime(id, stop, trip, arrivalTime, departureTime, shapeDistTraveled, shapeIndex, -1);
+  }
+
+  public static StopTimeEntryImpl stopTime(int id, StopEntryImpl stop,
+      TripEntryImpl trip, int time, double shapeDistTraveled) {
+    return stopTime(id, stop, trip, time, time, shapeDistTraveled);
+  }
+
+  public static StopTimeEntryImpl stopTime(int id, StopEntryImpl stop,
+                                           TripEntryImpl trip, int arrivalTime, int departureTime,
+                                           double shapeDistTraveled, int shapeIndex, int sequence) {
 
     StopTimeEntryImpl stopTime = new StopTimeEntryImpl();
     stopTime.setId(id);
@@ -307,7 +320,12 @@ public class UnitTestingSupport {
     stopTime.setArrivalTime(arrivalTime);
     stopTime.setDepartureTime(departureTime);
     stopTime.setShapeDistTraveled(shapeDistTraveled);
-    stopTime.setShapePointIndex(shapeIndex);
+
+    if (shapeIndex > -1)
+      stopTime.setShapePointIndex(shapeIndex);
+
+    if (sequence > -1)
+      stopTime.setGtfsSequence(sequence);
 
     if (trip != null)
       addStopTime(trip, stopTime);
@@ -350,11 +368,6 @@ public class UnitTestingSupport {
     stopTime.setHistoricalOccupancy(status);
     return stopTime;
 
-  }
-
-  public static StopTimeEntryImpl stopTime(int id, StopEntryImpl stop,
-      TripEntryImpl trip, int time, double shapeDistTraveled) {
-    return stopTime(id, stop, trip, time, time, shapeDistTraveled);
   }
 
   public static BlockConfigurationEntry blockConfiguration(BlockEntry block,
@@ -503,6 +516,38 @@ public class UnitTestingSupport {
     }
 
     data.putServiceDatesForServiceId(serviceId, serviceDates);
+  }
+
+  public static ServiceCalendar calendar(AgencyAndId serviceId,
+                                        ServiceDate startDate, ServiceDate endDate, String days) {
+
+    if (days.length() != 7)
+      throw new IllegalStateException("invalid days string: " + days);
+
+    ServiceCalendar calendar = new ServiceCalendar();
+
+    calendar.setStartDate(startDate);
+    calendar.setEndDate(endDate);
+    calendar.setServiceId(serviceId);
+
+    calendar.setMonday(days.charAt(0) == '1' ? 1 : 0);
+    calendar.setTuesday(days.charAt(1) == '1' ? 1 : 0);
+    calendar.setWednesday(days.charAt(2) == '1' ? 1 : 0);
+    calendar.setThursday(days.charAt(3) == '1' ? 1 : 0);
+    calendar.setFriday(days.charAt(4) == '1' ? 1 : 0);
+    calendar.setSaturday(days.charAt(5) == '1' ? 1 : 0);
+    calendar.setSunday(days.charAt(5) == '1' ? 1 : 0);
+
+    return calendar;
+  }
+
+  public static ServiceCalendarDate calendarDate(AgencyAndId serviceId,
+                                                  ServiceDate date, int exceptionType) {
+    ServiceCalendarDate calendarDate = new ServiceCalendarDate();
+    calendarDate.setServiceId(serviceId);
+    calendarDate.setDate(date);
+    calendarDate.setExceptionType(exceptionType);
+    return calendarDate;
   }
 
 }

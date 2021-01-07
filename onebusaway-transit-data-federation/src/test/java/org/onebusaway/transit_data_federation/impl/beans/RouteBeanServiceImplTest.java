@@ -177,6 +177,11 @@ public class RouteBeanServiceImplTest {
     StopEntryImpl stopB = stop("stopB", 47.1, -122.1);
     StopEntryImpl stopC = stop("stopC", 47.2, -122.2);
 
+
+    Mockito.when(_transitGraphDao.getStopEntryForId(stopA.getId())).thenReturn(stopA);
+    Mockito.when(_transitGraphDao.getStopEntryForId(stopB.getId())).thenReturn(stopB);
+    Mockito.when(_transitGraphDao.getStopEntryForId(stopC.getId())).thenReturn(stopC);
+
     BlockEntryImpl blockA = block("blockA");
     TripEntryImpl tripA = trip("tripA", "sidA");
     TripEntryImpl tripB = trip("tripB", "sidA");

@@ -40,6 +40,7 @@ import org.onebusaway.gtfs.serialization.mappings.InvalidStopTimeException;
 import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
+import org.onebusaway.transit_data_federation.services.EntityIdService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -49,6 +50,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.util.SystemTime;
 import org.slf4j.Logger;
@@ -71,11 +73,13 @@ public class GtfsRealtimeTripLibrary {
 
   private static final Logger _log = LoggerFactory.getLogger(GtfsRealtimeTripLibrary.class);
 
-  private GtfsRealtimeEntitySource _entitySource;
+  private EntityIdService _entityIdService;
 
   private BlockCalendarService _blockCalendarService;
    
   private BlockGeospatialService _blockGeospatialService;
+
+  private TransitGraphDao _dao;
 
   private String[] _agencyIds = {};
   void setAgencyIds(List<String> agencies) {
@@ -107,13 +111,17 @@ public class GtfsRealtimeTripLibrary {
   private boolean _scheduleAdherenceFromLocation = false;
 
   private boolean _useLabelAsVehicleId = false;
-  
-  public void setEntitySource(GtfsRealtimeEntitySource entitySource) {
-    _entitySource = entitySource;
+
+  public void setEntityIdService(EntityIdService entityIdService) {
+    _entityIdService = entityIdService;
   }
 
   public void setBlockCalendarService(BlockCalendarService blockCalendarService) {
     _blockCalendarService = blockCalendarService;
+  }
+
+  public void setTransitGraphDao(TransitGraphDao dao) {
+    _dao = dao;
   }
 
   public long getCurrentTime() {
@@ -368,17 +376,6 @@ public class GtfsRealtimeTripLibrary {
     return updates;
   }
 
-
-  private long getTripStartTime(String tripId) {
-    TripEntry tripEntry = _entitySource.getTrip(tripId);
-    long min = Long.MAX_VALUE;
-    if (tripEntry == null) return min;
-    for (StopTimeEntry stopTime : tripEntry.getStopTimes()) {
-      if (stopTime.getArrivalTime() < min)
-        min = stopTime.getArrivalTime();
-    }
-    return min;
-  }
   
   private boolean tripMoreAppropriate(TripUpdate newTrip, TripUpdate original, String vehicleId) {
     long closestTemporalUpdateNewTrip = closestTemporalUpdate(newTrip);
@@ -498,7 +495,9 @@ public class GtfsRealtimeTripLibrary {
     if (!trip.hasTripId()) {
       return null;
     }
-    TripEntry tripEntry = _entitySource.getTrip(trip.getTripId());
+    String tripIdString = trip.getTripId();
+    AgencyAndId tripId = _entityIdService.getTripId(tripIdString);
+    TripEntry tripEntry = _dao.getTripEntryForId(tripId);
     if (tripEntry == null) {
       if (result != null) {
         _log.debug("discarding: reporting unmatched trip with id=" + trip.getTripId());

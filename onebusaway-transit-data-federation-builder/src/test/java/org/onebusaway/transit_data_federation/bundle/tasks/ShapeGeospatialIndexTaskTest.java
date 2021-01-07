@@ -35,6 +35,7 @@ import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.ShapePointsFactory;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
+import org.onebusaway.transit_data_federation.services.shapes.BasicShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -58,8 +59,8 @@ public class ShapeGeospatialIndexTaskTest {
     RefreshService refreshService = Mockito.mock(RefreshService.class);
     task.setRefreshService(refreshService);
 
-    ShapePointHelper shapePointHelper = Mockito.mock(ShapePointHelper.class);
-    task.setShapePointHelper(shapePointHelper);
+    BasicShapePointService shapePointService = Mockito.mock(BasicShapePointService.class);
+    task.setShapePointService(shapePointService);
 
     TransitGraphDao transitGraphDao = Mockito.mock(TransitGraphDao.class);
     task.setTransitGraphDao(transitGraphDao);
@@ -93,9 +94,9 @@ public class ShapeGeospatialIndexTaskTest {
     factory.addPoint(47.66496659665593, -122.32501375072383);
     ShapePoints shapeB = factory.create();
 
-    Mockito.when(shapePointHelper.getShapePointsForShapeId(shapeIdA)).thenReturn(
+    Mockito.when(shapePointService.getShapePointsForShapeId(shapeIdA)).thenReturn(
         shapeA);
-    Mockito.when(shapePointHelper.getShapePointsForShapeId(shapeIdB)).thenReturn(
+    Mockito.when(shapePointService.getShapePointsForShapeId(shapeIdB)).thenReturn(
         shapeB);
 
     task.run();

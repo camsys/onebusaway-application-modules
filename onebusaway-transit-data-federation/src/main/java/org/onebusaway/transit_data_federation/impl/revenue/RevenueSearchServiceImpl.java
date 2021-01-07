@@ -17,9 +17,8 @@ package org.onebusaway.transit_data_federation.impl.revenue;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -27,7 +26,6 @@ import javax.annotation.PostConstruct;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
 
-import org.onebusaway.container.cache.Cacheable;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
@@ -55,6 +53,8 @@ public class RevenueSearchServiceImpl implements RevenueSearchService {
   private Cache _stopHasRevenueServiceOnRouteCache;
 
   private Logger _log = LoggerFactory.getLogger(RevenueSearchServiceImpl.class);
+
+  private boolean _emptyMeansRevenueService = true;
 
   @PostConstruct
   @Refreshable(dependsOn = RefreshableResources.REVENUE_STOP_ROUTE_INDEX)
@@ -86,15 +86,15 @@ public class RevenueSearchServiceImpl implements RevenueSearchService {
 
     if (path.exists()) {
       _log.info("loading revenue stop route indices data");
-      _revenueStopRouteIndices = ObjectSerializationLibrary.readObject(path);
+      Map<AgencyAndId, HashSet<String>> revenueStopRouteIndices = ObjectSerializationLibrary.readObject(path);
+      _revenueStopRouteIndices = new HashMap<>(revenueStopRouteIndices);
       _log.info("revenue stop route data loaded");
 
     } else {
-      _revenueStopRouteIndices = Collections.emptyMap();
+      _revenueStopRouteIndices = new HashMap<>();
     }
   }
 
-  @Cacheable
   @Override
   public Boolean stopHasRevenueServiceOnRoute(String agencyId, String stopId,
       String routeId, String directionId) {
@@ -115,9 +115,10 @@ public class RevenueSearchServiceImpl implements RevenueSearchService {
       String routeId, String directionId) {
     AgencyAndId stop = AgencyAndIdLibrary.convertFromString(stopId);
     AgencyAndId route = AgencyAndIdLibrary.convertFromString(routeId);
-    if((_revenueStopRouteIndices.get(stop) != null && 
-        _revenueStopRouteIndices.get(stop).contains(getHash(route, directionId)))
-        || _revenueStopRouteIndices.isEmpty()){
+    if(_revenueStopRouteIndices.get(stop) != null &&
+        _revenueStopRouteIndices.get(stop).contains(getHash(route, directionId))){
+      return true;
+    } else if (_revenueStopRouteIndices.isEmpty() && _emptyMeansRevenueService) {
       return true;
     }
     return false;
@@ -128,7 +129,7 @@ public class RevenueSearchServiceImpl implements RevenueSearchService {
     if (_stopHasRevenueServiceCache == null){
       return stopHasRevenueServiceUncached(agencyId, stopId);
     }
-    String key = getCacheKey(agencyId,stopId);
+    String key = getCacheKey(agencyId, stopId);
     Element element = _stopHasRevenueServiceCache.get(stopId);
     if (element == null) {   
       Boolean value = stopHasRevenueServiceUncached(agencyId, stopId);
@@ -140,7 +141,9 @@ public class RevenueSearchServiceImpl implements RevenueSearchService {
   
   private Boolean stopHasRevenueServiceUncached(String agencyId, String stopId) {
     AgencyAndId stop = AgencyAndIdLibrary.convertFromString(stopId);
-    if(_revenueStopRouteIndices.get(stop) != null || _revenueStopRouteIndices.isEmpty()){
+    if(_revenueStopRouteIndices.get(stop) != null){
+      return true;
+    } else if (_revenueStopRouteIndices.isEmpty() && _emptyMeansRevenueService) {
       return true;
     }
     return false;
@@ -157,5 +160,48 @@ public class RevenueSearchServiceImpl implements RevenueSearchService {
   private String getCacheKey(String agencyId, String stopId, String routeId, String directionId) {
     return agencyId + "_" + stopId + "_" + routeId + "_" + directionId;
   }
-  
+
+  public void setEmptyMeansRevenueService(boolean emptyMeansRevenueService) {
+    _emptyMeansRevenueService = emptyMeansRevenueService;
+  }
+
+  @Override
+  public void addRevenueService(String agencyId, String stopId, String routeId, String directionId) {
+    AgencyAndId stop = AgencyAndIdLibrary.convertFromString(stopId);
+    AgencyAndId route = AgencyAndIdLibrary.convertFromString(routeId);
+    HashSet<String> routeDirections = _revenueStopRouteIndices.get(stop);
+    if (routeDirections == null) {
+      routeDirections = new HashSet<>();
+      _revenueStopRouteIndices.put(stop, routeDirections);
+    }
+    routeDirections.add(getHash(route, directionId));
+    clearCache(agencyId, stopId, routeId, directionId);
+  }
+
+  @Override
+  public void removeRevenueService(String agencyId, String stopId, String routeId, String directionId) {
+    AgencyAndId stop = AgencyAndIdLibrary.convertFromString(stopId);
+    AgencyAndId route = AgencyAndIdLibrary.convertFromString(routeId);
+    HashSet<String> routeDirections = _revenueStopRouteIndices.get(stop);
+    if (routeDirections == null) {
+      _log.info("Unexpected - stop already does not have revenue service here.");
+      return;
+    }
+    routeDirections.remove(getHash(route, directionId));
+    if (routeDirections.isEmpty()) {
+      _revenueStopRouteIndices.remove(stop);
+    }
+    clearCache(agencyId, stopId, routeId, directionId);
+  }
+
+  private void clearCache(String agencyId, String stopId, String routeId, String directionId) {
+    if (_stopHasRevenueServiceOnRouteCache != null) {
+      String stopRouteKey = getCacheKey(agencyId, stopId, routeId, directionId);
+      _stopHasRevenueServiceOnRouteCache.remove(stopRouteKey);
+    }
+    if (_stopHasRevenueServiceCache != null) {
+      String stopCacheKey = getCacheKey(agencyId, stopId);
+      _stopHasRevenueServiceCache.remove(stopCacheKey);
+    }
+  }
 }

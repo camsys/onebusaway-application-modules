@@ -34,6 +34,12 @@
       <version>${project.version}</version>
     </dependency>
 
+ <!--   <dependency>
+      <groupId>org.onebusaway</groupId>
+      <artifactId>onebusaway-transit-data-federation-common</artifactId>
+      <version>${project.version}</version>
+    </dependency>-->
+
     <dependency>
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-siri-core</artifactId>
@@ -112,10 +118,18 @@
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
     </dependency>
+
+    <!-- GTFS sometimes -->
     <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>14.0.1</version>
+      <groupId>com.camsys.transit</groupId>
+      <artifactId>gtfs-servicechange-bindings</artifactId>
+      <version>0.3.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.validation</groupId>
+          <artifactId>validation-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>

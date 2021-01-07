@@ -79,7 +79,7 @@ public class BlockIndicesTask implements Runnable {
       BlockStopTimeIndicesFactory stopFactory = new BlockStopTimeIndicesFactory();
       stopFactory.createIndices(blocks);
 
-      _refreshService.refresh(RefreshableResources.BLOCK_INDEX_DATA);
+      _refreshService.refresh(RefreshableResources.BLOCK_INDEX_DATA_BUNDLE);
 
     } catch (Exception ex) {
       throw new IllegalStateException(ex);

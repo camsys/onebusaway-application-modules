@@ -21,7 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertLibrary;
+import org.onebusaway.transit_data_federation.services.EntityIdService;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.Affects;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.Consequence;
@@ -39,13 +39,13 @@ import com.google.transit.realtime.GtfsRealtime.TripDescriptor;
 public class GtfsRealtimeAlertLibraryTest {
 
   private GtfsRealtimeAlertLibrary _library;
-  private GtfsRealtimeEntitySource _entitySource;
+  private EntityIdService _entityIdService;
 
   @Before
   public void before() {
     _library = new GtfsRealtimeAlertLibrary();
-    _entitySource = Mockito.mock(GtfsRealtimeEntitySource.class);
-    _library.setEntitySource(_entitySource);
+    _entityIdService = Mockito.mock(EntityIdService.class);
+    _library.setEntitySource(_entityIdService);
   }
 
   @Test
@@ -92,12 +92,12 @@ public class GtfsRealtimeAlertLibraryTest {
     urls.addTranslation(url);
     alert.setUrl(urls);
 
-    Mockito.when(_entitySource.getRouteId("routeId")).thenReturn(
-        ServiceAlertLibrary.id("1", "routeId"));
-    Mockito.when(_entitySource.getStopId("stopId")).thenReturn(
-        ServiceAlertLibrary.id("2", "stopId"));
-    Mockito.when(_entitySource.getTripId("tripId")).thenReturn(
-        ServiceAlertLibrary.id("3", "tripId"));
+    Mockito.when(_entityIdService.getRouteId("routeId")).thenReturn(
+            new AgencyAndId("1", "routeId"));
+    Mockito.when(_entityIdService.getStopId("stopId")).thenReturn(
+            new AgencyAndId("2", "stopId"));
+    Mockito.when(_entityIdService.getTripId("tripId")).thenReturn(
+            new AgencyAndId("3", "tripId"));
 
     ServiceAlert.Builder serviceAlert = _library.getAlertAsServiceAlert(
         alertId, alert.build());

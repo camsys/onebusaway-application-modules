@@ -34,6 +34,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
+import org.onebusaway.transit_data_federation.services.shapes.BasicShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -49,16 +50,17 @@ class ShapeGeospatialIndexTask implements Runnable {
   private static Logger _log = LoggerFactory.getLogger(ShapeGeospatialIndexTask.class);
   private static double MIN_LAT_LON = -360.0;
   private static double MAX_LAT_LON = 360.0;
+  private static double DEFAULT_GRID_SIZE = 500.0;
 
   private TransitGraphDao _transitGraphDao;
 
-  private ShapePointHelper _shapePointHelper;
+  private BasicShapePointService _shapePointService;
 
   private FederatedTransitDataBundle _bundle;
 
   private RefreshService _refreshService;
 
-  private double _gridSize = 500;
+  private double _gridSize = DEFAULT_GRID_SIZE;
 
   @Autowired
   public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
@@ -66,8 +68,8 @@ class ShapeGeospatialIndexTask implements Runnable {
   }
 
   @Autowired
-  public void setShapePointHelper(ShapePointHelper shapePointHelper) {
-    _shapePointHelper = shapePointHelper;
+  public void setShapePointService(BasicShapePointService shapePointService) {
+    _shapePointService = shapePointService;
   }
 
   @Autowired
@@ -132,7 +134,7 @@ class ShapeGeospatialIndexTask implements Runnable {
 
     if (fullBounds.isEmpty()) {
       return Collections.emptyMap();
-    }
+  }
 
     double centerLat = (fullBounds.getMinLat() + fullBounds.getMaxLat()) / 2;
     double centerLon = (fullBounds.getMinLon() + fullBounds.getMaxLon()) / 2;
@@ -148,7 +150,7 @@ class ShapeGeospatialIndexTask implements Runnable {
 
     for (AgencyAndId shapeId : allShapeIds) {
 
-      ShapePoints shapePoints = _shapePointHelper.getShapePointsForShapeId(shapeId);
+      ShapePoints shapePoints = _shapePointService.getShapePointsForShapeId(shapeId);
 
       for (int i = 0; i < shapePoints.getSize(); i++) {
 

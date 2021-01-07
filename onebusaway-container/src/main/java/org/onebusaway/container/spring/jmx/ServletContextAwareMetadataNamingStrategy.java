@@ -58,6 +58,7 @@ public class ServletContextAwareMetadataNamingStrategy extends
     // Get the context path without the request.
     String contextPath = "";
     try {
+      if (context.getResource("/") == null) return contextPath;
       String path = context.getResource("/").getPath();
       contextPath = path.substring(0, path.lastIndexOf("/"));
       contextPath = contextPath.substring(contextPath.lastIndexOf("/"));
