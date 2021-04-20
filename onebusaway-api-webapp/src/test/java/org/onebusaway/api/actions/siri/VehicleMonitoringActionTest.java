@@ -120,7 +120,7 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
     RouteBean routeBean = RouteBean.builder().create();
     when(transitDataService.getRouteForId(anyString())).thenReturn(routeBean);
     
-    when(configurationService.getConfigurationValueAsString(eq("display.googleAnalyticsSiteId"), anyString())).thenReturn("foo");
+    //when(configurationService.getConfigurationValueAsString(eq("display.googleAnalyticsSiteId"), anyString())).thenReturn("foo");
     
     List<SituationRefStructure> sitRef = mvJourney.getSituationRef();
     SituationRefStructure sitRefStructure = new SituationRefStructure();
@@ -133,7 +133,7 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
     when(realtimeService.getSiriXmlSerializer()).thenReturn(serializer );
     
     //doNothing().when(gaService).post(new PageViewHit());
-    when(gaService.post(new GoogleAnalyticsRequest())).thenReturn(new GoogleAnalyticsResponse());
+    //when(gaService.post(new GoogleAnalyticsRequest())).thenReturn(new GoogleAnalyticsResponse());
     
     action.setServletRequest(request);
     action.setServletResponse(servletResponse);
