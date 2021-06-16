@@ -27,6 +27,8 @@
 
     <bean type="org.apache.struts2.components.template.TemplateEngine" name="jspx" class="org.apache.struts2.components.template.JspTemplateEngine" />
 
+    <bean type="com.opensymphony.xwork2.util.GlobalLocalizedTextProvider" class="com.opensymphony.xwork2.util.GlobalLocalizedTextProvider"/>
+
     <package name="onebusaway-twilio-default" extends="struts-default">
         
         <result-types>

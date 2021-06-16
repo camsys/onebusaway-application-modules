@@ -29,6 +29,7 @@ import org.apache.struts2.json.JSONUtil;
 import com.opensymphony.xwork2.util.ValueStack;
 import com.opensymphony.xwork2.util.logging.Logger;
 import com.opensymphony.xwork2.util.logging.LoggerFactory;
+import com.opensymphony.xwork2.inject.Inject;
 
 public class JsonComponent extends ContextBean {
 
@@ -41,6 +42,8 @@ public class JsonComponent extends ContextBean {
   private boolean _excludeNullProperties = true;
 
   private String _value;
+
+  private JSONUtil jsonUtil = new JSONUtil();
 
   public JsonComponent(ValueStack stack) {
     super(stack);
@@ -62,6 +65,11 @@ public class JsonComponent extends ContextBean {
     _excludeNullProperties = excludeNullProperties;
   }
 
+  @Inject
+  public void setJsonUtil(JSONUtil jsonUtil) {
+    this.jsonUtil = jsonUtil;
+  }
+
   @Override
   public boolean end(Writer writer, String body) {
 
@@ -74,7 +82,7 @@ public class JsonComponent extends ContextBean {
 
     try {
       Collection<Pattern> empty = Collections.emptyList();
-      json = JSONUtil.serialize(value, empty, empty, _ignoreHierarchy, _excludeNullProperties);
+      json = jsonUtil.serialize(value, empty, empty, _ignoreHierarchy, _excludeNullProperties);
     } catch (JSONException ex) {
       LOG.error("Could not generate json from value", ex);
     }

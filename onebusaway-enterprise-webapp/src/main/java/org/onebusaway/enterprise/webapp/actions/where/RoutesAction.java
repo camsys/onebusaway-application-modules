@@ -17,10 +17,12 @@ package org.onebusaway.enterprise.webapp.actions.where;
 
 import java.util.List;
 
+import com.opensymphony.xwork2.ActionContext;
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Actions;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
+import org.apache.struts2.dispatcher.Parameter;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.transit_data.model.RouteBean;
@@ -64,7 +66,7 @@ public class RoutesAction extends AbstractWhereAction {
     CoordinateBounds bounds = getServiceArea();
 
     if (bounds == null) {
-      pushNextAction("routes", "query", _query);
+      pushNextAction("routes", findParam("query"));
       return "query-default-search-location";
     }
 

@@ -413,11 +413,11 @@ public class ServiceAlertEditAction extends ActionSupport implements
   }
   
   public Map<String, String> getReasonValues() {
-    return ResourceBundleSupport.getLocaleMap(this, Reasons.class);
+    return ResourceBundleSupport.getLocaleMap(Reasons.class);
   }
 
   public Map<String, String> getSeverityValues() {
-    return ResourceBundleSupport.getLocaleMap(this, Severity.class);
+    return ResourceBundleSupport.getLocaleMap(Severity.class);
   }
   
   public String deleteAlert() {

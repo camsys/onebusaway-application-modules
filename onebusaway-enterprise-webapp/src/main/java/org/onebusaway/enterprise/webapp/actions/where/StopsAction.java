@@ -21,6 +21,7 @@ import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Actions;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
+import org.apache.struts2.dispatcher.Parameter;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.transit_data.model.SearchQueryBean;
@@ -61,7 +62,7 @@ public class StopsAction extends AbstractWhereAction {
     CoordinateBounds bounds = getServiceArea();
 
     if (bounds == null) {
-      pushNextAction("stops", "code", _code);
+      pushNextAction("stops", new Parameter.Request("code", _code));
       return "query-default-search-location";
     }
     

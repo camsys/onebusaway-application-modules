@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.struts2.dispatcher.HttpParameters;
 import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.users.services.ApiKeyPermissionService;
@@ -30,6 +31,7 @@ import org.onebusaway.users.services.ApiKeyPermissionService.Status;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
+import org.apache.struts2.dispatcher.Parameter;
 
 /**
  * Do a bunch of mocking to verify the correct HTTP return codes 
@@ -43,7 +45,8 @@ public class ApiKeyInterceptorTest {
   private ActionContext _ac;
   private ActionInvocation _ai;
   private ApiKeyPermissionService _ks;
-  private Map<String, Object> _params = new HashMap<String, Object>();
+  private Map<String, Parameter> _params = new HashMap<>();
+  private HttpParameters _httpParameters;
   
   @Before
   public void setUp() throws Exception {
@@ -53,19 +56,22 @@ public class ApiKeyInterceptorTest {
     _ks = mock(ApiKeyPermissionService.class);
     _aki.setKeyService(_ks);
     
-    _params = new HashMap<String, Object>();
+    _params = new HashMap<>();
 
     String[] keys = {"akey"};
-    _params.put("key", keys);
+    _params.put("key", new Parameter.Request("key", keys));
+
+    HttpParameters.Builder builder = HttpParameters.create(_params);
+     _httpParameters = builder.build();
 
     when(_ai.getInvocationContext()).thenReturn(_ac);
-    when(_ac.getParameters()).thenReturn(_params);
+    when(_ac.getParameters()).thenReturn(_httpParameters);
   }
 
   @Test
   public void testIsAllowedNoUser() {
     // try it with now valid API key
-    assertNotNull(_params.remove("key"));
+    assertNotNull(_httpParameters.remove("key"));
     // here we return 401 as the authentication failed/key not found
     assertEquals(401, _aki.isAllowed(_ai));
   }

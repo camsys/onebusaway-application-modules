@@ -20,7 +20,7 @@ import com.opensymphony.xwork2.ActionInvocation;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.SyndFeedOutput;
 import org.apache.struts2.ServletActionContext;
-import org.apache.struts2.dispatcher.StrutsResultSupport;
+import org.apache.struts2.result.StrutsResultSupport;
 
 import java.io.Writer;
 

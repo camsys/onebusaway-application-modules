@@ -13,19 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.api.impl;
+package org.onebusaway.api.serializers.pb;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
+import javax.servlet.http.HttpServletResponse;
+
 import com.opensymphony.xwork2.ActionInvocation;
+import org.apache.struts2.ServletActionContext;
 import org.apache.struts2.rest.handler.ContentTypeHandler;
 import org.onebusaway.api.model.ResponseBean;
 
 import com.google.protobuf.Message;
 
-public class CustomProtocolBufferTextHandler implements ContentTypeHandler {
+public class CustomProtocolBufferHandler implements ContentTypeHandler {
 
   @Override
   public void toObject(Reader in, Object target) throws IOException {
@@ -43,7 +46,13 @@ public class CustomProtocolBufferTextHandler implements ContentTypeHandler {
     ResponseBean response = (ResponseBean) obj;
     if (response.getData() != null && response.getData() instanceof Message) {
       Message message = (Message) response.getData();
-      stream.write(message.toString());
+      /**
+       * Instead of writing to the output Writer, we write directly to the
+       * HttpServletResponse output stream. That way, we can avoid any weirdness
+       * with encoding the serialized protobuf to a String.
+       */
+      HttpServletResponse res = ServletActionContext.getResponse();
+      message.writeTo(res.getOutputStream());
     } else {
       stream.write(response.getText());
     }
@@ -55,7 +64,13 @@ public class CustomProtocolBufferTextHandler implements ContentTypeHandler {
     ResponseBean response = (ResponseBean) obj;
     if (response.getData() != null && response.getData() instanceof Message) {
       Message message = (Message) response.getData();
-      stream.write(message.toString());
+      /**
+       * Instead of writing to the output Writer, we write directly to the
+       * HttpServletResponse output stream. That way, we can avoid any weirdness
+       * with encoding the serialized protobuf to a String.
+       */
+      HttpServletResponse res = ServletActionContext.getResponse();
+      message.writeTo(res.getOutputStream());
     } else {
       stream.write(response.getText());
     }
@@ -64,11 +79,11 @@ public class CustomProtocolBufferTextHandler implements ContentTypeHandler {
 
   @Override
   public String getContentType() {
-    return "text/plain";
+    return "application/x-google-protobuf";
   }
 
   @Override
   public String getExtension() {
-    return "pbtext";
+    return "pb";
   }
 }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.api.impl;
+package org.onebusaway.api.serializers.xml;
 
 import com.opensymphony.xwork2.ActionInvocation;
 import org.apache.struts2.rest.handler.XStreamHandler;
@@ -146,7 +146,7 @@ public class CustomXStreamHandler extends XStreamHandler {
     xstream.alias("timeRange", TimeRangeV2Bean.class);
 
     xstream.alias("currentVehicleEstimate", CurrentVehicleEstimateV2Bean.class);
-    
+
     xstream.alias("registeredAlarm", RegisteredAlarmV2Bean.class);
 
     return xstream;

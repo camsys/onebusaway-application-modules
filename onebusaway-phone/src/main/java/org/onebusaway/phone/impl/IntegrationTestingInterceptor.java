@@ -17,6 +17,7 @@ package org.onebusaway.phone.impl;
 
 import java.util.Map;
 
+import org.apache.struts2.dispatcher.Parameter;
 import org.asteriskjava.fastagi.AgiRequest;
 import org.onebusaway.presentation.impl.users.PhoneNumberLoginInterceptor;
 import org.onebusaway.probablecalls.AgiEntryPoint;
@@ -46,7 +47,7 @@ public class IntegrationTestingInterceptor extends AbstractInterceptor {
 
     if (value != null && value.equals("true"))
       context.getParameters().put(PhoneNumberLoginInterceptor.RESET_USER,
-          Boolean.TRUE);
+          new Parameter.Request(PhoneNumberLoginInterceptor.RESET_USER, Boolean.TRUE));
     return invocation.invoke();
   }
 

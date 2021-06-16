@@ -18,6 +18,7 @@ package org.onebusaway.sms.impl;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.struts2.dispatcher.Parameter;
 import org.apache.struts2.interceptor.SessionAware;
 import org.onebusaway.presentation.impl.users.XWorkRequestAttributes;
 import org.onebusaway.sms.services.SessionManager;
@@ -58,12 +59,14 @@ public class TextmarksSessionInterceptor extends AbstractInterceptor {
 	processGoogleAnalytics();
 	
     ActionContext context = invocation.getInvocationContext();
-    Map<String, Object> parameters = context.getParameters();
+    Map<String, Parameter> parameters = context.getParameters();
 
-    Object phoneNumber = parameters.get(_phoneNumberParameterName);
+    Parameter phoneNumberParam = parameters.get(_phoneNumberParameterName);
+    if(phoneNumberParam == null || !phoneNumberParam.isDefined()){
+        return invocation.invoke();
+    }
 
-    if (phoneNumber == null)
-      return invocation.invoke();
+    Object phoneNumber = phoneNumberParam.getObject();
 
     if (phoneNumber instanceof String[]) {
       String[] values = (String[]) phoneNumber;

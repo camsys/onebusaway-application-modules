@@ -17,6 +17,8 @@ package org.onebusaway.api.actions.api;
 
 import java.util.Map;
 
+import org.apache.struts2.dispatcher.HttpParameters;
+import org.apache.struts2.dispatcher.Parameter;
 import org.onebusaway.api.ResponseCodes;
 import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.exceptions.NoSuchRouteServiceException;
@@ -95,18 +97,21 @@ public class ExceptionInterceptor extends AbstractInterceptor {
     b.append("!");
     b.append(proxy.getMethod());
 
-    Map<String, Object> params = context.getParameters();
+    HttpParameters params = context.getParameters();
 
     if (!params.isEmpty()) {
       b.append("?");
       boolean seenFirst = false;
-      for (Map.Entry<String, Object> entry : params.entrySet()) {
+      for (Map.Entry<String, Parameter> entry : params.entrySet()) {
 
         // Prune out any identifying information
         if ("app_uid".equals(entry.getKey()))
           continue;
 
-        Object value = entry.getValue();
+        if(entry.getValue() == null){
+          continue;
+        }
+        Object value = entry.getValue().getObject();
         String[] values = (value instanceof String[]) ? (String[]) value
             : new String[] {value.toString()};
         for (String v : values) {

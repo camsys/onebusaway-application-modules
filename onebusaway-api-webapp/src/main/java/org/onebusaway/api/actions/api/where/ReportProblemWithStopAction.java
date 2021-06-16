@@ -17,9 +17,11 @@ package org.onebusaway.api.actions.api.where;
 
 import java.io.IOException;
 
-import net.sf.json.JSONObject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.struts2.rest.DefaultHttpHeaders;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.model.problems.EProblemReportStatus;
@@ -35,6 +37,8 @@ public class ReportProblemWithStopAction extends ApiActionSupport {
   private static final long serialVersionUID = 1L;
 
   private static final int V2 = 2;
+
+  private ObjectMapper mapper = new ObjectMapper();
 
   @Autowired
   private TransitDataService _service;
@@ -59,8 +63,8 @@ public class ReportProblemWithStopAction extends ApiActionSupport {
   }
 
   @Deprecated
-  public void setData(String data) {
-    JSONObject json = JSONObject.fromObject(data);
+  public void setData(String data) throws IOException, JSONException {
+    JSONObject json = mapper.readValue(data, JSONObject.class);
     if (json.has("code")) {
       _model.setCode(json.getString("code"));
     }
