@@ -22,7 +22,6 @@ import net.sf.ehcache.CacheManager;
 
 import org.hibernate.boot.spi.SessionFactoryOptions;
 import org.hibernate.cache.CacheException;
-import org.hibernate.cfg.Settings;
 
 /**
  * A Hibernate EhCacheRegionFactory implementation that supports directly
@@ -41,7 +40,7 @@ import org.hibernate.cfg.Settings;
  * @author bdferris
  *
  */
-public class EhCacheRegionFactory extends org.hibernate.cache.ehcache.internal.EhcacheRegionFactory {
+public class EhCacheRegionFactory extends org.hibernate.cache.ehcache.EhCacheRegionFactory {
 
   private static CacheManager staticCacheManagerInstance;
 
@@ -49,12 +48,22 @@ public class EhCacheRegionFactory extends org.hibernate.cache.ehcache.internal.E
     staticCacheManagerInstance = cacheManager;
   }
 
+  public EhCacheRegionFactory(Properties prop) {
+    super(prop);
+  }
+
   @Override
-  protected CacheManager resolveCacheManager(SessionFactoryOptions settings, Map properties) {
-    if(staticCacheManagerInstance != null){
-      return staticCacheManagerInstance;
-    }
-    return super.resolveCacheManager(settings,properties);
+  public void start(SessionFactoryOptions settings, Properties properties) throws CacheException {
+    if (staticCacheManagerInstance != null)
+      manager = staticCacheManagerInstance;
+    else
+      super.start(settings, properties);
+  }
+
+  @Override
+  public void stop() {
+    if (staticCacheManagerInstance == null)
+      super.stop();
   }
 
 }
