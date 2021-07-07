@@ -71,7 +71,6 @@ import org.onebusaway.users.services.UserPropertiesService;
  * @see UserRole
  * @see UserProperties
  * @see UserDao
- * @see UserService
  * @see UserPropertiesService
  * @see UserPropertiesMigration
  */
@@ -95,8 +94,7 @@ public class User extends IdentityBean<Integer> {
   @Column(columnDefinition = "BIT", length = 1)
   private boolean temporary;
 
-  @Lob
-  @Column(columnDefinition = "longblob")
+  @Column(columnDefinition = "BLOB")
   private UserProperties properties;
 
   @ManyToMany(fetch = FetchType.EAGER)

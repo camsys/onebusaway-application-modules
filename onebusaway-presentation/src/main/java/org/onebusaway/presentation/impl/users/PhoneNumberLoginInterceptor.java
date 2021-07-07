@@ -15,6 +15,7 @@
  */
 package org.onebusaway.presentation.impl.users;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.struts2.dispatcher.Parameter;

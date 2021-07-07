@@ -99,6 +99,12 @@
         <artifactId>struts2-rome-plugin</artifactId>
         <version>0.3</version>
     </dependency>
+      <dependency>
+          <groupId>net.sf.json-lib</groupId>
+          <artifactId>json-lib</artifactId>
+          <version>2.4</version>
+          <classifier>jdk15</classifier>
+      </dependency>
     <!-- Rome framework for RSS support -->
     <dependency>
         <groupId>com.rometools</groupId>
@@ -178,17 +184,17 @@
       <dependency>
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-core</artifactId>
-          <version>${jackson2.version}</version>
+          <version>${jackson-version}</version>
       </dependency>
       <dependency>
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-databind</artifactId>
-          <version>${jackson2.version}</version>
+          <version>${jackson-version}</version>
       </dependency>
       <dependency>
           <groupId>com.fasterxml.jackson.dataformat</groupId>
           <artifactId>jackson-dataformat-xml</artifactId>
-          <version>${jackson2.version}</version>
+          <version>${jackson-version}</version>
       </dependency>
       <dependency>
           <groupId>net.sf.json-lib</groupId>

@@ -24,6 +24,9 @@ import org.apache.struts2.ServletActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
 import org.apache.struts2.result.StrutsResultSupport;
 
+import org.apache.struts2.ServletActionContext;
+import org.apache.struts2.result.StrutsResultSupport;
+
 public class XmlResult extends StrutsResultSupport {
 
   private static final long serialVersionUID = 1L;

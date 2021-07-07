@@ -79,6 +79,9 @@ public class ApiKeyInterceptorTest {
   @Test
   public void testIsAllowedValidUser() {
     when(_ks.getPermission((String)anyObject(), (String)anyObject())).thenReturn(Status.AUTHORIZED);
+    assertNotNull(_params.get("key"));
+    assertNotNull(_ac.getParameters());
+    assertTrue(_ac.getParameters().containsKey("key"));
     assertEquals(200, _aki.isAllowed(_ai));
   }
 

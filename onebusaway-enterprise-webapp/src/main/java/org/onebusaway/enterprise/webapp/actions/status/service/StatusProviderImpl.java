@@ -17,8 +17,6 @@ package org.onebusaway.enterprise.webapp.actions.status.service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,7 +29,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.onebusaway.agency_metadata.model.AgencyMetadata;
 import org.onebusaway.enterprise.webapp.actions.status.model.IcingaItem;
-import org.onebusaway.enterprise.webapp.actions.status.model.IcingaResponse;
 import org.onebusaway.enterprise.webapp.actions.status.model.StatusGroup;
 import org.onebusaway.enterprise.webapp.actions.status.model.StatusItem;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
@@ -162,7 +159,9 @@ public class StatusProviderImpl implements StatusProvider {
       client.executeMethod(method);
       InputStream result = method.getResponseBodyAsStream();
       ObjectMapper mapper = new ObjectMapper();
-      response = mapper.readValue(result, AgencyMetadata[].class);
+      JsonNode tree = mapper.readTree(result);
+      JsonNode value = tree.findValue("data");
+      response = mapper.readValue(value.asText(), AgencyMetadata[].class);
     } catch (IOException e) {
       _log.error("Exception getting AgencyMetadata" + e);
       group.addItem(exceptionStatus(e));

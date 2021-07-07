@@ -19,11 +19,12 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
-import com.opensymphony.xwork2.inject.Inject;
 import com.opensymphony.xwork2.util.GlobalLocalizedTextProvider;
-import com.opensymphony.xwork2.util.StrutsLocalizedTextProvider;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+
 
 /**
  * Listen for context configuration for localization.  Default to 
@@ -35,9 +36,6 @@ public class LocalizationListener implements ServletContextListener {
   private static final String DEFAULT_RESOURCE = "onebusaway-nyc";
   private static Logger _log = LoggerFactory.getLogger(LocalizationListener.class);
 
-  @Inject
-  private GlobalLocalizedTextProvider textProvider;
-
   @Override
   public void contextInitialized(ServletContextEvent servletContextEvent) {
     _log.debug("context init");
@@ -46,10 +44,11 @@ public class LocalizationListener implements ServletContextListener {
     String resource = (String) servletContext.getInitParameter("obanyc.resource");
     if (resource != null) {
       _log.info("found resource override=" + resource);
-      textProvider.addDefaultResourceBundle(resource);
+      new GlobalLocalizedTextProvider().addDefaultResourceBundle(resource);
     } else {
       _log.info("did not find resource override, using default localization of " + DEFAULT_RESOURCE);
-      textProvider.addDefaultResourceBundle(DEFAULT_RESOURCE);
+      // nothing to do
+      //LocalizedTextUtil.addDefaultResourceBundle(DEFAULT_RESOURCE);
     }
     
   }

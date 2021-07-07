@@ -15,6 +15,7 @@
  */
 package org.onebusaway.sms.impl;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;

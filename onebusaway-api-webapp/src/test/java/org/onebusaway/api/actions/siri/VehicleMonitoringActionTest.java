@@ -51,7 +51,6 @@ import org.onebusaway.util.services.configuration.ConfigurationService;
 
 import com.brsanthu.googleanalytics.GoogleAnalyticsRequest;
 import com.brsanthu.googleanalytics.GoogleAnalyticsResponse;
-import com.brsanthu.googleanalytics.PageViewHit;
 
 import uk.org.siri.siri.LocationStructure;
 import uk.org.siri.siri.SituationRefStructure;
@@ -115,12 +114,12 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
     locationStructure.setLongitude(BigDecimal.valueOf(89.0));
     
     ServiceAlertBean serviceAlertBean = ServiceAlertsTestSupport.createServiceAlertBean("1_1");
-    when(transitDataService.getServiceAlertForId(anyString())).thenReturn(serviceAlertBean );
+    lenient().when(transitDataService.getServiceAlertForId(anyString())).thenReturn(serviceAlertBean );
     
     RouteBean routeBean = RouteBean.builder().create();
     when(transitDataService.getRouteForId(anyString())).thenReturn(routeBean);
     
-    //when(configurationService.getConfigurationValueAsString(eq("display.googleAnalyticsSiteId"), anyString())).thenReturn("foo");
+    lenient().when(configurationService.getConfigurationValueAsString(eq("display.googleAnalyticsSiteId"), anyString())).thenReturn("foo");
     
     List<SituationRefStructure> sitRef = mvJourney.getSituationRef();
     SituationRefStructure sitRefStructure = new SituationRefStructure();
@@ -133,7 +132,7 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
     when(realtimeService.getSiriXmlSerializer()).thenReturn(serializer );
     
     //doNothing().when(gaService).post(new PageViewHit());
-    //when(gaService.post(new GoogleAnalyticsRequest())).thenReturn(new GoogleAnalyticsResponse());
+    lenient().when(gaService.post(new GoogleAnalyticsRequest())).thenReturn(new GoogleAnalyticsResponse());
     
     action.setServletRequest(request);
     action.setServletResponse(servletResponse);

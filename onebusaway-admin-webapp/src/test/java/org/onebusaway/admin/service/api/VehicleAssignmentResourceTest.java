@@ -46,7 +46,10 @@ import org.onebusaway.transit_data_federation.impl.federated.TransitDataServiceI
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;

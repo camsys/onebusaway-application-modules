@@ -15,6 +15,7 @@
  */
 package org.onebusaway.api.actions.api;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.struts2.dispatcher.HttpParameters;

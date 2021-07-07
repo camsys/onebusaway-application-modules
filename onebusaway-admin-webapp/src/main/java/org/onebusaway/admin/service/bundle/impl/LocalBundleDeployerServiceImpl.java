@@ -57,9 +57,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.ContentDisposition;
 import org.springframework.stereotype.Component;
-
-import com.sun.jersey.core.header.ContentDisposition;
 
 @Component
 @Qualifier("localBundleDeployerImpl")
@@ -297,8 +296,8 @@ public class LocalBundleDeployerServiceImpl implements BundleDeployerService{
         }
       };
 
-      ContentDisposition cd = ContentDisposition.type("file").fileName(
-          requestedFile.getName()).build();
+      ContentDisposition cd = ContentDisposition.builder("file").filename(requestedFile.getName()).build();
+
 
       Response response = Response.ok(output, MediaType.APPLICATION_OCTET_STREAM).header(
           "Content-Disposition", cd).header("Content-Length", fileLength).build();

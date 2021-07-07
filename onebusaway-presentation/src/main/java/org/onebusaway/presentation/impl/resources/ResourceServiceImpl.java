@@ -858,13 +858,18 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public boolean isValidLocaleString(String s) {
+      if ("en".equalsIgnoreCase(s))
+        return true;
       return false;
     }
 
     @Override
     public boolean isValidLocale(Locale locale) {
+      if (locale.getDisplayName().equalsIgnoreCase("en"))
+        return true;
       return false;
     }
+
   }
 
 }

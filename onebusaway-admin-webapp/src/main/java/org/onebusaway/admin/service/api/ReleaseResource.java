@@ -25,13 +25,11 @@ import org.onebusaway.util.git.GitRepositoryHelper;
 import org.onebusaway.util.git.GitRepositoryState;
 import org.springframework.stereotype.Component;
 
-import com.sun.jersey.api.spring.Autowire;
 /**
  * Webservice to show git status.
  *
  */
 @Component
-@Autowire
 @Path("/release")
 public class ReleaseResource {
 	

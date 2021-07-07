@@ -20,7 +20,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import com.opensymphony.xwork2.*;
+import com.opensymphony.xwork2.LocaleProvider;
+import com.opensymphony.xwork2.StrutsTextProviderFactory;
+import com.opensymphony.xwork2.TextProvider;
+import com.opensymphony.xwork2.TextProviderFactory;
 
 public class ResourceBundleSupport {
   public static Map<String, String> getLocaleMap(Class<?> resourceType) {
