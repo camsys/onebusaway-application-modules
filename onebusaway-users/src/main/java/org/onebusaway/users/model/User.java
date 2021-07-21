@@ -94,7 +94,8 @@ public class User extends IdentityBean<Integer> {
   @Column(columnDefinition = "BIT", length = 1)
   private boolean temporary;
 
-  @Column(columnDefinition = "BLOB")
+  @Lob
+  @Column(length=16777216)
   private UserProperties properties;
 
   @ManyToMany(fetch = FetchType.EAGER)
