@@ -19,13 +19,15 @@ package org.onebusaway.transit_data_federation.impl.service_alerts;
 import javax.persistence.*;
 
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name = "transit_data_service_alerts_situation_affects")
 public class ServiceAlertsSituationAffectsClause {
 
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy= GenerationType.AUTO, generator="native")
+  @GenericGenerator(name = "native", strategy = "native")
   private int id = 0;
 
   private String agencyId = null;

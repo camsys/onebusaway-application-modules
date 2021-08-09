@@ -24,6 +24,7 @@ import javax.persistence.*;
 import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
 import org.onebusaway.container.model.IdentityBean;
 import org.onebusaway.users.services.UserDao;
 import org.onebusaway.users.services.UserPropertiesMigration;
@@ -84,7 +85,8 @@ public class User extends IdentityBean<Integer> {
   private static final long serialVersionUID = 1L;
 
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy= GenerationType.AUTO, generator="native")
+  @GenericGenerator(name = "native", strategy = "native")
   @AccessType("property")
   private Integer id;
 

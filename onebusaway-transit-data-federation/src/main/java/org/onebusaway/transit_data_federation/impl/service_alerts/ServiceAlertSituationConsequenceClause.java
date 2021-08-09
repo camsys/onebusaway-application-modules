@@ -16,6 +16,7 @@
  */
 package org.onebusaway.transit_data_federation.impl.service_alerts;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.onebusaway.transit_data.model.service_alerts.EEffect;
 
 import javax.persistence.*;
@@ -27,7 +28,8 @@ import java.util.Set;
 public class ServiceAlertSituationConsequenceClause {
 
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy= GenerationType.AUTO, generator="native")
+  @GenericGenerator(name = "native", strategy = "native")
   private int id = 0;
 
   @Enumerated(EnumType.STRING)
