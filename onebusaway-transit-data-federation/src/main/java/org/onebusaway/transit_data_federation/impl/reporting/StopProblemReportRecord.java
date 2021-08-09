@@ -17,15 +17,9 @@ package org.onebusaway.transit_data_federation.impl.reporting;
 
 import java.io.Serializable;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -38,7 +32,8 @@ public class StopProblemReportRecord implements Serializable {
   private static final long serialVersionUID = 1L;
 
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy= GenerationType.AUTO, generator="native")
+  @GenericGenerator(name = "native", strategy = "native")
   private long id;
 
   private long time;
