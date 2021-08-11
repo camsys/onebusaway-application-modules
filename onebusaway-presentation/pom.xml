@@ -48,6 +48,12 @@
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-siri-core</artifactId>
 			<version>${onebusaway-siri-version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
 	    </dependency>
 
         <!-- RMI-like service for wiring up services between VMs -->

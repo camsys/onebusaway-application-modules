@@ -54,6 +54,12 @@
 		<dependency>
 			<groupId>org.onebusaway</groupId>
   			<artifactId>onebusaway-csv-entities</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
   		</dependency>
   
 		<dependency>
@@ -72,6 +78,10 @@
 					<artifactId>onebusaway-gtfs</artifactId>
 					<groupId>org.onebusaway</groupId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 
@@ -82,8 +92,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
 		</dependency>
 
 		<dependency>

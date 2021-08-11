@@ -17,13 +17,14 @@ package org.onebusaway.admin.service.impl;
 
 import static org.junit.Assert.*;
 
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.junit.Ignore;
 import org.onebusaway.admin.model.BundleBuildRequest;
 import org.onebusaway.admin.model.BundleBuildResponse;
 import org.onebusaway.admin.service.FileService;
 import org.onebusaway.admin.service.bundle.impl.BundleBuildingServiceImpl;
 import org.onebusaway.admin.util.NYCFileUtils;
-import org.apache.log4j.BasicConfigurator;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,7 +154,7 @@ public class BundleBuildingServiceImplTest {
   @Test
   @Ignore
   public void testMe() {
-    BasicConfigurator.configure();
+    Configurator.initialize(new DefaultConfiguration());
     setup();
     testBuildStif();
     setup();

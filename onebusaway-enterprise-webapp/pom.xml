@@ -93,6 +93,12 @@
             <groupId>com.rometools</groupId>
             <artifactId>rome</artifactId>
             <version>1.7.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
         </dependency>
 
 		<dependency>
@@ -141,16 +147,6 @@
 			<version>3.2.0</version>
 			<type>jar</type>
 			<scope>compile</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>apache-log4j-extras</artifactId>
-			<version>1.1</version>
 		</dependency>
 
 		<!-- for amazon deployment -->
