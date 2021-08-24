@@ -80,8 +80,5 @@ public interface BlockIndexService {
   public List<FrequencyStopTripIndex> getFrequencyStopTripIndicesForStop(
       StopEntry stop);
 
-  /****
-   * Block Sequence Indices
-   ****/
 
 }

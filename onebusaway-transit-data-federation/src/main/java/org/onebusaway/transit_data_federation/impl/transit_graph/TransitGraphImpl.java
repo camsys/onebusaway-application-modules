@@ -33,10 +33,13 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.services.serialization.EntryCallback;
 import org.onebusaway.transit_data_federation.services.serialization.EntryIdAndCallback;
 import org.onebusaway.transit_data_federation.services.transit_graph.AgencyEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.transit_data_federation.model.transit_graph.TransitGraph;
 import org.slf4j.Logger;
@@ -111,7 +114,7 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
     _routes.clear();
     _agencies.clear();
 
-    _stopLocationTree = null;        
+    _stopLocationTree = null;
   }
   
   public void initialize() {
@@ -188,7 +191,7 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
   }
 
   public List<StopEntryImpl> getStops() {
-    return _stops;
+    return new ArrayList<StopEntryImpl>(_stops);
   }
 
   public void putTripEntry(TripEntryImpl tripEntry) {
@@ -196,7 +199,7 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
   }
 
   public List<TripEntryImpl> getTrips() {
-    return _trips;
+    return new ArrayList<TripEntryImpl>(_trips);
   }
 
   public void putBlockEntry(BlockEntryImpl blockEntry) {
@@ -204,7 +207,7 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
   }
   
   public List<BlockEntryImpl> getBlocks() {
-    return _blocks;
+    return new ArrayList<BlockEntryImpl>(_blocks);
   }
 
   public void putRouteEntry(RouteEntryImpl routeEntry) {
@@ -212,7 +215,7 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
   }
 
   public List<RouteEntryImpl> getRoutes() {
-    return _routes;
+    return new ArrayList<RouteEntryImpl>(_routes);
   }
 
   public void putRouteCollectionEntry(RouteCollectionEntryImpl routeCollection) {
@@ -260,8 +263,8 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
    ****/
 
   public List<AgencyEntry> getAllAgencies() {
-    return new ListAdapter<AgencyEntryImpl, AgencyEntry>(_agencies,
-        _agencyEntryAdapter);
+   return new ListAdapter<AgencyEntryImpl, AgencyEntry>(new ArrayList<AgencyEntryImpl>(_agencies),
+              _agencyEntryAdapter);
   }
 
   public AgencyEntryImpl getAgencyForId(String id) {
@@ -269,31 +272,58 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
   }
 
   @Override
+  public boolean addAgencyEntry(AgencyEntryImpl agency) {
+    _agencyEntriesById.put(agency.getId(), agency);
+    _agencies.add(agency);
+    return true;
+  }
+
+  @Override
   public List<StopEntry> getAllStops() {
-    return new ListAdapter<StopEntryImpl, StopEntry>(_stops, _stopEntryAdapter);
+    return new ListAdapter<StopEntryImpl, StopEntry>(new ArrayList<StopEntryImpl>(_stops), _stopEntryAdapter);
+  }
+
+  @Override
+  public boolean addStopEntry(StopEntryImpl stop) {
+    if (_stopEntriesById.containsKey(stop.getId()))
+      return false;
+    _stopEntriesById.put(stop.getId(), stop);
+    _stops.add(stop);
+    return true;
+  }
+
+  @Override
+  public boolean removeStopEntry(AgencyAndId stopId) {
+    if (!_stopEntriesById.containsKey(stopId)) {
+      return false;
+    }
+    StopEntryImpl entry = _stopEntriesById.remove(stopId);
+    _stops.remove(entry);
+    return true;
   }
 
   @Override
   public List<TripEntry> getAllTrips() {
-    return new ListAdapter<TripEntryImpl, TripEntry>(_trips, _tripEntryAdapter);
+    return new ListAdapter<TripEntryImpl, TripEntry>(new ArrayList<TripEntryImpl>(_trips), _tripEntryAdapter);
   }
 
   @Override
   public List<BlockEntry> getAllBlocks() {
-    return new ListAdapter<BlockEntryImpl, BlockEntry>(_blocks,
-        _blockEntryAdapter);
+    return new ListAdapter<BlockEntryImpl, BlockEntry>(new ArrayList<BlockEntryImpl>(_blocks),
+            _blockEntryAdapter);
   }
 
   @Override
   public List<RouteCollectionEntry> getAllRouteCollections() {
-    return new ListAdapter<RouteCollectionEntryImpl, RouteCollectionEntry>(
-        _routeCollections, _routeCollectionEntryAdapter);
+  return new ListAdapter<RouteCollectionEntryImpl, RouteCollectionEntry>(
+          new ArrayList<RouteCollectionEntryImpl>(_routeCollections), _routeCollectionEntryAdapter);
+
   }
 
   @Override
   public List<RouteEntry> getAllRoutes() {
-    return new ListAdapter<RouteEntryImpl, RouteEntry>(_routes,
-        _routeEntryAdapter);
+    return new ListAdapter<RouteEntryImpl, RouteEntry>(new ArrayList<RouteEntryImpl>(_routes),
+            _routeEntryAdapter);
   }
 
   @Override
@@ -304,6 +334,216 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
   @Override
   public TripEntryImpl getTripEntryForId(AgencyAndId id) {
     return _tripEntriesById.get(id);
+  }
+
+  @Override
+  public boolean addBlock(BlockEntryImpl block) {
+    // assume configs already set
+    if (getBlockEntryForId(block.getId()) != null) {
+      return false;
+    }
+    _blocks.add(block);
+    _blockEntriesById.put(block.getId(), block);
+    return true;
+  }
+
+  @Override
+  public boolean addTripEntry(TripEntryImpl trip) {
+    if (!valid(trip)) return false;
+
+    if (_tripEntriesById.containsKey(trip.getId()))
+      return false;
+
+    _tripEntriesById.put(trip.getId(), trip);
+    _trips.add(trip);
+
+    boolean foundBlock = false;
+
+    for (int i = 0; i < _blocks.size(); i++) {
+      BlockEntryImpl block = _blocks.get(i);
+      if (block.getId().equals(trip.getBlock().getId())) {
+        foundBlock = true;
+        trip.setBlock(block);
+      }
+    }
+
+    if (!foundBlock) {
+      BlockEntryImpl block = trip.getBlock();
+      if (block.getConfigurations() == null) {
+        block.setConfigurations(new ArrayList<>());
+      }
+      _blocks.add(trip.getBlock());
+      _blockEntriesById.put(trip.getBlock().getId(), trip.getBlock());
+    }
+
+    // update route
+    if (trip.getRoute() != null) {
+      if (!_routeEntriesById.containsKey(trip.getRoute().getId())) {
+        _routeEntriesById.put(trip.getRoute().getId(), (RouteEntryImpl) trip.getRoute());
+        _routes.add((RouteEntryImpl) trip.getRoute());
+      } else {
+        // Replace with route that has had attributes added
+        RouteEntryImpl route = _routeEntriesById.get(trip.getRoute().getId());
+        trip.setRoute(route);
+      }
+
+      // Add trip to RouteEntry
+      RouteEntry route = trip.getRoute();
+      boolean found = false;
+      if (route.getTrips() != null) {
+        for (TripEntry tripEntry : route.getTrips()) {
+          found |= (tripEntry.getId().equals(trip.getId()));
+        }
+      }
+      if (!found) {
+        if (route.getTrips() == null) {
+          ((RouteEntryImpl) route).setTrips(new ArrayList<>());
+        }
+        route.getTrips().add(trip);
+      }
+
+      if (!_routeCollectionEntriesById.containsKey(trip.getRoute().getId())) {
+        RouteCollectionEntryImpl rcei = createRouteCollectionForRoute((RouteEntryImpl) trip.getRoute());
+        _routeCollectionEntriesById.put(trip.getRoute().getId(), rcei);
+        _routeCollections.add(rcei);
+        List<RouteCollectionEntry> routeCollections = _agencyEntriesById.get(trip.getRoute().getId().getAgencyId()).getRouteCollections();
+        routeCollections.add(rcei);
+      }
+    }
+    return true;
+  }
+
+  // maintain some minimum requirements to keep data structures consistent
+  private boolean valid(TripEntryImpl trip) {
+    if (trip == null) return false;
+    if (trip.getRoute() == null) return false;
+    if (trip.getBlock() == null) return false;
+    if (trip.getBlock().getId() == null || trip.getId() == null) return false;
+    // we need at least one stop time for the block configuration to be valid
+    if (trip.getStopTimes() == null || trip.getStopTimes().isEmpty()) return false;
+    // don't allow orphaned trips that have no calendar
+    if (trip.getServiceId() == null) return false;
+    return true;
+  }
+
+  private RouteCollectionEntryImpl createRouteCollectionForRoute(RouteEntryImpl routeEntry) {
+    RouteCollectionEntryImpl routeCollectionEntry = new RouteCollectionEntryImpl();
+    routeCollectionEntry.setId(routeEntry.getId());
+    ArrayList<RouteEntry> routes = new ArrayList<RouteEntry>();
+    routes.add(routeEntry);
+    routes.trimToSize();
+    routeCollectionEntry.setChildren(routes);
+    routeEntry.setParent(routeCollectionEntry);
+    return routeCollectionEntry;
+  }
+
+  @Override
+  public boolean removeTripEntryForId(AgencyAndId id) {
+    TripEntryImpl trip = _tripEntriesById.get(id);
+    if (trip != null) {
+      _trips.remove(trip);
+      if (_tripEntriesById.remove(id) != null) {
+        // recalculate block
+        boolean foundBlock = false;
+        for (int i = 0; i < _blocks.size(); i++) {
+          BlockEntryImpl origBlock = _blocks.get(i);
+          if (origBlock.getId().equals(trip.getBlock().getId())) {
+            foundBlock = true;
+            BlockEntryImpl block = new BlockEntryImpl();
+            block.setId(origBlock.getId());
+            List<BlockConfigurationEntry> configs = new ArrayList<>();
+            for (BlockConfigurationEntry config : origBlock.getConfigurations()) {
+              BlockConfigurationEntryImpl.Builder builder = BlockConfigurationEntryImpl.builder();
+              builder.setBlock(block);
+              List<TripEntry> blockTrips = new ArrayList<>();
+              for (BlockTripEntry blockTrip : config.getTrips()) {
+                if (!blockTrip.getTrip().getId().equals(trip.getId())) {
+                  blockTrips.add(blockTrip.getTrip());
+                }
+              }
+              builder.setTrips(blockTrips);
+              builder.setTripGapDistances(new double[blockTrips.size()]);
+              builder.setServiceIds(config.getServiceIds());
+              if (!blockTrips.isEmpty()) {
+                configs.add(builder.create());
+              }
+            }
+            block.setConfigurations(configs);
+            _blocks.set(i, block);
+            _blockEntriesById.put(block.getId(), block);
+          }
+        }
+        return foundBlock;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * stop times have changed on the trip, ensure the blockstoptimes are updated
+   *
+   * for each block configuration on trip
+   *   re-generate block configuration
+   *   for each block trip entry
+   *     link trip to block
+   */
+  @Override
+  public boolean updateBlockIndices(TripEntryImpl tripEntry) {
+    List<BlockConfigurationEntry> newBlockConfigs = new ArrayList<BlockConfigurationEntry>();
+    if (tripEntry.getBlock() == null || tripEntry.getBlock().getConfigurations() == null)
+      return false;
+
+    BlockEntryImpl block = _blockEntriesById.get(tripEntry.getBlock().getId());
+
+    // Update block indices to recalculate stop times
+    for (BlockConfigurationEntry bce : block.getConfigurations()) {
+      BlockConfigurationEntryImpl.Builder builder = BlockConfigurationEntryImpl.builder();
+      // the builder computes blockTrips
+      builder.setBlock(getBlockEntryForId(block.getId()));
+      builder.setServiceIds(bce.getServiceIds());
+      ArrayList<TripEntry> mergedTrips = new ArrayList<>();
+      boolean foundTrip = false;
+      for (BlockTripEntry bte : bce.getTrips()) {
+        if (bte != null) {
+          if (bte.getTrip() != null) {
+            if (bte.getTrip().getId().equals(tripEntry.getId())) {
+              // update our trip
+              foundTrip = true;
+              mergedTrips.add(tripEntry);
+            } else {
+              mergedTrips.add(bte.getTrip());
+            }
+          }
+        }
+      }
+      if (!foundTrip) {
+        mergedTrips.add(tripEntry);
+      }
+      builder.setTrips(mergedTrips);
+      builder.setTripGapDistances(new double[mergedTrips.size()]);
+      BlockConfigurationEntry blockConfig = builder.create();
+      newBlockConfigs.add(blockConfig);
+    }
+    // now replace existing block configs with our regenerated block configs
+    block.setConfigurations(newBlockConfigs);
+    return true;
+  }
+
+  private StopTimeEntry createStopTimeEntry(AgencyAndId tripId, AgencyAndId stopId, int arrivalTime, int departureTime, double shapeDistanceTravelled) {
+    StopTimeEntryImpl stei = new StopTimeEntryImpl();
+    stei.setTrip(_tripEntriesById.get(tripId));
+    if (stei.getTrip() == null) {
+      System.out.println("no trip found for " + tripId);
+    }
+    stei.setStop(_stopEntriesById.get(stopId));
+    if (stei.getStop() == null) {
+      System.out.println("no stop found for " + stopId);
+    }
+    stei.setArrivalTime(arrivalTime);
+    stei.setDepartureTime(departureTime);
+    stei.setShapeDistTraveled(shapeDistanceTravelled);
+    stei.setGtfsSequence(-999);
+    return stei;
   }
 
   @Override
@@ -326,10 +566,10 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
     if (_stopLocationTree == null)
       return Collections.emptyList();
     Envelope r = new Envelope(bounds.getMinLon(), bounds.getMaxLon(),
-        bounds.getMinLat(), bounds.getMaxLat());
+            bounds.getMinLat(), bounds.getMaxLat());
     StopRTreeVisitor go = new StopRTreeVisitor();
     _stopLocationTree.query(r, go);
-    return go.getStops();
+    return new ArrayList<StopEntry>(go.getStops());
   }
 
   private class StopRTreeVisitor implements ItemVisitor {

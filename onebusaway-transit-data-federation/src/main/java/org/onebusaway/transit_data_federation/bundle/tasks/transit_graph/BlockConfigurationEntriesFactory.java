@@ -26,11 +26,12 @@ import java.util.TimeZone;
 import org.onebusaway.collections.FactoryMap;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
-import org.onebusaway.transit_data_federation.bundle.tasks.ShapePointHelper;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockConfigurationEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
+import org.onebusaway.transit_data_federation.services.BlockConfigurationEntriesProcessor;
+import org.onebusaway.transit_data_federation.services.shapes.BasicShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
@@ -41,7 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class BlockConfigurationEntriesFactory {
+public class BlockConfigurationEntriesFactory implements BlockConfigurationEntriesProcessor {
 
   private static Logger _log = LoggerFactory.getLogger(BlockConfigurationEntriesFactory.class);
 
@@ -51,7 +52,7 @@ public class BlockConfigurationEntriesFactory {
 
   private ServiceIdOverlapCache _serviceIdOverlapCache;
 
-  private ShapePointHelper _shapePointHelper;
+  private BasicShapePointService _shapePointService;
 
   @Autowired
   public void setServiceIdOverlapCache(
@@ -60,10 +61,11 @@ public class BlockConfigurationEntriesFactory {
   }
 
   @Autowired
-  public void setShapePointHelper(ShapePointHelper shapePointHelper) {
-    _shapePointHelper = shapePointHelper;
+  public void setShapePointService(BasicShapePointService shapePointService) {
+    _shapePointService = shapePointService;
   }
 
+  @Override
   public void processBlockConfigurations(BlockEntryImpl block,
       List<TripEntryImpl> tripsInBlock) {
 
@@ -153,7 +155,7 @@ public class BlockConfigurationEntriesFactory {
 
     double[] tripGapDistances = new double[trips.size()];
 
-    if (_shapePointHelper == null)
+    if (_shapePointService == null)
       return tripGapDistances;
 
     for (int index = 0; index < trips.size() - 1; index++) {
@@ -163,8 +165,8 @@ public class BlockConfigurationEntriesFactory {
 
       double d = 0;
 
-      ShapePoints shapeFrom = _shapePointHelper.getShapePointsForShapeId(tripA.getShapeId());
-      ShapePoints shapeTo = _shapePointHelper.getShapePointsForShapeId(tripB.getShapeId());
+      ShapePoints shapeFrom = _shapePointService.getShapePointsForShapeId(tripA.getShapeId());
+      ShapePoints shapeTo = _shapePointService.getShapePointsForShapeId(tripB.getShapeId());
 
       if (shapeFrom != null && shapeTo != null && !shapeFrom.isEmpty()
           && !shapeTo.isEmpty()) {

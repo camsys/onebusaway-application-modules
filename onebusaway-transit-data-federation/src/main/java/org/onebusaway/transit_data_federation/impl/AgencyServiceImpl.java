@@ -65,9 +65,10 @@ public class AgencyServiceImpl implements AgencyService {
   public List<String> getAllAgencyIds() {
 
     List<String> agencyIds = new ArrayList<String>();
-
-    for (AgencyEntry agency : _graph.getAllAgencies()) {
-      agencyIds.add(agency.getId());
+    if(_graph != null){
+      for (AgencyEntry agency : _graph.getAllAgencies()) {
+        agencyIds.add(agency.getId());
+      }
     }
 
     return new ArrayList<String>(agencyIds);

@@ -20,4 +20,8 @@ public interface RevenueSearchService {
       String routeId, String directionId);
   
   public Boolean stopHasRevenueService(String agencyId, String stopId);
+
+  void addRevenueService(String agencyId, String stopId, String routeId, String directionId);
+
+  void removeRevenueService(String agencyId, String stopId, String routeId, String directionId);
 }

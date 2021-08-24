@@ -108,6 +108,10 @@ class RoutesBeanServiceImpl implements RoutesBeanService {
   }
 
   @Override
+  public void refresh() {
+    setup();
+  }
+  @Override
   public RoutesBean getRoutesForQuery(SearchQueryBean query)
       throws ServiceException {
     if (query.getQuery() != null)

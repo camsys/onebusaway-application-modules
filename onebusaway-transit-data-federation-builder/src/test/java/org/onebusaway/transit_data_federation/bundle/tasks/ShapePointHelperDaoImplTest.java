@@ -27,12 +27,12 @@ import org.onebusaway.gtfs.model.ShapePoint;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 
-public class ShapePointHelperTest {
+public class ShapePointHelperDaoImplTest {
 
   @Test
   public void test() {
 
-    ShapePointHelper helper = new ShapePointHelper();
+    ShapePointHelperDaoImpl helper = new ShapePointHelperDaoImpl();
 
     GtfsRelationalDao gtfsDao = Mockito.mock(GtfsRelationalDao.class);
     helper.setGtfsRelationalDao(gtfsDao);

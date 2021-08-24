@@ -21,14 +21,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.narrative.AgencyNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.RouteCollectionNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.StopNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.StopTimeNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
@@ -115,5 +120,85 @@ public final class NarrativeProviderImpl implements Serializable {
 
   public ShapePoints getShapePointsForId(AgencyAndId id) {
     return _shapePointsById.get(id);
+  }
+
+  public void addTrip(TripEntryImpl trip, TripNarrative narrative) {
+    if (!_routeCollectionNarratives.containsKey(trip.getRoute().getId())) {
+      // we need to build a routeCollectionNarrative to represent route short name
+      RouteCollectionNarrative.Builder routeBuilder = RouteCollectionNarrative.builder();
+      routeBuilder.setShortName(trip.getRoute().getId().getId());
+      _routeCollectionNarratives.put(trip.getRoute().getId(), routeBuilder.create());
+    }
+
+    if (narrative == null) {
+      TripNarrative.Builder builder = TripNarrative.builder();
+      // if routeCollection knows of this trip then use that information for TripNarrative
+      builder.setRouteShortName(_routeCollectionNarratives.get(trip.getRoute().getId()).getShortName());
+      narrative = builder.create();
+    }
+
+    _tripNarratives.put(trip.getId(), narrative);
+
+    for (StopTimeEntry ste: trip.getStopTimes()) {
+      addStopTime((StopTimeEntryImpl) ste);
+      if (getNarrativeForStopId(ste.getStop().getId()) == null) {
+        addStop(ste.getStop(), ste.getStop().getId().getId());
+      }
+    }
+  }
+
+  public TripNarrative removeTrip(TripEntryImpl trip) {
+    TripNarrative narrative = _tripNarratives.remove(trip.getId());
+    for (StopTimeEntry ste: trip.getStopTimes()) {
+      // don't orphan the stop times -- remove them as well
+      removeStopTime((StopTimeEntryImpl) ste);
+      // it clearly shouldn't delete the stops
+    }
+    return narrative;
+  }
+
+
+  public void addStop(StopEntry stop, String stopName) {
+    StopNarrative.Builder builder = StopNarrative.builder();
+    builder.setName(stopName);
+    _stopNarratives.put(stop.getId(), builder.create());
+  }
+
+  public void addStopTime(StopTimeEntryImpl stopTime) {
+    StopTimeNarrative.Builder builder = StopTimeNarrative.builder();
+    List<StopTimeNarrative> stopTimeNarratives = _stopTimeNarrativesByTripIdAndStopTimeSequence.get(stopTime.getTrip().getId());
+    if (stopTimeNarratives == null) {
+      stopTimeNarratives = new ArrayList<StopTimeNarrative>();
+    }
+    stopTimeNarratives.add(builder.create());
+    _stopTimeNarrativesByTripIdAndStopTimeSequence.put(stopTime.getTrip().getId(), stopTimeNarratives);
+  }
+
+  public void removeStopTime(StopTimeEntryImpl stopTime) {
+    _stopTimeNarrativesByTripIdAndStopTimeSequence.remove(stopTime.getTrip().getId());
+  }
+
+  public boolean addShape(ShapePoints shape) {
+    _shapePointsById.put(shape.getShapeId(), shape);
+    return true;
+  }
+
+  public void removeShape(AgencyAndId shapeId) {
+    _shapePointsById.remove(shapeId);
+  }
+
+  public boolean addAgency(AgencyEntryImpl agency) {
+    if (_agencyNarratives.get(agency.getId()) == null) {
+      AgencyNarrative.Builder ab = AgencyNarrative.builder();
+      ab.setName(agency.getId());
+      ab.setTimezone(TimeZone.getDefault().getDisplayName());
+      setNarrativeForAgency(agency.getId(), ab.create());
+      return true;
+    }
+    return false;
+  }
+
+  public StopNarrative removeStop(AgencyAndId stopId) {
+    return _stopNarratives.remove(stopId);
   }
 }

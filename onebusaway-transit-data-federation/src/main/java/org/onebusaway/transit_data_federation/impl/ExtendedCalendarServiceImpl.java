@@ -35,6 +35,7 @@ import net.sf.ehcache.Element;
 import org.onebusaway.collections.CollectionsLibrary;
 import org.onebusaway.container.cache.Cacheable;
 import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.gtfs.model.calendar.ServiceInterval;
@@ -88,6 +89,15 @@ public class ExtendedCalendarServiceImpl implements ExtendedCalendarService {
 
   public void setServiceDateRangeCache(Cache serviceDateRangeCache) {
     _serviceDateRangeCache = serviceDateRangeCache;
+  }
+
+  /**
+   * allow a forced update of underlying state.
+   * @param data
+   */
+  public void setData(CalendarServiceData data) {
+    _calendarService.setData(data);
+    cacheServiceDatesForServiceIds();
   }
 
   @PostConstruct
