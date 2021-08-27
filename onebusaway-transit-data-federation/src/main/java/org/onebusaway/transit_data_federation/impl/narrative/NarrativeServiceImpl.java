@@ -24,6 +24,9 @@ import javax.annotation.PostConstruct;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
+import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.narrative.AgencyNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.RouteCollectionNarrative;
@@ -32,6 +35,7 @@ import org.onebusaway.transit_data_federation.model.narrative.StopTimeNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.utility.ObjectSerializationLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,5 +101,45 @@ public class NarrativeServiceImpl implements NarrativeService {
   @Override
   public ShapePoints getShapePointsForId(AgencyAndId id) {
     return _provider.getShapePointsForId(id);
+  }
+
+  @Override
+  public void addTrip(TripEntryImpl trip, TripNarrative narrative) {
+    _provider.addTrip(trip, narrative);
+  }
+
+  @Override
+  public TripNarrative removeTrip(TripEntryImpl trip) {
+    return _provider.removeTrip(trip);
+  }
+
+  @Override
+  public void addStop(AgencyAndId stopId, StopNarrative stopNarrative) {
+    _provider.setNarrativeForStop(stopId, stopNarrative);
+  }
+
+  @Override
+  public void addStopTime(StopTimeEntryImpl stopTime) {
+    _provider.addStopTime(stopTime);
+  }
+
+  @Override
+  public boolean addShape(ShapePoints shape) {
+    return _provider.addShape(shape);
+  }
+
+  @Override
+  public void removeShape(AgencyAndId shapeId) {
+    _provider.removeShape(shapeId);
+  }
+
+  @Override
+  public boolean addAgency(AgencyEntryImpl agency) {
+    return _provider.addAgency(agency);
+  }
+
+  @Override
+  public StopNarrative removeStop(AgencyAndId stop) {
+    return _provider.removeStop(stop);
   }
 }

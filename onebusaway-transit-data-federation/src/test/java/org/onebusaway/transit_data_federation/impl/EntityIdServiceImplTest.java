@@ -13,39 +13,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime;
+package org.onebusaway.transit_data_federation.impl;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.calendar.ServiceDate;
+import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.transit_data_federation.impl.transit_graph.RouteCollectionEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
-import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.Id;
+import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
-import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
-public class GtfsRealtimeEntitySourceTest {
+public class EntityIdServiceImplTest {
 
-  private GtfsRealtimeEntitySource _source;
+  private EntityIdServiceImpl _service;
 
   private TransitGraphDao _dao;
 
+  private CalendarService _calendarService;
+
   @Before
   public void before() {
-    _source = new GtfsRealtimeEntitySource();
-    _source.setAgencyIds(Arrays.asList("1", "2"));
+    _service = new EntityIdServiceImpl();
+    _service.setAgencyIds(Arrays.asList("1", "2"));
 
     _dao = Mockito.mock(TransitGraphDao.class);
-    _source.setTransitGraphDao(_dao);
+    _service.setTransitGraphDao(_dao);
+
+    _calendarService = Mockito.mock(CalendarService.class);
+    _service.setCalendarService(_calendarService);
+
   }
 
   @Test
@@ -59,11 +66,11 @@ public class GtfsRealtimeEntitySourceTest {
     route.setParent(routeCollection);
 
     Mockito.when(_dao.getRouteForId(route.getId())).thenReturn(route);
-    Id routeId = _source.getRouteId("R10");
+    AgencyAndId routeId = _service.getRouteId("R10");
     assertEquals("2", routeId.getAgencyId());
     assertEquals("R10C", routeId.getId());
 
-    routeId = _source.getRouteId("R11");
+    routeId = _service.getRouteId("R11");
     assertEquals("1", routeId.getAgencyId());
     assertEquals("R11", routeId.getId());
   }
@@ -75,28 +82,25 @@ public class GtfsRealtimeEntitySourceTest {
     trip.setId(new AgencyAndId("2", "T10"));
     Mockito.when(_dao.getTripEntryForId(trip.getId())).thenReturn(trip);
 
-    Id tripId = _source.getTripId("T10");
+    AgencyAndId tripId = _service.getTripId("T10");
     assertEquals("2", tripId.getAgencyId());
     assertEquals("T10", tripId.getId());
 
-    tripId = _source.getTripId("T11");
+    tripId = _service.getTripId("T11");
     assertEquals("1", tripId.getAgencyId());
     assertEquals("T11", tripId.getId());
+
+    // test assume agencyAndId
+    tripId = _service.getTripId("2_T10");
+    assertEquals("2", tripId.getAgencyId());
+    assertEquals("T10", tripId.getId());
+
+    // Looks like AgencyAndId but does not exist in graph.
+    tripId = _service.getTripId("1_T11");
+    assertEquals("1", tripId.getAgencyId());
+    assertEquals("1_T11", tripId.getId());
   }
 
-  @Test
-  public void testGetTrip() {
-
-    TripEntryImpl trip = new TripEntryImpl();
-    trip.setId(new AgencyAndId("2", "T10"));
-    Mockito.when(_dao.getTripEntryForId(trip.getId())).thenReturn(trip);
-
-    TripEntry trip2 = _source.getTrip("T10");
-    assertSame(trip, trip2);
-
-    trip2 = _source.getTrip("T11");
-    assertNull(trip2);
-  }
 
   @Test
   public void testGetStopId() {
@@ -104,13 +108,46 @@ public class GtfsRealtimeEntitySourceTest {
     StopEntryImpl stop = new StopEntryImpl(new AgencyAndId("2", "S10"), 0, 0);
     Mockito.when(_dao.getStopEntryForId(stop.getId())).thenReturn(stop);
 
-    Id stopId = _source.getStopId("S10");
+    AgencyAndId stopId = _service.getStopId("S10");
     assertEquals("2", stopId.getAgencyId());
     assertEquals("S10", stopId.getId());
 
-    stopId = _source.getStopId("S11");
+    stopId = _service.getStopId("S11");
     assertEquals("1", stopId.getAgencyId());
     assertEquals("S11", stopId.getId());
+  }
+
+  @Test
+  public void testGetShapeId() {
+
+    ShapePoints shapePoints = new ShapePoints();
+    shapePoints.setShapeId(new AgencyAndId("2", "shape0"));
+    Mockito.when(_dao.getShape(shapePoints.getShapeId())).thenReturn(shapePoints);
+
+    AgencyAndId shapeId = _service.getShapeId("shape0");
+    assertEquals("2", shapeId.getAgencyId());
+    assertEquals("shape0", shapeId.getId());
+
+    shapeId = _service.getStopId("shape1");
+    assertEquals("1", shapeId.getAgencyId());
+    assertEquals("shape1", shapeId.getId());
+  }
+
+  @Test
+  public void testGetServiceId() {
+
+    AgencyAndId serviceId = new AgencyAndId("2", "date0");
+    Set<ServiceDate> dates = new HashSet<>();
+    dates.add(new ServiceDate());
+    Mockito.when(_calendarService.getServiceDatesForServiceId(serviceId)).thenReturn(dates);
+
+    AgencyAndId svcId = _service.getServiceId("date0");
+    assertEquals("2", svcId.getAgencyId());
+    assertEquals("date0", svcId.getId());
+
+    svcId = _service.getServiceId("date1");
+    assertEquals("1", svcId.getAgencyId());
+    assertEquals("date1", svcId.getId());
   }
 
 }

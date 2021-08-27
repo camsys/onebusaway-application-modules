@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.gtfs.model.calendar.ServiceInterval;
 import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
@@ -49,4 +50,6 @@ public interface ExtendedCalendarService {
   
   public List<Date> getPreviousServiceDatesForArrivalInterval(
       ServiceIdActivation serviceIds, ServiceInterval serviceInterval, long time);
+
+  public void setData(CalendarServiceData data);
 }

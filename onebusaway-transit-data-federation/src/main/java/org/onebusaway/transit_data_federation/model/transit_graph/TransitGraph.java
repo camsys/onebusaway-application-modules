@@ -19,6 +19,10 @@ import java.util.List;
 
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.services.transit_graph.AgencyEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
@@ -32,13 +36,27 @@ public interface TransitGraph {
 
   public AgencyEntry getAgencyForId(String id);
 
+  boolean addAgencyEntry(AgencyEntryImpl agency);
+
   public List<StopEntry> getAllStops();
+
+  boolean addStopEntry(StopEntryImpl stop);
+
+  boolean removeStopEntry(AgencyAndId stopId);
 
   public List<TripEntry> getAllTrips();
 
   public List<BlockEntry> getAllBlocks();
 
   public List<StopEntry> getStopsByLocation(CoordinateBounds bounds);
+
+  boolean addBlock(BlockEntryImpl block);
+
+  boolean addTripEntry(TripEntryImpl trip);
+
+  boolean removeTripEntryForId(AgencyAndId id);
+
+  boolean updateBlockIndices(TripEntryImpl tripEntry);
 
   public BlockEntry getBlockEntryForId(AgencyAndId blockId);
 

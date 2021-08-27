@@ -29,8 +29,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +38,8 @@ public class BundleBuildingServiceImplTest {
   private static Logger _log = LoggerFactory.getLogger(BundleBuildingServiceImplTest.class);
   private static String CT_GIS_ZIP = "29_gis.zip";
   private static String CT_SCHEDULE_ZIP = "29_HastusRoutesAndSchedules.zip";
+  private static String MTA_GTFS_M34 = "gtfs-m34.zip";
+  private static String MTA_STIF_M34 = "stif-m34.zip";
   private BundleBuildingServiceImpl _service;
 
   public void setup() {
@@ -87,13 +89,13 @@ public class BundleBuildingServiceImplTest {
         _log.debug("list called with " + directory);
         ArrayList<String> list = new ArrayList<String>();
         if (directory.equals("test/gtfs_latest")) {
-          list.add("gtfs-m34.zip");
+          list.add(MTA_GTFS_M34);
         } else if (directory.equals("test/aux_latest")) {
           if ("true".equals(_service.getAuxConfig())) {
             list.add(CT_GIS_ZIP);
             list.add(CT_SCHEDULE_ZIP);
           } else {
-            list.add("stif-m34.zip");
+            list.add(MTA_STIF_M34);
           }
         } else if (directory.equals("test/config")) {
           // do nothing
@@ -107,11 +109,10 @@ public class BundleBuildingServiceImplTest {
       public String get(String key, String tmpDir) {
         _log.debug("get called with " + key);
         InputStream source = null;
-        if (key.equals("gtfs-m34.zip")) {
-          source = this.getClass().getResourceAsStream(
-              "gtfs-m34.zip");
-        } else if (key.equals("stif-m34.zip")) {
-          source = this.getClass().getResourceAsStream("stif-m34.zip");
+        if (key.equals(MTA_GTFS_M34)) {
+          source = this.getClass().getResourceAsStream(MTA_GTFS_M34);
+        } else if (key.equals(MTA_STIF_M34)) {
+          source = this.getClass().getResourceAsStream(MTA_STIF_M34);
         } else if (key.equals(CT_GIS_ZIP)) {
           source = this.getClass().getResourceAsStream(CT_GIS_ZIP);
         } else if (key.equals(CT_SCHEDULE_ZIP)) {

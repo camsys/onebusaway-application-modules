@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.DistanceAlongShapeLibrary.DistanceAlongShapeException;
 import org.onebusaway.transit_data_federation.impl.shapes.PointAndIndex;
@@ -35,6 +36,7 @@ import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.ShapePointsFactory;
 import org.onebusaway.transit_data_federation.testing.UnitTestingSupport;
 
+@Ignore
 public class DistanceAlongShapeLibraryTest {
 
   @Test

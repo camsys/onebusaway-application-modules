@@ -29,14 +29,7 @@ import org.onebusaway.transit_data_federation.model.ShapePoints;
  * @see ShapePoint
  * @see ShapePoints
  */
-public interface ShapePointService {
-
-  /**
-   * @param shapeId the target shape id
-   * @return the set of shape points for the specified shape id, or null if the
-   *         shape was not found
-   */
-  public ShapePoints getShapePointsForShapeId(AgencyAndId shapeId);
+public interface ShapePointService extends BasicShapePointService {
   
   /**
    * @param shapeIds the target shape ids in order
@@ -44,4 +37,8 @@ public interface ShapePointService {
    * @throws IllegalStateException if a shape id could not be found
    */
   public ShapePoints getShapePointsForShapeIds(List<AgencyAndId> shapeIds);
+
+  public boolean addShape(ShapePoints shape);
+
+  public void removeShape(AgencyAndId shapeId);
 }

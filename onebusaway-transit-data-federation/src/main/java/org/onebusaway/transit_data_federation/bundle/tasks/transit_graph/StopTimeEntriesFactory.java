@@ -30,14 +30,16 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Stop;
 import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
+import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.DistanceAlongShapeLibrary.DistanceAlongShapeException;
 import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.DistanceAlongShapeLibrary.StopIsTooFarFromShapeException;
 import org.onebusaway.transit_data_federation.impl.shapes.PointAndIndex;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
+import org.onebusaway.transit_data_federation.model.transit_graph.TransitGraph;
+import org.onebusaway.transit_data_federation.services.StopTimeEntriesProcessor;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -48,7 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class StopTimeEntriesFactory {
+public class StopTimeEntriesFactory implements StopTimeEntriesProcessor {
 
   private static final boolean DEFAULT_LENIENT_MODE = false;
   private static final boolean DEFAULT_TIMEPOINT_SUPPORT = false;
@@ -59,7 +61,7 @@ public class StopTimeEntriesFactory {
   private DistanceAlongShapeLibrary _distanceAlongShapeLibrary;
 
   private long _invalidStopToShapeMappingExceptionCount;
-  
+
   private boolean isLenientArrivalDepartureTimes = DEFAULT_LENIENT_MODE;
 
   // OBA doesn't support time points very well -- so optionally remove them
@@ -85,7 +87,16 @@ public class StopTimeEntriesFactory {
     return _invalidStopToShapeMappingExceptionCount;
   }
 
-  public List<StopTimeEntryImpl> processStopTimes(TransitGraphImpl graph,
+  public List<StopTimeEntryImpl> processStopTimeEntries(TransitGraph graph,
+                                                        List<StopTimeEntry> stopTimeEntries, TripEntryImpl tripEntry, ShapePoints shapePoints) {
+    // Write stop time entries into stop times.
+    // In the future, this could be refactored to use StopTimeEntry
+
+    List<StopTime> stopTimes = createStopTimes(stopTimeEntries);
+    return processStopTimes(graph, stopTimes, tripEntry, shapePoints);
+  }
+
+  public List<StopTimeEntryImpl> processStopTimes(TransitGraph graph,
       List<StopTime> stopTimes, TripEntryImpl tripEntry, ShapePoints shapePoints) {
 
     // In case the list is unmodifiable
@@ -183,7 +194,7 @@ private void removeDuplicateStopTimes(List<StopTime> stopTimes) {
   }
 
   private List<StopTimeEntryImpl> createInitialStopTimeEntries(
-      TransitGraphImpl graph, List<StopTime> stopTimes) {
+      TransitGraph graph, List<StopTime> stopTimes) {
 
     List<StopTimeEntryImpl> stopTimeEntries = new ArrayList<StopTimeEntryImpl>(
         stopTimes.size());
@@ -205,7 +216,11 @@ private void removeDuplicateStopTimes(List<StopTime> stopTimes) {
     	  
       }
       AgencyAndId stopId = stop.getId();
-      StopEntryImpl stopEntry = graph.getStopEntryForId(stopId);
+      StopEntry stopEntry = graph.getStopEntryForId(stopId);
+      StopEntryImpl stopEntryImpl = null;
+      if(stopEntry != null){
+        stopEntryImpl = (StopEntryImpl) stopEntry;
+      }
 
       StopTimeEntryImpl stopTimeEntry = new StopTimeEntryImpl();
 
@@ -214,13 +229,32 @@ private void removeDuplicateStopTimes(List<StopTime> stopTimes) {
       stopTimeEntry.setGtfsSequence(stopTime.getStopSequence());
       stopTimeEntry.setDropOffType(stopTime.getDropOffType());
       stopTimeEntry.setPickupType(stopTime.getPickupType());
-      stopTimeEntry.setStop(stopEntry);
+      stopTimeEntry.setStop(stopEntryImpl);
 
       stopTimeEntries.add(stopTimeEntry);
       sequence++;
     }
 
     return stopTimeEntries;
+  }
+
+  private List<StopTime> createStopTimes(List<StopTimeEntry> stopTimeEntries) {
+    List<StopTime> stopTimes = new ArrayList<>();
+    for (StopTimeEntry entry : stopTimeEntries) {
+      StopTime stopTime = new StopTime();
+      stopTime.setStop(new Stop());
+      stopTime.getStop().setId(entry.getStop().getId());
+      stopTime.setTrip(new Trip());
+      stopTime.getTrip().setId(entry.getTrip().getId());
+      stopTime.setId(entry.getId());
+      stopTime.setStopSequence(entry.getGtfsSequence());
+      stopTime.setDropOffType(entry.getDropOffType());
+      stopTime.setPickupType(entry.getPickupType());
+      stopTime.setArrivalTime(entry.getArrivalTime());
+      stopTime.setDepartureTime(entry.getDepartureTime());
+      stopTimes.add(stopTime);
+    }
+    return stopTimes;
   }
 
   /**
@@ -469,7 +503,7 @@ private void removeDuplicateStopTimes(List<StopTime> stopTimes) {
    * 
    * @param stopTimes
    * @param distances
-   * @param arrivalTimesByDistanceTraveled
+   * @param scheduleTimesByDistanceTraveled
    */
   private void populateArrivalAndDepartureTimesByDistanceTravelledForStopTimes(
       List<StopTime> stopTimes, double[] distances,
@@ -508,6 +542,10 @@ private void removeDuplicateStopTimes(List<StopTime> stopTimes) {
   private static class StopTimeComparator implements Comparator<StopTime> {
 
     public int compare(StopTime o1, StopTime o2) {
+      // GTFS service changes added stops may not have sequence value provided
+      if (o1.getStopSequence() < 0 || o2.getStopSequence() < 0) {
+        return o1.getArrivalTime() - o2.getArrivalTime();
+      }
       return o1.getStopSequence() - o2.getStopSequence();
     }
   }

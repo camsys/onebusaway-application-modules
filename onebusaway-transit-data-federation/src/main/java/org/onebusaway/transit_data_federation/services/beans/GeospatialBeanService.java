@@ -28,4 +28,6 @@ import java.util.List;
 public interface GeospatialBeanService {
   
   public List<AgencyAndId> getStopsByBounds(CoordinateBounds bounds);
+
+  public boolean refresh();
 }

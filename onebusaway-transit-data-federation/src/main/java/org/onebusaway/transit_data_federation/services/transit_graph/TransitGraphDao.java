@@ -19,6 +19,12 @@ import java.util.List;
 
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
+import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.model.ShapePoints;
+import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 
 /**
  * Service interface that abstract operations on a transit graph, such as access
@@ -41,6 +47,8 @@ public interface TransitGraphDao {
    */
   public AgencyEntry getAgencyForId(String id);
 
+  public boolean addAgencyEntry(AgencyEntryImpl aei);
+
   /**
    * @return the list of all stop entries in the transit graph
    */
@@ -61,6 +69,10 @@ public interface TransitGraphDao {
    */
   public List<StopEntry> getStopsByLocation(CoordinateBounds bounds);
 
+
+  public boolean addStopEntry(StopEntryImpl stop);
+
+  public boolean removeStopEntry(AgencyAndId stopId);
   /**
    * @return the list of all block entries in the transit graph
    */
@@ -104,5 +116,31 @@ public interface TransitGraphDao {
    * @param id a route id to query
    * @return the route entry with the specified id, or null if not found
    */
+
   public RouteEntry getRouteForId(AgencyAndId id);
+
+  /**
+   * delete the trip represented by the given id
+   * @param tripId tripId to delete
+   * @return true if deletion was successful
+   */
+  public boolean deleteTripEntryForId(AgencyAndId tripId);
+
+  public boolean addTripEntry(TripEntryImpl trip, TripNarrative narrative);
+
+  public boolean addTripEntry(TripEntryImpl trip);
+
+  public boolean removeTripEntry(TripEntryImpl trip);
+
+  public void updateCalendarServiceData(CalendarServiceData data);
+
+  public boolean addShape(ShapePoints shape);
+
+  public ShapePoints getShape(AgencyAndId shapeId);
+
+  public void removeShape(AgencyAndId shapeId);
+
+  public List<AgencyAndId> getAllReferencedShapeIds();
+
+  public boolean updateStopTimesForTrip(TripEntryImpl trip, List<StopTimeEntry> stopTimeEntries, AgencyAndId shapeId);
 }

@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-application-modules</artifactId>
-    <version>2.0.36.14-j11-cs-nyc-SNAPSHOT</version>
+    <version>2.0.36.14-cs-nyc-SNAPSHOT</version>
   </parent>
   <artifactId>onebusaway-transit-data-federation</artifactId>
   <packaging>jar</packaging>
@@ -33,6 +33,12 @@
       <artifactId>onebusaway-realtime-api</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+ <!--   <dependency>
+      <groupId>org.onebusaway</groupId>
+      <artifactId>onebusaway-transit-data-federation-common</artifactId>
+      <version>${project.version}</version>
+    </dependency>-->
 
     <dependency>
       <groupId>org.onebusaway</groupId>
@@ -127,7 +133,20 @@
       <artifactId>guava</artifactId>
     </dependency>
 
+    <!-- GTFS sometimes -->
     <dependency>
+      <groupId>com.camsys.transit</groupId>
+      <artifactId>gtfs-servicechange-bindings</artifactId>
+      <version>0.3.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.validation</groupId>
+          <artifactId>validation-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+ <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
       <scope>test</scope>

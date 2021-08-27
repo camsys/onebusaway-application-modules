@@ -21,6 +21,9 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Stop;
 import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.Trip;
+import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.narrative.AgencyNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.RouteCollectionNarrative;
@@ -28,6 +31,7 @@ import org.onebusaway.transit_data_federation.model.narrative.StopNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.StopTimeNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 
 /**
@@ -42,7 +46,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEnt
  * The narrative service has methods for querying narrative objects for various
  * low-level objects, such as {@link Agency}, {@link Stop},
  * {@link RouteCollectionEntry}, {@link Trip}, and {@link StopTime}.
- * 
+ *
  * @author bdferris
  * @see AgencyNarrative
  * @see StopNarrative
@@ -63,4 +67,20 @@ public interface NarrativeService {
   public StopTimeNarrative getStopTimeForEntry(StopTimeEntry entry);
   
   public ShapePoints getShapePointsForId(AgencyAndId id);
+
+  public void addTrip(TripEntryImpl trip, TripNarrative narrative);
+
+  public TripNarrative removeTrip(TripEntryImpl trip);
+
+  public void addStop(AgencyAndId stopId, StopNarrative stopNarrative);
+
+  public void addStopTime(StopTimeEntryImpl stopTime);
+
+  public boolean addShape(ShapePoints shape);
+
+  public void removeShape(AgencyAndId shapeId);
+
+  public boolean addAgency(AgencyEntryImpl agency);
+
+  public StopNarrative removeStop(AgencyAndId stopId);
 }

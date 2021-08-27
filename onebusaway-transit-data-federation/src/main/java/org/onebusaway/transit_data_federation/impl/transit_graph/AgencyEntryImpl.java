@@ -16,6 +16,7 @@
 package org.onebusaway.transit_data_federation.impl.transit_graph;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class AgencyEntryImpl implements AgencyEntry, Serializable {
 
   private List<StopEntry> _stops = Collections.emptyList();
 
-  private List<RouteCollectionEntry> _routeCollections = Collections.emptyList();
+  private List<RouteCollectionEntry> _routeCollections = new ArrayList<RouteCollectionEntry>();
 
   public void setId(String id) {
     _id = id;

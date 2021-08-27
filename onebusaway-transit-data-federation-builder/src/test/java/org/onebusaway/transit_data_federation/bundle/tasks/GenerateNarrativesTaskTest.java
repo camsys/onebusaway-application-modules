@@ -56,6 +56,7 @@ import org.onebusaway.transit_data_federation.model.narrative.StopTimeNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
+import org.onebusaway.transit_data_federation.services.shapes.BasicShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
@@ -72,7 +73,7 @@ public class GenerateNarrativesTaskTest {
 
   private TransitGraphDao _transitGraphDao;
 
-  private ShapePointHelper _shapePointHelper;
+  private BasicShapePointService _shapePointService;
 
   private BlockIndexService _blockIndexService;
 
@@ -89,8 +90,8 @@ public class GenerateNarrativesTaskTest {
     _gtfsDao = Mockito.mock(GtfsRelationalDao.class);
     _task.setGtfsDao(_gtfsDao);
 
-    _shapePointHelper = Mockito.mock(ShapePointHelper.class);
-    _task.setShapePointHelper(_shapePointHelper);
+    _shapePointService = Mockito.mock(BasicShapePointService.class);
+    _task.setShapePointService(_shapePointService);
 
     _blockIndexService = Mockito.mock(BlockIndexService.class);
     _task.setBlockIndexService(_blockIndexService);
@@ -192,14 +193,14 @@ public class GenerateNarrativesTaskTest {
   public void testGenerateShapePointNarratives() {
     AgencyAndId shapeId = aid("shapeId");
     ShapePoints points = new ShapePoints();
-    Mockito.when(_shapePointHelper.getShapePointsForShapeId(shapeId)).thenReturn(
+    Mockito.when(_shapePointService.getShapePointsForShapeId(shapeId)).thenReturn(
         points);
 
     Mockito.when(_gtfsDao.getAllShapeIds()).thenReturn(Arrays.asList(shapeId));
 
     _task.generateShapePointNarratives(_provider);
 
-    Mockito.verify(_shapePointHelper).getShapePointsForShapeId(shapeId);
+    Mockito.verify(_shapePointService).getShapePointsForShapeId(shapeId);
 
     assertSame(points, _provider.getShapePointsForId(shapeId));
   }
