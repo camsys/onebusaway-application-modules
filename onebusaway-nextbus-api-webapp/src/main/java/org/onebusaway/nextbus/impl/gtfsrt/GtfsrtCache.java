@@ -17,8 +17,6 @@ package org.onebusaway.nextbus.impl.gtfsrt;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import org.springframework.stereotype.Component;
 

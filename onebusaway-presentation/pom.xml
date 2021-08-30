@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.onebusaway</groupId>
         <artifactId>onebusaway-application-modules</artifactId>
-        <version>2.0.36.13-cs-nyc-SNAPSHOT</version>
+        <version>2.0.36.14-cs-nyc-SNAPSHOT</version>
     </parent>
     <artifactId>onebusaway-presentation</artifactId>
     <packaging>jar</packaging>
@@ -48,6 +48,12 @@
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-siri-core</artifactId>
 			<version>${onebusaway-siri-version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
 	    </dependency>
 
         <!-- RMI-like service for wiring up services between VMs -->
@@ -68,6 +74,16 @@
             <groupId>org.apache.struts</groupId>
             <artifactId>struts2-convention-plugin</artifactId>
         </dependency>
+      <dependency>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm</artifactId>
+          <version>${asm-version}</version>
+      </dependency>
+      <dependency>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm-commons</artifactId>
+          <version>${asm-version}</version>
+      </dependency>
         <dependency>
             <groupId>org.apache.struts</groupId>
             <artifactId>struts2-json-plugin</artifactId>
@@ -128,15 +144,20 @@
             <artifactId>spymemcached</artifactId>
             <version>2.8.1</version>
         </dependency>
+
         <dependency>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
         </dependency>
 		<dependency>
 			<groupId>org.onebusaway.util</groupId>
 			<artifactId>comparators</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

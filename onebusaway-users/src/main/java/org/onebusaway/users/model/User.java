@@ -24,6 +24,7 @@ import javax.persistence.*;
 import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
 import org.onebusaway.container.model.IdentityBean;
 import org.onebusaway.users.services.UserDao;
 import org.onebusaway.users.services.UserPropertiesMigration;
@@ -71,7 +72,6 @@ import org.onebusaway.users.services.UserPropertiesService;
  * @see UserRole
  * @see UserProperties
  * @see UserDao
- * @see UserService
  * @see UserPropertiesService
  * @see UserPropertiesMigration
  */
@@ -84,7 +84,8 @@ public class User extends IdentityBean<Integer> {
   private static final long serialVersionUID = 1L;
 
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy= GenerationType.AUTO, generator="native")
+  @GenericGenerator(name = "native", strategy = "native")
   @AccessType("property")
   private Integer id;
 
@@ -96,6 +97,7 @@ public class User extends IdentityBean<Integer> {
   private boolean temporary;
 
   @Lob
+  @Column(length=16777216)
   private UserProperties properties;
 
   @ManyToMany(fetch = FetchType.EAGER)

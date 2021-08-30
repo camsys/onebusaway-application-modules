@@ -21,9 +21,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
-import org.springframework.stereotype.Component;
-
 import com.google.common.cache.CacheBuilder;
+import org.springframework.stereotype.Component;
 
 @Component
 public class TimeServiceImpl implements TimeService {

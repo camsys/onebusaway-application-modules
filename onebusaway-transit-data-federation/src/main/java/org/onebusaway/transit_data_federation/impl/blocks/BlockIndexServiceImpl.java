@@ -29,10 +29,12 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 import org.onebusaway.collections.FactoryMap;
+import org.onebusaway.collections.tuple.Pair;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexFactoryService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
@@ -116,18 +118,26 @@ public class BlockIndexServiceImpl implements BlockIndexService {
   }
 
   @PostConstruct
-  @Refreshable(dependsOn = RefreshableResources.BLOCK_INDEX_DATA)
+  @Refreshable(dependsOn = RefreshableResources.BLOCK_INDEX_DATA_BUNDLE)
   public void setup() throws Exception {
-
-    loadBlockTripIndices();
-    loadBlockLayoverIndices();
-    loadFrequencyBlockTripIndices();
+    loadBlockTripIndicesFromBundle();
+    loadBlockLayoverIndicesFromBundle();
+    loadFrequencyBlockTripIndicesFromBundle();
     loadBlockTripIndicesByBlockId();
 
     loadBlockSequenceIndices();
 
     loadStopTimeIndices();
     loadStopTripIndices();
+  }
+
+  @Refreshable(dependsOn = RefreshableResources.BLOCK_INDEX_DATA_GRAPH)
+  public void reloadFromGraph() throws Exception {
+      loadBlockTripLayoverFrequencyIndicesFromGraph();
+      loadBlockTripIndicesByBlockId();
+      loadBlockSequenceIndices();
+      loadStopTimeIndices();
+      loadStopTripIndices();
   }
 
   @Override
@@ -239,9 +249,48 @@ public class BlockIndexServiceImpl implements BlockIndexService {
    * 
    ****/
 
-  private void loadBlockTripIndices() throws IOException,
-      ClassNotFoundException {
+  private void loadBlockTripLayoverFrequencyIndicesFromGraph() {
+    Iterable<BlockEntry> blocks = _graphDao.getAllBlocks();
+    _blockTripIndices.clear();
+    _blockTripIndicesByAgencyId.clear();
+    _blockTripIndicesByBlockId.clear();
+    _blockTripIndicesByRouteId.clear();
+    _blockLayoverIndices.clear();
+    _blockLayoverIndicesByAgencyId.clear();
+    _blockLayoverIndicesByBlockId.clear();
+    _blockLayoverIndicesByRouteId.clear();
+    _frequencyBlockTripIndices.clear();
+    _frequencyBlockTripIndicesByAgencyId.clear();
+    _frequencyBlockTripIndicesByBlockId.clear();
+    _frequencyBlockTripIndicesByRouteId.clear();
 
+    List<BlockTripIndexData> tripData = _factory.createTripData(blocks);
+    for (BlockTripIndexData data : tripData) {
+      _blockTripIndices.add(data.createIndex(_graphDao));
+    }
+    _blockTripIndicesByAgencyId = getBlockTripIndicesByAgencyId(_blockTripIndices);
+    _blockTripIndicesByRouteId = getBlockTripsByRouteId(_blockTripIndices);
+
+
+    for (BlockEntry block : _graphDao.getAllBlocks()) {
+      List<BlockEntry> list = Arrays.asList(block);
+      List<BlockTripIndex> indices = _factory.createTripIndices(list);
+      List<BlockLayoverIndex> layoverIndices = _factory.createLayoverIndices(list);
+      List<FrequencyBlockTripIndex> frequencyIndices = _factory.createFrequencyTripIndices(list);
+
+      if (!indices.isEmpty())
+        _blockTripIndicesByBlockId.put(block.getId(), indices);
+      if (!layoverIndices.isEmpty())
+        _blockLayoverIndicesByBlockId.put(block.getId(), layoverIndices);
+      if (!frequencyIndices.isEmpty())
+        _frequencyBlockTripIndicesByBlockId.put(block.getId(), frequencyIndices);
+    }
+
+  }
+
+  private void loadBlockTripIndicesFromBundle() throws IOException,
+      ClassNotFoundException {
+    // caller responsible for write lock
     File path = _bundle.getBlockTripIndicesPath();
 
     if (path.exists()) {
@@ -261,15 +310,15 @@ public class BlockIndexServiceImpl implements BlockIndexService {
 
     } else {
 
-      _blockTripIndices = Collections.emptyList();
+      _blockTripIndices = new ArrayList<BlockTripIndex>();
       _blockTripIndicesByAgencyId = Collections.emptyMap();
       _blockTripIndicesByRouteId = Collections.emptyMap();
     }
   }
 
-  private void loadBlockLayoverIndices() throws IOException,
+  private void loadBlockLayoverIndicesFromBundle() throws IOException,
       ClassNotFoundException {
-
+    // caller responsible for write lock
     File path = _bundle.getBlockLayoverIndicesPath();
 
     if (path.exists()) {
@@ -295,9 +344,9 @@ public class BlockIndexServiceImpl implements BlockIndexService {
     }
   }
 
-  private void loadFrequencyBlockTripIndices() throws IOException,
+  private void loadFrequencyBlockTripIndicesFromBundle() throws IOException,
       ClassNotFoundException {
-
+    // caller responsible for write lock
     File path = _bundle.getFrequencyBlockTripIndicesPath();
 
     if (path.exists()) {
@@ -365,13 +414,16 @@ public class BlockIndexServiceImpl implements BlockIndexService {
    ****/
 
   private void loadBlockTripIndicesByBlockId() {
-
+    // caller responsible for write lock
     _log.info("calculating block trip indices by blockId...");
     long t1 = SystemTime.currentTimeMillis();
 
+
+    Iterable<BlockEntry> blocks = _graphDao.getAllBlocks();
     _blockTripIndicesByBlockId = new HashMap<AgencyAndId, List<BlockTripIndex>>();
     _blockLayoverIndicesByBlockId = new HashMap<AgencyAndId, List<BlockLayoverIndex>>();
     _frequencyBlockTripIndicesByBlockId = new HashMap<AgencyAndId, List<FrequencyBlockTripIndex>>();
+    _blockSequenceIndices = _factory.createSequenceIndices(blocks);
 
     for (BlockEntry block : _graphDao.getAllBlocks()) {
       List<BlockEntry> list = Arrays.asList(block);
@@ -398,12 +450,12 @@ public class BlockIndexServiceImpl implements BlockIndexService {
 
   private void loadBlockSequenceIndices() throws IOException,
       ClassNotFoundException {
-
+    // caller responsible for write lock
     _blockSequenceIndices = _factory.createSequenceIndices(_graphDao.getAllBlocks());
   }
 
   private void loadStopTimeIndices() {
-
+    // caller responsible for write lock
     // Clear any existing indices
     for (StopEntry stop : _graphDao.getAllStops()) {
       StopEntryImpl stopImpl = (StopEntryImpl) stop;
@@ -417,6 +469,8 @@ public class BlockIndexServiceImpl implements BlockIndexService {
 
     for (BlockStopTimeIndex index : indices) {
       StopEntryImpl stop = (StopEntryImpl) index.getStop();
+      // normalize stop- some old references are left in the block
+      stop = (StopEntryImpl) _graphDao.getStopEntryForId(stop.getId());
       stop.addStopTimeIndex(index);
     }
 
@@ -429,7 +483,7 @@ public class BlockIndexServiceImpl implements BlockIndexService {
   }
 
   private void loadStopTripIndices() {
-
+    // caller responsible for write lock
     // Clear any existing indices
     for (StopEntry stop : _graphDao.getAllStops()) {
       StopEntryImpl stopImpl = (StopEntryImpl) stop;

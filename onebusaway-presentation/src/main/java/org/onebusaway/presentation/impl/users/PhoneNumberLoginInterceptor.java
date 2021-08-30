@@ -15,8 +15,10 @@
  */
 package org.onebusaway.presentation.impl.users;
 
+import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.struts2.dispatcher.Parameter;
 import org.onebusaway.users.impl.PhoneNumberLibrary;
 import org.onebusaway.users.impl.authentication.DefaultUserAuthenticationToken;
 import org.onebusaway.users.model.IndexedUserDetails;
@@ -55,7 +57,7 @@ public class PhoneNumberLoginInterceptor extends AbstractInterceptor {
   public String intercept(ActionInvocation invocation) throws Exception {
 
     ActionContext context = invocation.getInvocationContext();
-    Map<String, Object> params = context.getParameters();
+    Map<String, Parameter> params = context.getParameters();
     String phoneNumber = getPhoneNumber(params);
 
     phoneNumber = PhoneNumberLibrary.normalizePhoneNumber(phoneNumber);
@@ -82,12 +84,15 @@ public class PhoneNumberLoginInterceptor extends AbstractInterceptor {
     return invocation.invoke();
   }
 
-  private String getPhoneNumber(Map<String, Object> params) {
+  private String getPhoneNumber(Map<String, Parameter> params) {
 
-    Object value = params.get(_phoneNumberParameterName);
+    Parameter param = params.get(_phoneNumberParameterName);
 
-    if (value == null)
+    if (param == null || param.getObject() == null) {
       return null;
+    }
+
+    Object value = param.getObject();
 
     if (value instanceof String[]) {
       String[] values = (String[]) value;

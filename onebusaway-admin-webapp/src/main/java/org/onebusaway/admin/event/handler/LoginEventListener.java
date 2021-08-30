@@ -15,7 +15,7 @@
  */
 package org.onebusaway.admin.event.handler;
 
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.onebusaway.util.logging.LoggingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -33,10 +33,21 @@ public class LoginEventListener implements ApplicationListener<AuthenticationSuc
 	
 	@Override
 	public void onApplicationEvent(AuthenticationSuccessEvent event) {
-		UserDetails userDetails = (UserDetails) event.getAuthentication().getPrincipal();
-		String component = System.getProperty("admin.chefRole");
-		String message = "User '" + userDetails.getUsername() + "' logged in";
-		loggingService.log(component, Level.INFO, message);
+		Object obj = event.getAuthentication().getPrincipal();
+		if (obj instanceof  UserDetails) {
+			UserDetails userDetails = (UserDetails) event.getAuthentication().getPrincipal();
+			String component = System.getProperty("admin.chefRole");
+			String message = "User '" + userDetails.getUsername() + "' logged in";
+			loggingService.log(component, Level.INFO, message);
+			return;
+		}
+		if (obj instanceof  String) {
+			String component = System.getProperty("admin.chefRole");
+			String message = "User '" + obj + "' logged in";
+			loggingService.log(component, Level.INFO, message);
+			return;
+		}
+		throw new IllegalArgumentException("unexpected principal" + obj + " of type " + obj.getClass());
 	}
 
 	/**

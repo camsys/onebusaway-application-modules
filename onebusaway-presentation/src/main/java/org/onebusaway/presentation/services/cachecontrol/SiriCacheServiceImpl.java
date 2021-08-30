@@ -21,12 +21,10 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
-import org.onebusaway.container.refresh.Refreshable;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import org.onebusaway.container.refresh.Refreshable;
+import org.springframework.stereotype.Component;
 
 @Component("CacheService")
 public class SiriCacheServiceImpl extends CacheService<Integer, String> {

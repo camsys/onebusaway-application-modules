@@ -17,9 +17,11 @@ package org.onebusaway.twilio.impl;
 
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.struts2.dispatcher.Parameter;
 import org.apache.struts2.interceptor.SessionAware;
 import org.onebusaway.presentation.impl.users.XWorkRequestAttributes;
 import org.onebusaway.twilio.services.SessionManager;
@@ -53,13 +55,17 @@ public class TwilioInterceptor extends AbstractInterceptor {
   @Override
   public String intercept(ActionInvocation invocation) throws Exception {
     ActionContext context = invocation.getInvocationContext();
-    Map<String, Object> parameters = context.getParameters();
+    Map<String, Parameter> parameters = context.getParameters();
     
     /* Stringify parameters for debugging output */
     String paramString = "";  
-    for (Entry<String, Object> entry : parameters.entrySet()) {
+    for (Entry<String, Parameter> entry : parameters.entrySet()) {
     	paramString += entry.getKey() + "=";
-    	Object val = entry.getValue();
+    	Parameter param = entry.getValue();
+        if(param == null){
+          continue;
+        }
+    	Object val = param.getObject();
     	if (val instanceof String[]) {
     		paramString += Arrays.toString((String[])val);
     	} else {

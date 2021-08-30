@@ -18,16 +18,16 @@
 -->
 <!DOCTYPE struts PUBLIC 
     "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
-    "http://struts.apache.org/dtds/struts-2.0.dtd">
+    "http://struts.apache.org/dtds/struts-2.5.dtd">
 <struts>
 
     <constant name="struts.multipart.maxSize" value="10485760" />
 
-    <bean name="myXml" type="org.apache.struts2.rest.handler.ContentTypeHandler" class="org.onebusaway.api.impl.CustomXStreamHandler" />
+    <bean name="myXml" type="org.apache.struts2.rest.handler.ContentTypeHandler" class="org.onebusaway.api.serializers.xml.CustomXStreamHandler" />
     <bean name="myJson" type="org.apache.struts2.rest.handler.ContentTypeHandler" class="org.onebusaway.api.impl.CustomJsonLibHandler" />
-    <bean name="myCsv" type="org.apache.struts2.rest.handler.ContentTypeHandler" class="org.onebusaway.api.impl.CustomCsvHandler" />
-    <bean name="myProtocolBuffer" type="org.apache.struts2.rest.handler.ContentTypeHandler" class="org.onebusaway.api.impl.CustomProtocolBufferHandler" />
-    <bean name="myProtocolBufferText" type="org.apache.struts2.rest.handler.ContentTypeHandler" class="org.onebusaway.api.impl.CustomProtocolBufferTextHandler" />
+    <bean name="myCsv" type="org.apache.struts2.rest.handler.ContentTypeHandler" class="org.onebusaway.api.serializers.csv.CustomCsvHandler" />
+    <bean name="myProtocolBuffer" type="org.apache.struts2.rest.handler.ContentTypeHandler" class="org.onebusaway.api.serializers.pb.CustomProtocolBufferHandler" />
+    <bean name="myProtocolBufferText" type="org.apache.struts2.rest.handler.ContentTypeHandler" class="org.onebusaway.api.serializers.pb.CustomProtocolBufferTextHandler" />
     
     <constant name="struts.rest.handlerOverride.xml" value="myXml" />
     <constant name="struts.rest.handlerOverride.json" value="myJson" />

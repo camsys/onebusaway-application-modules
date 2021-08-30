@@ -84,7 +84,7 @@ public class StopByNumberAction extends AbstractTextmarksAction {
     CoordinateBounds serviceArea = _serviceAreaService.getServiceArea();
 
     if (serviceArea == null) {
-      pushNextAction("stop-by-number", "text", _text);
+      pushNextAction("stop-by-number", findParam("text"));
       return "query-default-search-location";
     }
 
@@ -108,7 +108,7 @@ public class StopByNumberAction extends AbstractTextmarksAction {
       if (0 <= _selectedIndex && _selectedIndex < _stops.size()) {
         stopIndex = _selectedIndex;
       } else {
-        pushNextAction("stop-by-number", "text", _text);
+        pushNextAction("stop-by-number", findParam("text"));
         pushNextAction("handle-multi-selection");
         return "multipleStopsFound";
       }

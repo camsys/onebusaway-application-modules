@@ -18,6 +18,8 @@
  */
 package org.onebusaway.presentation.model;
 
+import org.apache.struts2.dispatcher.Parameter;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,17 +27,17 @@ public class NextAction {
 
   private final String _action;
 
-  private final Map<String, String[]> _parameters;
+  private final Map<String, Parameter> _parameters;
 
   public NextAction(String action) {
-    this(action, new HashMap<String, String[]>());
+    this(action, new HashMap<>());
   }
 
-  public NextAction(String action, String key, String value) {
-    this(action, getMap(key, value));
+  public NextAction(String action, Parameter parameter) {
+    this(action, getMap(parameter.getName(), parameter));
   }
 
-  public NextAction(String action, Map<String, String[]> parameters) {
+  public NextAction(String action, Map<String, Parameter> parameters) {
     _action = action;
     _parameters = parameters;
   }
@@ -44,13 +46,13 @@ public class NextAction {
     return _action;
   }
 
-  public Map<String, String[]> getParameters() {
+  public Map<String, Parameter> getParameters() {
     return _parameters;
   }
 
-  private static Map<String, String[]> getMap(String key, String value) {
-    Map<String, String[]> params = new HashMap<String, String[]>();
-    params.put(key, new String[] {value});
+  private static Map<String, Parameter> getMap(String key, Parameter value) {
+    Map<String, Parameter> params = new HashMap<>();
+    params.put(key, value);
     return params;
   }
 

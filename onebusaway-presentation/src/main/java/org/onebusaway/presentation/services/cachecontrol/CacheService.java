@@ -15,6 +15,8 @@
  */
 package org.onebusaway.presentation.services.cachecontrol;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import net.spy.memcached.AddrUtil;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
@@ -29,9 +31,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
-
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 public abstract class CacheService<K, V> {
 

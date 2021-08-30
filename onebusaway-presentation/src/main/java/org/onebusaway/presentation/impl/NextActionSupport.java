@@ -16,9 +16,12 @@
 package org.onebusaway.presentation.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.struts2.dispatcher.HttpParameters;
+import org.apache.struts2.dispatcher.Parameter;
 import org.apache.struts2.interceptor.SessionAware;
 import org.onebusaway.presentation.model.NextAction;
 
@@ -57,10 +60,10 @@ public abstract class NextActionSupport extends ActionSupport implements
 
     NextAction next = stack.remove(stack.size() - 1);
 
-    Map<String, String[]> params = next.getParameters();
+    Map<String, Parameter> params = next.getParameters();
     if (params != null && !params.isEmpty()) {
       ActionContext context = ActionContext.getContext();
-      Map<String, Object> contextParameters = context.getParameters();
+      HttpParameters contextParameters = context.getParameters();
       contextParameters.putAll(params);
     }
 
@@ -72,9 +75,9 @@ public abstract class NextActionSupport extends ActionSupport implements
     stack.add(new NextAction(action));
   }
 
-  protected void pushNextAction(String action, String key, String value) {
+  protected void pushNextAction(String action, Parameter parameter) {
     List<NextAction> stack = getNextActionStack(true);
-    stack.add(new NextAction(action, key, value));
+    stack.add(new NextAction(action, parameter));
   }
 
   /****
@@ -89,5 +92,12 @@ public abstract class NextActionSupport extends ActionSupport implements
       _session.put(NEXT_ACTION_STACK_SESSION_KEY, stack);
     }
     return stack;
+  }
+
+  public Parameter findParam(String key) {
+    final ActionContext context = ActionContext.getContext();
+    Map<String, Parameter> params = context.getParameters();
+    Parameter param = params.get(key);
+    return param;
   }
 }

@@ -20,8 +20,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -33,6 +32,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -45,13 +45,13 @@ import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.transit_data_federation.siri.SiriJsonSerializer;
 import org.onebusaway.transit_data_federation.siri.SiriXmlSerializer;
 import org.onebusaway.util.impl.analytics.GoogleAnalyticsServiceImpl;
 import org.onebusaway.util.services.configuration.ConfigurationService;
 
 import com.brsanthu.googleanalytics.GoogleAnalyticsRequest;
 import com.brsanthu.googleanalytics.GoogleAnalyticsResponse;
-import com.brsanthu.googleanalytics.PageViewHit;
 
 import uk.org.siri.siri.LocationStructure;
 import uk.org.siri.siri.SituationRefStructure;
@@ -100,7 +100,7 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
     when(servletResponse.getWriter()).thenReturn(nothingPrintWriter);
     
     List<VehicleActivityStructure> vehicleActivities = new ArrayList<VehicleActivityStructure>();
-    when(realtimeService.getVehicleActivityForRoute(eq("40_100479"), anyString(), eq(0), anyLong(), eq(false))).thenReturn(vehicleActivities);
+    when(realtimeService.getVehicleActivityForRoute(eq("40_100479"), any(), eq(0), anyLong(), eq(false))).thenReturn(vehicleActivities);
     
     VehicleActivityStructure vehicleActivity = new VehicleActivityStructure();
     vehicleActivities.add(vehicleActivity);
@@ -115,12 +115,12 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
     locationStructure.setLongitude(BigDecimal.valueOf(89.0));
     
     ServiceAlertBean serviceAlertBean = ServiceAlertsTestSupport.createServiceAlertBean("1_1");
-    when(transitDataService.getServiceAlertForId(anyString())).thenReturn(serviceAlertBean );
+    lenient().when(transitDataService.getServiceAlertForId(anyString())).thenReturn(serviceAlertBean );
     
     RouteBean routeBean = RouteBean.builder().create();
     when(transitDataService.getRouteForId(anyString())).thenReturn(routeBean);
     
-    when(configurationService.getConfigurationValueAsString(eq("display.googleAnalyticsSiteId"), anyString())).thenReturn("foo");
+    lenient().when(configurationService.getConfigurationValueAsString(eq("display.googleAnalyticsSiteId"), anyString())).thenReturn("foo");
     
     List<SituationRefStructure> sitRef = mvJourney.getSituationRef();
     SituationRefStructure sitRefStructure = new SituationRefStructure();
@@ -133,15 +133,81 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
     when(realtimeService.getSiriXmlSerializer()).thenReturn(serializer );
     
     //doNothing().when(gaService).post(new PageViewHit());
-    when(gaService.post(new GoogleAnalyticsRequest())).thenReturn(new GoogleAnalyticsResponse());
+    lenient().when(gaService.post(new GoogleAnalyticsRequest())).thenReturn(new GoogleAnalyticsResponse());
     
     action.setServletRequest(request);
     action.setServletResponse(servletResponse);
     action.index();
     String monitoring = action.getVehicleMonitoring();
-    assertTrue("Result XML does not match expected", monitoring.matches("(?s).*<ServiceDelivery><ResponseTimestamp>.+</ResponseTimestamp><VehicleMonitoringDelivery><ResponseTimestamp>.+</ResponseTimestamp><ValidUntil>.+</ValidUntil><VehicleActivity><MonitoredVehicleJourney><SituationRef><SituationSimpleRef>situation ref</SituationSimpleRef></SituationRef><VehicleLocation><Longitude>89.0</Longitude><Latitude>88.0</Latitude></VehicleLocation></MonitoredVehicleJourney></VehicleActivity></VehicleMonitoringDelivery><SituationExchangeDelivery><Situations><PtSituationElement><SituationNumber>1_1</SituationNumber><Summary xml:lang=\"EN\">summary</Summary><Description xml:lang=\"EN\">description</Description><Affects><VehicleJourneys><AffectedVehicleJourney><LineRef>1_100277</LineRef><DirectionRef>0</DirectionRef></AffectedVehicleJourney><AffectedVehicleJourney><LineRef>1_100277</LineRef><DirectionRef>1</DirectionRef></AffectedVehicleJourney><AffectedVehicleJourney><LineRef>1_100194</LineRef><DirectionRef>0</DirectionRef></AffectedVehicleJourney><AffectedVehicleJourney><LineRef>1_100194</LineRef><DirectionRef>1</DirectionRef></AffectedVehicleJourney></VehicleJourneys></Affects></PtSituationElement></Situations></SituationExchangeDelivery></ServiceDelivery></Siri>.*"));
+    String expectedRegex = "(?s).*<ServiceDelivery><ResponseTimestamp>.+</ResponseTimestamp><VehicleMonitoringDelivery><ResponseTimestamp>.+</ResponseTimestamp><ValidUntil>.+</ValidUntil><VehicleActivity><MonitoredVehicleJourney><SituationRef><SituationSimpleRef>situation ref</SituationSimpleRef></SituationRef><VehicleLocation><Longitude>89.0</Longitude><Latitude>88.0</Latitude></VehicleLocation></MonitoredVehicleJourney></VehicleActivity></VehicleMonitoringDelivery><SituationExchangeDelivery><Situations><PtSituationElement><SituationNumber>1_1</SituationNumber><Summary xml:lang=\"EN\">summary</Summary><Description xml:lang=\"EN\">description</Description><Affects><VehicleJourneys><AffectedVehicleJourney><LineRef>1_100277</LineRef><DirectionRef>0</DirectionRef></AffectedVehicleJourney><AffectedVehicleJourney><LineRef>1_100277</LineRef><DirectionRef>1</DirectionRef></AffectedVehicleJourney><AffectedVehicleJourney><LineRef>1_100194</LineRef><DirectionRef>0</DirectionRef></AffectedVehicleJourney><AffectedVehicleJourney><LineRef>1_100194</LineRef><DirectionRef>1</DirectionRef></AffectedVehicleJourney></VehicleJourneys></Affects></PtSituationElement></Situations></SituationExchangeDelivery></ServiceDelivery></Siri>.*";
+    boolean match = monitoring.matches(expectedRegex);
+    if (!match) {
+      System.out.println(monitoring + " != " +expectedRegex);
+    }
+    assertTrue("Result XML does not match expected", match);
   }
 
+  @Test
+  public void testExecuteByRouteJson() throws Exception {
+
+    when(request.getParameter(eq("LineRef"))).thenReturn("40_100479");
+    when(request.getParameter(eq("OperatorRef"))).thenReturn("1");
+
+    PrintWriter nothingPrintWriter = new PrintWriter(new OutputStream() {
+      @Override
+      public void write(int b) throws IOException {
+        // Do nothing
+      }
+    });
+    when(servletResponse.getWriter()).thenReturn(nothingPrintWriter);
+
+    List<VehicleActivityStructure> vehicleActivities = new ArrayList<VehicleActivityStructure>();
+    when(realtimeService.getVehicleActivityForRoute(eq("40_100479"), any(), eq(0), anyLong(), eq(false))).thenReturn(vehicleActivities);
+
+    VehicleActivityStructure vehicleActivity = new VehicleActivityStructure();
+    vehicleActivities.add(vehicleActivity);
+
+    MonitoredVehicleJourney mvJourney = new MonitoredVehicleJourney();
+    vehicleActivity.setMonitoredVehicleJourney(mvJourney );
+
+    LocationStructure locationStructure = new LocationStructure();
+    mvJourney.setVehicleLocation(locationStructure );
+
+    locationStructure.setLatitude(BigDecimal.valueOf(88.0));
+    locationStructure.setLongitude(BigDecimal.valueOf(89.0));
+
+    ServiceAlertBean serviceAlertBean = ServiceAlertsTestSupport.createServiceAlertBean("1_1");
+    lenient().when(transitDataService.getServiceAlertForId(anyString())).thenReturn(serviceAlertBean );
+
+    RouteBean routeBean = RouteBean.builder().create();
+    when(transitDataService.getRouteForId(anyString())).thenReturn(routeBean);
+
+    lenient().when(configurationService.getConfigurationValueAsString(eq("display.googleAnalyticsSiteId"), anyString())).thenReturn("foo");
+
+    List<SituationRefStructure> sitRef = mvJourney.getSituationRef();
+    SituationRefStructure sitRefStructure = new SituationRefStructure();
+    sitRef.add(sitRefStructure );
+    SituationSimpleRefStructure sitSimpleRef = new SituationSimpleRefStructure();
+    sitRefStructure.setSituationSimpleRef(sitSimpleRef );
+    sitSimpleRef.setValue("situation ref");
+
+    SiriJsonSerializer jsonSerializer = new SiriJsonSerializer();
+    when(realtimeService.getSiriJsonSerializer()).thenReturn(jsonSerializer);
+
+    lenient().when(gaService.post(new GoogleAnalyticsRequest())).thenReturn(new GoogleAnalyticsResponse());
+    action.setType("json");
+    action.setServletRequest(request);
+    action.setServletResponse(servletResponse);
+    action.index();
+    String monitoring = action.getVehicleMonitoring();
+    String expectedValue = "\"VehicleActivity\":[{\"MonitoredVehicleJourney\":{\"SituationRef\":[{\"SituationSimpleRef\":\"situation ref\"}],\"VehicleLocation\":{\"Longitude\":89.0,\"Latitude\":88.0}}}],\"Version\":\"1.3\"}],\"SituationExchangeDelivery\":[{\"Situations\":{\"PtSituationElement\":[{\"SituationNumber\":\"1_1\",\"Summary\":\"summary\",\"Description\":\"description\",\"Affects\":{\"VehicleJourneys\":{\"AffectedVehicleJourney\":[{\"LineRef\":\"1_100277\",\"DirectionRef\":\"0\"},{\"LineRef\":\"1_100277\",\"DirectionRef\":\"1\"},{\"LineRef\":\"1_100194\",\"DirectionRef\":\"0\"},{\"LineRef\":\"1_100194\",\"DirectionRef\":\"1\"}]}}}]},\"Version\":\"1.3\"}]},\"Version\":\"1.3\"}}";
+    boolean expectedMatch = monitoring.endsWith(expectedValue);
+    if (!expectedMatch) {
+      System.out.println("expected=|" + expectedValue + "|");
+      System.out.println("actual=|" + monitoring + "|");
+    }
+    assertTrue("Result JSON does not match expected", expectedMatch);
+  }
   @Test
   public void testExecuteByRouteNoActivity() throws Exception {
     
@@ -157,10 +223,10 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
     when(servletResponse.getWriter()).thenReturn(nothingPrintWriter);
     
     List<VehicleActivityStructure> vehicleActivities = new ArrayList<VehicleActivityStructure>();
-    when(realtimeService.getVehicleActivityForRoute(eq("40_100479"), anyString(), eq(0), anyLong(), eq(false))).thenReturn(vehicleActivities);
+    lenient().when(realtimeService.getVehicleActivityForRoute(eq("40_100479"), anyString(), eq(0), anyLong(), eq(false))).thenReturn(vehicleActivities);
     
     ServiceAlertBean serviceAlertBean = ServiceAlertsTestSupport.createServiceAlertBean("1_1");
-    when(transitDataService.getServiceAlertForId(anyString())).thenReturn(serviceAlertBean );
+    lenient().when(transitDataService.getServiceAlertForId(anyString())).thenReturn(serviceAlertBean );
     
     RouteBean routeBean = RouteBean.builder().create();
     when(transitDataService.getRouteForId(anyString())).thenReturn(routeBean);

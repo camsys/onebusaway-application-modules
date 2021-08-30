@@ -16,12 +16,13 @@
 package org.onebusaway.enterprise.webapp.api;
 
 import java.util.Date;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.struts2.ServletActionContext;
+import org.apache.struts2.dispatcher.HttpParameters;
+import org.apache.struts2.dispatcher.Parameter;
 import org.onebusaway.presentation.services.realtime.RealtimeService;
 import org.onebusaway.users.services.ApiKeyPermissionService;
 import org.onebusaway.users.services.ApiKeyPermissionService.Status;
@@ -96,8 +97,13 @@ public class ApiKeyInterceptor extends AbstractInterceptor {
   // package private for unit tests
   int isAllowed(ActionInvocation invocation) {
     ActionContext context = invocation.getInvocationContext();
-    Map<String, Object> parameters = context.getParameters();
-    String[] keys = (String[]) parameters.get("key");
+    HttpParameters parameters = context.getParameters();
+    Parameter key = parameters.get("key");
+    if(key == null || !key.isDefined()){
+      return HttpServletResponse.SC_UNAUTHORIZED;
+    }
+
+    String[] keys = key.getMultipleValues();
 
     if (keys == null || keys.length == 0) {
       // 401:  we couldn't find the api key

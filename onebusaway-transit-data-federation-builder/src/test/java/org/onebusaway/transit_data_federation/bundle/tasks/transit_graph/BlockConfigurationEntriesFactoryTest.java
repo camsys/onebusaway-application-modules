@@ -37,12 +37,12 @@ import org.onebusaway.gtfs.impl.calendar.CalendarServiceImpl;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
-import org.onebusaway.transit_data_federation.bundle.tasks.ShapePointHelper;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePointsFactory;
+import org.onebusaway.transit_data_federation.services.shapes.BasicShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
@@ -80,7 +80,7 @@ public class BlockConfigurationEntriesFactoryTest {
      * ShapePointsService
      ****/
 
-    ShapePointHelper shapePointService = Mockito.mock(ShapePointHelper.class);
+    BasicShapePointService shapePointService = Mockito.mock(BasicShapePointService.class);
 
     ShapePointsFactory shapePointsFactory = new ShapePointsFactory();
     shapePointsFactory.addPoint(0, 0);
@@ -95,7 +95,7 @@ public class BlockConfigurationEntriesFactoryTest {
 
     _factory = new BlockConfigurationEntriesFactory();
     _factory.setServiceIdOverlapCache(serviceIdOverlapCache);
-    _factory.setShapePointHelper(shapePointService);
+    _factory.setShapePointService(shapePointService);
   }
 
   @Test

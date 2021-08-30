@@ -46,13 +46,9 @@
         <property name="filterProcessesUrl" value="/everylastlogin_login" />
     </bean>
 
-
-    <bean id="indexedUserDetailsSaltSourceImpl" class="org.onebusaway.users.impl.authentication.IndexedUserDetailsSaltSourceImpl" />
-
     <bean id="daoAuthenticationProvider" class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
         <property name="userDetailsService" ref="userDetailsServiceImpl" />
-        <property name="saltSource" ref="indexedUserDetailsSaltSourceImpl" />
-        <property name="passwordEncoder" ref="passwordEncoderV1" />
+        <property name="passwordEncoder" ref="passwordEncoderV2" />
     </bean>
 
     <bean id="defaultUserAuthenticationProvider" class="org.onebusaway.users.impl.authentication.DefaultUserAuthenticationProvider">

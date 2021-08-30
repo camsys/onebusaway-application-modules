@@ -41,7 +41,7 @@ import org.onebusaway.users.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.encoding.PasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,22 +55,22 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 	private SessionFactory _sessionFactory;
 	private StandardAuthoritiesService authoritiesService;
-    private UserPropertiesService userPropertiesService;
+	private UserPropertiesService userPropertiesService;
 	private UserDao userDao;
 	private UserService userService;
 	private PasswordEncoder passwordEncoder;
-	
-	
+
+
 	private static final Logger log = LoggerFactory.getLogger(UserManagementServiceImpl.class);
-	
+
 	@Override
 	@SuppressWarnings("unchecked")
 	@Transactional(readOnly=true)
 	public List<String> getUserNames(final String searchString) {
-		
-		final String hql = "select ui.id.value from UserIndex ui where ui.id.value like :searchString and " + 
-			 "ui.id.type = 'username'";
-		
+
+		final String hql = "select ui.id.value from UserIndex ui where ui.id.value like :searchString and " +
+				"ui.id.type = 'username'";
+
 		Query query = getSession().createQuery(hql);
 		query.setParameter("searchString", "%" +searchString + "%");
 		return query.list();
@@ -78,7 +78,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 	@Override
 	@Transactional(readOnly=true)
-    public Integer getUserDetailsCount() {
+	public Integer getUserDetailsCount() {
 		Criteria criteria = getSession().createCriteria(User.class)
 				.createCriteria("userIndices")
 				.add(Restrictions.eq("id.type", UserIndexTypes.USERNAME))
@@ -87,7 +87,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 		Long lcount = (Long)criteria.uniqueResult();
 		Integer count = BigDecimal.valueOf(lcount).intValueExact(); // do some range checking on the cast
 		return count;
-    }
+	}
 
 	@Override
 	@Transactional(readOnly=true)
@@ -103,7 +103,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 		if(!users.isEmpty()) {
 			for (User user : users) {
-			    if (!user.getUserIndices().isEmpty()) {
+				if (!user.getUserIndices().isEmpty()) {
 					UserDetail userDetail = buildUserDetail(user);
 					userDetails.add(userDetail);
 				}
@@ -126,13 +126,13 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 		if(!users.isEmpty()) {
 			for (User user : users) {
-                UserBean bean = userService.getUserAsBean(user);
-                if (!bean.isDisabled()) {
-                    if (!user.getUserIndices().isEmpty()) {
-                        UserDetail userDetail = buildUserDetail(user);
-                        userDetails.add(userDetail);
-                    }
-                }
+				UserBean bean = userService.getUserAsBean(user);
+				if (!bean.isDisabled()) {
+					if (!user.getUserIndices().isEmpty()) {
+						UserDetail userDetail = buildUserDetail(user);
+						userDetails.add(userDetail);
+					}
+				}
 			}
 		}
 		log.debug("Returning user details");
@@ -140,31 +140,31 @@ public class UserManagementServiceImpl implements UserManagementService {
 		return userDetails;
 	}
 
-    @Override
+	@Override
 	@Transactional(readOnly=true)
-    public List<UserDetail> getInactiveUsersDetails() {
+	public List<UserDetail> getInactiveUsersDetails() {
 
-        List<UserDetail> userDetails = new ArrayList<UserDetail>();
+		List<UserDetail> userDetails = new ArrayList<UserDetail>();
 		Criteria criteria = getSession().createCriteria(User.class)
 				.createCriteria("userIndices")
 				.add(Restrictions.eq("id.type", UserIndexTypes.USERNAME));
 		List<User> users = criteria.list();
 
-        if(!users.isEmpty()) {
-            for (User user : users) {
-                UserBean bean = userService.getUserAsBean(user);
-                if (bean.isDisabled()) {
-                    if (!user.getUserIndices().isEmpty()) {
-                        UserDetail userDetail = buildUserDetail(user);
-                        userDetails.add(userDetail);
-                    }
-                }
-            }
-        }
-        log.debug("Returning user details");
+		if(!users.isEmpty()) {
+			for (User user : users) {
+				UserBean bean = userService.getUserAsBean(user);
+				if (bean.isDisabled()) {
+					if (!user.getUserIndices().isEmpty()) {
+						UserDetail userDetail = buildUserDetail(user);
+						userDetails.add(userDetail);
+					}
+				}
+			}
+		}
+		log.debug("Returning user details");
 
-        return userDetails;
-    }
+		return userDetails;
+	}
 
 	@Override
 	@Transactional(readOnly=true)
@@ -175,34 +175,34 @@ public class UserManagementServiceImpl implements UserManagementService {
 		List<User> users = criteria.list();
 
 		UserDetail userDetail = null;
-		
+
 		if(!users.isEmpty()) {
 			userDetail = buildUserDetail(users.get(0));
 		}
-		
+
 		log.debug("Returning user details for user : {}", userName);
-		
+
 		return userDetail;
-		
+
 	}
 
 	private UserDetail buildUserDetail(User user) {
 		UserDetail userDetail = new UserDetail();
-		
+
 		userDetail.setId(user.getId());
-		
+
 		for(UserIndex userIndex : user.getUserIndices()) {
 			userDetail.setUsername(userIndex.getId().getValue());
 		}
-		
+
 		for(UserRole role : user.getRoles()) {
 			//There should be only one role
 			userDetail.setRole(role.getName());
 		}
 
-        UserBean bean = userService.getUserAsBean(user);
-        userDetail.setDisabled(bean.isDisabled());
-		
+		UserBean bean = userService.getUserAsBean(user);
+		userDetail.setDisabled(bean.isDisabled());
+
 		return userDetail;
 	}
 
@@ -210,14 +210,14 @@ public class UserManagementServiceImpl implements UserManagementService {
 	@Transactional
 	public void disableOperatorRole(User user) {
 		UserRole operatorRole = authoritiesService.getUserRoleForName(StandardAuthoritiesService.USER);
-		
+
 		Set<UserRole> roles = user.getRoles();
-		
+
 		if(roles.remove(operatorRole)) {
 			userDao.saveOrUpdateUser(user);
 		}
 	}
-	
+
 	@Override
 	@Transactional
 	public boolean createUser(String userName, String password, boolean admin) {
@@ -235,7 +235,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 		}
 
 		log.info("User '{}' created successfully", userName);
-		
+
 		return true;
 	}
 
@@ -244,13 +244,13 @@ public class UserManagementServiceImpl implements UserManagementService {
 		boolean admin = (role == StandardAuthoritiesService.ADMINISTRATOR);
 		return createUser(userName, password, admin);
 	}
-	
+
 	@Override
 	@Transactional
 	public boolean updateUser(UserDetail userDetail) {
-		
+
 		User user = userService.getUserForId(userDetail.getId());
-		
+
 		if(user == null) {
 			log.info("User '{}' does not exist in the system", userDetail.getUsername());
 			return false;
@@ -258,69 +258,69 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 		//Update user password
 		if(StringUtils.isNotBlank(userDetail.getPassword())) {
-			String credentials = passwordEncoder.encodePassword(userDetail.getPassword(), userDetail.getUsername());
+			String credentials = passwordEncoder.encode(userDetail.getPassword());
 			for(UserIndex userIndex : user.getUserIndices()) {
 				userIndex.setCredentials(credentials);
 			}
 		}
-		
+
 		//Update user role
 		updateRole(userDetail.getRole(), user);
-		
+
 		userDao.saveOrUpdateUser(user);
-		
+
 		log.info("User '{}' updated successfully", userDetail.getUsername());
-		
+
 		return true;
 	}
 
 	//Marks the user as inactive, can activate again
 	@Override
 	@Transactional
-    public boolean inactivateUser(UserDetail userDetail) {
-        User user = userService.getUserForId(userDetail.getId());
-
-        if(user == null) {
-            log.info("User '{}' does not exist in the system", userDetail.getUsername());
-            return false;
-        }
-
-        userPropertiesService.disableUser(user);
-
-        log.info("User '{}' disabled successfully", userDetail.getUsername());
-
-        return true;
-    }
-
-    //Marks the user as active
-    @Override
-	@Transactional
-    public boolean activateUser(UserDetail userDetail) {
-        User user = userService.getUserForId(userDetail.getId());
-
-        if(user == null) {
-            log.info("User '{}' does not exist in the system", userDetail.getUsername());
-            return false;
-        }
-
-        userPropertiesService.activateUser(user);
-
-        log.info("User '{}' activated successfully", userDetail.getUsername());
-
-        return true;
-    }
-
-    //deletes the user
-	@Override
-	@Transactional
-	public boolean deactivateUser(UserDetail userDetail) {
+	public boolean inactivateUser(UserDetail userDetail) {
 		User user = userService.getUserForId(userDetail.getId());
-		
+
 		if(user == null) {
 			log.info("User '{}' does not exist in the system", userDetail.getUsername());
 			return false;
 		}
-		
+
+		userPropertiesService.disableUser(user);
+
+		log.info("User '{}' disabled successfully", userDetail.getUsername());
+
+		return true;
+	}
+
+	//Marks the user as active
+	@Override
+	@Transactional
+	public boolean activateUser(UserDetail userDetail) {
+		User user = userService.getUserForId(userDetail.getId());
+
+		if(user == null) {
+			log.info("User '{}' does not exist in the system", userDetail.getUsername());
+			return false;
+		}
+
+		userPropertiesService.activateUser(user);
+
+		log.info("User '{}' activated successfully", userDetail.getUsername());
+
+		return true;
+	}
+
+	//deletes the user
+	@Override
+	@Transactional
+	public boolean deactivateUser(UserDetail userDetail) {
+		User user = userService.getUserForId(userDetail.getId());
+
+		if(user == null) {
+			log.info("User '{}' does not exist in the system", userDetail.getUsername());
+			return false;
+		}
+
 		//Delete user indices so that a user cannot authenticate even if 
 		//user record itself is still present
 		for(Iterator<UserIndex> it = user.getUserIndices().iterator(); it.hasNext();) {
@@ -330,9 +330,9 @@ public class UserManagementServiceImpl implements UserManagementService {
 		}
 
 		userDao.saveOrUpdateUser(user);
-		
+
 		log.info("User '{}' deleted successfully", userDetail.getUsername());
-		
+
 		return true;
 	}
 
@@ -341,7 +341,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 		UserRole currentRole = null;
 
 		Set<UserRole> userRoles = user.getRoles();
-		
+
 		for(UserRole userRole : userRoles) {
 			//There should be only one role
 			if(!(userRole.getName().equals(role))) {
@@ -355,7 +355,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 			userRoles.remove(currentRole);
 			UserRole newRole = authoritiesService.getUserRoleForName(role);
 			userRoles.add(newRole);
-	
+
 		}
 	}
 
@@ -384,7 +384,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 	public void setUserDao(UserDao userDao) {
 		this.userDao = userDao;
 	}
-	
+
 
 	/**
 	 * Injects {@link UserService}
@@ -402,7 +402,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 	public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
 		this.passwordEncoder = passwordEncoder;
 	}
-	
+
 	@Override
 	public List<String> getAllRoleNames() {
 		return StandardAuthoritiesService.STANDARD_AUTHORITIES;
@@ -414,13 +414,13 @@ public class UserManagementServiceImpl implements UserManagementService {
 	}
 
 
-    /**
-     * Injects {@link UserPropertiesService}
-     * @param userPropertiesService the userPropertiesService to set
-     */
-    @Autowired
-    public void setUserPropertiesService(UserPropertiesService userPropertiesService) {
-        this.userPropertiesService = userPropertiesService;
-    }
+	/**
+	 * Injects {@link UserPropertiesService}
+	 * @param userPropertiesService the userPropertiesService to set
+	 */
+	@Autowired
+	public void setUserPropertiesService(UserPropertiesService userPropertiesService) {
+		this.userPropertiesService = userPropertiesService;
+	}
 
 }

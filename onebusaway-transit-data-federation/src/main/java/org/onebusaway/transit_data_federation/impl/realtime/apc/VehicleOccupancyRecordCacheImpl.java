@@ -17,7 +17,6 @@ package org.onebusaway.transit_data_federation.impl.realtime.apc;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;

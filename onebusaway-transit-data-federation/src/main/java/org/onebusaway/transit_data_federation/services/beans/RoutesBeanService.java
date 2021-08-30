@@ -52,4 +52,6 @@ public interface RoutesBeanService {
   public ListBean<String> getRouteIdsForAgencyId(String agencyId);
 
   public ListBean<RouteBean> getRoutesForAgencyId(String agencyId);
+
+  public void refresh();
 }

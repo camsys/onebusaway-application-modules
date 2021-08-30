@@ -16,6 +16,7 @@
  */
 package org.onebusaway.transit_data_federation.impl;
 
+import org.locationtech.jts.index.strtree.STRtree;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -24,9 +25,8 @@ import org.onebusaway.transit_data_federation.services.beans.RouteBeanService;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.index.ItemVisitor;
-import com.vividsolutions.jts.index.strtree.STRtree;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.index.ItemVisitor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,8 +64,10 @@ class WhereGeospatialServiceImpl implements GeospatialBeanService {
       _tree = null;
       return;
     }
-    
-    _tree = new STRtree(stops.size());
+
+    int size = stops.size();
+    if (size == 1) size = 10;
+    _tree = new STRtree(size);
 
     for (StopEntry stop : stops) {
       float x = (float) stop.getStopLon();
@@ -97,6 +99,11 @@ class WhereGeospatialServiceImpl implements GeospatialBeanService {
     TreeVisistor v = new TreeVisistor();
     _tree.query(new Envelope(xMin, xMax, yMin, yMax), v);
     return v.getIdsInRange();
+  }
+
+  public boolean refresh() {
+    initialize();
+    return true;
   }
 
   private class TreeVisistor implements ItemVisitor {

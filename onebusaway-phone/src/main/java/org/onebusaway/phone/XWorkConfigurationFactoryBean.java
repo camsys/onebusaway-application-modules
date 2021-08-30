@@ -29,6 +29,8 @@ import java.util.List;
 
 public class XWorkConfigurationFactoryBean implements FactoryBean<Configuration> {
 
+  private static final String NAME = "oba";
+
   private ApplicationContext _context;
 
   private List<String> _xmlConfigurationSources = new ArrayList<String>();
@@ -52,7 +54,7 @@ public class XWorkConfigurationFactoryBean implements FactoryBean<Configuration>
 
   public Configuration getObject() throws Exception {
 
-    ConfigurationManager confManager = new ConfigurationManager();
+    ConfigurationManager confManager = new ConfigurationManager(NAME);
 
     confManager.addContainerProvider(new XWorkConfigurationProvider());
 

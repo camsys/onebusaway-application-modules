@@ -15,12 +15,15 @@
  */
 package org.onebusaway.presentation.impl.users;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.struts2.dispatcher.Parameter;
 import org.springframework.web.context.request.AbstractRequestAttributes;
 
 import com.opensymphony.xwork2.ActionContext;
+import org.springframework.web.context.request.RequestAttributes;
 
 public class XWorkRequestAttributes extends AbstractRequestAttributes {
 
@@ -35,28 +38,43 @@ public class XWorkRequestAttributes extends AbstractRequestAttributes {
 
   @Override
   public String[] getAttributeNames(int scope) {
-    Map<String, Object> attrs = getScopedMap(scope);
-    Set<String> keys = attrs.keySet();
-    String[] names = new String[keys.size()];
+    Set<String> attributeNamesSet = getScopedAttributeNames(scope);
+    String[] names = new String[attributeNamesSet.size()];
     int index = 0;
-    for (String name : keys)
+    for (String name : attributeNamesSet)
       names[index++] = name;
     return names;
   }
 
   @Override
   public Object getAttribute(String name, int scope) {
-    return getScopedMap(scope).get(name);
+    if(scope == RequestAttributes.SCOPE_REQUEST){
+      Parameter parameter = getRequestScope().get(name);
+      return parameter != null ? parameter.getObject() : null;
+    } else if(scope == RequestAttributes.SCOPE_SESSION){
+      return getSessionScope().get(name);
+    }
+    throw new IllegalStateException("unknown scope=" + scope);
   }
 
   @Override
   public void removeAttribute(String name, int scope) {
-    getScopedMap(scope).remove(name);
+    if(scope == RequestAttributes.SCOPE_REQUEST){
+      getRequestScope().remove(name);
+    } else if(scope == RequestAttributes.SCOPE_SESSION){
+      getSessionScope().remove(name);
+    }
+    throw new IllegalStateException("unknown scope=" + scope);
   }
 
   @Override
   public void setAttribute(String name, Object value, int scope) {
-    getScopedMap(scope).put(name, value);
+    if(scope == RequestAttributes.SCOPE_REQUEST){
+      getRequestScope().put(name, new Parameter.Request(name, value));
+    } else if(scope == RequestAttributes.SCOPE_SESSION){
+      getSessionScope().remove(name);
+    }
+    throw new IllegalStateException("unknown scope=" + scope);
   }
 
   @Override
@@ -66,7 +84,7 @@ public class XWorkRequestAttributes extends AbstractRequestAttributes {
 
   @Override
   public Object getSessionMutex() {
-    return getScopedMap(SCOPE_SESSION);
+    return getSessionScope();
   }
 
   @Override
@@ -78,9 +96,9 @@ public class XWorkRequestAttributes extends AbstractRequestAttributes {
   @Override
   public Object resolveReference(String key) {
     if (REFERENCE_REQUEST.equals(key)) {
-      return getScopedMap(SCOPE_REQUEST);
+      return getRequestScope();
     } else if (REFERENCE_SESSION.equals(key)) {
-      return getScopedMap(SCOPE_SESSION);
+      return getSessionScope();
     } else {
       return null;
     }
@@ -95,17 +113,23 @@ public class XWorkRequestAttributes extends AbstractRequestAttributes {
 
   }
 
-  private Map<String, Object> getScopedMap(int scope) {
+  private Set<String> getScopedAttributeNames(int scope){
     switch (scope) {
-      case SCOPE_REQUEST:
-        return _context.getParameters();
-      case SCOPE_SESSION:
-        return _context.getSession();
-      case SCOPE_GLOBAL_SESSION:
-        return _context.getApplication();
+      case RequestAttributes.SCOPE_REQUEST:
+        return _context.getParameters().keySet();
+      case RequestAttributes.SCOPE_SESSION:
+        return _context.getSession().keySet();
       default:
         throw new IllegalStateException("unknown scope=" + scope);
     }
+  }
+
+  private Map<String, Parameter> getRequestScope(){
+    return _context.getParameters();
+  }
+
+  private Map<String, Object> getSessionScope(){
+    return _context.getSession();
   }
 
 }

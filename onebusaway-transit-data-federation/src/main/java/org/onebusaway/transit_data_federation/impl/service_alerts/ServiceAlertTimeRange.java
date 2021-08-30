@@ -17,6 +17,7 @@ package org.onebusaway.transit_data_federation.impl.service_alerts;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 
@@ -25,8 +26,9 @@ import javax.persistence.*;
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class ServiceAlertTimeRange {
 
-	@Id
-	@GeneratedValue
+  @Id
+  @GeneratedValue(strategy= GenerationType.AUTO, generator="native")
+  @GenericGenerator(name = "native", strategy = "native")
   private final Integer id = 0;
   private Long fromValue;
   private Long toValue;

@@ -61,7 +61,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations={"classpath:service-alerts-data-sources.xml",
     "classpath:org/onebusaway/transit_data_federation/application-context-services.xml"})
-@TestPropertySource(properties = { "bundlePath = /tmp/foo"})
 @Transactional(transactionManager = "transactionManager")
 public class ServiceAlertsRecordServiceDBImplTest extends AbstractTransactionalJUnit4SpringContextTests {
 

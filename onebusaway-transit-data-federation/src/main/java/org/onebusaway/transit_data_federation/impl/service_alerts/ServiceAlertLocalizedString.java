@@ -17,6 +17,7 @@ package org.onebusaway.transit_data_federation.impl.service_alerts;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 
@@ -26,7 +27,8 @@ import javax.persistence.*;
 public class ServiceAlertLocalizedString {
 
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy= GenerationType.AUTO, generator="native")
+  @GenericGenerator(name = "native", strategy = "native")
   private int id = 0;
   private String language;
   private String value;
