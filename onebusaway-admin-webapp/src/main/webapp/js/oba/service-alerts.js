@@ -158,6 +158,34 @@ function onAddAnotherCondition() {
 			+ '].stopPartStopId" value="" id="service-alert_allAffects_' + currentConditionsCt + '__stopPartStopId" type="text"></td> \
 		</tr> \
 		<tr><td style="text-align:center" colspan="2" id="stopValidation' + currentConditionsCt + '">Click Validate to lookup Stop</td></tr> \
+		<tr> \
+		    <td class="tdLabel"><label for="service-alert_allAffects_tripPartTripId" class="label">Trip:</label> \
+			</td> \
+			<td> \
+			<select class="alertCondition" name="allAffects['
+		+ currentConditionsCt
+		+ '].tripPartTripId" id="service-alert_allAffects_' + currentConditionsCt + '__tripPartTripId"> \
+		    	<option value="null">Select Trip</option><option value="1">04:15</option><option value="2">06:20</option><option value="3">08:30</option>'
+		+ '</select> \
+			</td> \
+		</tr> \
+		<tr> \
+		    <td class="tdLabel"><label for="service-alert_allAffects_tripAction" class="label">Trip Action:</label> \
+			</td> \
+			<td> \
+			<select class="alertCondition" name="allAffects['
+		+ currentConditionsCt
+		+ '].tripAction" id="service-alert_allAffects_' + currentConditionsCt + '__tripAction"> \
+		    	<option value="null">Select Trip Action</option><option value="cancel">Cancel</option><option value="delay">Delay</option><option value="add">Add</option>'
+		+ '</select> \
+			</td> \
+		</tr> \
+		<tr> \
+	    	<td class="tdLabel"><label for="service-alert_allAffects_' + currentConditionsCt + '__tripDelay" class="label">Trip Delay:</label></td> \
+	    	<td><input class="alertCondition" name="allAffects['
+		+ currentConditionsCt
+		+ '].tripDelay" value="" id="service-alert_allAffects_' + currentConditionsCt + '__tripDelay" type="text"></td> \
+		</tr> \
 		</table>';
 	var labelLetter = String.fromCharCode('A'.charCodeAt(0) + currentConditionsCt);
 	if (currentConditionsCt >= 26) {
@@ -241,7 +269,7 @@ function onValidateCondition(handler) {
 	var routeField = document.getElementById(selector + "__routePartRouteId");
 	var routeId = agencyRouteField.value + "_" + routeField.value;
 	if (stopId != null && stopId != "") {
-		var url = OBA.Config.apiBaseUrl + "/api/where/stop/" + stopId + ".json?key=" + OBA.Config.obaApiKey;
+		var url = 'http://weta.obaweb.org:8080/onebusaway-api-webapp' + "/api/where/stop/" + stopId + ".json?key=" + OBA.Config.obaApiKey;
 		jQuery.ajax({
 			url: url,
 			data: {},
@@ -259,7 +287,7 @@ function onValidateCondition(handler) {
 	}
 	if (routeId != null && routeId != "") {
 
-		var url = OBA.Config.apiBaseUrl + "/api/where/route/" + routeId + ".json?key=" + OBA.Config.obaApiKey;
+		var url = 'http://weta.obaweb.org:8080/onebusaway-api-webapp' + "/api/where/route/" + routeId + ".json?key=" + OBA.Config.obaApiKey;
 		jQuery.ajax({
 			url: url,
 			data: {},
@@ -267,7 +295,7 @@ function onValidateCondition(handler) {
 			async: true,
 			success: function (data) {
 				if (data && data.code && data.code == 200) {
-					document.getElementById("routeValidation" + id).innerText = data.data.entry.shortName
+					document.getElementById("routeValidation" + id).innerText = data.data.entry.longName
 
 				} else {
 					document.getElementById("routeValidation" + id).innerText = "Route not found";

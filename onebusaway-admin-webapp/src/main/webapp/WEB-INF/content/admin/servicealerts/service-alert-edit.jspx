@@ -198,7 +198,18 @@
 							<s:textfield label="Stop" cssClass="alertCondition"
 								name="allAffects[%{#rowStatus.index}].stopPartStopId" value="%{stopPartStopId}" theme="xhtml"/>
 							<td style="text-align:center" colspan="2" id="stopValidation${rowStatus.index}">Click Validate to lookup Stop</td>
-
+							<!-- begin demo additions -->
+							<s:select label="Trip" cssClass="alertCondition"
+									  name="allAffects[%{#rowStatus.index}].tripPartTripId" headerKey="null"
+									  headerValue="Select Trip" list="#{'1':'04:15','2':'06:20','3':'08:30','4':'09:30','5':'11:55','6':'14:40','7':'16:30','8':'18:00','9':'20:25','10':'22:30'}"
+									  theme="xhtml"/>
+							<s:select label="Trip Action" cssClass="alertCondition"
+									  name="allAffects[%{#rowStatus.index}].tripAction" headerKey="null"
+									  headerValue="Select Trip Action" list="#{'cancel':'Cancel','delay':'Delay','add':'Add'}"
+									  theme="xhtml"/>
+							<s:textfield label="Trip Delay" cssClass="alertCondition"
+										 name="allAffects[%{#rowStatus.index}].stopPartTripId" theme="xhtml"/>
+							<!-- end demo additions -->
 						</table>
 					</td>
 						<td id="validateCondition${rowStatus.index}" class="validateCondition">Validate</td>
@@ -237,6 +248,18 @@
 							<s:textfield label="Stop Id" cssClass="alertCondition"
 								name="allAffects[0].stopPartStopId" theme="xhtml"/>
 							<td style="text-align:center" colspan="2" id="stopValidation0">Click Validate to lookup Stop</td>
+							<!-- begin demo additions -->
+							<s:select label="Trip" cssClass="alertCondition"
+									  name="allAffects[0].tripPartTripId" headerKey="null"
+									  headerValue="Select Trip" list="#{'1':'04:15','2':'06:20','3':'08:30','4':'09:30','5':'11:55','6':'14:40','7':'16:30','8':'18:00','9':'20:25','10':'22:30'}"
+									  theme="xhtml"/>
+							<s:select label="Trip Action" cssClass="alertCondition"
+									  name="allAffects[0].tripAction" headerKey="null"
+									  headerValue="Select Trip Action" list="#{'cancel':'Cancel','delay':'Delay','add':'Add'}"
+									  theme="xhtml"/>
+							<s:textfield label="Trip Delay" cssClass="alertCondition"
+										 name="allAffects[0].stopPartTripId" theme="xhtml"/>
+							<!-- end demo additions -->
 						</table>
 					</td>
 					<td id="validateCondition0" class="validateCondition">Validate</td>
