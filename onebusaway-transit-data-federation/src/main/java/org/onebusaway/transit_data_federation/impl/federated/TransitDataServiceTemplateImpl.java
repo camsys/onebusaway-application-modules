@@ -255,6 +255,8 @@ public class TransitDataServiceTemplateImpl implements TransitDataServiceTemplat
   public StopWithArrivalsAndDeparturesBean getStopWithArrivalsAndDepartures(
       String stopId, ArrivalsAndDeparturesQueryBean query)
       throws ServiceException {
+
+    _log.info("do you have a flag?");
     
     AgencyAndId id = convertAgencyAndId(stopId);
     return _stopWithArrivalsAndDepaturesBeanService.getArrivalsAndDeparturesByStopId(

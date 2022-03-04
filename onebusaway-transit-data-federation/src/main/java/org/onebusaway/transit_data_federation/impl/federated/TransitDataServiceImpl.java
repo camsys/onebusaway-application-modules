@@ -182,8 +182,13 @@ public class TransitDataServiceImpl implements TransitDataService {
       String stopId, ArrivalsAndDeparturesQueryBean query)
       throws ServiceException {
     blockUntilBundleIsReady();
-    return _transitDataService.getStopWithArrivalsAndDepartures(
-        stopId, query);
+    _log.info(stopId);
+    return null;
+//    if(stopId.equals("MTA_903218")){
+//      return null;
+//    }
+//    return _transitDataService.getStopWithArrivalsAndDepartures(
+//        stopId, query);
   }
 
   @Override
