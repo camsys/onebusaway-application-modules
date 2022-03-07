@@ -21,6 +21,7 @@ import org.onebusaway.realtime.api.OccupancyStatus;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
+import org.onebusaway.transit_data.model.TransitDataConstants;
 import org.onebusaway.transit_data.model.realtime.HistogramBean;
 import org.onebusaway.transit_data.model.schedule.FrequencyBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
@@ -311,8 +312,12 @@ public class ArrivalsAndDeparturesBeanServiceImpl implements
     pab.setStop(stopBean);
     pab.setStopSequence(stopTime.getSequence());
     pab.setTotalStopsInTrip(stopTime.getTotalStopsInTrip());
-    
-    pab.setStatus("default");
+
+    if(instance.getCancelled()==true){
+      pab.setStatus(TransitDataConstants.STATUS_CANCELED);
+    } else {
+      pab.setStatus("default");
+    }
 
     pab.setScheduledArrivalTime(instance.getScheduledArrivalTime());
     pab.setScheduledDepartureTime(instance.getScheduledDepartureTime());
@@ -401,6 +406,8 @@ public class ArrivalsAndDeparturesBeanServiceImpl implements
 
     if (!situations.isEmpty())
       bean.setSituations(situations);
+
+    //todo: this might be a better place than in ArrivalAndDepartureServiceImpl to apply realtime
   }
 
   private boolean isArrivalAndDepartureInRange(
