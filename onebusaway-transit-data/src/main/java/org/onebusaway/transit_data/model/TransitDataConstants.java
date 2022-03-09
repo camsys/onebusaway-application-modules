@@ -25,4 +25,6 @@ public class TransitDataConstants {
   public static final String STATUS_LEGACY_CANCELLED = "cancelled";
   
   public static final String STATUS_REROUTE = "reroute";
+
+  public static final String STATUS_DEFAULT = "default";
 }

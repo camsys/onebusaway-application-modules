@@ -76,7 +76,7 @@ public class TransitDataServiceImpl implements TransitDataService {
   private TransitDataServiceTemplateImpl _transitDataService;
   
   private BundleManagementService _bundleManagementService;
-  
+
   @Autowired
   private BundleSearchService _bundleSearchService;
   
@@ -184,11 +184,6 @@ public class TransitDataServiceImpl implements TransitDataService {
     blockUntilBundleIsReady();
     _log.info(stopId);
     return null;
-//    if(stopId.equals("MTA_903218")){
-//      return null;
-//    }
-//    return _transitDataService.getStopWithArrivalsAndDepartures(
-//        stopId, query);
   }
 
   @Override

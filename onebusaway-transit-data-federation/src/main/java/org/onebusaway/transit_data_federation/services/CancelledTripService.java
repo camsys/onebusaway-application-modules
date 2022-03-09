@@ -33,4 +33,6 @@ public interface CancelledTripService {
     ListBean<CancelledTripBean> getAllCancelledTrips();
 
     void updateCancelledTrips(Map<AgencyAndId, CancelledTripBean> cancelledTripsCache);
+
+    void addCancelledTrip(CancelledTripBean cancelledTrip);
 }

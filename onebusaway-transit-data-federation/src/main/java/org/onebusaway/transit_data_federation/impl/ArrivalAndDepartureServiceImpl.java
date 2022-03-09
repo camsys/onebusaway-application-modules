@@ -92,9 +92,6 @@ class ArrivalAndDepartureServiceImpl implements ArrivalAndDepartureService {
     _blockStatusService = blockStatusService;
   }
 
-  @Autowired
-  public void setCancelledTripService(CancelledTripService cancelledTripService) {_cancelledTripService = cancelledTripService;}
-
   public void setRemoveFuturePredictionsWithoutRealtime(boolean remove) {
     this.removeFuturePredictionsWithoutRealtime = remove;
   }
@@ -522,11 +519,6 @@ class ArrivalAndDepartureServiceImpl implements ArrivalAndDepartureService {
           sti, frequencyOffsetTime);
       applyBlockLocationToInstance(instance, location,
           targetTime.getTargetTime());
-      if (_cancelledTripService.isTripCancelled(location.getActiveTrip().getTrip().getId())){
-        instance.setCancelled(true);
-      } else {
-        instance.setCancelled(false);
-      }
 
       if (isArrivalAndDepartureBeanInRange(instance, fromTime, toTime))
         results.add(instance);
@@ -548,29 +540,15 @@ class ArrivalAndDepartureServiceImpl implements ArrivalAndDepartureService {
           BlockLocation scheduledLocation = _blockLocationService.getScheduledLocationForBlockInstance(
               blockInstance, targetTime.getTargetTime());
 
-          if (scheduledLocation != null)
-            applyBlockLocationToInstance(instance, scheduledLocation,
-                targetTime.getTargetTime());
-
-          if (_cancelledTripService.isTripCancelled(scheduledLocation.getActiveTrip().getTrip().getId())){
-            instance.setCancelled(true);
-          } else {
-            instance.setCancelled(false);
+          if (scheduledLocation != null) {
+            applyBlockLocationToInstance(instance, scheduledLocation, targetTime.getTargetTime());
           }
-
           results.add(instance);
         }
 
       } else {
         if (isFrequencyBasedArrivalInRange(blockInstance, sti.getFrequency(),
             fromTime, toTime)) {
-
-          if (_cancelledTripService.isTripCancelled(instance.getBlockTrip().getTrip().getId())){
-            instance.setCancelled(true);
-          } else {
-            instance.setCancelled(false);
-          }
-
           results.add(instance);
         }
       }

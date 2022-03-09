@@ -82,6 +82,8 @@ public class ArrivalsAndDeparturesBeanServiceImpl implements
   private GtfsRealtimeNegativeArrivals _gtfsRealtimeNegativeArrivals;
 
   private RidershipService _ridershipService;
+
+  private CancelledTripService _cancelledTripService;
   
   @Autowired
   public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
@@ -135,6 +137,12 @@ public class ArrivalsAndDeparturesBeanServiceImpl implements
       GtfsRealtimeNegativeArrivals _gtfsRealtimeNegativeArrivals) {
     this._gtfsRealtimeNegativeArrivals = _gtfsRealtimeNegativeArrivals;
   }
+
+  @Autowired
+  public void setCancelledTripService(CancelledTripService cancelledTripService) {
+    _cancelledTripService = cancelledTripService;
+  }
+
 
   private AtomicInteger _stopTimesTotal = new AtomicInteger();
 
@@ -313,10 +321,10 @@ public class ArrivalsAndDeparturesBeanServiceImpl implements
     pab.setStopSequence(stopTime.getSequence());
     pab.setTotalStopsInTrip(stopTime.getTotalStopsInTrip());
 
-    if(instance.getCancelled()==true){
+    if(_cancelledTripService.isTripCancelled(trip.getId())){
       pab.setStatus(TransitDataConstants.STATUS_CANCELED);
     } else {
-      pab.setStatus("default");
+      pab.setStatus(TransitDataConstants.STATUS_DEFAULT);
     }
 
     pab.setScheduledArrivalTime(instance.getScheduledArrivalTime());

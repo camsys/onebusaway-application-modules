@@ -70,4 +70,19 @@ public class CancelledTripServiceImpl implements CancelledTripService {
     public void updateCancelledTrips(Map<AgencyAndId, CancelledTripBean> cancelledTripsCache){
         _cancelledTripsCache = cancelledTripsCache;
     }
+
+    @Override
+    public void addCancelledTrip(CancelledTripBean cancelledTrip){
+        String trip = cancelledTrip.getTrip();
+        if(trip != null){
+            try {
+                AgencyAndId tripId = AgencyAndId.convertFromString(trip);
+                _cancelledTripsCache.put(tripId, cancelledTrip);
+            } catch (IllegalArgumentException e){
+                _log.error("Unable to add cancelled trip {}", trip, e);
+            }
+        } else{
+            _log.warn("Cancelled trip {} does not have a valid tripId", cancelledTrip.toString());
+        }
+    }
 }

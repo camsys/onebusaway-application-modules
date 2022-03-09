@@ -175,7 +175,7 @@ public class ArrivalAndDepartureInstance {
     this.cancelled = cancelled;
   }
 
-  public boolean getCancelled(){
+  public boolean isCancelled(){
     return cancelled;
   }
 
