@@ -35,12 +35,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import org.onebusaway.realtime.api.OccupancyStatus;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
+import org.onebusaway.transit_data_federation.impl.CancelledTripServiceImpl;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeNegativeArrivals;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeNegativeArrivalsImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
@@ -51,6 +51,7 @@ import org.onebusaway.transit_data_federation.model.TargetTime;
 import org.onebusaway.transit_data_federation.model.narrative.StopTimeNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.StopTimeNarrative.Builder;
 import org.onebusaway.transit_data_federation.services.ArrivalAndDepartureService;
+import org.onebusaway.transit_data_federation.services.CancelledTripService;
 import org.onebusaway.transit_data_federation.services.beans.ServiceAlertsBeanService;
 import org.onebusaway.transit_data_federation.services.beans.StopBeanService;
 import org.onebusaway.transit_data_federation.services.beans.TripBeanService;
@@ -75,6 +76,7 @@ public class ArrivalsAndDeparturesBeanServiceImplTest {
   private TripDetailsBeanService _tripDetailsBeanService;
   private ServiceAlertsBeanService _serviceAlertsBeanService;
   private GtfsRealtimeNegativeArrivals _gtfsRealtimeNegativeArrivals;
+  private CancelledTripService _cancelledTripService;
 
   @Before
   public void setup() {
@@ -104,6 +106,9 @@ public class ArrivalsAndDeparturesBeanServiceImplTest {
     
     _gtfsRealtimeNegativeArrivals = new GtfsRealtimeNegativeArrivalsImpl();
     _service.setGtfsRealtimeNegativeArrivals(_gtfsRealtimeNegativeArrivals);
+
+    _cancelledTripService = new CancelledTripServiceImpl();
+    _service.setCancelledTripService(_cancelledTripService);
   }
 
   @Test
@@ -343,7 +348,7 @@ public class ArrivalsAndDeparturesBeanServiceImplTest {
     query.setFrequencyMinutesAfter(minutesAfter);
 
     List<ArrivalAndDepartureBean> arrivalsAndDepartures = _service.getArrivalsAndDeparturesByStopId(
-        stopB.getId(), query);
+              stopB.getId(), query);
 
     assertEquals(3, arrivalsAndDepartures.size());
 
