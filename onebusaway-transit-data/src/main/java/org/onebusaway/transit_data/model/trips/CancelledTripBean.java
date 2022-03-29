@@ -35,6 +35,7 @@ public class CancelledTripBean implements Serializable {
     private String humanReadableTimestamp;
     private String serviceDate;
     private String route;
+    private String runId;
     private String routeId;
     private String firstStopId;
     private String firstStopDepartureTime;
@@ -79,6 +80,14 @@ public class CancelledTripBean implements Serializable {
 
     public void setRouteId(String routeId) {
         this.routeId = routeId;
+    }
+
+    public String getRunId() {
+        return runId;
+    }
+
+    public void setRunId(String runId) {
+        this.runId = runId;
     }
 
     public void setFirstStopDepartureTime(String firstStopDepartureTime) {
