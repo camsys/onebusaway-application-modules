@@ -125,12 +125,6 @@
             <version>${aspectj-version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>javassist</groupId>
-            <artifactId>javassist</artifactId>
-            <version>3.4.GA</version>
-        </dependency>
-
         <!-- These are just here to support ServletContextAwareMetadataNamingStrategy... -->
         <dependency>
             <groupId>org.springframework</groupId>
