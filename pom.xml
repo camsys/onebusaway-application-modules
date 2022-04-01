@@ -203,14 +203,14 @@
 
       <dependency>
         <groupId>org.hibernate</groupId>
-        <artifactId>hibernate-ehcache</artifactId>
-        <version>5.2.17.Final</version>
+        <artifactId>hibernate-core</artifactId>
+        <version>5.2.2.Final</version>
       </dependency>
-      <dependency>
+      <!--<dependency>
         <groupId>javassist</groupId>
         <artifactId>javassist</artifactId>
         <version>3.24.GA</version>
-      </dependency>
+      </dependency>-->
 
 
       <!-- Spring Framework -->
