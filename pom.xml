@@ -39,7 +39,6 @@
     <jackson-version>2.12.0</jackson-version>
     <jersey-version>2.31</jersey-version>
     <javax.annotation.version>1.3.1</javax.annotation.version>
-    <hibernate.version>5.4.24.Final</hibernate.version>
   </properties>
 
   <repositories>
@@ -206,11 +205,6 @@
         <artifactId>hibernate-core</artifactId>
         <version>5.2.2.Final</version>
       </dependency>
-      <!--<dependency>
-        <groupId>javassist</groupId>
-        <artifactId>javassist</artifactId>
-        <version>3.24.GA</version>
-      </dependency>-->
 
 
       <!-- Spring Framework -->
