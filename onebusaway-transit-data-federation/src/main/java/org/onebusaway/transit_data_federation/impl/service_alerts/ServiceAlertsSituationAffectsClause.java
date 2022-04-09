@@ -26,8 +26,7 @@ import org.hibernate.annotations.GenericGenerator;
 public class ServiceAlertsSituationAffectsClause {
 
   @Id
-  @GeneratedValue(strategy= GenerationType.AUTO, generator="native")
-  @GenericGenerator(name = "native", strategy = "native")
+  @GeneratedValue
   private int id = 0;
 
   private String agencyId = null;
