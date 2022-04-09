@@ -28,8 +28,7 @@ import java.util.Set;
 public class ServiceAlertSituationConsequenceClause {
 
   @Id
-  @GeneratedValue(strategy= GenerationType.AUTO, generator="native")
-  @GenericGenerator(name = "native", strategy = "native")
+  @GeneratedValue
   private int id = 0;
 
   @Enumerated(EnumType.STRING)

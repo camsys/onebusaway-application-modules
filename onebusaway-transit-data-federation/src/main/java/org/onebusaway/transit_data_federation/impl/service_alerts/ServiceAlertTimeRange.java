@@ -27,8 +27,7 @@ import javax.persistence.*;
 public class ServiceAlertTimeRange {
 
   @Id
-  @GeneratedValue(strategy= GenerationType.AUTO, generator="native")
-  @GenericGenerator(name = "native", strategy = "native")
+  @GeneratedValue
   private final Integer id = 0;
   private Long fromValue;
   private Long toValue;
