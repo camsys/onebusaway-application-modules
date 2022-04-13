@@ -167,7 +167,20 @@ class ServiceAlertsServiceImpl implements ServiceAlertsService {
 
   @Override
   public List<ServiceAlert> getServiceAlertsForFederatedAgencyId(String agencyId) {
-    Set<AgencyAndId> serviceAlertIds = _serviceAlertIdsByServiceAlertAgencyId.get(agencyId);
+    Set<AgencyAndId> serviceAlertIds = new HashSet<>();
+    Set<AgencyAndId> agencyAlertIds = _serviceAlertIdsByServiceAlertAgencyId.get(agencyId);
+    if (agencyAlertIds != null)
+      serviceAlertIds.addAll(agencyAlertIds);
+    // add in route/direction matches as well as this is bus time convention
+    for (Set<AgencyAndId> alertsByRouteAndDirection : _serviceAlertIdsByRouteAndDirectionId.values()) {
+      for (AgencyAndId agencyAndId : alertsByRouteAndDirection) {
+        if (agencyAndId.getAgencyId().equals(agencyId)) {
+          serviceAlertIds.add(agencyAndId);
+        }
+      }
+    }
+
+
     return getServiceAlertIdsAsObjects(serviceAlertIds);
   }
 
