@@ -60,6 +60,8 @@ public class ArrivalAndDepartureInstance {
 
   private TimeIntervalBean predictedDepartureInterval;
 
+  private boolean cancelled;
+
   public ArrivalAndDepartureInstance(StopTimeInstance stopTimeInstance,
       ArrivalAndDepartureTime scheduledTime) {
     if (stopTimeInstance == null)
@@ -167,6 +169,14 @@ public class ArrivalAndDepartureInstance {
   public void setPredictedDepartureInterval(
       TimeIntervalBean predictedDepartureInterval) {
     this.predictedDepartureInterval = predictedDepartureInterval;
+  }
+
+  public void setCancelled(boolean cancelled) {
+    this.cancelled = cancelled;
+  }
+
+  public boolean isCancelled(){
+    return cancelled;
   }
 
   /****

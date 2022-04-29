@@ -76,7 +76,7 @@ public class TransitDataServiceImpl implements TransitDataService {
   private TransitDataServiceTemplateImpl _transitDataService;
   
   private BundleManagementService _bundleManagementService;
-  
+
   @Autowired
   private BundleSearchService _bundleSearchService;
   
@@ -182,8 +182,8 @@ public class TransitDataServiceImpl implements TransitDataService {
       String stopId, ArrivalsAndDeparturesQueryBean query)
       throws ServiceException {
     blockUntilBundleIsReady();
-    return _transitDataService.getStopWithArrivalsAndDepartures(
-        stopId, query);
+    _log.info(stopId);
+    return null;
   }
 
   @Override

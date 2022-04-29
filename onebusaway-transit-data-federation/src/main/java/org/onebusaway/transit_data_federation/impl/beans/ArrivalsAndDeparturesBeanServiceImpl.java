@@ -21,6 +21,7 @@ import org.onebusaway.realtime.api.OccupancyStatus;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
+import org.onebusaway.transit_data.model.TransitDataConstants;
 import org.onebusaway.transit_data.model.realtime.HistogramBean;
 import org.onebusaway.transit_data.model.schedule.FrequencyBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
@@ -81,6 +82,8 @@ public class ArrivalsAndDeparturesBeanServiceImpl implements
   private GtfsRealtimeNegativeArrivals _gtfsRealtimeNegativeArrivals;
 
   private RidershipService _ridershipService;
+
+  private CancelledTripService _cancelledTripService;
   
   @Autowired
   public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
@@ -134,6 +137,12 @@ public class ArrivalsAndDeparturesBeanServiceImpl implements
       GtfsRealtimeNegativeArrivals _gtfsRealtimeNegativeArrivals) {
     this._gtfsRealtimeNegativeArrivals = _gtfsRealtimeNegativeArrivals;
   }
+
+  @Autowired
+  public void setCancelledTripService(CancelledTripService cancelledTripService) {
+    _cancelledTripService = cancelledTripService;
+  }
+
 
   private AtomicInteger _stopTimesTotal = new AtomicInteger();
 
@@ -311,8 +320,12 @@ public class ArrivalsAndDeparturesBeanServiceImpl implements
     pab.setStop(stopBean);
     pab.setStopSequence(stopTime.getSequence());
     pab.setTotalStopsInTrip(stopTime.getTotalStopsInTrip());
-    
-    pab.setStatus("default");
+
+    if(_cancelledTripService.isTripCancelled(trip.getId())){
+      pab.setStatus(TransitDataConstants.STATUS_CANCELED);
+    } else {
+      pab.setStatus(TransitDataConstants.STATUS_DEFAULT);
+    }
 
     pab.setScheduledArrivalTime(instance.getScheduledArrivalTime());
     pab.setScheduledDepartureTime(instance.getScheduledDepartureTime());
@@ -401,6 +414,8 @@ public class ArrivalsAndDeparturesBeanServiceImpl implements
 
     if (!situations.isEmpty())
       bean.setSituations(situations);
+
+    //todo: this might be a better place than in ArrivalAndDepartureServiceImpl to apply realtime
   }
 
   private boolean isArrivalAndDepartureInRange(
