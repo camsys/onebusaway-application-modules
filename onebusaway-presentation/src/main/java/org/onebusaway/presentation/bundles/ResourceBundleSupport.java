@@ -23,11 +23,18 @@ import java.util.ResourceBundle;
 
 import com.opensymphony.xwork2.LocaleProvider;
 import com.opensymphony.xwork2.util.StrutsLocalizedTextProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ResourceBundleSupport {
+
+  private static final Logger _log = LoggerFactory.getLogger(ResourceBundleSupport.class);
   public static Map<String, String> getLocaleMap(LocaleProvider localeProvider, Class<?> resourceType) {
     StrutsLocalizedTextProvider localizedTextProvider = new StrutsLocalizedTextProvider();
+    _log.debug("looking for bundle name=" +resourceType.getName() + " and locale=" + Locale.getDefault()
+            + " and provider.locale=" + localeProvider.getLocale());
     ResourceBundle bundle = localizedTextProvider.findResourceBundle(resourceType.getName(), Locale.getDefault());
+    _log.debug("found bundle=" + bundle);
     Map<String, String> m = new LinkedHashMap<String, String>();
     for (Enumeration<String> en = bundle.getKeys(); en.hasMoreElements();) {
       String key = en.nextElement();

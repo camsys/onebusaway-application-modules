@@ -386,7 +386,8 @@ public class ResourceServiceImpl implements ResourceService {
 
   private URL getMessagesResourceAsSourceUrl(String resourceName,
       LocaleProvider localeProvider) {
-
+    _log.debug("message resource=" + resourceName
+            + " with provider=" + localeProvider );
     int index = resourceName.indexOf('=');
     if (index == -1)
       throw new IllegalStateException("invalid resource messages specifier: "
@@ -394,6 +395,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     String messagesPrefix = resourceName.substring(0, index);
     String messagesResourceClassName = resourceName.substring(index + 1);
+    _log.debug("prefix=" + messagesPrefix + " className=" + messagesResourceClassName);
     Class<?> messagesResourceClass = null;
 
     try {
@@ -406,6 +408,7 @@ public class ResourceServiceImpl implements ResourceService {
     TextProvider provider = _textProviderFactory.createInstance(
         messagesResourceClass);
     ResourceBundle bundle = provider.getTexts();
+    _log.debug("bundle=" + bundle);
 
     Map<String, String> resourceMapping = new HashMap<String, String>();
 
@@ -859,6 +862,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public boolean isValidLocaleString(String s) {
+      _log.debug("isValidLocaleString(" + s + ")");
       if ("en".equalsIgnoreCase(s))
         return true;
       return false;
@@ -866,6 +870,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public boolean isValidLocale(Locale locale) {
+      _log.debug("isValidLocale(" + locale.getDisplayName());
       if (locale.getDisplayName().equalsIgnoreCase("en"))
         return true;
       return false;
