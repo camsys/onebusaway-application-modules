@@ -73,7 +73,12 @@ public class TwilioSupport extends ActionSupport implements ParameterAware, Curr
   }
 
   private String getLocalText(String msg) {
-    return getLocalTextProvider().getText(msg);
+    ActionContext context = ActionContext.getContext();
+    Locale locale = context.getLocale();
+    ValueStack valueStack = context.getValueStack();
+    String text = new StrutsLocalizedTextProvider().findText(TwilioSupport.this.getClass(), msg, locale, msg, null, valueStack);
+    _log.debug(msg + " = " + text + " with stack=" + valueStack);
+    return text;
   }
 
   private transient TextProvider textProvider;
