@@ -15,15 +15,11 @@
  */
 package org.onebusaway.twilio.actions;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 
-import com.opensymphony.xwork2.TextProvider;
-import com.opensymphony.xwork2.TextProviderFactory;
-import com.opensymphony.xwork2.inject.Container;
-import com.opensymphony.xwork2.util.StrutsLocalizedTextProvider;
+import com.opensymphony.xwork2.*;
+import com.opensymphony.xwork2.inject.Inject;
 import org.apache.struts2.interceptor.ParameterAware;
 import org.apache.struts2.interceptor.SessionAware;
 import org.onebusaway.geospatial.model.CoordinateBounds;
@@ -37,8 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.ActionContext;
-import com.opensymphony.xwork2.ActionSupport;
 import com.opensymphony.xwork2.util.ValueStack;
 
 public class TwilioSupport extends ActionSupport implements ParameterAware, CurrentUserAware, SessionAware {
@@ -76,29 +70,18 @@ public class TwilioSupport extends ActionSupport implements ParameterAware, Curr
     ActionContext context = ActionContext.getContext();
     Locale locale = context.getLocale();
     ValueStack valueStack = context.getValueStack();
-    String text = new StrutsLocalizedTextProvider().findText(TwilioSupport.this.getClass(), msg, locale, msg, null, valueStack);
+    String text = _textProvider.findText(TwilioSupport.this.getClass(), msg, locale, msg, null, valueStack);
     _log.debug(msg + " = " + text + " with stack=" + valueStack);
     return text;
   }
 
-  private transient TextProvider textProvider;
-  protected TextProvider getLocalTextProvider() {
-    if (this.textProvider == null) {
-      Container container = this.getContainer();
-      TextProviderFactory tpf = (TextProviderFactory)container.getInstance(TextProviderFactory.class);
-      this.textProvider = tpf.createInstance(this.getClass());
-      _log.debug("creating text provider=" + textProvider);
-    }
-    _log.debug("using text provider=" + textProvider);
-    return this.textProvider;
-  }
-
-
   protected void addMessage(String msg, Object... args) {
+    _log.debug("addMessage(" + msg + ") and args=" + args);
     ActionContext context = ActionContext.getContext();
     Locale locale = context.getLocale();
     ValueStack valueStack = context.getValueStack();
-    String text = new StrutsLocalizedTextProvider().findText(TwilioSupport.this.getClass(), msg, locale, msg, args, valueStack);
+
+    String text = _textProvider.findText(TwilioSupport.this.getClass(), msg, locale, msg, args, valueStack);
     _log.debug("message: " + text);
     _message.append(" " + text + " ");
     _log.debug(getText(msg));
@@ -196,6 +179,9 @@ public class TwilioSupport extends ActionSupport implements ParameterAware, Curr
   public void setCurrentUser(UserBean currentUser) {
     _currentUser = currentUser;
   }
+
+  @Inject
+  private LocalizedTextProvider _textProvider;
 
   public UserBean getCurrentUser() {
     return _currentUser;
