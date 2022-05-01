@@ -84,8 +84,8 @@ public class SessionManagerImpl implements SessionManager {
 
   @Override
   public Map<String, Object> getContext(String key) {
-  	_log.debug("getContext");
     ContextEntry entry = getOrCreateContextEntry(key);
+    _log.debug("getContext(" + key + ")=" + entry._context);
     return entry.getContext();
   }
   
@@ -136,7 +136,7 @@ public class SessionManagerImpl implements SessionManager {
     }
 
     public Map<String, Object> getContext() {
-      _log.debug("getContext");
+      _log.debug("getContext()=" + _context);
       return _context;
     }
 

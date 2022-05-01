@@ -20,6 +20,9 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 
+import com.opensymphony.xwork2.TextProvider;
+import com.opensymphony.xwork2.TextProviderFactory;
+import com.opensymphony.xwork2.inject.Container;
 import com.opensymphony.xwork2.util.StrutsLocalizedTextProvider;
 import org.apache.struts2.interceptor.ParameterAware;
 import org.apache.struts2.interceptor.SessionAware;
@@ -64,11 +67,28 @@ public class TwilioSupport extends ActionSupport implements ParameterAware, Curr
   }
   
   protected void addMessage(String msg) {
-    String value = getText(msg);
+    String value = getLocalText(msg);
     _log.debug(msg + " = " + value);
     _message.append(" " + value + " ");
   }
-  
+
+  private String getLocalText(String msg) {
+    return getLocalTextProvider().getText(msg);
+  }
+
+  private transient TextProvider textProvider;
+  protected TextProvider getLocalTextProvider() {
+    if (this.textProvider == null) {
+      Container container = this.getContainer();
+      TextProviderFactory tpf = (TextProviderFactory)container.getInstance(TextProviderFactory.class);
+      this.textProvider = tpf.createInstance(this.getClass());
+      _log.debug("creating text provider=" + textProvider);
+    }
+    _log.debug("using text provider=" + textProvider);
+    return this.textProvider;
+  }
+
+
   protected void addMessage(String msg, Object... args) {
     ActionContext context = ActionContext.getContext();
     Locale locale = context.getLocale();
