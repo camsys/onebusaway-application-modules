@@ -552,6 +552,7 @@
             <exclude>bin/**</exclude>
             <exclude>src/test/resources/**</exclude>
             <exclude>**/git.properties</exclude>
+            <exclude>**/log4j2.xml</exclude>
           </excludes>
         </configuration>
       </plugin>

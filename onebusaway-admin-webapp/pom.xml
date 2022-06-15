@@ -448,6 +448,7 @@
 					<exclude>**/grid.*.js</exclude>
 					<exclude>**/CTBusStops*</exclude>
 					<exclude>**/leaflet.*</exclude>
+				    <exclude>**/log4j-stdout.xml</exclude>
 					<exclude>overlays/**</exclude>
 				  </excludes>
 				</configuration>
