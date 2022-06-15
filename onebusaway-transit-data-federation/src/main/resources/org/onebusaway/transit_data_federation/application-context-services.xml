@@ -133,10 +133,6 @@
 
   <bean id="bundleSearchService" class="org.onebusaway.transit_data_federation.impl.bundle.BundleSearchServiceImpl" />
 
-  <bean id="serviceAlertsRecordService" class="org.onebusaway.alerts.impl.ServiceAlertsServiceImpl" />
-
-  <bean id="serviceAlertsBeanService" class="org.onebusaway.transit_data_federation.impl.beans.ServiceAlertsBeanServiceImpl" />
-
   <bean id="gtfsRealtimeService" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeServiceImpl" />
 
   <bean id="siriService" class="org.onebusaway.transit_data_federation.impl.realtime.siri.SiriService" />

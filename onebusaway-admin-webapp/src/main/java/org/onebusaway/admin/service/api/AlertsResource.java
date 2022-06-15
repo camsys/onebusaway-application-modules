@@ -24,7 +24,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import com.google.transit.realtime.GtfsRealtime;
-import com.sun.jersey.api.spring.Autowire;
 import org.onebusaway.admin.service.server.ConsoleServiceAlertsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +34,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 @Component
-@Autowire
 @Path("/alerts")
 /**
  * expose service alerts from admin console as a GTFS-RT alerts feed.
