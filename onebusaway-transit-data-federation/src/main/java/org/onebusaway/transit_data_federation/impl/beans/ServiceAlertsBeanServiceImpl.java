@@ -39,6 +39,7 @@ import static org.onebusaway.alerts.impl.ServiceAlertBeanHelper.*;
 @Component
 class ServiceAlertsBeanServiceImpl implements ServiceAlertsBeanService {
 
+  @Autowired
   private ServiceAlertsService _serviceAlertsService;
 
   @Autowired

@@ -34,7 +34,7 @@
     <org_onebusaway_test_rmi_port>9902</org_onebusaway_test_rmi_port>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
-    <geotools.version>23.0</geotools.version>
+    <geotools.version>20.5</geotools.version>
     <guava-version>29.0-jre</guava-version>
     <jackson-version>2.12.0</jackson-version>
     <jersey-version>2.31</jersey-version>

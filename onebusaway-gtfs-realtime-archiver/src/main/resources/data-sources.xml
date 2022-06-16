@@ -89,35 +89,7 @@
 <!--         </bean> -->
 
     <!-- these classes are now defined in a separate module -->
-    <bean id="gtfsRealtimeArchiveSessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
-    <property name="dataSource" ref="gtfsRealtimeArchiveDataSource" />
-    <property name="annotatedClasses">
-      <list>
-        <value>org.onebusaway.gtfs_realtime.model.TripUpdateModel</value>
-        <value>org.onebusaway.gtfs_realtime.model.StopTimeUpdateModel</value>
-        <value>org.onebusaway.gtfs_realtime.model.VehiclePositionModel</value>
-        <value>org.onebusaway.gtfs_realtime.model.AlertModel</value>
-        <value>org.onebusaway.gtfs_realtime.model.EntitySelectorModel</value>
-        <value>org.onebusaway.gtfs_realtime.model.TimeRangeModel</value>
-        <value>org.onebusaway.gtfs_realtime.archiver.model.LinkAVLData</value>
-        <value>org.onebusaway.gtfs_realtime.archiver.model.TripInfo</value>
-        <value>org.onebusaway.gtfs_realtime.archiver.model.StopUpdate</value>
-      </list>
-    </property>
-    <property name="hibernateProperties">
-      <props>
-        <prop key="hibernate.connection.pool_size">1</prop>
-        <!--<prop key="hibernate.current_session_context_class">thread</prop>-->
-        <prop key="hibernate.cache.provider_class">org.hibernate.cache.internal.NoCachingRegionFactory</prop>
-        <prop key="hibernate.show_sql">false</prop>
-        <prop key="hibernate.hbm2ddl.auto">update</prop>
-        <prop key="hibernate.jdbc.batch_size">1000</prop>
-        <prop key="hibernate.order_inserts">false</prop>
-        <prop key="hibernate.order_updates">false</prop>
-      </props>
-    </property>
-  </bean>
-  
+
   <!-- 
       <bean id="httpServiceClient" class="org.onebusaway.transit_data_federation.util.HttpServiceClientImpl" >
       <constructor-arg type="java.lang.String" value="admin.staging.obast.org"/>
