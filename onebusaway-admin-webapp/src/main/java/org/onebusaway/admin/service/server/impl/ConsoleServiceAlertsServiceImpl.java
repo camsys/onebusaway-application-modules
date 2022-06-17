@@ -48,6 +48,21 @@ public class ConsoleServiceAlertsServiceImpl implements ConsoleServiceAlertsServ
     private ServiceAlertsService _service;
 
     @Override
+    public GtfsRealtime.FeedMessage getAll() {
+        List<ServiceAlertBean> allServiceAlerts = ServiceAlertBeanHelper.list(_service.getAllServiceAlerts());
+        GtfsRealtime.FeedMessage.Builder feed = GtfsRealtime.FeedMessage.newBuilder();
+        GtfsRealtime.FeedHeader.Builder header = feed.getHeaderBuilder();
+        header.setGtfsRealtimeVersion(GtfsRealtimeConstants.VERSION);
+        long time = SystemTime.currentTimeMillis();
+        header.setTimestamp(time / 1000);
+        ListBean<ServiceAlertBean> listBean = new ListBean<>();
+        listBean.setList(allServiceAlerts);
+        listBean.setLimitExceeded(false);
+
+        ServiceAlertBuilderHelper.fillFeedMessage(feed, listBean, "1", time);
+        return feed.build();
+    }
+    @Override
     public GtfsRealtime.FeedMessage getAlerts(String agencyId) {
         ListBean<ServiceAlertBean> listBean = getAllServiceAlertsForAgencyId(agencyId);
 

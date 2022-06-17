@@ -44,6 +44,17 @@ public class AlertsResource {
     @Autowired
     private ConsoleServiceAlertsService _alerts;
 
+    @Path("all.pbtext")
+    @GET
+    @Produces("text/plain")
+    public Response getAll() {
+        GtfsRealtime.FeedMessage feed = _alerts.getAll();
+        if (feed == null) {
+            return Response.ok().build();
+        }
+        Response response = Response.ok(feed.toString()).build();
+        return response;
+    }
 
     @Path("/{agencyId}.pb")
     @GET

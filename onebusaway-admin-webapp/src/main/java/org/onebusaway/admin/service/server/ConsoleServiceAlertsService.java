@@ -26,6 +26,7 @@ import java.util.List;
 
 public interface ConsoleServiceAlertsService {
 
+    GtfsRealtime.FeedMessage getAll();
     ListBean<ServiceAlertBean> getAllServiceAlertsForAgencyId(String agencyId);
 
     void removeServiceAlert(AgencyAndId id);
