@@ -47,12 +47,31 @@ public class AlertsResource {
     @Path("all.pbtext")
     @GET
     @Produces("text/plain")
-    public Response getAll() {
+    public Response getAllText() {
         GtfsRealtime.FeedMessage feed = _alerts.getAll();
         if (feed == null) {
             return Response.ok().build();
         }
         Response response = Response.ok(feed.toString()).build();
+        return response;
+    }
+
+    @Path("all.pb")
+    @GET
+    @Produces("application/x-google-protobuff")
+    public Response getAll() {
+        GtfsRealtime.FeedMessage feed = _alerts.getAll();
+        if (feed == null) {
+            return Response.ok().build();
+        }
+        StreamingOutput stream = new StreamingOutput() {
+            @Override
+            public void write(OutputStream os) throws IOException, WebApplicationException {
+                // Service Alerts know how to write themselves as protocol buffers
+                feed.writeTo(os);
+            }
+        };
+        Response response = Response.ok(stream).build();
         return response;
     }
 

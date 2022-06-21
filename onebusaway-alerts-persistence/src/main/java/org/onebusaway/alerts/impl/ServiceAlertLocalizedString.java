@@ -31,6 +31,7 @@ public class ServiceAlertLocalizedString {
   @GenericGenerator(name = "native", strategy = "native")
   private int id = 0;
   private String language;
+  @Column(length=4000)
   private String value;
   //@ManyToOne
     @Transient

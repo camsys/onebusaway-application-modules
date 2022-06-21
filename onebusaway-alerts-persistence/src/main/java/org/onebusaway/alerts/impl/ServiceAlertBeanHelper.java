@@ -40,6 +40,9 @@ public class ServiceAlertBeanHelper {
 
     public static List<ServiceAlertBean> list(List<ServiceAlertRecord> serviceAlerts) {
         List<ServiceAlertBean> beans = new ArrayList<ServiceAlertBean>();
+        if (serviceAlerts == null){
+            return beans;
+        }
         for (ServiceAlertRecord serviceAlert : serviceAlerts)
             beans.add(getServiceAlertAsBean(serviceAlert));
         return beans;
