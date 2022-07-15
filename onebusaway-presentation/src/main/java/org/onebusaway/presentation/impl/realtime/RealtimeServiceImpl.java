@@ -453,7 +453,8 @@ public class RealtimeServiceImpl implements RealtimeService {
     
     StopWithArrivalsAndDeparturesBean stopWithArrivalsAndDepartures =
       _transitDataService.getStopWithArrivalsAndDepartures(stopId, query);
-
+    if (stopWithArrivalsAndDepartures == null)
+      return new ArrayList<>();
     return stopWithArrivalsAndDepartures.getArrivalsAndDepartures();
   }
   

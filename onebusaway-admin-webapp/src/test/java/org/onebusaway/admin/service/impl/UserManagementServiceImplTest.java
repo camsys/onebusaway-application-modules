@@ -30,13 +30,13 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.onebusaway.admin.model.ui.UserDetail;
+import org.onebusaway.users.impl.authentication.VersionedPasswordEncoder;
 import org.onebusaway.users.model.User;
 import org.onebusaway.users.model.UserIndex;
 import org.onebusaway.users.model.UserRole;
 import org.onebusaway.users.services.StandardAuthoritiesService;
 import org.onebusaway.users.services.UserDao;
 import org.onebusaway.users.services.UserService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * Tests {@link UserManagementServiceImpl}
@@ -58,7 +58,7 @@ public class UserManagementServiceImplTest {
 	private UserDao userDao;
 	
 	@Mock
-	private PasswordEncoder passwordEncoder;
+	private VersionedPasswordEncoder passwordEncoder;
 	
 	private UserManagementServiceImpl service;
 	
