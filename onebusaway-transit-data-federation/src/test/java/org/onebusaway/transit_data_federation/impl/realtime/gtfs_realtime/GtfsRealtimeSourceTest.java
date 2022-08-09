@@ -76,6 +76,9 @@ public class GtfsRealtimeSourceTest {
         filteredAlertFeed.addEntity(alertEntityC);
         GtfsRealtime.FeedMessage filteredAlerts = filteredAlertFeed.build();
 
+        // Should return input if no filter is defined.
+        assertEquals(alerts, _source.filterAlerts(alerts));
+
         _source.setFilterRegex("cause: ACCIDENT");
         GtfsRealtime.FeedMessage result = _source.filterAlerts(alerts);
         assertEquals(filteredAlerts, result);

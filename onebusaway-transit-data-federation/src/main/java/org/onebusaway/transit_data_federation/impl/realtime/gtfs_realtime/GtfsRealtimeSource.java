@@ -594,6 +594,9 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   */
 
   public FeedMessage filterAlerts(FeedMessage originalFeedMessage){
+    if(filterRegexString == null){
+      return originalFeedMessage; // if no filter is set, don't filter anything. Return input.
+    }
     Pattern pattern = Pattern.compile(filterRegexString);
 
     GtfsRealtime.FeedMessage.Builder filteredFeedMessageBuilder = GtfsRealtime.FeedMessage.newBuilder(); //new empty FeedMessage for output
