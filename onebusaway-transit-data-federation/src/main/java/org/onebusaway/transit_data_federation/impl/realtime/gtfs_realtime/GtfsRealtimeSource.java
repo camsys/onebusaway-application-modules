@@ -136,6 +136,8 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
 
   private List<String> _agencyIds = new ArrayList<String>();
 
+  private String filterRegex;
+
   /**
    * We keep track of vehicle location updates, only pushing them to the
    * underling {@link VehicleLocationListener} when they've been updated, since
@@ -461,7 +463,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
     result.setRecordsTotal(combinedUpdates.size());
     handleCombinedUpdates(result, combinedUpdates);
     cacheVehicleLocations(vehiclePositions);
-    handleAlerts(alerts);
+    handleAlerts(filterAlerts(alerts));
   }
 
   private void cacheVehicleLocations(FeedMessage vehiclePositions) {
@@ -573,6 +575,16 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
       
     }
     return false;
+  }
+
+  public void setFilterRegex(String filterRegex) {
+    this.filterRegex = filterRegex;
+  }
+
+  public FeedMessage filterAlerts(FeedMessage alerts){
+    String regexString = filterRegex;
+    
+    return alerts;
   }
 
   private void handleAlerts(FeedMessage alerts) {
@@ -986,6 +998,9 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
 	  }
 	}
   }
+
+
+
   /****
    *
    ****/

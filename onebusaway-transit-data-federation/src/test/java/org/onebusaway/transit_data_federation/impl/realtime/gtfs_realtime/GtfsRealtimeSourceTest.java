@@ -46,13 +46,15 @@ public class GtfsRealtimeSourceTest {
     private static final String STOP_2 = null;
     private static final String STOP_3 = "402";
 
+    private GtfsRealtimeSource _source;
+
     @Before
     public void Before(){
-
+        _source = new GtfsRealtimeSource();
     }
 
     @Test
-    public void testHandleAlertsFilter(){
+    public void testFilterAlerts(){
 
         // Create GTFS Feed with service alerts
         GtfsRealtime.FeedEntity alertEntityA = createAlert("alertA", TEST_1, DESC_1, CAUSE_1,
@@ -63,11 +65,25 @@ public class GtfsRealtimeSourceTest {
                 EFFECT_3, URL_3, TIME_START_3, TIME_END_3, AGENCY_3, ROUTE_3, STOP_3);
 
         // Create FeedMessage
-        GtfsRealtime.FeedMessage.Builder alertFeed = createFeed();
-        alertFeed.addEntity(alertEntityA);
-        alertFeed.addEntity(alertEntityB);
-        alertFeed.addEntity(alertEntityC);
-        GtfsRealtime.FeedMessage alerts = alertFeed.build();
+        GtfsRealtime.FeedMessage.Builder unfilteredAlertFeed = createFeed();
+        unfilteredAlertFeed.addEntity(alertEntityA);
+        unfilteredAlertFeed.addEntity(alertEntityB);
+        unfilteredAlertFeed.addEntity(alertEntityC);
+        GtfsRealtime.FeedMessage alerts = unfilteredAlertFeed.build();
+
+        GtfsRealtime.FeedMessage.Builder filteredAlertFeed = createFeed();
+        filteredAlertFeed.addEntity(alertEntityA);
+        filteredAlertFeed.addEntity(alertEntityC);
+        GtfsRealtime.FeedMessage filteredAlerts = filteredAlertFeed.build();
+
+        _source.setFilterRegex("");
+
+
+        GtfsRealtime.FeedMessage result = _source.filterAlerts(alerts);
+
+        assertEquals(result, filteredAlerts);
+
+
 
 
 
