@@ -79,6 +79,9 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class GtfsRealtimeSource implements MonitoredDataSource {
 
   public static final String GTFS_CONNECT_TIMEOUT = "gtfs.connect_timeout";
@@ -136,7 +139,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
 
   private List<String> _agencyIds = new ArrayList<String>();
 
-  private String filterRegex;
+  private String filterRegexString;
 
   /**
    * We keep track of vehicle location updates, only pushing them to the
@@ -578,13 +581,33 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   }
 
   public void setFilterRegex(String filterRegex) {
-    this.filterRegex = filterRegex;
+    this.filterRegexString = filterRegex;
   }
 
-  public FeedMessage filterAlerts(FeedMessage alerts){
-    String regexString = filterRegex;
-    
-    return alerts;
+
+  /*
+  *  filterRegexString is read from the bean properties, and is used as the filter test
+  *  The FeedMessage alerts parameter is being run through the filter
+  *  Breaks the FeedMessage into a list, and goes through each alert in the list.
+  *     If an alert matches the regex, it will be filtered out.
+  *  Returns a new FeedMessage containing all the alerts that weren't filtered out (didn't match the regex)
+  */
+
+  public FeedMessage filterAlerts(FeedMessage originalFeedMessage){
+    Pattern pattern = Pattern.compile(filterRegexString);
+
+    GtfsRealtime.FeedMessage.Builder filteredFeedMessageBuilder = GtfsRealtime.FeedMessage.newBuilder(); //new empty FeedMessage for output
+    filteredFeedMessageBuilder.setHeader(originalFeedMessage.getHeader().toBuilder()); //Copy the header
+
+    java.util.List<com.google.transit.realtime.GtfsRealtime.FeedEntity> allEntities = originalFeedMessage.getEntityList();
+    for(com.google.transit.realtime.GtfsRealtime.FeedEntity entity : allEntities){ //for each alert in the original FeedMessage
+        Matcher matcher = pattern.matcher(entity.toString());
+        if(! matcher.find()){ //if it doesn't match the regex
+          filteredFeedMessageBuilder.addEntity(entity); //include in output
+        }
+    }
+
+    return filteredFeedMessageBuilder.build();
   }
 
   private void handleAlerts(FeedMessage alerts) {
@@ -998,6 +1021,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
 	  }
 	}
   }
+
 
 
 
