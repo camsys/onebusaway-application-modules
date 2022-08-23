@@ -32,7 +32,7 @@ import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;
 import org.onebusaway.transit_data_federation.services.beans.RouteScheduleBeanService;
 import org.onebusaway.transit_data_federation.services.beans.ServiceAlertsBeanService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
 import org.onebusaway.transit_data_federation.services.transit_graph.*;
 import org.onebusaway.util.AgencyAndIdLibrary;
@@ -144,7 +144,7 @@ public class RouteScheduleBeanServiceImpl implements RouteScheduleBeanService {
    * for the given service scheduleDate
   */
   private void addStopTripDirectionsViaBlockTrip(RouteScheduleBean rsb, AgencyAndId routeId) {
-    List<BlockTripIndex> blockTripIndices = _blockIndexService.getBlockTripIndicesForRouteCollectionId(routeId);
+    List<StaticBlockTripIndex> blockTripIndices = _blockIndexService.getBlockTripIndicesForRouteCollectionId(routeId);
 
     Map<String,StopCollections> directionToStopCollectionsMap = new HashMap<>();
     Map<String, StopsAndTripsForDirectionBean> directionToStopTripDirectionBeanMap = new HashMap<>();
@@ -154,7 +154,7 @@ public class RouteScheduleBeanServiceImpl implements RouteScheduleBeanService {
     addAgencyReference(references, routeId.getAgencyId());
     addRouteReference(references, routeId);
 
-    for (BlockTripIndex bti : blockTripIndices) {
+    for (StaticBlockTripIndex bti : blockTripIndices) {
 
       for (BlockTripEntry blockTrip : bti.getTrips()) {
 

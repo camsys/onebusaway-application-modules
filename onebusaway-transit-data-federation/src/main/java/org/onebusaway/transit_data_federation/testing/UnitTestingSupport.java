@@ -20,7 +20,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -37,21 +36,21 @@ import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.realtime.api.OccupancyStatus;
 import org.onebusaway.transit_data_federation.impl.blocks.BlockIndexFactoryServiceImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockConfigurationEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockConfigurationEntryImpl.Builder;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockStopTimeEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockTripEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.FrequencyEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteCollectionEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockConfigurationEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockConfigurationEntryImpl.Builder;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockStopTimeEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockTripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticFrequencyEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteCollectionEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopTimeEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.bundle.HistoricalRidership;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexFactoryService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
@@ -139,85 +138,85 @@ public class UnitTestingSupport {
     return agency;
   }
 
-  public static RouteEntryImpl route(String id) {
-    RouteEntryImpl route = new RouteEntryImpl();
+  public static StaticRouteEntryImpl route(String id) {
+    StaticRouteEntryImpl route = new StaticRouteEntryImpl();
     route.setId(aid(id));
     return route;
   }
 
-  public static RouteCollectionEntryImpl routeCollection(String id,
-      RouteEntry... routes) {
-    RouteCollectionEntryImpl route = new RouteCollectionEntryImpl();
+  public static StaticRouteCollectionEntryImpl routeCollection(String id,
+                                                               RouteEntry... routes) {
+    StaticRouteCollectionEntryImpl route = new StaticRouteCollectionEntryImpl();
     route.setId(aid(id));
     route.setChildren(asList(routes));
     for (RouteEntry routeEntry : routes) {
-      ((RouteEntryImpl) routeEntry).setParent(route);
+      ((StaticRouteEntryImpl) routeEntry).setParent(route);
     }
     return route;
   }
 
-  public static StopEntryImpl stop(String id) {
+  public static StaticStopEntryImpl stop(String id) {
     return stop(id, 0.0, 0.0);
   }
 
-  public static StopEntryImpl stop(String id, double lat, double lon) {
-    return new StopEntryImpl(aid(id), lat, lon);
+  public static StaticStopEntryImpl stop(String id, double lat, double lon) {
+    return new StaticStopEntryImpl(aid(id), lat, lon);
   }
 
-  public static BlockEntryImpl block(String id) {
-    BlockEntryImpl block = new BlockEntryImpl();
+  public static StaticBlockEntryImpl block(String id) {
+    StaticBlockEntryImpl block = new StaticBlockEntryImpl();
     block.setId(aid(id));
     return block;
   }
 
-  public static TripEntryImpl trip(String id) {
-    TripEntryImpl trip = new TripEntryImpl();
+  public static StaticTripEntryImpl trip(String id) {
+    StaticTripEntryImpl trip = new StaticTripEntryImpl();
     trip.setId(aid(id));
     return trip;
   }
 
-  public static TripEntryImpl trip(String id, String serviceId) {
-    TripEntryImpl trip = trip(id);
+  public static StaticTripEntryImpl trip(String id, String serviceId) {
+    StaticTripEntryImpl trip = trip(id);
     trip.setServiceId(new LocalizedServiceId(aid(serviceId), timeZone()));
     return trip;
   }
 
-  public static TripEntryImpl trip(String id, String serviceId,
-      double totalTripDistance) {
-    TripEntryImpl trip = trip(id, serviceId);
+  public static StaticTripEntryImpl trip(String id, String serviceId,
+                                         double totalTripDistance) {
+    StaticTripEntryImpl trip = trip(id, serviceId);
     trip.setTotalTripDistance(totalTripDistance);
     return trip;
   }
 
-  public static TripEntryImpl trip(String id, double totalTripDistance) {
-    TripEntryImpl trip = trip(id);
+  public static StaticTripEntryImpl trip(String id, double totalTripDistance) {
+    StaticTripEntryImpl trip = trip(id);
     trip.setTotalTripDistance(totalTripDistance);
     return trip;
   }
 
   public static FrequencyEntry frequency(int startTime, int endTime,
       int headwaySecs, int exactTimes) {
-    return new FrequencyEntryImpl(startTime, endTime, headwaySecs, exactTimes);
+    return new StaticFrequencyEntryImpl(startTime, endTime, headwaySecs, exactTimes);
   }
 
-  public static BlockConfigurationEntry linkBlockTrips(BlockEntryImpl block,
-      TripEntryImpl... trips) {
+  public static BlockConfigurationEntry linkBlockTrips(StaticBlockEntryImpl block,
+                                                       StaticTripEntryImpl... trips) {
     return linkBlockTrips(block, null, trips);
   }
 
-  public static BlockConfigurationEntry linkBlockTrips(BlockEntryImpl block,
-      List<FrequencyEntry> frequencies, TripEntryImpl... trips) {
+  public static BlockConfigurationEntry linkBlockTrips(StaticBlockEntryImpl block,
+                                                       List<FrequencyEntry> frequencies, StaticTripEntryImpl... trips) {
 
     List<TripEntry> tripEntries = new ArrayList<TripEntry>();
     Set<LocalizedServiceId> serviceIds = new TreeSet<LocalizedServiceId>();
     for (int i = 0; i < trips.length; i++) {
-      TripEntryImpl trip = trips[i];
+      StaticTripEntryImpl trip = trips[i];
       trip.setBlock(block);
       tripEntries.add(trip);
       if (trip.getServiceId() != null)
         serviceIds.add(trip.getServiceId());
     }
-    Builder builder = BlockConfigurationEntryImpl.builder();
+    Builder builder = StaticBlockConfigurationEntryImpl.builder();
     builder.setBlock(block);
     builder.setServiceIds(new ServiceIdActivation(
         new ArrayList<LocalizedServiceId>(serviceIds),
@@ -239,7 +238,7 @@ public class UnitTestingSupport {
   }
 
   public static BlockConfigurationEntry linkBlockTrips(String blockId,
-      TripEntryImpl... trips) {
+      StaticTripEntryImpl... trips) {
     return linkBlockTrips(block(blockId), trips);
   }
 
@@ -252,16 +251,16 @@ public class UnitTestingSupport {
     return null;
   }
 
-  public static List<BlockTripIndex> blockTripIndices(BlockEntryImpl... blocks) {
+  public static List<StaticBlockTripIndex> blockTripIndices(StaticBlockEntryImpl... blocks) {
     List<BlockEntry> list = new ArrayList<BlockEntry>();
-    for (BlockEntryImpl block : blocks)
+    for (StaticBlockEntryImpl block : blocks)
       list.add(block);
     BlockIndexFactoryService factory = new BlockIndexFactoryServiceImpl();
     return factory.createTripIndices(list);
   }
 
-  public static StopTimeEntryImpl addStopTime(TripEntryImpl trip,
-      StopTimeEntryImpl stopTime) {
+  public static StaticStopTimeEntryImpl addStopTime(StaticTripEntryImpl trip,
+                                                    StaticStopTimeEntryImpl stopTime) {
 
     List<StopTimeEntry> stopTimes = trip.getStopTimes();
 
@@ -285,22 +284,22 @@ public class UnitTestingSupport {
     return stopTime;
   }
 
-  public static StopTimeEntryImpl stopTime() {
-    return new StopTimeEntryImpl();
+  public static StaticStopTimeEntryImpl stopTime() {
+    return new StaticStopTimeEntryImpl();
   }
 
-  public static StopTimeEntryImpl stopTime(int id, StopEntryImpl stop,
-      TripEntryImpl trip, int arrivalTime, int departureTime,
-      double shapeDistTraveled) {
+  public static StaticStopTimeEntryImpl stopTime(int id, StaticStopEntryImpl stop,
+                                                 StaticTripEntryImpl trip, int arrivalTime, int departureTime,
+                                                 double shapeDistTraveled) {
     return stopTime(id, stop, trip, arrivalTime, departureTime,
         shapeDistTraveled, -1);
   }
 
-  public static StopTimeEntryImpl stopTime(int id, StopEntryImpl stop,
-      TripEntryImpl trip, int arrivalTime, int departureTime,
-      double shapeDistTraveled, int shapeIndex) {
+  public static StaticStopTimeEntryImpl stopTime(int id, StaticStopEntryImpl stop,
+                                                 StaticTripEntryImpl trip, int arrivalTime, int departureTime,
+                                                 double shapeDistTraveled, int shapeIndex) {
 
-    StopTimeEntryImpl stopTime = new StopTimeEntryImpl();
+    StaticStopTimeEntryImpl stopTime = new StaticStopTimeEntryImpl();
     stopTime.setId(id);
     stopTime.setStop(stop);
 
@@ -315,29 +314,11 @@ public class UnitTestingSupport {
     return stopTime;
   }
 
-  public static StopTimeEntryImpl stopTime(int id, StopEntryImpl stop,
-      TripEntryImpl trip, int arrivalTime, int departureTime,
-      double shapeDistTraveled, double loadFactor){
+  public static StaticStopTimeEntryImpl stopTime(int id, StaticStopEntryImpl stop,
+                                                 StaticTripEntryImpl trip, int arrivalTime, int departureTime,
+                                                 double shapeDistTraveled, double loadFactor){
 
-    StopTimeEntryImpl stopTime = stopTime(id, stop, trip, arrivalTime, departureTime, shapeDistTraveled);
-
-    HistoricalRidership.Builder bldr = HistoricalRidership.builder();
-//    bldr.setRouteId(trip.getRoute().getId());
-    bldr.setTripId(trip.getId());
-    bldr.setStopId(stop.getId());
-    bldr.setLoadFactor(loadFactor);
-    HistoricalRidership hr = bldr.create();
-    OccupancyStatus status = OccupancyStatus.toEnum(hr.getLoadFactor());
-
-    stopTime.setHistoricalOccupancy(status);
-    return stopTime;
-
-  }
-  public static StopTimeEntryImpl stopTime(int id, StopEntryImpl stop,
-                                           TripEntryImpl trip, int arrivalTime, int departureTime,
-                                           double shapeDistTraveled, int shapeIndex, double loadFactor){
-
-    StopTimeEntryImpl stopTime = stopTime(id, stop, trip, arrivalTime, departureTime, shapeDistTraveled, shapeIndex);
+    StaticStopTimeEntryImpl stopTime = stopTime(id, stop, trip, arrivalTime, departureTime, shapeDistTraveled);
 
     HistoricalRidership.Builder bldr = HistoricalRidership.builder();
 //    bldr.setRouteId(trip.getRoute().getId());
@@ -351,22 +332,40 @@ public class UnitTestingSupport {
     return stopTime;
 
   }
+  public static StaticStopTimeEntryImpl stopTime(int id, StaticStopEntryImpl stop,
+                                                 StaticTripEntryImpl trip, int arrivalTime, int departureTime,
+                                                 double shapeDistTraveled, int shapeIndex, double loadFactor){
 
-  public static StopTimeEntryImpl stopTime(int id, StopEntryImpl stop,
-      TripEntryImpl trip, int time, double shapeDistTraveled) {
+    StaticStopTimeEntryImpl stopTime = stopTime(id, stop, trip, arrivalTime, departureTime, shapeDistTraveled, shapeIndex);
+
+    HistoricalRidership.Builder bldr = HistoricalRidership.builder();
+//    bldr.setRouteId(trip.getRoute().getId());
+    bldr.setTripId(trip.getId());
+    bldr.setStopId(stop.getId());
+    bldr.setLoadFactor(loadFactor);
+    HistoricalRidership hr = bldr.create();
+    OccupancyStatus status = OccupancyStatus.toEnum(hr.getLoadFactor());
+
+    stopTime.setHistoricalOccupancy(status);
+    return stopTime;
+
+  }
+
+  public static StaticStopTimeEntryImpl stopTime(int id, StaticStopEntryImpl stop,
+                                                 StaticTripEntryImpl trip, int time, double shapeDistTraveled) {
     return stopTime(id, stop, trip, time, time, shapeDistTraveled);
   }
 
   public static BlockConfigurationEntry blockConfiguration(BlockEntry block,
       ServiceIdActivation serviceIds, TripEntry... trips) {
-    Builder builder = BlockConfigurationEntryImpl.builder();
+    Builder builder = StaticBlockConfigurationEntryImpl.builder();
     builder.setBlock(block);
     builder.setServiceIds(serviceIds);
     builder.setTrips(asList(trips));
     builder.setTripGapDistances(new double[trips.length]);
     BlockConfigurationEntry blockConfig = builder.create();
 
-    BlockEntryImpl blockImpl = (BlockEntryImpl) block;
+    StaticBlockEntryImpl blockImpl = (StaticBlockEntryImpl) block;
     List<BlockConfigurationEntry> configs = block.getConfigurations();
     if (configs == null) {
       configs = new ArrayList<BlockConfigurationEntry>();
@@ -376,23 +375,23 @@ public class UnitTestingSupport {
 
     for (TripEntry trip : trips) {
       if (trip.getBlock() == null)
-        ((TripEntryImpl) trip).setBlock((BlockEntryImpl) block);
+        ((StaticTripEntryImpl) trip).setBlock((StaticBlockEntryImpl) block);
     }
 
     return blockConfig;
   }
 
-  public static BlockTripEntryImpl blockTrip(
+  public static StaticBlockTripEntryImpl blockTrip(
       BlockConfigurationEntry blockConfig, TripEntry trip) {
-    BlockTripEntryImpl blockTrip = new BlockTripEntryImpl();
+    StaticBlockTripEntryImpl blockTrip = new StaticBlockTripEntryImpl();
     blockTrip.setBlockConfiguration(blockConfig);
     blockTrip.setTrip(trip);
     return blockTrip;
   }
 
-  public static BlockStopTimeEntryImpl blockStopTime(StopTimeEntry stopTime,
-      int blockSequence, BlockTripEntry trip) {
-    return new BlockStopTimeEntryImpl(stopTime, blockSequence, trip, true);
+  public static StaticBlockStopTimeEntryImpl blockStopTime(StopTimeEntry stopTime,
+                                                           int blockSequence, BlockTripEntry trip) {
+    return new StaticBlockStopTimeEntryImpl(stopTime, blockSequence, trip, true);
   }
 
   public static LocalizedServiceId lsid(String id) {

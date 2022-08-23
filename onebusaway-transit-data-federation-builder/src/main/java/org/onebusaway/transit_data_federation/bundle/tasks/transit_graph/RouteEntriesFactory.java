@@ -20,7 +20,7 @@ import java.util.Collection;
 import org.onebusaway.gtfs.model.Route;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
 import org.onebusaway.transit_data_federation.bundle.services.UniqueService;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphImpl;
 import org.onebusaway.transit_data_federation.util.LoggingIntervalUtil;
 import org.slf4j.Logger;
@@ -65,8 +65,8 @@ public class RouteEntriesFactory {
     graph.refreshRouteMapping();
   }
 
-  private RouteEntryImpl processRoute(TransitGraphImpl graph, Route route) {
-    RouteEntryImpl routeEntry = new RouteEntryImpl();
+  private StaticRouteEntryImpl processRoute(TransitGraphImpl graph, Route route) {
+    StaticRouteEntryImpl routeEntry = new StaticRouteEntryImpl();
     routeEntry.setId(unique(route.getId()));
     routeEntry.setType(route.getType());
     graph.putRouteEntry(routeEntry);

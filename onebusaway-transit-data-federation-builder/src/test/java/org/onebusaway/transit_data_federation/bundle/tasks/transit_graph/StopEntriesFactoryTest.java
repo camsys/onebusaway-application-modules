@@ -27,9 +27,8 @@ import org.mockito.Mockito;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Stop;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
-import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.StopEntriesFactory;
 import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphImpl;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 
@@ -71,13 +70,13 @@ public class StopEntriesFactoryTest {
 
     factory.processStops(graph);
 
-    StopEntryImpl stopEntryA = graph.getStopEntryForId(stopA.getId());
+    StaticStopEntryImpl stopEntryA = graph.getStopEntryForId(stopA.getId());
 
     assertEquals(stopA.getId(), stopEntryA.getId());
     assertEquals(stopA.getLat(), stopEntryA.getStopLat(), 0);
     assertEquals(stopA.getLon(), stopEntryA.getStopLon(), 0);
 
-    StopEntryImpl stopEntryB = graph.getStopEntryForId(stopB.getId());
+    StaticStopEntryImpl stopEntryB = graph.getStopEntryForId(stopB.getId());
 
     assertEquals(stopB.getId(), stopEntryB.getId());
     assertEquals(stopB.getLat(), stopEntryB.getStopLat(), 0);

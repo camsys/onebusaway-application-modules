@@ -51,7 +51,7 @@ import org.onebusaway.transit_data_federation.model.narrative.StopTimeNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
@@ -460,12 +460,12 @@ public class GenerateNarrativesTask implements Runnable {
 
   private Collection<PointAndOrientation> getAllOrientationsForStop(
       NarrativeProviderImpl provider, StopEntry stop) {
-    List<BlockStopTimeIndex> stopTimeIndices = _blockIndexService.getStopTimeIndicesForStop(stop);
+    List<StaticBlockStopTimeIndex> stopTimeIndices = _blockIndexService.getStopTimeIndicesForStop(stop);
 
     List<PointAndOrientation> pos = new ArrayList<PointAndOrientation>();
     Map<ShapeIdAndDistance, PointAndOrientation> orientationsByKey = new HashMap<ShapeIdAndDistance, PointAndOrientation>();
 
-    for (BlockStopTimeIndex stopTimeIndex : stopTimeIndices) {
+    for (StaticBlockStopTimeIndex stopTimeIndex : stopTimeIndices) {
       for (BlockStopTimeEntry blockStopTime : stopTimeIndex.getStopTimes()) {
 
         StopTimeEntry stopTime = blockStopTime.getStopTime();

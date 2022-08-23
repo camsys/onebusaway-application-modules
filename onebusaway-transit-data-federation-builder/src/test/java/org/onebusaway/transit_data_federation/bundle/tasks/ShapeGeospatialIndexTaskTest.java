@@ -32,7 +32,7 @@ import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.ShapePointsFactory;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
@@ -71,10 +71,10 @@ public class ShapeGeospatialIndexTaskTest {
     Mockito.when(transitGraphDao.getAllStops()).thenReturn(
         Arrays.asList(stopA, stopB));
 
-    TripEntryImpl tripA = trip("tripA");
+    StaticTripEntryImpl tripA = trip("tripA");
     AgencyAndId shapeIdA = aid("shapeA");
     tripA.setShapeId(shapeIdA);
-    TripEntryImpl tripB = trip("tripB");
+    StaticTripEntryImpl tripB = trip("tripB");
     AgencyAndId shapeIdB = aid("shapeB");
     tripB.setShapeId(shapeIdB);
 

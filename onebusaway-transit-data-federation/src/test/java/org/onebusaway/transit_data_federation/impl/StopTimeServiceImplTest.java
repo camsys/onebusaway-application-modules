@@ -46,11 +46,11 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.realtime.api.OccupancyStatus;
 import org.onebusaway.transit_data_federation.impl.blocks.BlockIndexFactoryServiceImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
-import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockStopTimeIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
@@ -68,7 +68,7 @@ public class StopTimeServiceImplTest {
 
   private AgencyAndId _stopId;
 
-  private StopEntryImpl _stop;
+  private StaticStopEntryImpl _stop;
 
   private TransitGraphDao _transitGraphDao;
 
@@ -124,10 +124,10 @@ public class StopTimeServiceImplTest {
     Date to = date("2009-09-01 10:30");
     Date day = getTimeAsDay(from);
 
-    StopTimeEntryImpl stA = stopTime(0, _stop, trip("A", "sA"), time(9, 50), 0);
-    StopTimeEntryImpl stB = stopTime(1, _stop, trip("B", "sA"), time(10, 10), 0);
-    StopTimeEntryImpl stC = stopTime(2, _stop, trip("C", "sA"), time(10, 20), 0);
-    StopTimeEntryImpl stD = stopTime(3, _stop, trip("D", "sA"), time(10, 40), 0);
+    StaticStopTimeEntryImpl stA = stopTime(0, _stop, trip("A", "sA"), time(9, 50), 0);
+    StaticStopTimeEntryImpl stB = stopTime(1, _stop, trip("B", "sA"), time(10, 10), 0);
+    StaticStopTimeEntryImpl stC = stopTime(2, _stop, trip("C", "sA"), time(10, 20), 0);
+    StaticStopTimeEntryImpl stD = stopTime(3, _stop, trip("D", "sA"), time(10, 40), 0);
 
     BlockConfigurationEntry bA = linkBlockTrips("bA", stA.getTrip());
     BlockConfigurationEntry bB = linkBlockTrips("bB", stB.getTrip());
@@ -182,11 +182,11 @@ public class StopTimeServiceImplTest {
     Date dayB = getTimeAsDay(date("2009-09-02 00:00"));
 
     // 10:00am, 10:30am
-    StopTimeEntryImpl stA = stopTime(0, _stop, trip("A", "sA"), time(10, 00),
+    StaticStopTimeEntryImpl stA = stopTime(0, _stop, trip("A", "sA"), time(10, 00),
         time(10, 30), 0);
 
     // 01:00am, 01:30am (both on next day)
-    StopTimeEntryImpl stB = stopTime(1, _stop, trip("B", "sA"), time(25, 00),
+    StaticStopTimeEntryImpl stB = stopTime(1, _stop, trip("B", "sA"), time(25, 00),
         time(25, 30), 0);
 
     BlockConfigurationEntry bA = linkBlockTrips("bA", stA.getTrip());
@@ -302,13 +302,13 @@ public class StopTimeServiceImplTest {
     Date dayA = getTimeAsDay(date("2009-09-02 00:00"));
     Date dayB = getTimeAsDay(date("2009-09-03 00:00"));
 
-    StopTimeEntryImpl stA = stopTime(0, _stop, trip("A", "sA"), time(10, 00),
+    StaticStopTimeEntryImpl stA = stopTime(0, _stop, trip("A", "sA"), time(10, 00),
         time(10, 30), 0);
-    StopTimeEntryImpl stB = stopTime(1, _stop, trip("B", "sA"), time(25, 0),
+    StaticStopTimeEntryImpl stB = stopTime(1, _stop, trip("B", "sA"), time(25, 0),
         time(25, 30), 0);
-    StopTimeEntryImpl stC = stopTime(2, _stop, trip("C", "sB"), time(10, 00),
+    StaticStopTimeEntryImpl stC = stopTime(2, _stop, trip("C", "sB"), time(10, 00),
         time(10, 30), 0);
-    StopTimeEntryImpl stD = stopTime(3, _stop, trip("D", "sB"), time(25, 0),
+    StaticStopTimeEntryImpl stD = stopTime(3, _stop, trip("D", "sB"), time(25, 0),
         time(25, 30), 0);
 
     BlockConfigurationEntry bA = linkBlockTrips("bA", stA.getTrip());
@@ -424,13 +424,13 @@ public class StopTimeServiceImplTest {
   @Test
   public void test04() {
 
-    StopTimeEntryImpl stA = stopTime(0, _stop, trip("A", "sA"), time(10, 00),
+    StaticStopTimeEntryImpl stA = stopTime(0, _stop, trip("A", "sA"), time(10, 00),
         time(10, 30), 0, -1, 20.0);
-    StopTimeEntryImpl stB = stopTime(1, _stop, trip("B", "sA"), time(25, 0),
+    StaticStopTimeEntryImpl stB = stopTime(1, _stop, trip("B", "sA"), time(25, 0),
         time(25, 30), 0, -1, 40.0);
-    StopTimeEntryImpl stC = stopTime(2, _stop, trip("C", "sB"), time(10, 00),
+    StaticStopTimeEntryImpl stC = stopTime(2, _stop, trip("C", "sB"), time(10, 00),
         time(10, 30), 0, -1, 60.0);
-    StopTimeEntryImpl stD = stopTime(3, _stop, trip("D", "sB"), time(25, 0),
+    StaticStopTimeEntryImpl stD = stopTime(3, _stop, trip("D", "sB"), time(25, 0),
         time(25, 30), 0, -1, 80.0);
 
 
@@ -462,8 +462,8 @@ public class StopTimeServiceImplTest {
       trips.add(blockConfig.getTrips().get(0));
     }
 
-    BlockTripIndex blockIndex = _factory.createTripIndexForGroupOfBlockTrips(trips);
-    BlockStopTimeIndex index = BlockStopTimeIndex.create(blockIndex, 0);
+    StaticBlockTripIndex blockIndex = _factory.createTripIndexForGroupOfBlockTrips(trips);
+    StaticBlockStopTimeIndex index = StaticBlockStopTimeIndex.create(blockIndex, 0);
     _stop.addStopTimeIndex(index);
 
     Mockito.when(_blockIndexService.getStopTimeIndicesForStop(_stop)).thenReturn(

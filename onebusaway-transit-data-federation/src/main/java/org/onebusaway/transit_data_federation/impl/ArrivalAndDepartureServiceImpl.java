@@ -103,6 +103,7 @@ class ArrivalAndDepartureServiceImpl implements ArrivalAndDepartureService {
     Date toTimeBuffered = new Date(
         toTime + _blockStatusService.getRunningEarlyWindow() * 1000);
 
+    // this is the static expected stops
     List<StopTimeInstance> stis = _stopTimeService.getStopTimeInstancesInTimeRange(
         stop, fromTimeBuffered, toTimeBuffered,
         EFrequencyStopTimeBehavior.INCLUDE_UNSPECIFIED);
@@ -118,6 +119,7 @@ class ArrivalAndDepartureServiceImpl implements ArrivalAndDepartureService {
 
       BlockInstance blockInstance = entry.getKey();
 
+      // this is the locations for vehicles (scheduled and real-time) for the blocks considered
       List<BlockLocation> locations = _blockLocationService.getLocationsForBlockInstance(
           blockInstance, targetTime);
 

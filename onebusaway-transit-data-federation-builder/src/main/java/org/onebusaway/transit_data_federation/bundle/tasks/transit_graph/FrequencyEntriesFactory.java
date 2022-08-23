@@ -28,11 +28,11 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Frequency;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
 import org.onebusaway.transit_data_federation.impl.blocks.FrequencyComparator;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockConfigurationEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.FrequencyEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockConfigurationEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticFrequencyEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.FrequencyEntry;
@@ -83,21 +83,21 @@ public class FrequencyEntriesFactory {
 
     int blockIndex = 0;
 
-    Map<AgencyAndId, List<TripEntryImpl>> tripsByBlockId = MappingLibrary.mapToValueList(
+    Map<AgencyAndId, List<StaticTripEntryImpl>> tripsByBlockId = MappingLibrary.mapToValueList(
         graph.getTrips(), "block.id");
 
-    for (Map.Entry<AgencyAndId, List<TripEntryImpl>> entry : tripsByBlockId.entrySet()) {
+    for (Map.Entry<AgencyAndId, List<StaticTripEntryImpl>> entry : tripsByBlockId.entrySet()) {
 
       if (blockIndex % 10 == 0)
         _log.info("block: " + blockIndex + "/" + tripsByBlockId.size());
       blockIndex++;
 
       AgencyAndId blockId = entry.getKey();
-      List<TripEntryImpl> tripsInBlock = entry.getValue();
+      List<StaticTripEntryImpl> tripsInBlock = entry.getValue();
 
       Map<AgencyAndId, List<FrequencyEntry>> frequenciesAlongBlockByTripId = new HashMap<AgencyAndId, List<FrequencyEntry>>();
 
-      for (TripEntryImpl trip : tripsInBlock) {
+      for (StaticTripEntryImpl trip : tripsInBlock) {
         List<FrequencyEntry> frequencies = frequenciesByTripId.get(trip.getId());
         if (frequencies != null) {
           frequenciesAlongBlockByTripId.put(trip.getId(), frequencies);
@@ -131,7 +131,7 @@ public class FrequencyEntriesFactory {
               + tripId);
     }
 
-    FrequencyEntryImpl entry = new FrequencyEntryImpl(frequency.getStartTime(),
+    StaticFrequencyEntryImpl entry = new StaticFrequencyEntryImpl(frequency.getStartTime(),
         frequency.getEndTime(), frequency.getHeadwaySecs(), frequency.getExactTimes());
 
       List<FrequencyEntry> frequencies = frequenciesByTripId.get(tripId);
@@ -145,7 +145,7 @@ public class FrequencyEntriesFactory {
   }
 
   private void checkForInvalidFrequencyConfigurations(AgencyAndId blockId,
-      List<TripEntryImpl> tripsInBlock,
+      List<StaticTripEntryImpl> tripsInBlock,
       Map<AgencyAndId, List<FrequencyEntry>> frequenciesAlongBlockByTripId) {
 
     if (!frequenciesAlongBlockByTripId.isEmpty()
@@ -156,13 +156,13 @@ public class FrequencyEntriesFactory {
     }
   }
 
-  private void applyFrequenciesToBlockTrips(List<TripEntryImpl> tripsInBlock,
+  private void applyFrequenciesToBlockTrips(List<StaticTripEntryImpl> tripsInBlock,
       Map<AgencyAndId, List<FrequencyEntry>> frequenciesAlongBlockByTripId) {
 
-    BlockEntryImpl blockEntry = tripsInBlock.get(0).getBlock();
+    StaticBlockEntryImpl blockEntry = tripsInBlock.get(0).getBlock();
     List<BlockConfigurationEntry> configurations = blockEntry.getConfigurations();
     for (int i = 0; i < configurations.size(); i++) {
-      BlockConfigurationEntryImpl blockConfig = (BlockConfigurationEntryImpl) configurations.get(i);
+      StaticBlockConfigurationEntryImpl blockConfig = (StaticBlockConfigurationEntryImpl) configurations.get(i);
       List<FrequencyEntry> frequencies = computeBlockFrequencies(blockEntry,
           blockConfig.getTrips(), frequenciesAlongBlockByTripId);
       blockConfig.setFrequencies(frequencies);
@@ -170,9 +170,9 @@ public class FrequencyEntriesFactory {
   }
   
 
-  private List<FrequencyEntry> computeBlockFrequencies(BlockEntryImpl block,
-      List<BlockTripEntry> trips,
-      Map<AgencyAndId, List<FrequencyEntry>> frequenciesAlongBlock) {
+  private List<FrequencyEntry> computeBlockFrequencies(StaticBlockEntryImpl block,
+                                                       List<BlockTripEntry> trips,
+                                                       Map<AgencyAndId, List<FrequencyEntry>> frequenciesAlongBlock) {
 
     List<FrequencyEntry> frequencies = null;
 

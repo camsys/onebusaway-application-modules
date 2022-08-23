@@ -38,10 +38,10 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.transit_data_federation.bundle.tasks.ShapePointHelper;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopTimeEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePointsFactory;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
@@ -101,39 +101,39 @@ public class BlockConfigurationEntriesFactoryTest {
   @Test
   public void test() {
 
-    StopEntryImpl stopA = stop("stopA", 47.0, -122.0);
-    StopEntryImpl stopB = stop("stopB", 47.1, -122.1);
+    StaticStopEntryImpl stopA = stop("stopA", 47.0, -122.0);
+    StaticStopEntryImpl stopB = stop("stopB", 47.1, -122.1);
 
-    TripEntryImpl tripA = trip("tripA", "sA", 300.0);
-    StopTimeEntryImpl st0 = stopTime(0, stopA, tripA, time(9, 00), time(9, 05),
+    StaticTripEntryImpl tripA = trip("tripA", "sA", 300.0);
+    StaticStopTimeEntryImpl st0 = stopTime(0, stopA, tripA, time(9, 00), time(9, 05),
         100.0);
-    StopTimeEntryImpl st1 = stopTime(1, stopB, tripA, time(9, 30), time(9, 35),
+    StaticStopTimeEntryImpl st1 = stopTime(1, stopB, tripA, time(9, 30), time(9, 35),
         200.0);
 
-    TripEntryImpl tripB = trip("tripB", "sA", 300.0);
-    StopTimeEntryImpl st2 = stopTime(2, stopA, tripB, time(10, 00),
+    StaticTripEntryImpl tripB = trip("tripB", "sA", 300.0);
+    StaticStopTimeEntryImpl st2 = stopTime(2, stopA, tripB, time(10, 00),
         time(10, 05), 100.0);
-    StopTimeEntryImpl st3 = stopTime(3, stopB, tripB, time(10, 30),
+    StaticStopTimeEntryImpl st3 = stopTime(3, stopB, tripB, time(10, 30),
         time(10, 35), 200.0);
 
-    TripEntryImpl tripC = trip("tripC", "sB", 300.0);
-    StopTimeEntryImpl st4 = stopTime(4, stopA, tripC, time(11, 00),
+    StaticTripEntryImpl tripC = trip("tripC", "sB", 300.0);
+    StaticStopTimeEntryImpl st4 = stopTime(4, stopA, tripC, time(11, 00),
         time(11, 05), 100.0);
-    StopTimeEntryImpl st5 = stopTime(5, stopB, tripC, time(11, 30),
+    StaticStopTimeEntryImpl st5 = stopTime(5, stopB, tripC, time(11, 30),
         time(11, 35), 200.0);
 
-    TripEntryImpl tripD = trip("tripD", "sB", 300.0);
-    StopTimeEntryImpl st6 = stopTime(6, stopA, tripD, time(12, 00),
+    StaticTripEntryImpl tripD = trip("tripD", "sB", 300.0);
+    StaticStopTimeEntryImpl st6 = stopTime(6, stopA, tripD, time(12, 00),
         time(12, 05), 100.0);
-    StopTimeEntryImpl st7 = stopTime(7, stopB, tripD, time(12, 30),
+    StaticStopTimeEntryImpl st7 = stopTime(7, stopB, tripD, time(12, 30),
         time(12, 35), 200.0);
 
     /****
      * Actual Test
      ****/
 
-    BlockEntryImpl block = new BlockEntryImpl();
-    List<TripEntryImpl> tripsInBlock = Arrays.asList(tripA, tripB, tripC, tripD);
+    StaticBlockEntryImpl block = new StaticBlockEntryImpl();
+    List<StaticTripEntryImpl> tripsInBlock = Arrays.asList(tripA, tripB, tripC, tripD);
 
     _factory.processBlockConfigurations(block, tripsInBlock);
 

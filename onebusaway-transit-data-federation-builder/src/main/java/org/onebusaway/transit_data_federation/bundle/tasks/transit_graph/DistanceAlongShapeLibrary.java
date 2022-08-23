@@ -34,9 +34,9 @@ import org.onebusaway.geospatial.services.UTMProjection;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.shapes.PointAndIndex;
 import org.onebusaway.transit_data_federation.impl.shapes.ShapePointsLibrary;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopTimeEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -119,7 +119,7 @@ public class DistanceAlongShapeLibrary {
     _lenientStopShapeAssignment = lenient;
   }
   public PointAndIndex[] getDistancesAlongShape(ShapePoints shapePoints,
-      List<StopTimeEntryImpl> stopTimes)
+      List<StaticStopTimeEntryImpl> stopTimes)
       throws DistanceAlongShapeException {
 
     PointAndIndex[] stopTimePoints = new PointAndIndex[stopTimes.size()];
@@ -150,7 +150,7 @@ public class DistanceAlongShapeLibrary {
       if (pindex.distanceAlongShape > maxDistanceTraveled) {
         int index = projectedShapePoints.size() - 1;
         XYPoint point = projectedShapePoints.get(index);
-        StopEntryImpl stop = stopTimes.get(i).getStop();
+        StaticStopEntryImpl stop = stopTimes.get(i).getStop();
         XYPoint stopPoint = projection.forward(stop.getStopLocation());
         double d = stopPoint.getDistance(point);
         pindex = new PointAndIndex(point, index, d, maxDistanceTraveled);
@@ -220,7 +220,7 @@ public class DistanceAlongShapeLibrary {
   }
 
   private void assignmentSanityCheck(ShapePoints shapePoints,
-      List<StopTimeEntryImpl> stopTimes,
+      List<StaticStopTimeEntryImpl> stopTimes,
       List<List<PointAndIndex>> possibleAssignments)
       throws DistanceAlongShapeException {
 
@@ -245,13 +245,13 @@ public class DistanceAlongShapeLibrary {
 
   private List<List<PointAndIndex>> computePotentialAssignments(
       UTMProjection projection, List<XYPoint> projectedShapePoints,
-      double[] shapePointDistance, List<StopTimeEntryImpl> stopTimes) {
+      double[] shapePointDistance, List<StaticStopTimeEntryImpl> stopTimes) {
 
     List<List<PointAndIndex>> possibleAssignments = new ArrayList<List<PointAndIndex>>();
 
-    for (StopTimeEntryImpl stopTime : stopTimes) {
+    for (StaticStopTimeEntryImpl stopTime : stopTimes) {
 
-      StopEntryImpl stop = stopTime.getStop();
+      StaticStopEntryImpl stop = stopTime.getStop();
       XYPoint stopPoint = projection.forward(stop.getStopLocation());
 
       List<PointAndIndex> assignments = _shapePointsLibrary.computePotentialAssignments(
@@ -264,7 +264,7 @@ public class DistanceAlongShapeLibrary {
   }
 
   private List<PointAndIndex> computeBestAssignment(ShapePoints shapePoints,
-      List<StopTimeEntryImpl> stopTimes,
+      List<StaticStopTimeEntryImpl> stopTimes,
       List<List<PointAndIndex>> possibleAssignments, UTMProjection projection,
       List<XYPoint> projectedShapePoints)
       throws InvalidStopToShapeMappingException {
@@ -338,7 +338,7 @@ public class DistanceAlongShapeLibrary {
               + ", distanceFromTarget=" + pa.distanceFromTarget + "), ";
         }
         msg += "\nstopTime=\n";
-        for (StopTimeEntryImpl st : stopTimes) {
+        for (StaticStopTimeEntryImpl st : stopTimes) {
           msg += "StopTimeEntry(Stop(" + st.getStop().getId() + ":"
               + st.getStop().getStopLat() + ", " + st.getStop().getStopLon()
               + ")" + ", trip=" + st.getTrip().getId() + "), ";
@@ -359,7 +359,7 @@ public class DistanceAlongShapeLibrary {
    * point). If the shape is working against us, the closest point for the first
    * stop can be a point further along the shape, which causes problems.
    */
-  private void checkFirstAndLastStop(List<StopTimeEntryImpl> stopTimes,
+  private void checkFirstAndLastStop(List<StaticStopTimeEntryImpl> stopTimes,
       List<List<PointAndIndex>> possibleAssignments, ShapePoints shapePoints,
       UTMProjection projection, List<XYPoint> projectedShapePoints) {
 
@@ -369,14 +369,14 @@ public class DistanceAlongShapeLibrary {
       PointAndIndex second = possibleAssignments.get(1).get(0);
       if (first.distanceAlongShape > second.distanceAlongShape) {
 
-        StopTimeEntryImpl firstStopTime = stopTimes.get(0);
+        StaticStopTimeEntryImpl firstStopTime = stopTimes.get(0);
 
         _log.warn("snapping first stop time id=" + firstStopTime.getId()
             + " to start of shape");
 
         XYPoint point = projectedShapePoints.get(0);
 
-        StopEntryImpl stop = firstStopTime.getStop();
+        StaticStopEntryImpl stop = firstStopTime.getStop();
         XYPoint stopPoint = projection.forward(stop.getStopLocation());
 
         double d = stopPoint.getDistance(point);
@@ -408,11 +408,11 @@ public class DistanceAlongShapeLibrary {
   }
 
   private PointAndIndex getLastStopSnappedToEndOfShape(
-      List<StopTimeEntryImpl> stopTimes, ShapePoints shapePoints,
-      UTMProjection projection, List<XYPoint> projectedShapePoints) {
+          List<StaticStopTimeEntryImpl> stopTimes, ShapePoints shapePoints,
+          UTMProjection projection, List<XYPoint> projectedShapePoints) {
 
     int i = stopTimes.size() - 1;
-    StopTimeEntryImpl lastStopTime = stopTimes.get(i);
+    StaticStopTimeEntryImpl lastStopTime = stopTimes.get(i);
 
     int lastShapePointIndex = projectedShapePoints.size() - 1;
     XYPoint lastShapePoint = projectedShapePoints.get(lastShapePointIndex);
@@ -492,7 +492,7 @@ public class DistanceAlongShapeLibrary {
   }
 
   private void constructErrorForPotentialAssignmentCount(
-      ShapePoints shapePoints, List<StopTimeEntryImpl> stopTimes, long count)
+          ShapePoints shapePoints, List<StaticStopTimeEntryImpl> stopTimes, long count)
       throws InvalidStopToShapeMappingException {
 
     if (count == 0) {
@@ -509,9 +509,9 @@ public class DistanceAlongShapeLibrary {
           + "  https://github.com/OneBusAway/onebusaway-application-modules/wiki/Stop-to-Shape-Matching");
     }
 
-    StopTimeEntryImpl first = stopTimes.get(0);
-    TripEntryImpl trip = first.getTrip();
-    StopTimeEntryImpl last = stopTimes.get(stopTimes.size() - 1);
+    StaticStopTimeEntryImpl first = stopTimes.get(0);
+    StaticTripEntryImpl trip = first.getTrip();
+    StaticStopTimeEntryImpl last = stopTimes.get(stopTimes.size() - 1);
 
     _log.error("error constructing stop-time distances along shape for trip="
         + trip.getId() + " shape=" + trip.getShapeId() + " firstStopTime="
@@ -533,12 +533,12 @@ public class DistanceAlongShapeLibrary {
   }
 
   private void constructError(ShapePoints shapePoints,
-      List<StopTimeEntryImpl> stopTimes,
+      List<StaticStopTimeEntryImpl> stopTimes,
       List<List<PointAndIndex>> possibleAssignments, UTMProjection projection)
       throws InvalidStopToShapeMappingException {
 
-    StopTimeEntryImpl first = stopTimes.get(0);
-    StopTimeEntryImpl last = stopTimes.get(stopTimes.size() - 1);
+    StaticStopTimeEntryImpl first = stopTimes.get(0);
+    StaticStopTimeEntryImpl last = stopTimes.get(stopTimes.size() - 1);
 
     _log.error("We were attempting to compute the distance along a particular trip for each stop time of that trip by "
         + "snapping them to the shape for that trip.  However, we could not find an assignment for each stop time "
@@ -546,7 +546,7 @@ public class DistanceAlongShapeLibrary {
         + "seemed to travel backwards).  For more information on errors of this kind, see:\n"
         + "  https://github.com/OneBusAway/onebusaway-application-modules/wiki/Stop-to-Shape-Matching");
 
-    TripEntryImpl trip = first.getTrip();
+    StaticTripEntryImpl trip = first.getTrip();
     _log.error("error constructing stop-time distances along shape for trip="
         + trip.getId() + " shape=" + trip.getShapeId() + " firstStopTime="
         + first.getId() + " lastStopTime=" + last.getId());
@@ -562,8 +562,8 @@ public class DistanceAlongShapeLibrary {
     double prevMaxDistanceAlongShape = Double.NEGATIVE_INFINITY;
 
     for (List<PointAndIndex> possible : possibleAssignments) {
-      StopTimeEntryImpl stopTime = stopTimes.get(index);
-      StopEntryImpl stop = stopTime.getStop();
+      StaticStopTimeEntryImpl stopTime = stopTimes.get(index);
+      StaticStopEntryImpl stop = stopTime.getStop();
       b.append(stop.getStopLat());
       b.append(' ');
       b.append(stop.getStopLon());

@@ -41,11 +41,11 @@ import org.onebusaway.gtfs.model.Frequency;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.FrequencyEntry;
 
@@ -57,15 +57,15 @@ public class FrequenciesEntriesFactoryTest {
 
   private TransitGraphImpl _graph;
 
-  private RouteEntryImpl _routeEntry;
+  private StaticRouteEntryImpl _routeEntry;
 
   private LocalizedServiceId _lsid;
 
-  private StopEntryImpl _stopA;
+  private StaticStopEntryImpl _stopA;
 
-  private StopEntryImpl _stopB;
+  private StaticStopEntryImpl _stopB;
 
-  private StopEntryImpl _stopC;
+  private StaticStopEntryImpl _stopC;
 
   @Before
   public void before() {
@@ -86,8 +86,8 @@ public class FrequenciesEntriesFactoryTest {
   @Test
   public void testSingleTripWithFrequencies() {
 
-    BlockEntryImpl block = block("block");
-    TripEntryImpl tripEntryA = trip("trip").setRoute(_routeEntry).setServiceId(
+    StaticBlockEntryImpl block = block("block");
+    StaticTripEntryImpl tripEntryA = trip("trip").setRoute(_routeEntry).setServiceId(
         _lsid).setBlock(block);
     _graph.putTripEntry(tripEntryA);
     addStopTime(tripEntryA, stopTime().setStop(_stopA).setTime(time(7, 00)));
@@ -133,8 +133,8 @@ public class FrequenciesEntriesFactoryTest {
   @Test
   public void testTripsWithMismatchedFrequencies() {
 
-    BlockEntryImpl block = block("block");
-    TripEntryImpl tripEntryA = trip("trip").setRoute(_routeEntry).setServiceId(
+    StaticBlockEntryImpl block = block("block");
+    StaticTripEntryImpl tripEntryA = trip("trip").setRoute(_routeEntry).setServiceId(
         _lsid).setBlock(block);
     _graph.putTripEntry(tripEntryA);
     addStopTime(tripEntryA, stopTime().setStop(_stopA).setTime(time(7, 00)));

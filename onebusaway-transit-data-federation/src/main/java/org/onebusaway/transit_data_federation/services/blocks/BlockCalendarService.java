@@ -28,7 +28,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
  * 
  * @author bdferris
  * @see BlockInstance
- * @see BlockTripIndex
+ * @see StaticBlockTripIndex
  * @see FrequencyBlockTripIndex
  */
 public interface BlockCalendarService {
@@ -61,7 +61,7 @@ public interface BlockCalendarService {
       AgencyAndId routeId, long timeFrom, long timeTo);
 
   public List<BlockInstance> getActiveBlocksInTimeRange(
-      Iterable<BlockTripIndex> indices,
+      Iterable<StaticBlockTripIndex> indices,
       Iterable<BlockLayoverIndex> layoverIndices,
       Iterable<FrequencyBlockTripIndex> frequencyIndices, long timeFrom,
       long timeTo);

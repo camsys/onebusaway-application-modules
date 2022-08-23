@@ -35,7 +35,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import org.onebusaway.realtime.api.OccupancyStatus;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
@@ -43,10 +42,10 @@ import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeNegativeArrivals;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeNegativeArrivalsImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopTimeEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.model.TargetTime;
 import org.onebusaway.transit_data_federation.model.narrative.StopTimeNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.StopTimeNarrative.Builder;
@@ -114,9 +113,9 @@ public class ArrivalsAndDeparturesBeanServiceImplTest {
     int minutesBefore = 5;
     int minutesAfter = 30;
 
-    StopEntryImpl stopA = stop("stopA", 47.0, -122.0);
-    StopEntryImpl stopB = stop("stopB", 47.0, -122.0);
-    StopEntryImpl stopC = stop("stopC", 47.0, -122.0);
+    StaticStopEntryImpl stopA = stop("stopA", 47.0, -122.0);
+    StaticStopEntryImpl stopB = stop("stopB", 47.0, -122.0);
+    StaticStopEntryImpl stopC = stop("stopC", 47.0, -122.0);
 
     Mockito.when(_transitGraphDao.getStopEntryForId(stopA.getId(), true)).thenReturn(
         stopA);
@@ -129,11 +128,11 @@ public class ArrivalsAndDeparturesBeanServiceImplTest {
      * Block A
      ****/
 
-    BlockEntryImpl blockA = block("blockA");
-    TripEntryImpl tripA = trip("tripA", "sA", 3000);
+    StaticBlockEntryImpl blockA = block("blockA");
+    StaticTripEntryImpl tripA = trip("tripA", "sA", 3000);
 
     stopTime(0, stopA, tripA, time(16, 30), time(16, 35), 1000,50.0);
-    StopTimeEntryImpl stopTimeAB = stopTime(1, stopB, tripA, time(16, 40),
+    StaticStopTimeEntryImpl stopTimeAB = stopTime(1, stopB, tripA, time(16, 40),
         time(16, 45), 2000,75.0);
 
     BlockConfigurationEntry blockConfigA = blockConfiguration(blockA,
@@ -145,11 +144,11 @@ public class ArrivalsAndDeparturesBeanServiceImplTest {
      * Block B
      ****/
 
-    BlockEntryImpl blockB = block("blockB");
-    TripEntryImpl tripB = trip("tripB", "sA", 3000);
+    StaticBlockEntryImpl blockB = block("blockB");
+    StaticTripEntryImpl tripB = trip("tripB", "sA", 3000);
 
     stopTime(2, stopA, tripB, time(16, 40), time(16, 45), 1000,50.0);
-    StopTimeEntryImpl stopTimeBB = stopTime(3, stopB, tripB, time(16, 50),
+    StaticStopTimeEntryImpl stopTimeBB = stopTime(3, stopB, tripB, time(16, 50),
         time(16, 55), 2000,75.0);
 
     BlockConfigurationEntry blockConfigB = blockConfiguration(blockB,
@@ -161,11 +160,11 @@ public class ArrivalsAndDeparturesBeanServiceImplTest {
      * Block C
      ****/
 
-    BlockEntryImpl blockC = block("blockC");
-    TripEntryImpl tripC = trip("tripC", "sA", 3000);
+    StaticBlockEntryImpl blockC = block("blockC");
+    StaticTripEntryImpl tripC = trip("tripC", "sA", 3000);
 
     stopTime(4, stopC, tripC, time(16, 40), time(16, 45), 1000,50.0);
-    StopTimeEntryImpl stopTimeCB = stopTime(5, stopC, tripC, time(16, 50), time(16, 55), 2000, 75.0);
+    StaticStopTimeEntryImpl stopTimeCB = stopTime(5, stopC, tripC, time(16, 50), time(16, 55), 2000, 75.0);
 
     BlockConfigurationEntry blockConfigC = blockConfiguration(blockC,
         serviceIds(lsids("sA"), lsids()), tripC);

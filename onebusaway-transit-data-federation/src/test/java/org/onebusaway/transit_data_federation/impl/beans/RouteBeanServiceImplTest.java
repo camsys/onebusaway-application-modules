@@ -46,11 +46,11 @@ import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data_federation.impl.StopSequenceCollectionServiceImpl;
 import org.onebusaway.transit_data_federation.impl.StopSequencesServiceImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteCollectionEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteCollectionEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.model.narrative.RouteCollectionNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.util.AgencyAndIdLibrary;
@@ -59,7 +59,7 @@ import org.onebusaway.transit_data_federation.services.beans.AgencyBeanService;
 import org.onebusaway.transit_data_federation.services.beans.ShapeBeanService;
 import org.onebusaway.transit_data_federation.services.beans.StopBeanService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
@@ -157,11 +157,11 @@ public class RouteBeanServiceImplTest {
 
     AgencyAndId routeId = new AgencyAndId("1", "route");
 
-    RouteEntryImpl route = new RouteEntryImpl();
+    StaticRouteEntryImpl route = new StaticRouteEntryImpl();
     route.setId(new AgencyAndId("1", "raw_route"));
     List<RouteEntry> routes = Arrays.asList((RouteEntry) route);
 
-    RouteCollectionEntryImpl routeCollection = new RouteCollectionEntryImpl();
+    StaticRouteCollectionEntryImpl routeCollection = new StaticRouteCollectionEntryImpl();
     routeCollection.setId(routeId);
     routeCollection.setChildren(routes);
     route.setParent(routeCollection);
@@ -173,13 +173,13 @@ public class RouteBeanServiceImplTest {
     Mockito.when(_narrativeService.getRouteCollectionForId(routeId)).thenReturn(
         rcNarrative.create());
 
-    StopEntryImpl stopA = stop("stopA", 47.0, -122.0);
-    StopEntryImpl stopB = stop("stopB", 47.1, -122.1);
-    StopEntryImpl stopC = stop("stopC", 47.2, -122.2);
+    StaticStopEntryImpl stopA = stop("stopA", 47.0, -122.0);
+    StaticStopEntryImpl stopB = stop("stopB", 47.1, -122.1);
+    StaticStopEntryImpl stopC = stop("stopC", 47.2, -122.2);
 
-    BlockEntryImpl blockA = block("blockA");
-    TripEntryImpl tripA = trip("tripA", "sidA");
-    TripEntryImpl tripB = trip("tripB", "sidA");
+    StaticBlockEntryImpl blockA = block("blockA");
+    StaticTripEntryImpl tripA = trip("tripA", "sidA");
+    StaticTripEntryImpl tripB = trip("tripB", "sidA");
 
     tripA.setRoute(route);
     tripA.setDirectionId("0");
@@ -206,7 +206,7 @@ public class RouteBeanServiceImplTest {
 
     linkBlockTrips(blockA, tripA, tripB);
 
-    List<BlockTripIndex> blockIndices = blockTripIndices(blockA);
+    List<StaticBlockTripIndex> blockIndices = blockTripIndices(blockA);
     Mockito.when(
         _blockIndexService.getBlockTripIndicesForRouteCollectionId(routeId)).thenReturn(
         blockIndices);
@@ -280,7 +280,7 @@ public class RouteBeanServiceImplTest {
 
   }
 
-  private StopBean getStopBean(StopEntryImpl stopEntry) {
+  private StopBean getStopBean(StaticStopEntryImpl stopEntry) {
     StopBean stop = new StopBean();
     stop.setId(AgencyAndIdLibrary.convertToString(stopEntry.getId()));
     return stop;

@@ -33,11 +33,11 @@ import java.util.List;
 
 import org.junit.Test;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.services.blocks.BlockLayoverIndex;
-import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.FrequencyBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.FrequencyServiceIntervalBlock;
 import org.onebusaway.transit_data_federation.services.blocks.HasBlockTrips;
@@ -56,19 +56,19 @@ public class BlockIndexFactoryServiceImplTest {
 
     BlockIndexFactoryServiceImpl factory = new BlockIndexFactoryServiceImpl();
 
-    StopEntryImpl stopA = stop("a", 47.0, -122.0);
-    StopEntryImpl stopB = stop("b", 47.1, -122.1);
-    StopEntryImpl stopC = stop("c", 47.2, -122.2);
+    StaticStopEntryImpl stopA = stop("a", 47.0, -122.0);
+    StaticStopEntryImpl stopB = stop("b", 47.1, -122.1);
+    StaticStopEntryImpl stopC = stop("c", 47.2, -122.2);
 
     /****
      * Block A
      ****/
 
-    BlockEntryImpl blockA = block("a");
+    StaticBlockEntryImpl blockA = block("a");
 
-    TripEntryImpl tripA1 = trip("a1", "s1"); // 1
-    TripEntryImpl tripA2 = trip("a2", "s1");
-    TripEntryImpl tripA3 = trip("a3", "s1");
+    StaticTripEntryImpl tripA1 = trip("a1", "s1"); // 1
+    StaticTripEntryImpl tripA2 = trip("a2", "s1");
+    StaticTripEntryImpl tripA3 = trip("a3", "s1");
 
     stopTime(0, stopA, tripA1, 0, 10, 0);
     stopTime(0, stopB, tripA1, 20, 20, 0);
@@ -83,11 +83,11 @@ public class BlockIndexFactoryServiceImplTest {
      * Block B - Same trip/stop sequence as A
      ****/
 
-    BlockEntryImpl blockB = block("b");
+    StaticBlockEntryImpl blockB = block("b");
 
-    TripEntryImpl tripB1 = trip("b1", "s1");
-    TripEntryImpl tripB2 = trip("b2", "s1");
-    TripEntryImpl tripB3 = trip("b3", "s1");
+    StaticTripEntryImpl tripB1 = trip("b1", "s1");
+    StaticTripEntryImpl tripB2 = trip("b2", "s1");
+    StaticTripEntryImpl tripB3 = trip("b3", "s1");
 
     stopTime(0, stopA, tripB1, 20, 30, 0);
     stopTime(0, stopB, tripB1, 50, 50, 0);
@@ -102,11 +102,11 @@ public class BlockIndexFactoryServiceImplTest {
      * Block C - Same stop sequence, but runs a little bit faster
      ****/
 
-    BlockEntryImpl blockC = block("c");
+    StaticBlockEntryImpl blockC = block("c");
 
-    TripEntryImpl tripC1 = trip("c1", "s1");
-    TripEntryImpl tripC2 = trip("c2", "s1");
-    TripEntryImpl tripC3 = trip("c3", "s1");
+    StaticTripEntryImpl tripC1 = trip("c1", "s1");
+    StaticTripEntryImpl tripC2 = trip("c2", "s1");
+    StaticTripEntryImpl tripC3 = trip("c3", "s1");
 
     stopTime(0, stopA, tripC1, 40, 50, 0);
     stopTime(0, stopB, tripC1, 60, 60, 0);
@@ -121,11 +121,11 @@ public class BlockIndexFactoryServiceImplTest {
      * Block D - Same stop sequence, but with different service id
      ****/
 
-    BlockEntryImpl blockD = block("d");
+    StaticBlockEntryImpl blockD = block("d");
 
-    TripEntryImpl tripD1 = trip("d1", "s1");
-    TripEntryImpl tripD2 = trip("d2", "s1");
-    TripEntryImpl tripD3 = trip("d3", "s2");
+    StaticTripEntryImpl tripD1 = trip("d1", "s1");
+    StaticTripEntryImpl tripD2 = trip("d2", "s1");
+    StaticTripEntryImpl tripD3 = trip("d3", "s2");
 
     stopTime(0, stopA, tripD1, 40, 50, 0);
     stopTime(0, stopB, tripD1, 70, 70, 0);
@@ -140,11 +140,11 @@ public class BlockIndexFactoryServiceImplTest {
      * Block E - One less stop
      ****/
 
-    BlockEntryImpl blockE = block("e");
+    StaticBlockEntryImpl blockE = block("e");
 
-    TripEntryImpl tripE1 = trip("e1", "s1");
-    TripEntryImpl tripE2 = trip("e2", "s1");
-    TripEntryImpl tripE3 = trip("e3", "s1");
+    StaticTripEntryImpl tripE1 = trip("e1", "s1");
+    StaticTripEntryImpl tripE2 = trip("e2", "s1");
+    StaticTripEntryImpl tripE3 = trip("e3", "s1");
 
     stopTime(0, stopA, tripE1, 50, 60, 0);
     stopTime(0, stopB, tripE1, 80, 80, 0);
@@ -158,11 +158,11 @@ public class BlockIndexFactoryServiceImplTest {
      * Block F - Another to group with E, but earlier
      ****/
 
-    BlockEntryImpl blockF = block("f");
+    StaticBlockEntryImpl blockF = block("f");
 
-    TripEntryImpl tripF1 = trip("f1", "s1");
-    TripEntryImpl tripF2 = trip("f2", "s1");
-    TripEntryImpl tripF3 = trip("f3", "s1");
+    StaticTripEntryImpl tripF1 = trip("f1", "s1");
+    StaticTripEntryImpl tripF2 = trip("f2", "s1");
+    StaticTripEntryImpl tripF3 = trip("f3", "s1");
 
     stopTime(0, stopA, tripF1, 40, 50, 0);
     stopTime(0, stopB, tripF1, 70, 70, 0);
@@ -172,14 +172,14 @@ public class BlockIndexFactoryServiceImplTest {
 
     linkBlockTrips(blockF, tripF1, tripF2, tripF3);
 
-    List<BlockTripIndex> allIndices = factory.createTripIndices(Arrays.asList(
+    List<StaticBlockTripIndex> allIndices = factory.createTripIndices(Arrays.asList(
         (BlockEntry) blockF, blockE, blockD, blockC, blockB, blockA));
 
     assertEquals(6, allIndices.size());
 
-    List<BlockTripIndex> indices = grep(allIndices, aid("a1"));
+    List<StaticBlockTripIndex> indices = grep(allIndices, aid("a1"));
     assertEquals(1, indices.size());
-    BlockTripIndex index = indices.get(0);
+    StaticBlockTripIndex index = indices.get(0);
     List<TripEntry> trips = trips(index.getTrips());
     assertEquals(5, trips.size());
     assertEquals(tripA1, trips.get(0));
@@ -390,16 +390,16 @@ public class BlockIndexFactoryServiceImplTest {
 
     BlockIndexFactoryServiceImpl factory = new BlockIndexFactoryServiceImpl();
 
-    StopEntryImpl stopA = stop("a", 47.0, -122.0);
-    StopEntryImpl stopB = stop("b", 47.1, -122.1);
+    StaticStopEntryImpl stopA = stop("a", 47.0, -122.0);
+    StaticStopEntryImpl stopB = stop("b", 47.1, -122.1);
 
     /****
      * Block A
      ****/
 
-    BlockEntryImpl blockA = block("a");
+    StaticBlockEntryImpl blockA = block("a");
 
-    TripEntryImpl tripA = trip("a", "s1");
+    StaticTripEntryImpl tripA = trip("a", "s1");
 
     stopTime(0, stopA, tripA, 0, 10, 0);
     stopTime(0, stopB, tripA, 20, 20, 0);
@@ -414,9 +414,9 @@ public class BlockIndexFactoryServiceImplTest {
      * Block B
      ****/
 
-    BlockEntryImpl blockB = block("b");
+    StaticBlockEntryImpl blockB = block("b");
 
-    TripEntryImpl tripB = trip("b", "s1");
+    StaticTripEntryImpl tripB = trip("b", "s1");
 
     stopTime(0, stopA, tripB, 20, 30, 0);
     stopTime(0, stopB, tripB, 50, 50, 0);
@@ -465,16 +465,16 @@ public class BlockIndexFactoryServiceImplTest {
 
     BlockIndexFactoryServiceImpl factory = new BlockIndexFactoryServiceImpl();
 
-    StopEntryImpl stopA = stop("a", 47.0, -122.0);
-    StopEntryImpl stopB = stop("b", 47.1, -122.1);
+    StaticStopEntryImpl stopA = stop("a", 47.0, -122.0);
+    StaticStopEntryImpl stopB = stop("b", 47.1, -122.1);
 
     /****
      * Block A
      ****/
 
-    BlockEntryImpl blockA = block("a");
+    StaticBlockEntryImpl blockA = block("a");
 
-    TripEntryImpl tripA = trip("a", "s1");
+    StaticTripEntryImpl tripA = trip("a", "s1");
 
     stopTime(0, stopA, tripA, 0, 10, 0);
     stopTime(0, stopB, tripA, 20, 20, 0);
@@ -489,9 +489,9 @@ public class BlockIndexFactoryServiceImplTest {
      * Block B
      ****/
 
-    BlockEntryImpl blockB = block("b");
+    StaticBlockEntryImpl blockB = block("b");
 
-    TripEntryImpl tripB = trip("b", "s1");
+    StaticTripEntryImpl tripB = trip("b", "s1");
 
     stopTime(0, stopA, tripB, 20, 30, 0);
     stopTime(0, stopB, tripB, 50, 50, 0);

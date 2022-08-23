@@ -37,7 +37,7 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockIndexFactoryS
 import org.onebusaway.transit_data_federation.services.blocks.BlockLayoverIndex;
 import org.onebusaway.transit_data_federation.services.blocks.BlockLayoverIndexData;
 import org.onebusaway.transit_data_federation.services.blocks.BlockSequenceIndex;
-import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndexData;
 import org.onebusaway.transit_data_federation.services.blocks.BlockTripReference;
 import org.onebusaway.transit_data_federation.services.blocks.FrequencyBlockTripIndex;
@@ -144,10 +144,10 @@ public class BlockIndexFactoryServiceImpl implements BlockIndexFactoryService {
 
   public List<BlockTripIndexData> createTripData(Iterable<BlockEntry> blocks) {
 
-    List<BlockTripIndex> indices = createTripIndices(blocks);
+    List<StaticBlockTripIndex> indices = createTripIndices(blocks);
     List<BlockTripIndexData> allData = new ArrayList<BlockTripIndexData>();
 
-    for (BlockTripIndex index : indices) {
+    for (StaticBlockTripIndex index : indices) {
 
       List<BlockTripReference> references = new ArrayList<BlockTripReference>();
 
@@ -220,9 +220,9 @@ public class BlockIndexFactoryServiceImpl implements BlockIndexFactoryService {
    * 
    ****/
 
-  public List<BlockTripIndex> createTripIndices(Iterable<BlockEntry> blocks) {
+  public List<StaticBlockTripIndex> createTripIndices(Iterable<BlockEntry> blocks) {
 
-    List<BlockTripIndex> allIndices = new ArrayList<BlockTripIndex>();
+    List<StaticBlockTripIndex> allIndices = new ArrayList<StaticBlockTripIndex>();
     int logInterval = LoggingIntervalUtil.getAppropriateLoggingInterval(allIndices.size());
 
     Map<BlockSequenceKey, List<BlockTripEntry>> blockTripsByKey = new FactoryMap<BlockSequenceKey, List<BlockTripEntry>>(
@@ -271,7 +271,7 @@ public class BlockIndexFactoryServiceImpl implements BlockIndexFactoryService {
           _blockTripStrictComparator);
 
       for (List<BlockTripEntry> group : groupedBlocks) {
-        BlockTripIndex index = createTripIndexForGroupOfBlockTrips(group);
+        StaticBlockTripIndex index = createTripIndexForGroupOfBlockTrips(group);
         allIndices.add(index);
       }
     }
@@ -463,10 +463,10 @@ public class BlockIndexFactoryServiceImpl implements BlockIndexFactoryService {
    * 
    ****/
 
-  public BlockTripIndex createTripIndexForGroupOfBlockTrips(
+  public StaticBlockTripIndex createTripIndexForGroupOfBlockTrips(
       List<BlockTripEntry> blocks) {
     ServiceIntervalBlock serviceIntervalBlock = getBlockStopTimesAsBlockInterval(blocks);
-    return new BlockTripIndex(blocks, serviceIntervalBlock);
+    return new StaticBlockTripIndex(blocks, serviceIntervalBlock);
   }
 
   public BlockLayoverIndex createLayoverIndexForGroupOfBlockTrips(

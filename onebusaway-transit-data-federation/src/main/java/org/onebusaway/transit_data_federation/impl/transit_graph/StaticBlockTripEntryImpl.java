@@ -24,7 +24,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTi
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
-public class BlockTripEntryImpl implements BlockTripEntry, Serializable {
+public class StaticBlockTripEntryImpl implements BlockTripEntry, Serializable {
 
   private static final long serialVersionUID = 2L;
 

@@ -31,7 +31,7 @@ import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.impl.RouteCollectionSearchServiceImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteCollectionEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteCollectionEntryImpl;
 import org.onebusaway.transit_data_federation.model.SearchResult;
 import org.onebusaway.transit_data_federation.model.narrative.RouteCollectionNarrative;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
@@ -81,9 +81,9 @@ public class GenerateRouteCollectionSearchIndexTaskTest {
   public void testGenerateStopSearchIndex() throws CorruptIndexException,
       IOException, ParseException {
 
-    RouteCollectionEntryImpl routeA = routeCollection("routeA");
-    RouteCollectionEntryImpl routeB = routeCollection("routeB");
-    RouteCollectionEntryImpl routeC = routeCollection("routeC");
+    StaticRouteCollectionEntryImpl routeA = routeCollection("routeA");
+    StaticRouteCollectionEntryImpl routeB = routeCollection("routeB");
+    StaticRouteCollectionEntryImpl routeC = routeCollection("routeC");
 
     RouteCollectionNarrative.Builder routeNarrativeA = RouteCollectionNarrative.builder();
     routeNarrativeA.setShortName("10");

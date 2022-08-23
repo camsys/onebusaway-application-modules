@@ -30,7 +30,7 @@ import org.mockito.Mockito;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
 import org.onebusaway.transit_data_federation.model.narrative.StopNarrative;
 import org.onebusaway.util.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.RouteService;
@@ -72,7 +72,7 @@ public class StopBeanServiceImplTest {
 
     AgencyAndId stopId = new AgencyAndId("29", "1109");
 
-    StopEntryImpl stopEntry = new StopEntryImpl(stopId, 47.1, -122.1);
+    StaticStopEntryImpl stopEntry = new StaticStopEntryImpl(stopId, 47.1, -122.1);
     Mockito.when(_transitGraphDao.getStopEntryForId(stopId)).thenReturn(
         stopEntry);
 

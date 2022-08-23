@@ -21,7 +21,7 @@ import java.util.List;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 
 @TransitTimeIndex
-public class BlockTripIndex extends AbstractBlockTripIndex {
+public class StaticBlockTripIndex extends AbstractBlockTripIndex {
 
   private final ServiceIntervalBlock _serviceIntervalBlock;
 
@@ -32,8 +32,8 @@ public class BlockTripIndex extends AbstractBlockTripIndex {
    * @param serviceIdIntervals
    * @param serviceIntervalBlock
    */
-  public BlockTripIndex(List<BlockTripEntry> trips,
-      ServiceIntervalBlock serviceIntervalBlock) {
+  public StaticBlockTripIndex(List<BlockTripEntry> trips,
+                              ServiceIntervalBlock serviceIntervalBlock) {
     super(trips);
     _serviceIntervalBlock = serviceIntervalBlock;
   }

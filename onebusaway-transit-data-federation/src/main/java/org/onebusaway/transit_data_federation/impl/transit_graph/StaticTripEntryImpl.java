@@ -29,17 +29,17 @@ import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
-public class TripEntryImpl implements TripEntry, Serializable {
+public class StaticTripEntryImpl implements TripEntry, Serializable {
 
   private static final long serialVersionUID = 6L;
 
   private AgencyAndId _id;
 
-  private RouteEntryImpl _route;
+  private StaticRouteEntryImpl _route;
 
   private String _directionId;
 
-  private BlockEntryImpl _block;
+  private StaticBlockEntryImpl _block;
 
   private LocalizedServiceId _serviceId;
 
@@ -51,27 +51,27 @@ public class TripEntryImpl implements TripEntry, Serializable {
 
   private FrequencyEntry _frequencyLabel;
 
-  public TripEntryImpl setId(AgencyAndId id) {
+  public StaticTripEntryImpl setId(AgencyAndId id) {
     _id = id;
     return this;
   }
 
-  public TripEntryImpl setRoute(RouteEntryImpl route) {
+  public StaticTripEntryImpl setRoute(StaticRouteEntryImpl route) {
     _route = route;
     return this;
   }
 
-  public TripEntryImpl setDirectionId(String directionId) {
+  public StaticTripEntryImpl setDirectionId(String directionId) {
     _directionId = directionId;
     return this;
   }
 
-  public TripEntryImpl setBlock(BlockEntryImpl block) {
+  public StaticTripEntryImpl setBlock(StaticBlockEntryImpl block) {
     _block = block;
     return this;
   }
 
-  public TripEntryImpl setServiceId(LocalizedServiceId serviceId) {
+  public StaticTripEntryImpl setServiceId(LocalizedServiceId serviceId) {
     _serviceId = serviceId;
     return this;
   }
@@ -117,7 +117,7 @@ public class TripEntryImpl implements TripEntry, Serializable {
   }
 
   @Override
-  public BlockEntryImpl getBlock() {
+  public StaticBlockEntryImpl getBlock() {
     return _block;
   }
 

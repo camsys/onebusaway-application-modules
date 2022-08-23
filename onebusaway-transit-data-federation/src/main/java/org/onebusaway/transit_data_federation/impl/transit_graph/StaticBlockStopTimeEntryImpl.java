@@ -19,7 +19,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTi
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 
-public class BlockStopTimeEntryImpl implements BlockStopTimeEntry {
+public class StaticBlockStopTimeEntryImpl implements BlockStopTimeEntry {
 
   private final StopTimeEntry stopTime;
 
@@ -29,8 +29,8 @@ public class BlockStopTimeEntryImpl implements BlockStopTimeEntry {
 
   private final boolean hasNextStop;
 
-  public BlockStopTimeEntryImpl(StopTimeEntry stopTime, int blockSequence,
-      BlockTripEntry trip, boolean hasNextStop) {
+  public StaticBlockStopTimeEntryImpl(StopTimeEntry stopTime, int blockSequence,
+                                      BlockTripEntry trip, boolean hasNextStop) {
 
     if (stopTime == null)
       throw new IllegalArgumentException("stopTime is null");
@@ -106,7 +106,7 @@ public class BlockStopTimeEntryImpl implements BlockStopTimeEntry {
       return false;
     if (getClass() != obj.getClass())
       return false;
-    BlockStopTimeEntryImpl other = (BlockStopTimeEntryImpl) obj;
+    StaticBlockStopTimeEntryImpl other = (StaticBlockStopTimeEntryImpl) obj;
     if (blockSequence != other.blockSequence)
       return false;
     if (!stopTime.equals(other.stopTime))

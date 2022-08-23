@@ -29,7 +29,7 @@ import org.onebusaway.transit_data_federation.services.StopTimeService.EFrequenc
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
-import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
@@ -144,9 +144,9 @@ public class ScheduledServiceServiceImpl implements ScheduleHelperService {
         stopAndId = new AgencyAndId(agencyId, stopId);
       
       StopEntry stopEntry = _transitGraphDao.getStopEntryForId(stopAndId);            
-      List<BlockStopTimeIndex> stopTimeIndicesForStop = _blockIndexService.getStopTimeIndicesForStop(stopEntry);
+      List<StaticBlockStopTimeIndex> stopTimeIndicesForStop = _blockIndexService.getStopTimeIndicesForStop(stopEntry);
       
-      for (BlockStopTimeIndex bsti: stopTimeIndicesForStop) {
+      for (StaticBlockStopTimeIndex bsti: stopTimeIndicesForStop) {
           List<BlockStopTimeEntry> stopTimes = bsti.getStopTimes();
           for (BlockStopTimeEntry bste: stopTimes) {
               StopTimeEntry stopTime = bste.getStopTime();

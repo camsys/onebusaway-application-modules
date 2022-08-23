@@ -44,7 +44,7 @@ public class BlockTripIndexData implements Serializable {
     return _serviceIntervalBlock;
   }
 
-  public BlockTripIndex createIndex(TransitGraphDao dao) {
+  public StaticBlockTripIndex createIndex(TransitGraphDao dao) {
 
     List<BlockTripEntry> trips = new ArrayList<BlockTripEntry>();
 
@@ -54,6 +54,6 @@ public class BlockTripIndexData implements Serializable {
       trips.add(trip);
     }
 
-    return new BlockTripIndex(trips, _serviceIntervalBlock);
+    return new StaticBlockTripIndex(trips, _serviceIntervalBlock);
   }
 }

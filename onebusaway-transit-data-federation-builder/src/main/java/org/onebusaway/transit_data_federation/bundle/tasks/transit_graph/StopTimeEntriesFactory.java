@@ -33,10 +33,10 @@ import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
 import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.DistanceAlongShapeLibrary.DistanceAlongShapeException;
 import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.DistanceAlongShapeLibrary.StopIsTooFarFromShapeException;
 import org.onebusaway.transit_data_federation.impl.shapes.PointAndIndex;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
@@ -85,8 +85,8 @@ public class StopTimeEntriesFactory {
     return _invalidStopToShapeMappingExceptionCount;
   }
 
-  public List<StopTimeEntryImpl> processStopTimes(TransitGraphImpl graph,
-      List<StopTime> stopTimes, TripEntryImpl tripEntry, ShapePoints shapePoints) {
+  public List<StaticStopTimeEntryImpl> processStopTimes(TransitGraphImpl graph,
+                                                        List<StopTime> stopTimes, StaticTripEntryImpl tripEntry, ShapePoints shapePoints) {
 
     // In case the list is unmodifiable
     //stopTimes = new ArrayList<StopTime>(stopTimes);
@@ -116,10 +116,10 @@ public class StopTimeEntriesFactory {
     	stopTimes = removeTimePoints(stopTimes);
     }
     
-    List<StopTimeEntryImpl> stopTimeEntries = createInitialStopTimeEntries(
+    List<StaticStopTimeEntryImpl> stopTimeEntries = createInitialStopTimeEntries(
         graph, stopTimes);
 
-    for (StopTimeEntryImpl stopTime : stopTimeEntries) {
+    for (StaticStopTimeEntryImpl stopTime : stopTimeEntries) {
       stopTime.setTrip(tripEntry);
       stopTime.setTotalStopsInTrip(stopTimeEntries.size());
     }
@@ -182,10 +182,10 @@ private void removeDuplicateStopTimes(List<StopTime> stopTimes) {
     }
   }
 
-  private List<StopTimeEntryImpl> createInitialStopTimeEntries(
+  private List<StaticStopTimeEntryImpl> createInitialStopTimeEntries(
       TransitGraphImpl graph, List<StopTime> stopTimes) {
 
-    List<StopTimeEntryImpl> stopTimeEntries = new ArrayList<StopTimeEntryImpl>(
+    List<StaticStopTimeEntryImpl> stopTimeEntries = new ArrayList<StaticStopTimeEntryImpl>(
         stopTimes.size());
     int sequence = 0;
 
@@ -205,9 +205,9 @@ private void removeDuplicateStopTimes(List<StopTime> stopTimes) {
     	  
       }
       AgencyAndId stopId = stop.getId();
-      StopEntryImpl stopEntry = graph.getStopEntryForId(stopId);
+      StaticStopEntryImpl stopEntry = graph.getStopEntryForId(stopId);
 
-      StopTimeEntryImpl stopTimeEntry = new StopTimeEntryImpl();
+      StaticStopTimeEntryImpl stopTimeEntry = new StaticStopTimeEntryImpl();
 
       stopTimeEntry.setId(stopTime.getId());
       stopTimeEntry.setSequence(sequence);
@@ -231,7 +231,7 @@ private void removeDuplicateStopTimes(List<StopTime> stopTimes) {
    * @param shapePoints potentially null
    */
   private void ensureStopTimesHaveShapeDistanceTraveledSet(
-      List<StopTimeEntryImpl> stopTimes, ShapePoints shapePoints) {
+          List<StaticStopTimeEntryImpl> stopTimes, ShapePoints shapePoints) {
 
     boolean distanceTraveledSet = false;
 
@@ -243,7 +243,7 @@ private void removeDuplicateStopTimes(List<StopTime> stopTimes) {
             shapePoints, stopTimes);
         for (int i = 0; i < stopTimePoints.length; i++) {
           PointAndIndex pindex = stopTimePoints[i];
-          StopTimeEntryImpl stopTime = stopTimes.get(i);
+          StaticStopTimeEntryImpl stopTime = stopTimes.get(i);
           stopTime.setShapePointIndex(pindex.index);
           stopTime.setShapeDistTraveled(pindex.distanceAlongShape);
         }
@@ -273,8 +273,8 @@ private void removeDuplicateStopTimes(List<StopTime> stopTimes) {
 
       // Make do without
       double d = 0;
-      StopTimeEntryImpl prev = null;
-      for (StopTimeEntryImpl stopTime : stopTimes) {
+      StaticStopTimeEntryImpl prev = null;
+      for (StaticStopTimeEntryImpl stopTime : stopTimes) {
         if (prev != null) {
           CoordinatePoint from = prev.getStop().getStopLocation();
           CoordinatePoint to = stopTime.getStop().getStopLocation();
@@ -287,7 +287,7 @@ private void removeDuplicateStopTimes(List<StopTime> stopTimes) {
   }
 
   private void ensureStopTimesHaveTimesSet(List<StopTime> stopTimes,
-      List<StopTimeEntryImpl> stopTimeEntries) {
+      List<StaticStopTimeEntryImpl> stopTimeEntries) {
 
     double[] distanceTraveled = getDistanceTraveledForStopTimes(stopTimeEntries);
 
@@ -299,9 +299,9 @@ private void removeDuplicateStopTimes(List<StopTime> stopTimes) {
 
     int sequence = 0;
     int accumulatedSlackTime = 0;
-    StopTimeEntryImpl prevStopTimeEntry = null;
+    StaticStopTimeEntryImpl prevStopTimeEntry = null;
 
-    for (StopTimeEntryImpl stopTimeEntry : stopTimeEntries) {
+    for (StaticStopTimeEntryImpl stopTimeEntry : stopTimeEntries) {
 
       int arrivalTime = arrivalTimes[sequence];
       int departureTime = departureTimes[sequence];
@@ -449,12 +449,12 @@ private void removeDuplicateStopTimes(List<StopTime> stopTimes) {
   }
 
   private double[] getDistanceTraveledForStopTimes(
-      List<StopTimeEntryImpl> stopTimeEntries) {
+      List<StaticStopTimeEntryImpl> stopTimeEntries) {
 
     double[] distances = new double[stopTimeEntries.size()];
 
     for (int i = 0; i < stopTimeEntries.size(); i++) {
-      StopTimeEntryImpl stopTime = stopTimeEntries.get(i);
+      StaticStopTimeEntryImpl stopTime = stopTimeEntries.get(i);
       distances[i] = stopTime.getShapeDistTraveled();
     }
 

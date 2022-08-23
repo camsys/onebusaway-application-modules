@@ -48,10 +48,10 @@ import org.onebusaway.alerts.impl.ServiceAlertsPersistenceDB;
 import org.onebusaway.alerts.impl.ServiceAlertsServiceImpl;
 import org.onebusaway.alerts.impl.ServiceAlertsSituationAffectsClause;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.util.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.BlockTripInstance;
@@ -60,7 +60,6 @@ import org.onebusaway.alerts.service.ServiceAlertsService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -320,14 +319,14 @@ public class ServiceAlertsServiceImplTest extends AbstractTransactionalJUnit4Spr
       alert9.getAllAffects().add(affectsClause9);
       alert9 = _service.createOrUpdateServiceAlert(alert9);
 
-      RouteEntryImpl route = route("RouteX");
+      StaticRouteEntryImpl route = route("RouteX");
       routeCollection("RouteX", route);
-      StopEntryImpl stop = stop("10020", 47.0, -122.0);
-      TripEntryImpl trip = trip("TripA");
+      StaticStopEntryImpl stop = stop("10020", 47.0, -122.0);
+      StaticTripEntryImpl trip = trip("TripA");
       trip.setRoute(route);
       trip.setDirectionId("1");
       stopTime(0, stop, trip, time(8, 53), 0);
-      BlockEntryImpl block = block("block");
+      StaticBlockEntryImpl block = block("block");
       BlockConfigurationEntry blockConfig = blockConfiguration(block,
               serviceIds(lsids("a"), lsids()), trip);
 
@@ -468,14 +467,14 @@ public class ServiceAlertsServiceImplTest extends AbstractTransactionalJUnit4Spr
         alert9.getAllAffects().add(affectsClause9);
         alert9 = _service.createOrUpdateServiceAlert(alert9);
 
-        RouteEntryImpl route = route("RouteX");
+        StaticRouteEntryImpl route = route("RouteX");
         routeCollection("RouteX", route);
-        StopEntryImpl stop = stop("10020", 47.0, -122.0);
-        TripEntryImpl trip = trip("TripA");
+        StaticStopEntryImpl stop = stop("10020", 47.0, -122.0);
+        StaticTripEntryImpl trip = trip("TripA");
         trip.setRoute(route);
         trip.setDirectionId("1");
         stopTime(0, stop, trip, time(8, 53), 0);
-        BlockEntryImpl block = block("block");
+        StaticBlockEntryImpl block = block("block");
         BlockConfigurationEntry blockConfig = blockConfiguration(block,
                 serviceIds(lsids("a"), lsids()), trip);
 

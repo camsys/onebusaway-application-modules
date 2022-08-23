@@ -24,7 +24,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollec
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
-public class RouteEntryImpl implements RouteEntry, Serializable {
+public class StaticRouteEntryImpl implements RouteEntry, Serializable {
 
   private static final long serialVersionUID = 1L;
 

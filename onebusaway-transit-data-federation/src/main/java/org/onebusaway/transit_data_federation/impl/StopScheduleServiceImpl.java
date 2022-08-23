@@ -33,7 +33,7 @@ import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;
 import org.onebusaway.transit_data_federation.services.StopScheduleService;
 import org.onebusaway.transit_data_federation.services.beans.AgencyBeanService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.blocks.FrequencyBlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
@@ -118,8 +118,8 @@ class StopScheduleServiceImpl implements StopScheduleService {
 
     Set<ServiceIdActivation> allServiceIds = new HashSet<ServiceIdActivation>();
 
-    List<BlockStopTimeIndex> indices = _blockIndexService.getStopTimeIndicesForStop(stop);
-    for (BlockStopTimeIndex index : indices)
+    List<StaticBlockStopTimeIndex> indices = _blockIndexService.getStopTimeIndicesForStop(stop);
+    for (StaticBlockStopTimeIndex index : indices)
       allServiceIds.add(index.getServiceIds());
 
     List<FrequencyBlockStopTimeIndex> frequencyIndices = _blockIndexService.getFrequencyStopTimeIndicesForStop(stop);

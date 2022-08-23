@@ -20,8 +20,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
 import org.junit.Test;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
 import org.onebusaway.transit_data_federation.testing.UnitTestingSupport;
@@ -30,9 +30,9 @@ public class BlockTripInstanceLibraryTest {
 
   @Test
   public void test() {
-    BlockEntryImpl block = UnitTestingSupport.block("block");
-    TripEntryImpl tripA = UnitTestingSupport.trip("tripA");
-    TripEntryImpl tripB = UnitTestingSupport.trip("tripB");
+    StaticBlockEntryImpl block = UnitTestingSupport.block("block");
+    StaticTripEntryImpl tripA = UnitTestingSupport.trip("tripA");
+    StaticTripEntryImpl tripB = UnitTestingSupport.trip("tripB");
     UnitTestingSupport.stopTime(0, null, tripA, 0, 0);
     UnitTestingSupport.stopTime(0, null, tripB, 0, 0);
     ServiceIdActivation serviceIds = UnitTestingSupport.serviceIds("sid");

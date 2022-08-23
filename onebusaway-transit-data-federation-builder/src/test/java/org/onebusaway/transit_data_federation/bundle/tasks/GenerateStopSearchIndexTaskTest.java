@@ -32,7 +32,7 @@ import org.mockito.Mockito;
 import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.StopSearchServiceImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
 import org.onebusaway.transit_data_federation.model.SearchResult;
 import org.onebusaway.transit_data_federation.model.narrative.StopNarrative;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
@@ -82,9 +82,9 @@ public class GenerateStopSearchIndexTaskTest {
   public void testGenerateStopSearchIndex() throws CorruptIndexException,
       IOException, ParseException {
 
-    StopEntryImpl stopA = stop("111", 0, 0);
-    StopEntryImpl stopB = stop("222", 0, 0);
-    StopEntryImpl stopC = stop("333", 0, 0);
+    StaticStopEntryImpl stopA = stop("111", 0, 0);
+    StaticStopEntryImpl stopB = stop("222", 0, 0);
+    StaticStopEntryImpl stopC = stop("333", 0, 0);
 
     StopNarrative.Builder stopNarrativeA = StopNarrative.builder();
     stopNarrativeA.setCode("111");

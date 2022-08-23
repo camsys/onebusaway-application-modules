@@ -29,13 +29,12 @@ import org.onebusaway.collections.Min;
 import org.onebusaway.container.cache.Cacheable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceInterval;
-import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.BlockLayoverIndex;
-import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.FrequencyBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.FrequencyServiceIntervalBlock;
 import org.onebusaway.transit_data_federation.services.blocks.InstanceState;
@@ -111,7 +110,7 @@ class BlockCalendarServiceImpl implements BlockCalendarService {
   public List<BlockInstance> getActiveBlocks(AgencyAndId blockId,
       long timeFrom, long timeTo) {
 
-    List<BlockTripIndex> indices = _blockIndexService.getBlockTripIndicesForBlock(blockId);
+    List<StaticBlockTripIndex> indices = _blockIndexService.getBlockTripIndicesForBlock(blockId);
     List<BlockLayoverIndex> layoverIndices = _blockIndexService.getBlockLayoverIndicesForBlock(blockId);
     List<FrequencyBlockTripIndex> frequencyIndices = _blockIndexService.getFrequencyBlockTripIndicesForBlock(blockId);
 
@@ -154,7 +153,7 @@ class BlockCalendarServiceImpl implements BlockCalendarService {
   @Override
   public List<BlockInstance> getActiveBlocksInTimeRange(long timeFrom,
       long timeTo) {
-    List<BlockTripIndex> indices = _blockIndexService.getBlockTripIndices();
+    List<StaticBlockTripIndex> indices = _blockIndexService.getBlockTripIndices();
     List<BlockLayoverIndex> layoverIndices = _blockIndexService.getBlockLayoverIndices();
     List<FrequencyBlockTripIndex> frequencyIndices = _blockIndexService.getFrequencyBlockTripIndices();
     return getActiveBlocksInTimeRange(indices, layoverIndices,
@@ -164,7 +163,7 @@ class BlockCalendarServiceImpl implements BlockCalendarService {
   @Override
   public List<BlockInstance> getActiveBlocksForAgencyInTimeRange(
       String agencyId, long timeFrom, long timeTo) {
-    List<BlockTripIndex> indices = _blockIndexService.getBlockTripIndicesForAgencyId(agencyId);
+    List<StaticBlockTripIndex> indices = _blockIndexService.getBlockTripIndicesForAgencyId(agencyId);
     List<BlockLayoverIndex> layoverIndices = _blockIndexService.getBlockLayoverIndicesForAgencyId(agencyId);
     List<FrequencyBlockTripIndex> frequencyIndices = _blockIndexService.getFrequencyBlockTripIndicesForAgencyId(agencyId);
     return getActiveBlocksInTimeRange(indices, layoverIndices,
@@ -174,7 +173,7 @@ class BlockCalendarServiceImpl implements BlockCalendarService {
   @Override
   public List<BlockInstance> getActiveBlocksForRouteInTimeRange(
       AgencyAndId routeId, long timeFrom, long timeTo) {
-    List<BlockTripIndex> indices = _blockIndexService.getBlockTripIndicesForRouteCollectionId(routeId);
+    List<StaticBlockTripIndex> indices = _blockIndexService.getBlockTripIndicesForRouteCollectionId(routeId);
     List<BlockLayoverIndex> layoverIndices = _blockIndexService.getBlockLayoverIndicesForRouteCollectionId(routeId);
     List<FrequencyBlockTripIndex> frequencyIndices = _blockIndexService.getFrequencyBlockTripIndicesForRouteCollectionId(routeId);
     return getActiveBlocksInTimeRange(indices, layoverIndices,
@@ -183,14 +182,14 @@ class BlockCalendarServiceImpl implements BlockCalendarService {
 
   @Override
   public List<BlockInstance> getActiveBlocksInTimeRange(
-      Iterable<BlockTripIndex> indices,
+      Iterable<StaticBlockTripIndex> indices,
       Iterable<BlockLayoverIndex> layoverIndices,
       Iterable<FrequencyBlockTripIndex> frequencyIndices, long timeFrom,
       long timeTo) {
 
     Set<BlockInstance> instances = new HashSet<BlockInstance>();
 
-    for (BlockTripIndex index : indices)
+    for (StaticBlockTripIndex index : indices)
       getActiveBlocksInTimeRange(index, timeFrom, timeTo, instances);
 
     for (BlockLayoverIndex index : layoverIndices)
@@ -217,8 +216,8 @@ class BlockCalendarServiceImpl implements BlockCalendarService {
    * 
    ****/
 
-  private void getActiveBlocksInTimeRange(BlockTripIndex index, long timeFrom,
-      long timeTo, Collection<BlockInstance> results) {
+  private void getActiveBlocksInTimeRange(StaticBlockTripIndex index, long timeFrom,
+                                          long timeTo, Collection<BlockInstance> results) {
 
     Date dateFrom = new Date(timeFrom);
     Date dateTo = new Date(timeTo);
@@ -226,8 +225,8 @@ class BlockCalendarServiceImpl implements BlockCalendarService {
     handleBlockIndex(index, dateFrom, dateTo, results);
   }
 
-  private Collection<BlockInstance> handleBlockIndex(BlockTripIndex index,
-      Date timeFrom, Date timeTo, Collection<BlockInstance> instances) {
+  private Collection<BlockInstance> handleBlockIndex(StaticBlockTripIndex index,
+                                                     Date timeFrom, Date timeTo, Collection<BlockInstance> instances) {
 
     List<BlockTripEntry> trips = index.getTrips();
 

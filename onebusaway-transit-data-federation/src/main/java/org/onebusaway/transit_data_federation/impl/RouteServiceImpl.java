@@ -25,7 +25,7 @@ import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.transit_data_federation.services.RouteService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.blocks.FrequencyBlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.transit_graph.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,9 +99,9 @@ class RouteServiceImpl implements RouteService {
 
     Set<AgencyAndId> routeCollectionIds = new HashSet<AgencyAndId>();
 
-    List<BlockStopTimeIndex> indices = _blockIndexService.getStopTimeIndicesForStop(stopEntry);
+    List<StaticBlockStopTimeIndex> indices = _blockIndexService.getStopTimeIndicesForStop(stopEntry);
 
-    for (BlockStopTimeIndex blockStopTimeIndex : indices) {
+    for (StaticBlockStopTimeIndex blockStopTimeIndex : indices) {
       for (BlockTripEntry blockTrip : blockStopTimeIndex.getTrips()) {
         TripEntry trip = blockTrip.getTrip();
 

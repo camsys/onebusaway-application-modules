@@ -30,52 +30,52 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockConfigurationEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockConfigurationEntryImpl.Builder;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockConfigurationEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopTimeEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockConfigurationEntryImpl.Builder;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
-public class BlockConfigurationEntryImplTest {
+public class StaticBlockConfigurationEntryImplTest {
 
   @Test
   public void test() {
 
     ServiceIdActivation serviceIds = serviceIds(lsids("sA"), lsids("sB"));
 
-    StopEntryImpl stopA = stop("stopA", 47.0, -122.0);
-    StopEntryImpl stopB = stop("stopB", 47.1, -122.0);
+    StaticStopEntryImpl stopA = stop("stopA", 47.0, -122.0);
+    StaticStopEntryImpl stopB = stop("stopB", 47.1, -122.0);
 
-    BlockEntryImpl block = block("blockA");
+    StaticBlockEntryImpl block = block("blockA");
 
-    TripEntryImpl tripA = trip("tripA", 1000);
-    TripEntryImpl tripB = trip("tripB", 2000);
-    TripEntryImpl tripC = trip("tripB", 1500);
+    StaticTripEntryImpl tripA = trip("tripA", 1000);
+    StaticTripEntryImpl tripB = trip("tripB", 2000);
+    StaticTripEntryImpl tripC = trip("tripB", 1500);
 
     List<TripEntry> trips = Arrays.asList((TripEntry) tripA, tripB, tripC);
 
-    StopTimeEntryImpl st1 = stopTime(1, stopA, tripA, time(6, 30), time(6, 35),
+    StaticStopTimeEntryImpl st1 = stopTime(1, stopA, tripA, time(6, 30), time(6, 35),
         200);
-    StopTimeEntryImpl st2 = stopTime(2, stopB, tripA, time(7, 00), time(7, 10),
+    StaticStopTimeEntryImpl st2 = stopTime(2, stopB, tripA, time(7, 00), time(7, 10),
         800);
 
-    StopTimeEntryImpl st3 = stopTime(3, stopB, tripB, time(7, 30), time(7, 35),
+    StaticStopTimeEntryImpl st3 = stopTime(3, stopB, tripB, time(7, 30), time(7, 35),
         400);
-    StopTimeEntryImpl st4 = stopTime(4, stopA, tripB, time(8, 00), time(8, 07),
+    StaticStopTimeEntryImpl st4 = stopTime(4, stopA, tripB, time(8, 00), time(8, 07),
         1600);
 
-    StopTimeEntryImpl st5 = stopTime(5, stopA, tripC, time(8, 30), time(8, 35),
+    StaticStopTimeEntryImpl st5 = stopTime(5, stopA, tripC, time(8, 30), time(8, 35),
         300);
-    StopTimeEntryImpl st6 = stopTime(6, stopB, tripC, time(9, 00), time(9, 02),
+    StaticStopTimeEntryImpl st6 = stopTime(6, stopB, tripC, time(9, 00), time(9, 02),
         1200);
 
-    Builder builder = BlockConfigurationEntryImpl.builder();
+    Builder builder = StaticBlockConfigurationEntryImpl.builder();
     builder.setBlock(block);
     builder.setTrips(trips);
     builder.setServiceIds(serviceIds);

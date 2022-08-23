@@ -51,8 +51,8 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.BlockLayoverIndex;
 import org.onebusaway.transit_data_federation.services.blocks.BlockSequenceIndex;
-import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
-import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockStopTimeIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.FrequencyBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
@@ -148,7 +148,7 @@ class BlockGeospatialServiceImpl implements BlockGeospatialService {
     Set<AgencyAndId> blockIds = new HashSet<AgencyAndId>();
 
     for (StopEntry stop : stops) {
-      List<BlockStopTimeIndex> stopTimeIndices = _blockIndexService.getStopTimeIndicesForStop(stop);
+      List<StaticBlockStopTimeIndex> stopTimeIndices = _blockIndexService.getStopTimeIndicesForStop(stop);
       
       Set<BlockConfigurationEntry> blockConfigs = new HashSet<BlockConfigurationEntry>();
       
@@ -162,7 +162,7 @@ class BlockGeospatialServiceImpl implements BlockGeospatialService {
       blockIds.addAll(stopBlockIds);      
     }
 
-    Set<BlockTripIndex> blockIndices = new HashSet<BlockTripIndex>();
+    Set<StaticBlockTripIndex> blockIndices = new HashSet<StaticBlockTripIndex>();
 
     for (AgencyAndId blockId: blockIds) {
       blockIndices.addAll(_blockIndexService.getBlockTripIndicesForBlock(blockId));

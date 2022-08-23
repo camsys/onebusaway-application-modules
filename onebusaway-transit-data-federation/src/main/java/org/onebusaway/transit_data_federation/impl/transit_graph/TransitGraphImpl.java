@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -68,29 +67,29 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
 
   private List<AgencyEntryImpl> _agencies = new ArrayList<AgencyEntryImpl>();
 
-  private List<StopEntryImpl> _stops = new ArrayList<StopEntryImpl>();
+  private List<StaticStopEntryImpl> _stops = new ArrayList<StaticStopEntryImpl>();
 
-  private List<TripEntryImpl> _trips = new ArrayList<TripEntryImpl>();
+  private List<StaticTripEntryImpl> _trips = new ArrayList<StaticTripEntryImpl>();
 
-  private List<BlockEntryImpl> _blocks = new ArrayList<BlockEntryImpl>();
+  private List<StaticBlockEntryImpl> _blocks = new ArrayList<StaticBlockEntryImpl>();
 
-  private List<RouteCollectionEntryImpl> _routeCollections = new ArrayList<RouteCollectionEntryImpl>();
+  private List<StaticRouteCollectionEntryImpl> _routeCollections = new ArrayList<StaticRouteCollectionEntryImpl>();
 
-  private List<RouteEntryImpl> _routes = new ArrayList<RouteEntryImpl>();
+  private List<StaticRouteEntryImpl> _routes = new ArrayList<StaticRouteEntryImpl>();
 
   private transient STRtree _stopLocationTree = null;
 
   private transient Map<String, AgencyEntryImpl> _agencyEntriesById = new HashMap<String, AgencyEntryImpl>();
 
-  private transient Map<AgencyAndId, StopEntryImpl> _stopEntriesById = new HashMap<AgencyAndId, StopEntryImpl>();
+  private transient Map<AgencyAndId, StaticStopEntryImpl> _stopEntriesById = new HashMap<AgencyAndId, StaticStopEntryImpl>();
 
-  private transient Map<AgencyAndId, TripEntryImpl> _tripEntriesById = new HashMap<AgencyAndId, TripEntryImpl>();
+  private transient Map<AgencyAndId, StaticTripEntryImpl> _tripEntriesById = new HashMap<AgencyAndId, StaticTripEntryImpl>();
 
-  private transient Map<AgencyAndId, BlockEntryImpl> _blockEntriesById = new HashMap<AgencyAndId, BlockEntryImpl>();
+  private transient Map<AgencyAndId, StaticBlockEntryImpl> _blockEntriesById = new HashMap<AgencyAndId, StaticBlockEntryImpl>();
 
-  private transient Map<AgencyAndId, RouteCollectionEntryImpl> _routeCollectionEntriesById = new HashMap<AgencyAndId, RouteCollectionEntryImpl>();
+  private transient Map<AgencyAndId, StaticRouteCollectionEntryImpl> _routeCollectionEntriesById = new HashMap<AgencyAndId, StaticRouteCollectionEntryImpl>();
 
-  private transient Map<AgencyAndId, RouteEntryImpl> _routeEntriesById = new HashMap<AgencyAndId, RouteEntryImpl>();
+  private transient Map<AgencyAndId, StaticRouteEntryImpl> _routeEntriesById = new HashMap<AgencyAndId, StaticRouteEntryImpl>();
 
   public TransitGraphImpl() {
 
@@ -165,7 +164,7 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
       refreshRouteMapping();
 
     int i = 0;
-    for (StopEntryImpl stop : _stops)
+    for (StaticStopEntryImpl stop : _stops)
       stop.setIndex(i++);
   }
 
@@ -183,39 +182,39 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
     _agencies.add(agencyEntry);
   }
 
-  public void putStopEntry(StopEntryImpl stopEntry) {
+  public void putStopEntry(StaticStopEntryImpl stopEntry) {
     _stops.add(stopEntry);
   }
 
-  public List<StopEntryImpl> getStops() {
+  public List<StaticStopEntryImpl> getStops() {
     return _stops;
   }
 
-  public void putTripEntry(TripEntryImpl tripEntry) {
+  public void putTripEntry(StaticTripEntryImpl tripEntry) {
     _trips.add(tripEntry);
   }
 
-  public List<TripEntryImpl> getTrips() {
+  public List<StaticTripEntryImpl> getTrips() {
     return _trips;
   }
 
-  public void putBlockEntry(BlockEntryImpl blockEntry) {
+  public void putBlockEntry(StaticBlockEntryImpl blockEntry) {
     _blocks.add(blockEntry);
   }
   
-  public List<BlockEntryImpl> getBlocks() {
+  public List<StaticBlockEntryImpl> getBlocks() {
     return _blocks;
   }
 
-  public void putRouteEntry(RouteEntryImpl routeEntry) {
+  public void putRouteEntry(StaticRouteEntryImpl routeEntry) {
     _routes.add(routeEntry);
   }
 
-  public List<RouteEntryImpl> getRoutes() {
+  public List<StaticRouteEntryImpl> getRoutes() {
     return _routes;
   }
 
-  public void putRouteCollectionEntry(RouteCollectionEntryImpl routeCollection) {
+  public void putRouteCollectionEntry(StaticRouteCollectionEntryImpl routeCollection) {
     _routeCollections.add(routeCollection);
   }
 
@@ -226,32 +225,32 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
   }
 
   public void refreshTripMapping() {
-    _tripEntriesById = new HashMap<AgencyAndId, TripEntryImpl>();
-    for (TripEntryImpl entry : _trips)
+    _tripEntriesById = new HashMap<AgencyAndId, StaticTripEntryImpl>();
+    for (StaticTripEntryImpl entry : _trips)
       _tripEntriesById.put(entry.getId(), entry);
   }
 
   public void refreshBlockMapping() {
-    _blockEntriesById = new HashMap<AgencyAndId, BlockEntryImpl>();
-    for (BlockEntryImpl entry : _blocks)
+    _blockEntriesById = new HashMap<AgencyAndId, StaticBlockEntryImpl>();
+    for (StaticBlockEntryImpl entry : _blocks)
       _blockEntriesById.put(entry.getId(), entry);
   }
 
   public void refreshStopMapping() {
-    _stopEntriesById = new HashMap<AgencyAndId, StopEntryImpl>();
-    for (StopEntryImpl entry : _stops)
+    _stopEntriesById = new HashMap<AgencyAndId, StaticStopEntryImpl>();
+    for (StaticStopEntryImpl entry : _stops)
       _stopEntriesById.put(entry.getId(), entry);
   }
 
   public void refreshRouteMapping() {
-    _routeEntriesById = new HashMap<AgencyAndId, RouteEntryImpl>();
-    for (RouteEntryImpl entry : _routes)
+    _routeEntriesById = new HashMap<AgencyAndId, StaticRouteEntryImpl>();
+    for (StaticRouteEntryImpl entry : _routes)
       _routeEntriesById.put(entry.getId(), entry);
   }
 
   public void refreshRouteCollectionMapping() {
-    _routeCollectionEntriesById = new HashMap<AgencyAndId, RouteCollectionEntryImpl>();
-    for (RouteCollectionEntryImpl entry : _routeCollections)
+    _routeCollectionEntriesById = new HashMap<AgencyAndId, StaticRouteCollectionEntryImpl>();
+    for (StaticRouteCollectionEntryImpl entry : _routeCollections)
       _routeCollectionEntriesById.put(entry.getId(), entry);
   }
 
@@ -270,39 +269,39 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
 
   @Override
   public List<StopEntry> getAllStops() {
-    return new ListAdapter<StopEntryImpl, StopEntry>(_stops, _stopEntryAdapter);
+    return new ListAdapter<StaticStopEntryImpl, StopEntry>(_stops, _stopEntryAdapter);
   }
 
   @Override
   public List<TripEntry> getAllTrips() {
-    return new ListAdapter<TripEntryImpl, TripEntry>(_trips, _tripEntryAdapter);
+    return new ListAdapter<StaticTripEntryImpl, TripEntry>(_trips, _tripEntryAdapter);
   }
 
   @Override
   public List<BlockEntry> getAllBlocks() {
-    return new ListAdapter<BlockEntryImpl, BlockEntry>(_blocks,
+    return new ListAdapter<StaticBlockEntryImpl, BlockEntry>(_blocks,
         _blockEntryAdapter);
   }
 
   @Override
   public List<RouteCollectionEntry> getAllRouteCollections() {
-    return new ListAdapter<RouteCollectionEntryImpl, RouteCollectionEntry>(
+    return new ListAdapter<StaticRouteCollectionEntryImpl, RouteCollectionEntry>(
         _routeCollections, _routeCollectionEntryAdapter);
   }
 
   @Override
   public List<RouteEntry> getAllRoutes() {
-    return new ListAdapter<RouteEntryImpl, RouteEntry>(_routes,
+    return new ListAdapter<StaticRouteEntryImpl, RouteEntry>(_routes,
         _routeEntryAdapter);
   }
 
   @Override
-  public StopEntryImpl getStopEntryForId(AgencyAndId id) {
+  public StaticStopEntryImpl getStopEntryForId(AgencyAndId id) {
     return _stopEntriesById.get(id);
   }
 
   @Override
-  public TripEntryImpl getTripEntryForId(AgencyAndId id) {
+  public StaticTripEntryImpl getTripEntryForId(AgencyAndId id) {
     return _tripEntriesById.get(id);
   }
 
@@ -317,7 +316,7 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
   }
 
   @Override
-  public RouteEntryImpl getRouteForId(AgencyAndId id) {
+  public StaticRouteEntryImpl getRouteForId(AgencyAndId id) {
     return _routeEntriesById.get(id);
   }
 
@@ -350,21 +349,21 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
    * Serialization Support
    ****************************************************************************/
 
-  public static void handleStopEntryRead(StopEntryImpl stopEntryImpl) {
+  public static void handleStopEntryRead(StaticStopEntryImpl stopEntryImpl) {
     _helper.handleStopEntryRead(stopEntryImpl);
   }
 
-  public static void handleTripEntryRead(TripEntryImpl tripEntryImpl) {
+  public static void handleTripEntryRead(StaticTripEntryImpl tripEntryImpl) {
     _helper.handleTripEntryRead(tripEntryImpl);
   }
 
   public static void addStopEntryCallback(AgencyAndId stopEntry,
-      EntryCallback<StopEntryImpl> entry) {
+      EntryCallback<StaticStopEntryImpl> entry) {
     _helper.addStopEntryCallback(stopEntry, entry);
   }
 
   public static void addTripEntryCallback(AgencyAndId tripEntry,
-      EntryCallback<TripEntryImpl> entry) {
+      EntryCallback<StaticTripEntryImpl> entry) {
     _helper.addTripEntryCallback(tripEntry, entry);
   }
 
@@ -385,44 +384,44 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
 
   private static class ReadHelper {
 
-    private Map<AgencyAndId, StopEntryImpl> _stops = new HashMap<AgencyAndId, StopEntryImpl>();
+    private Map<AgencyAndId, StaticStopEntryImpl> _stops = new HashMap<AgencyAndId, StaticStopEntryImpl>();
 
-    private Map<AgencyAndId, TripEntryImpl> _trips = new HashMap<AgencyAndId, TripEntryImpl>();
+    private Map<AgencyAndId, StaticTripEntryImpl> _trips = new HashMap<AgencyAndId, StaticTripEntryImpl>();
 
-    private List<EntryIdAndCallback<AgencyAndId, StopEntryImpl>> _stopCallbacks = new ArrayList<EntryIdAndCallback<AgencyAndId, StopEntryImpl>>();
-    private List<EntryIdAndCallback<AgencyAndId, TripEntryImpl>> _tripCallbacks = new ArrayList<EntryIdAndCallback<AgencyAndId, TripEntryImpl>>();
+    private List<EntryIdAndCallback<AgencyAndId, StaticStopEntryImpl>> _stopCallbacks = new ArrayList<EntryIdAndCallback<AgencyAndId, StaticStopEntryImpl>>();
+    private List<EntryIdAndCallback<AgencyAndId, StaticTripEntryImpl>> _tripCallbacks = new ArrayList<EntryIdAndCallback<AgencyAndId, StaticTripEntryImpl>>();
 
-    public void handleStopEntryRead(StopEntryImpl stopEntryImpl) {
+    public void handleStopEntryRead(StaticStopEntryImpl stopEntryImpl) {
       _stops.put(stopEntryImpl.getId(), stopEntryImpl);
     }
 
-    public void handleTripEntryRead(TripEntryImpl tripEntryImpl) {
+    public void handleTripEntryRead(StaticTripEntryImpl tripEntryImpl) {
       _trips.put(tripEntryImpl.getId(), tripEntryImpl);
     }
 
     public void addStopEntryCallback(AgencyAndId stopEntryId,
-        EntryCallback<StopEntryImpl> callback) {
-      _stopCallbacks.add(new EntryIdAndCallback<AgencyAndId, StopEntryImpl>(
+        EntryCallback<StaticStopEntryImpl> callback) {
+      _stopCallbacks.add(new EntryIdAndCallback<AgencyAndId, StaticStopEntryImpl>(
           stopEntryId, callback));
     }
 
     public void addTripEntryCallback(AgencyAndId tripEntryId,
-        EntryCallback<TripEntryImpl> callback) {
-      _tripCallbacks.add(new EntryIdAndCallback<AgencyAndId, TripEntryImpl>(
+        EntryCallback<StaticTripEntryImpl> callback) {
+      _tripCallbacks.add(new EntryIdAndCallback<AgencyAndId, StaticTripEntryImpl>(
           tripEntryId, callback));
     }
 
     public void flush() {
 
-      for (EntryIdAndCallback<AgencyAndId, StopEntryImpl> ci : _stopCallbacks) {
-        StopEntryImpl entry = _stops.get(ci.getId());
+      for (EntryIdAndCallback<AgencyAndId, StaticStopEntryImpl> ci : _stopCallbacks) {
+        StaticStopEntryImpl entry = _stops.get(ci.getId());
         if (entry == null)
           throw new IllegalStateException("no such stop entry: " + ci.getId());
         ci.getCallback().handle(entry);
       }
 
-      for (EntryIdAndCallback<AgencyAndId, TripEntryImpl> ci : _tripCallbacks) {
-        TripEntryImpl entry = _trips.get(ci.getId());
+      for (EntryIdAndCallback<AgencyAndId, StaticTripEntryImpl> ci : _tripCallbacks) {
+        StaticTripEntryImpl entry = _trips.get(ci.getId());
         if (entry == null)
           throw new IllegalStateException("no such trip entry: " + ci.getId());
         ci.getCallback().handle(entry);
@@ -452,46 +451,46 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
   }
 
   private static class TripEntryAdapter implements
-      IAdapter<TripEntryImpl, TripEntry> {
+      IAdapter<StaticTripEntryImpl, TripEntry> {
 
     @Override
-    public TripEntry adapt(TripEntryImpl source) {
+    public TripEntry adapt(StaticTripEntryImpl source) {
       return source;
     }
   }
 
   private static class BlockEntryAdapter implements
-      IAdapter<BlockEntryImpl, BlockEntry> {
+      IAdapter<StaticBlockEntryImpl, BlockEntry> {
 
     @Override
-    public BlockEntry adapt(BlockEntryImpl source) {
+    public BlockEntry adapt(StaticBlockEntryImpl source) {
       return source;
     }
   }
 
   private static class StopEntryAdapter implements
-      IAdapter<StopEntryImpl, StopEntry> {
+      IAdapter<StaticStopEntryImpl, StopEntry> {
 
     @Override
-    public StopEntry adapt(StopEntryImpl source) {
+    public StopEntry adapt(StaticStopEntryImpl source) {
       return source;
     }
   }
 
   private static class RouteCollectionEntryAdapter implements
-      IAdapter<RouteCollectionEntryImpl, RouteCollectionEntry> {
+      IAdapter<StaticRouteCollectionEntryImpl, RouteCollectionEntry> {
 
     @Override
-    public RouteCollectionEntry adapt(RouteCollectionEntryImpl source) {
+    public RouteCollectionEntry adapt(StaticRouteCollectionEntryImpl source) {
       return source;
     }
   }
 
   private static class RouteEntryAdapter implements
-      IAdapter<RouteEntryImpl, RouteEntry> {
+      IAdapter<StaticRouteEntryImpl, RouteEntry> {
 
     @Override
-    public RouteEntry adapt(RouteEntryImpl source) {
+    public RouteEntry adapt(StaticRouteEntryImpl source) {
       return source;
     }
   }

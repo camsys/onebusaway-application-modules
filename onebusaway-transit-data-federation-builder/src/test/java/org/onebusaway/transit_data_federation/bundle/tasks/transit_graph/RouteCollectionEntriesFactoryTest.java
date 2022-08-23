@@ -27,7 +27,7 @@ import org.onebusaway.gtfs.model.Route;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
 import org.onebusaway.transit_data_federation.bundle.tasks.UniqueServiceImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphImpl;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
@@ -44,11 +44,11 @@ public class RouteCollectionEntriesFactoryTest {
     graph.putAgencyEntry(agency);
     graph.refreshAgencyMapping();
 
-    RouteEntryImpl routeA = new RouteEntryImpl();
+    StaticRouteEntryImpl routeA = new StaticRouteEntryImpl();
     routeA.setId(new AgencyAndId("A", "routeA"));
     graph.putRouteEntry(routeA);
 
-    RouteEntryImpl routeB = new RouteEntryImpl();
+    StaticRouteEntryImpl routeB = new StaticRouteEntryImpl();
     routeB.setId(new AgencyAndId("A", "routeB"));
     graph.putRouteEntry(routeB);
 
@@ -91,11 +91,11 @@ public class RouteCollectionEntriesFactoryTest {
     graph.putAgencyEntry(agency);
     graph.refreshAgencyMapping();
 
-    RouteEntryImpl routeA = new RouteEntryImpl();
+    StaticRouteEntryImpl routeA = new StaticRouteEntryImpl();
     routeA.setId(new AgencyAndId("A", "routeA"));
     graph.putRouteEntry(routeA);
 
-    RouteEntryImpl routeB = new RouteEntryImpl();
+    StaticRouteEntryImpl routeB = new StaticRouteEntryImpl();
     routeB.setId(new AgencyAndId("A", "routeB"));
     graph.putRouteEntry(routeB);
 

@@ -34,11 +34,11 @@ import org.onebusaway.gtfs.model.Route;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.testing.UnitTestingSupport;
 
 public class BlockEntriesFactoryTest {
@@ -53,7 +53,7 @@ public class BlockEntriesFactoryTest {
 
   private Route _route;
 
-  private RouteEntryImpl _routeEntry;
+  private StaticRouteEntryImpl _routeEntry;
 
   @Before
   public void before() {
@@ -78,13 +78,13 @@ public class BlockEntriesFactoryTest {
   public void testFixedScheduleBlocks() {
 
     LocalizedServiceId lsid = lsid("serviceId");
-    StopEntryImpl stop = stop("stop");
+    StaticStopEntryImpl stop = stop("stop");
 
     Trip tripA = new Trip();
     tripA.setId(aid("tripA"));
     tripA.setRoute(_route);
     tripA.setBlockId("blockA");
-    TripEntryImpl tripEntryA = trip("tripA").setRoute(_routeEntry).setServiceId(
+    StaticTripEntryImpl tripEntryA = trip("tripA").setRoute(_routeEntry).setServiceId(
         lsid);
     _graph.putTripEntry(tripEntryA);
     addStopTime(tripEntryA, stopTime().setStop(stop));
@@ -93,7 +93,7 @@ public class BlockEntriesFactoryTest {
     tripB.setId(aid("tripB"));
     tripB.setRoute(_route);
     tripB.setBlockId("blockA");
-    TripEntryImpl tripEntryB = trip("tripB").setRoute(_routeEntry).setServiceId(
+    StaticTripEntryImpl tripEntryB = trip("tripB").setRoute(_routeEntry).setServiceId(
         lsid);
     _graph.putTripEntry(tripEntryB);
     addStopTime(tripEntryB, stopTime().setStop(stop));
@@ -102,7 +102,7 @@ public class BlockEntriesFactoryTest {
     tripC.setId(aid("tripC"));
     tripC.setRoute(_route);
     tripC.setBlockId("blockB");
-    TripEntryImpl tripEntryC = trip("tripC").setRoute(_routeEntry).setServiceId(
+    StaticTripEntryImpl tripEntryC = trip("tripC").setRoute(_routeEntry).setServiceId(
         lsid);
     _graph.putTripEntry(tripEntryC);
     addStopTime(tripEntryC, stopTime().setStop(stop));
@@ -114,11 +114,11 @@ public class BlockEntriesFactoryTest {
 
     _factory.processBlocks(_graph);
 
-    List<BlockEntryImpl> blocks = _graph.getBlocks();
+    List<StaticBlockEntryImpl> blocks = _graph.getBlocks();
     assertEquals(2, blocks.size());
 
     // jre8 changes this ordering so explicity search
-    BlockEntryImpl block = find(blocks, "blockB");
+    StaticBlockEntryImpl block = find(blocks, "blockB");
     assertEquals(aid("blockB"), block.getId());
     assertSame(block, tripEntryC.getBlock());
     Mockito.verify(_blockConfigFactory).processBlockConfigurations(block,
@@ -135,8 +135,8 @@ public class BlockEntriesFactoryTest {
     Mockito.verifyNoMoreInteractions(_blockConfigFactory);
   }
 
-  private BlockEntryImpl find(List<BlockEntryImpl> blocks, String searchBlockId) {
-    for (BlockEntryImpl i : blocks) {
+  private StaticBlockEntryImpl find(List<StaticBlockEntryImpl> blocks, String searchBlockId) {
+    for (StaticBlockEntryImpl i : blocks) {
       if (searchBlockId.equals(i.getId().getId())) {
         return i;
       }

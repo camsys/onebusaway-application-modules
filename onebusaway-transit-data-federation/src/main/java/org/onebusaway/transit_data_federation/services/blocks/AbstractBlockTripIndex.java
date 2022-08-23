@@ -18,7 +18,7 @@ package org.onebusaway.transit_data_federation.services.blocks;
 
 import java.util.List;
 
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockTripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockTripEntryImpl;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
 
@@ -44,7 +44,7 @@ public abstract class AbstractBlockTripIndex implements HasBlockTrips {
 
     _trips = trips;
     for (BlockTripEntry trip : trips) {
-      BlockTripEntryImpl tripImpl = (BlockTripEntryImpl) trip;
+      StaticBlockTripEntryImpl tripImpl = (StaticBlockTripEntryImpl) trip;
       tripImpl.setPattern(this);
     }
   }

@@ -50,7 +50,7 @@ import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;
 import org.onebusaway.transit_data_federation.services.beans.RouteBeanService;
 import org.onebusaway.transit_data_federation.services.beans.StopScheduleBeanService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.blocks.FrequencyBlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.blocks.InstanceState;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
@@ -146,7 +146,7 @@ class StopScheduleBeanServiceImpl implements StopScheduleBeanService {
     StopEntry stopEntry = _graph.getStopEntryForId(stopId);
     Set<ServiceIdActivation> serviceIds = new HashSet<ServiceIdActivation>();
 
-    for (BlockStopTimeIndex index : _blockIndexService.getStopTimeIndicesForStop(stopEntry))
+    for (StaticBlockStopTimeIndex index : _blockIndexService.getStopTimeIndicesForStop(stopEntry))
       serviceIds.add(index.getServiceIds());
 
     for (FrequencyBlockStopTimeIndex index : _blockIndexService.getFrequencyStopTimeIndicesForStop(stopEntry))
@@ -369,7 +369,7 @@ class StopScheduleBeanServiceImpl implements StopScheduleBeanService {
     Map<AgencyAndId, Set<FrequencyEntry>> frequencyLabelsByRouteCollectionId = new FactoryMap<AgencyAndId, Set<FrequencyEntry>>(
         new HashSet<FrequencyEntry>());
 
-    for (BlockStopTimeIndex index : _blockIndexService.getStopTimeIndicesForStop(stopEntry)) {
+    for (StaticBlockStopTimeIndex index : _blockIndexService.getStopTimeIndicesForStop(stopEntry)) {
 
       ServiceIdActivation serviceIds = index.getServiceIds();
 

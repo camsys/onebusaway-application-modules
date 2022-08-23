@@ -27,9 +27,9 @@ import java.util.Map;
 import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.DistanceAlongShapeLibrary;
 import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.DistanceAlongShapeLibrary.DistanceAlongShapeException;
 import org.onebusaway.transit_data_federation.impl.shapes.PointAndIndex;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopTimeEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.ShapePointsFactory;
 import org.onebusaway.transit_data_federation.testing.UnitTestingSupport;
@@ -53,7 +53,7 @@ public class DistanceAlongShapeMain {
       DistanceAlongShapeException {
 
     ShapePoints shapePoints = readShapePoints(shapeFile);
-    List<StopTimeEntryImpl> stopTimes = readStopTimes(stopsFile);
+    List<StaticStopTimeEntryImpl> stopTimes = readStopTimes(stopsFile);
 
     DistanceAlongShapeLibrary library = new DistanceAlongShapeLibrary();
     PointAndIndex[] points = library.getDistancesAlongShape(shapePoints,
@@ -80,17 +80,17 @@ public class DistanceAlongShapeMain {
     return factory.create();
   }
 
-  private List<StopTimeEntryImpl> readStopTimes(String path) throws IOException {
+  private List<StaticStopTimeEntryImpl> readStopTimes(String path) throws IOException {
 
     BufferedReader reader = new BufferedReader(new FileReader(path));
     String line = null;
 
-    Map<String, StopEntryImpl> stops = new HashMap<String, StopEntryImpl>();
+    Map<String, StaticStopEntryImpl> stops = new HashMap<String, StaticStopEntryImpl>();
 
     int index = 0;
 
-    TripEntryImpl trip = UnitTestingSupport.trip("trip");
-    List<StopTimeEntryImpl> stopTimes = new ArrayList<StopTimeEntryImpl>();
+    StaticTripEntryImpl trip = UnitTestingSupport.trip("trip");
+    List<StaticStopTimeEntryImpl> stopTimes = new ArrayList<StaticStopTimeEntryImpl>();
 
     while ((line = reader.readLine()) != null) {
       String[] tokens = line.split(" ");
@@ -98,13 +98,13 @@ public class DistanceAlongShapeMain {
       double lat = Double.parseDouble(tokens[1]);
       double lon = Double.parseDouble(tokens[2]);
 
-      StopEntryImpl stop = stops.get(stopId);
+      StaticStopEntryImpl stop = stops.get(stopId);
       if (stop == null) {
         stop = UnitTestingSupport.stop(stopId, lat, lon);
         stops.put(stopId, stop);
       }
 
-      StopTimeEntryImpl stopTime = UnitTestingSupport.stopTime(index, stop,
+      StaticStopTimeEntryImpl stopTime = UnitTestingSupport.stopTime(index, stop,
           trip, index, index, Double.NaN);
       stopTimes.add(stopTime);
     }

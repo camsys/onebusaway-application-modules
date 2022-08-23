@@ -27,9 +27,9 @@ import org.onebusaway.collections.FactoryMap;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
 import org.onebusaway.transit_data_federation.bundle.tasks.ShapePointHelper;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockConfigurationEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockConfigurationEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
@@ -64,10 +64,10 @@ public class BlockConfigurationEntriesFactory {
     _shapePointHelper = shapePointHelper;
   }
 
-  public void processBlockConfigurations(BlockEntryImpl block,
-      List<TripEntryImpl> tripsInBlock) {
+  public void processBlockConfigurations(StaticBlockEntryImpl block,
+                                         List<StaticTripEntryImpl> tripsInBlock) {
 
-    Map<LocalizedServiceId, List<TripEntryImpl>> tripsByServiceId = getTripsByServiceId(
+    Map<LocalizedServiceId, List<StaticTripEntryImpl>> tripsByServiceId = getTripsByServiceId(
         block, tripsInBlock);
 
     List<ServiceIdActivation> combinations = _serviceIdOverlapCache.getOverlappingServiceIdCombinations(tripsByServiceId.keySet());
@@ -76,7 +76,7 @@ public class BlockConfigurationEntriesFactory {
 
     for (ServiceIdActivation serviceIds : combinations) {
 
-      BlockConfigurationEntryImpl.Builder builder = processTripsForServiceIdConfiguration(
+      StaticBlockConfigurationEntryImpl.Builder builder = processTripsForServiceIdConfiguration(
           block, tripsByServiceId, serviceIds);
 
       configurations.add(builder.create());
@@ -97,15 +97,15 @@ public class BlockConfigurationEntriesFactory {
    * Private Methods
    ****/
 
-  private Map<LocalizedServiceId, List<TripEntryImpl>> getTripsByServiceId(
-      BlockEntryImpl block, List<TripEntryImpl> tripsInBlock) {
+  private Map<LocalizedServiceId, List<StaticTripEntryImpl>> getTripsByServiceId(
+          StaticBlockEntryImpl block, List<StaticTripEntryImpl> tripsInBlock) {
 
-    Map<LocalizedServiceId, List<TripEntryImpl>> tripsByServiceId = new FactoryMap<LocalizedServiceId, List<TripEntryImpl>>(
-        new ArrayList<TripEntryImpl>());
+    Map<LocalizedServiceId, List<StaticTripEntryImpl>> tripsByServiceId = new FactoryMap<LocalizedServiceId, List<StaticTripEntryImpl>>(
+        new ArrayList<StaticTripEntryImpl>());
 
     TimeZone tz = null;
 
-    for (TripEntryImpl trip : tripsInBlock) {
+    for (StaticTripEntryImpl trip : tripsInBlock) {
 
       LocalizedServiceId serviceId = trip.getServiceId();
 
@@ -124,9 +124,9 @@ public class BlockConfigurationEntriesFactory {
     return tripsByServiceId;
   }
 
-  private BlockConfigurationEntryImpl.Builder processTripsForServiceIdConfiguration(
-      BlockEntryImpl block,
-      Map<LocalizedServiceId, List<TripEntryImpl>> tripsByServiceId,
+  private StaticBlockConfigurationEntryImpl.Builder processTripsForServiceIdConfiguration(
+      StaticBlockEntryImpl block,
+      Map<LocalizedServiceId, List<StaticTripEntryImpl>> tripsByServiceId,
       ServiceIdActivation serviceIds) {
 
     ArrayList<TripEntry> trips = new ArrayList<TripEntry>();
@@ -140,7 +140,7 @@ public class BlockConfigurationEntriesFactory {
 
     double[] tripGapDistances = computeGapDistancesBetweenTrips(trips);
 
-    BlockConfigurationEntryImpl.Builder builder = BlockConfigurationEntryImpl.builder();
+    StaticBlockConfigurationEntryImpl.Builder builder = StaticBlockConfigurationEntryImpl.builder();
     builder.setBlock(block);
     builder.setServiceIds(serviceIds);
     builder.setTrips(trips);

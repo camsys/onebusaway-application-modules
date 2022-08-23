@@ -31,7 +31,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdAc
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
-public class BlockConfigurationEntryImpl implements BlockConfigurationEntry,
+public class StaticBlockConfigurationEntryImpl implements BlockConfigurationEntry,
     Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -56,7 +56,7 @@ public class BlockConfigurationEntryImpl implements BlockConfigurationEntry,
    */
   private List<FrequencyEntry> frequencies;
 
-  private BlockConfigurationEntryImpl(Builder builder) {
+  private StaticBlockConfigurationEntryImpl(Builder builder) {
     this.block = builder.block;
     this.serviceIds = builder.serviceIds;
     this.trips = builder.computeBlockTrips(this);
@@ -192,7 +192,7 @@ public class BlockConfigurationEntryImpl implements BlockConfigurationEntry,
     }
 
     public BlockConfigurationEntry create() {
-      return new BlockConfigurationEntryImpl(this);
+      return new StaticBlockConfigurationEntryImpl(this);
     }
 
     private double computeTotalBlockDistance() {
@@ -229,14 +229,14 @@ public class BlockConfigurationEntryImpl implements BlockConfigurationEntry,
     }
 
     private List<BlockTripEntry> computeBlockTrips(
-        BlockConfigurationEntryImpl blockConfiguration) {
+        StaticBlockConfigurationEntryImpl blockConfiguration) {
 
       ArrayList<BlockTripEntry> blockTrips = new ArrayList<BlockTripEntry>();
       short accumulatedStopTimeIndex = 0;
       int accumulatedSlackTime = 0;
       double distanceAlongBlock = 0;
 
-      BlockTripEntryImpl prevTrip = null;
+      StaticBlockTripEntryImpl prevTrip = null;
       StopTimeEntry prevTripStopTime = null;
       double prevTripAvgVelocity = 0;
 
@@ -266,7 +266,7 @@ public class BlockConfigurationEntryImpl implements BlockConfigurationEntry,
           accumulatedSlackTime += slackTime;
         }
 
-        BlockTripEntryImpl blockTripEntry = new BlockTripEntryImpl();
+        StaticBlockTripEntryImpl blockTripEntry = new StaticBlockTripEntryImpl();
         blockTripEntry.setTrip(tripEntry);
         blockTripEntry.setBlockConfiguration(blockConfiguration);
         blockTripEntry.setSequence(i);
@@ -372,7 +372,7 @@ public class BlockConfigurationEntryImpl implements BlockConfigurationEntry,
 
       boolean hasNextStop = index + 1 < tripIndices.length;
 
-      return new BlockStopTimeEntryImpl(stopTime, index, blockTrip, hasNextStop);
+      return new StaticBlockStopTimeEntryImpl(stopTime, index, blockTrip, hasNextStop);
     }
   }
 

@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 import org.onebusaway.transit_data_federation.services.transit_graph.FrequencyEntry;
 
-public class FrequencyEntryImpl implements FrequencyEntry, Serializable {
+public class StaticFrequencyEntryImpl implements FrequencyEntry, Serializable {
 
   private static final long serialVersionUID = 2L;
 
@@ -28,7 +28,7 @@ public class FrequencyEntryImpl implements FrequencyEntry, Serializable {
   private final int headwaySecs;
   private final int exactTimes;
 
-  public FrequencyEntryImpl(int startTime, int endTime, int headwaySecs, int exactTimes) {
+  public StaticFrequencyEntryImpl(int startTime, int endTime, int headwaySecs, int exactTimes) {
     this.startTime = startTime;
     this.endTime = endTime;
     this.headwaySecs = headwaySecs;
@@ -79,7 +79,7 @@ public class FrequencyEntryImpl implements FrequencyEntry, Serializable {
       return false;
     if (getClass() != obj.getClass())
       return false;
-    FrequencyEntryImpl other = (FrequencyEntryImpl) obj;
+    StaticFrequencyEntryImpl other = (StaticFrequencyEntryImpl) obj;
     if (endTime != other.endTime)
       return false;
     if (headwaySecs != other.headwaySecs)

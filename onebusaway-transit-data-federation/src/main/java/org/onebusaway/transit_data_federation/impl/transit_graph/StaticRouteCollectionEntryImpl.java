@@ -22,7 +22,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
 
-public class RouteCollectionEntryImpl implements RouteCollectionEntry,
+public class StaticRouteCollectionEntryImpl implements RouteCollectionEntry,
     Serializable {
 
   private static final long serialVersionUID = 1L;

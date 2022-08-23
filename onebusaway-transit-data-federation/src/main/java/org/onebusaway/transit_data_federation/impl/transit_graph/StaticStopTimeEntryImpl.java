@@ -18,13 +18,11 @@
 package org.onebusaway.transit_data_federation.impl.transit_graph;
 
 import java.io.Serializable;
-import java.util.List;
 
 import org.onebusaway.realtime.api.OccupancyStatus;
-import org.onebusaway.transit_data_federation.model.bundle.HistoricalRidership;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 
-public class StopTimeEntryImpl implements StopTimeEntry, Serializable {
+public class StaticStopTimeEntryImpl implements StopTimeEntry, Serializable {
 
   private static final long serialVersionUID = 8L;
 
@@ -41,9 +39,9 @@ public class StopTimeEntryImpl implements StopTimeEntry, Serializable {
   private int _accumulatedSlackTime = 0;
   private int _totalStopsInTrip;
 
-  private StopEntryImpl _stop;
+  private StaticStopEntryImpl _stop;
 
-  private TripEntryImpl _trip;
+  private StaticTripEntryImpl _trip;
 
   public void setId(int id) {
     _stopTimeId = id;
@@ -59,7 +57,7 @@ public class StopTimeEntryImpl implements StopTimeEntry, Serializable {
 
   public void setHistoricalOccupancy(OccupancyStatus historicalOccupancy) {_historicalOccupancy = historicalOccupancy; }
   
-  public StopTimeEntryImpl setTime(int time) {
+  public StaticStopTimeEntryImpl setTime(int time) {
     _arrivalTime = time;
     _departureTime = time;
     return this;
@@ -81,12 +79,12 @@ public class StopTimeEntryImpl implements StopTimeEntry, Serializable {
     _pickupType = pickupType;
   }
 
-  public StopTimeEntryImpl setStop(StopEntryImpl stop) {
+  public StaticStopTimeEntryImpl setStop(StaticStopEntryImpl stop) {
     _stop = stop;
     return this;
   }
 
-  public void setTrip(TripEntryImpl trip) {
+  public void setTrip(StaticTripEntryImpl trip) {
     _trip = trip;
   }
 
@@ -153,12 +151,12 @@ public class StopTimeEntryImpl implements StopTimeEntry, Serializable {
   }
 
   @Override
-  public StopEntryImpl getStop() {
+  public StaticStopEntryImpl getStop() {
     return _stop;
   }
 
   @Override
-  public TripEntryImpl getTrip() {
+  public StaticTripEntryImpl getTrip() {
     return _trip;
   }
 

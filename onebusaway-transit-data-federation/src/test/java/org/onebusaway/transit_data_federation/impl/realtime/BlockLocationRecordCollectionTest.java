@@ -31,8 +31,8 @@ import org.junit.Test;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.impl.realtime.BlockLocationRecord.Builder;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 
@@ -41,8 +41,8 @@ public class BlockLocationRecordCollectionTest {
   @Test
   public void test01() {
 
-    BlockEntryImpl block = block("blockA");
-    TripEntryImpl trip = trip("tripA", "serviceId");
+    StaticBlockEntryImpl block = block("blockA");
+    StaticTripEntryImpl trip = trip("tripA", "serviceId");
     stopTime(0, null, trip, time(9, 00), 0);
     BlockConfigurationEntry blockConfig = linkBlockTrips(block, trip);
     BlockInstance blockInstance = new BlockInstance(blockConfig,

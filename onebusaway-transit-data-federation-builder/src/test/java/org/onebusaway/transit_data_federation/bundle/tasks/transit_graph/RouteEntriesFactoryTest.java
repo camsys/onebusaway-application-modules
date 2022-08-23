@@ -28,7 +28,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Route;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
 import org.onebusaway.transit_data_federation.bundle.tasks.UniqueServiceImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphImpl;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
 
@@ -60,9 +60,9 @@ public class RouteEntriesFactoryTest {
     factory.setUniqueService(new UniqueServiceImpl());
     factory.processRoutes(graph);
 
-    RouteEntryImpl routeEntryA = graph.getRouteForId(routeA.getId());
+    StaticRouteEntryImpl routeEntryA = graph.getRouteForId(routeA.getId());
 
-    RouteEntryImpl routeEntryB = graph.getRouteForId(routeB.getId());
+    StaticRouteEntryImpl routeEntryB = graph.getRouteForId(routeB.getId());
 
     List<RouteEntry> routes = graph.getAllRoutes();
     assertEquals(2, routes.size());

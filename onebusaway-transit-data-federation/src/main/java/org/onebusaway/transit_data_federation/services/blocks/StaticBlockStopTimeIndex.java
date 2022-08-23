@@ -38,11 +38,11 @@ import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdAc
  * 
  */
 @TransitTimeIndex
-public class BlockStopTimeIndex extends AbstractBlockStopTimeIndex implements
+public class StaticBlockStopTimeIndex extends AbstractBlockStopTimeIndex implements
     HasIndexedBlockStopTimes {
 
-  public static BlockStopTimeIndex create(BlockTripIndex blockTripIndex,
-      int blockSequence) {
+  public static StaticBlockStopTimeIndex create(StaticBlockTripIndex blockTripIndex,
+                                                int blockSequence) {
 
     List<BlockTripEntry> tripsList = blockTripIndex.getTrips();
     int n = tripsList.size();
@@ -59,11 +59,11 @@ public class BlockStopTimeIndex extends AbstractBlockStopTimeIndex implements
     ServiceInterval serviceInterval = computeServiceInterval(blockTripIndex,
         blockSequence);
 
-    return new BlockStopTimeIndex(blockConfigs, stopIndices, serviceInterval);
+    return new StaticBlockStopTimeIndex(blockConfigs, stopIndices, serviceInterval);
   }
 
-  public BlockStopTimeIndex(List<BlockConfigurationEntry> blockConfigs,
-      int[] stopIndices, ServiceInterval serviceInterval) {
+  public StaticBlockStopTimeIndex(List<BlockConfigurationEntry> blockConfigs,
+                                  int[] stopIndices, ServiceInterval serviceInterval) {
     super(blockConfigs, stopIndices, serviceInterval);
   }
 

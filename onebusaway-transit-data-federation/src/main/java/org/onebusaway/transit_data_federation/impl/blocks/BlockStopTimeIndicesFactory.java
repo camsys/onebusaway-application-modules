@@ -24,7 +24,7 @@ import org.onebusaway.gtfs.model.calendar.ServiceInterval;
 import org.onebusaway.transit_data_federation.util.LoggingIntervalUtil;
 import org.onebusaway.transit_data_federation.impl.transit_graph.FrequencyBlockStopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.blocks.FrequencyBlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
@@ -38,13 +38,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Construct {@link BlockStopTimeIndex} indices from all {@link BlockEntry} in
+ * Construct {@link StaticBlockStopTimeIndex} indices from all {@link BlockEntry} in
  * the transit graph. The indices created by this factory are grouped by
  * serviceIds, such that all {@link BlockStopTimeEntry} stop entries with the
  * same active service ids are grouped together.
  * 
  * @author bdferris
- * @see BlockStopTimeIndex
+ * @see StaticBlockStopTimeIndex
  * @see BlockIndexService
  */
 public class BlockStopTimeIndicesFactory {
@@ -69,7 +69,7 @@ public class BlockStopTimeIndicesFactory {
    * 
    ****/
 
-  public List<BlockStopTimeIndex> createIndices(Iterable<BlockEntry> blocks) {
+  public List<StaticBlockStopTimeIndex> createIndices(Iterable<BlockEntry> blocks) {
 
     Map<BlockStopTimeKey, List<BlockStopTimeEntry>> stopTimesByKey = groupBlockStopTimes(
         blocks, false);
@@ -149,10 +149,10 @@ public class BlockStopTimeIndicesFactory {
    * 
    ****/
 
-  private List<BlockStopTimeIndex> createIndicesFromGroups(
+  private List<StaticBlockStopTimeIndex> createIndicesFromGroups(
       Map<BlockStopTimeKey, List<BlockStopTimeEntry>> stopTimesByKey) {
 
-    List<BlockStopTimeIndex> allIndices = new ArrayList<BlockStopTimeIndex>();
+    List<StaticBlockStopTimeIndex> allIndices = new ArrayList<StaticBlockStopTimeIndex>();
     int logInterval = LoggingIntervalUtil.getAppropriateLoggingInterval(allIndices.size()) * 10;
 
     int count = 0;
@@ -169,7 +169,7 @@ public class BlockStopTimeIndicesFactory {
           _blockStopTimeStrictComparator);
 
       for (List<BlockStopTimeEntry> group : groupedStopTimes) {
-        BlockStopTimeIndex index = createBlockStopTimeIndexForGroup(group);
+        StaticBlockStopTimeIndex index = createBlockStopTimeIndexForGroup(group);
         allIndices.add(index);
       }
     }
@@ -177,7 +177,7 @@ public class BlockStopTimeIndicesFactory {
     return allIndices;
   }
 
-  private BlockStopTimeIndex createBlockStopTimeIndexForGroup(
+  private StaticBlockStopTimeIndex createBlockStopTimeIndexForGroup(
       List<BlockStopTimeEntry> group) {
 
     int n = group.size();
@@ -197,7 +197,7 @@ public class BlockStopTimeIndicesFactory {
           stopTime.getDepartureTime());
     }
 
-    return new BlockStopTimeIndex(blockConfigs, stopIndices, interval);
+    return new StaticBlockStopTimeIndex(blockConfigs, stopIndices, interval);
   }
 
   /****

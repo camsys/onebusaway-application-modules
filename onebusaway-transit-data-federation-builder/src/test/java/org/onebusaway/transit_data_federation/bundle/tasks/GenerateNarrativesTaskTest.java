@@ -40,11 +40,11 @@ import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
 import org.onebusaway.transit_data_federation.impl.narrative.NarrativeProviderImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteCollectionEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteCollectionEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopTimeEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.ShapePointsFactory;
 import org.onebusaway.transit_data_federation.model.modifications.Modification;
@@ -55,7 +55,7 @@ import org.onebusaway.transit_data_federation.model.narrative.StopNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.StopTimeNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
@@ -136,9 +136,9 @@ public class GenerateNarrativesTaskTest {
   @Test
   public void testGenerateRouteNarratives() {
 
-    RouteEntryImpl r1 = route("routeA1");
-    RouteEntryImpl r2 = route("routeA2");
-    RouteCollectionEntryImpl rc = routeCollection("routeA", r1, r2);
+    StaticRouteEntryImpl r1 = route("routeA1");
+    StaticRouteEntryImpl r2 = route("routeA2");
+    StaticRouteCollectionEntryImpl rc = routeCollection("routeA", r1, r2);
 
     TripEntry t1 = trip("t1");
     TripEntry t2 = trip("t2");
@@ -223,7 +223,7 @@ public class GenerateNarrativesTaskTest {
 
     Mockito.when(_gtfsDao.getAllStops()).thenReturn(Arrays.asList(stop));
 
-    List<BlockStopTimeIndex> indices = Collections.emptyList();
+    List<StaticBlockStopTimeIndex> indices = Collections.emptyList();
     Mockito.when(_blockIndexService.getStopTimeIndicesForStop(stopEntry)).thenReturn(
         indices);
 
@@ -251,7 +251,7 @@ public class GenerateNarrativesTaskTest {
     stop.setDirection("west");
     Mockito.when(_gtfsDao.getAllStops()).thenReturn(Arrays.asList(stop));
 
-    List<BlockStopTimeIndex> indices = Collections.emptyList();
+    List<StaticBlockStopTimeIndex> indices = Collections.emptyList();
     Mockito.when(_blockIndexService.getStopTimeIndicesForStop(stopEntry)).thenReturn(
         indices);
 
@@ -264,7 +264,7 @@ public class GenerateNarrativesTaskTest {
   @Test
   public void testGenerateStopNarrativesWithCalculatedDirection() {
 
-    StopEntryImpl stopEntry = stop("stopA", 47.663146, -122.300928);
+    StaticStopEntryImpl stopEntry = stop("stopA", 47.663146, -122.300928);
 
     Mockito.when(_transitGraphDao.getAllStops()).thenReturn(
         Arrays.asList((StopEntry) stopEntry));
@@ -281,19 +281,19 @@ public class GenerateNarrativesTaskTest {
 
     _provider.setShapePointsForId(shapeId, shapePoints);
 
-    TripEntryImpl trip = trip("trip");
+    StaticTripEntryImpl trip = trip("trip");
     trip.setShapeId(shapeId);
 
-    StopTimeEntryImpl stopTime = stopTime(0, stopEntry, trip, 0, 0.0);
+    StaticStopTimeEntryImpl stopTime = stopTime(0, stopEntry, trip, 0, 0.0);
     stopTime.setShapePointIndex(0);
 
     BlockStopTimeEntry blockStopTime = Mockito.mock(BlockStopTimeEntry.class);
     Mockito.when(blockStopTime.getStopTime()).thenReturn(stopTime);
 
-    BlockStopTimeIndex index = Mockito.mock(BlockStopTimeIndex.class);
+    StaticBlockStopTimeIndex index = Mockito.mock(StaticBlockStopTimeIndex.class);
     Mockito.when(index.getStopTimes()).thenReturn(Arrays.asList(blockStopTime));
 
-    List<BlockStopTimeIndex> indices = Arrays.asList(index);
+    List<StaticBlockStopTimeIndex> indices = Arrays.asList(index);
     Mockito.when(_blockIndexService.getStopTimeIndicesForStop(stopEntry)).thenReturn(
         indices);
 
@@ -306,7 +306,7 @@ public class GenerateNarrativesTaskTest {
   @Test
   public void testGenerateStopNarrativesWithConflictingDirections() {
 
-    StopEntryImpl stopEntry = stop("stopA", 47.663146, -122.300928);
+    StaticStopEntryImpl stopEntry = stop("stopA", 47.663146, -122.300928);
 
     Mockito.when(_transitGraphDao.getAllStops()).thenReturn(
         Arrays.asList((StopEntry) stopEntry));
@@ -332,16 +332,16 @@ public class GenerateNarrativesTaskTest {
     ShapePoints shapePointsB = factoryB.create();
     _provider.setShapePointsForId(shapeIdB, shapePointsB);
 
-    TripEntryImpl tripA = trip("tripA");
+    StaticTripEntryImpl tripA = trip("tripA");
     tripA.setShapeId(shapeIdA);
 
-    TripEntryImpl tripB = trip("tripB");
+    StaticTripEntryImpl tripB = trip("tripB");
     tripB.setShapeId(shapeIdB);
 
-    StopTimeEntryImpl stopTimeA = stopTime(0, stopEntry, tripA, 0, 0.0);
+    StaticStopTimeEntryImpl stopTimeA = stopTime(0, stopEntry, tripA, 0, 0.0);
     stopTimeA.setShapePointIndex(0);
 
-    StopTimeEntryImpl stopTimeB = stopTime(0, stopEntry, tripB, 0, 0.0);
+    StaticStopTimeEntryImpl stopTimeB = stopTime(0, stopEntry, tripB, 0, 0.0);
     stopTimeB.setShapePointIndex(0);
 
     BlockStopTimeEntry blockStopTimeA = Mockito.mock(BlockStopTimeEntry.class);
@@ -350,11 +350,11 @@ public class GenerateNarrativesTaskTest {
     BlockStopTimeEntry blockStopTimeB = Mockito.mock(BlockStopTimeEntry.class);
     Mockito.when(blockStopTimeB.getStopTime()).thenReturn(stopTimeB);
 
-    BlockStopTimeIndex index = Mockito.mock(BlockStopTimeIndex.class);
+    StaticBlockStopTimeIndex index = Mockito.mock(StaticBlockStopTimeIndex.class);
     Mockito.when(index.getStopTimes()).thenReturn(
         Arrays.asList(blockStopTimeA, blockStopTimeB));
 
-    List<BlockStopTimeIndex> indices = Arrays.asList(index);
+    List<StaticBlockStopTimeIndex> indices = Arrays.asList(index);
     Mockito.when(_blockIndexService.getStopTimeIndicesForStop(stopEntry)).thenReturn(
         indices);
 
@@ -388,9 +388,9 @@ public class GenerateNarrativesTaskTest {
     assertEquals(trip.getTripHeadsign(), narrative.getTripHeadsign());
     assertEquals(trip.getTripShortName(), narrative.getTripShortName());
 
-    StopEntryImpl stopEntry = stop("stop", 47.0, -122.0);
-    TripEntryImpl tripEntry = trip("trip");
-    StopTimeEntryImpl stopTimeEntry = stopTime(0, stopEntry, tripEntry, 0, 0.0);
+    StaticStopEntryImpl stopEntry = stop("stop", 47.0, -122.0);
+    StaticTripEntryImpl tripEntry = trip("trip");
+    StaticStopTimeEntryImpl stopTimeEntry = stopTime(0, stopEntry, tripEntry, 0, 0.0);
 
     StopTimeNarrative stopTimeNarrative = _provider.getNarrativeForStopTimeEntry(stopTimeEntry);
     assertEquals(stopTime.getRouteShortName(),

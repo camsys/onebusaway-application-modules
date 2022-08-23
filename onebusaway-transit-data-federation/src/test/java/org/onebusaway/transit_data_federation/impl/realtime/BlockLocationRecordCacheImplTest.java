@@ -29,8 +29,8 @@ import java.util.List;
 import org.junit.Test;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.realtime.BlockLocationRecord.Builder;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 
@@ -40,8 +40,8 @@ public class BlockLocationRecordCacheImplTest {
   public void testSimpleOperations() {
     long serviceDate = System.currentTimeMillis();
 
-    BlockEntryImpl block = block("blockA");
-    TripEntryImpl trip = trip("tripA", "serviceId");
+    StaticBlockEntryImpl block = block("blockA");
+    StaticTripEntryImpl trip = trip("tripA", "serviceId");
     stopTime(0, null, trip, time(9, 00), 0);
     BlockConfigurationEntry blockConfig = linkBlockTrips(block, trip);
     BlockInstance blockInstance = new BlockInstance(blockConfig, serviceDate);
@@ -122,14 +122,14 @@ public class BlockLocationRecordCacheImplTest {
 
     long serviceDate = System.currentTimeMillis();
 
-    BlockEntryImpl blockA = block("blockA");
-    TripEntryImpl tripA = trip("tripA", "serviceId");
+    StaticBlockEntryImpl blockA = block("blockA");
+    StaticTripEntryImpl tripA = trip("tripA", "serviceId");
     stopTime(0, null, tripA, time(9, 00), 0);
     BlockConfigurationEntry blockConfigA = linkBlockTrips(blockA, tripA);
     BlockInstance instanceA = new BlockInstance(blockConfigA, serviceDate);
 
-    BlockEntryImpl blockB = block("blockB");
-    TripEntryImpl tripB = trip("tripB", "serviceId");
+    StaticBlockEntryImpl blockB = block("blockB");
+    StaticTripEntryImpl tripB = trip("tripB", "serviceId");
     stopTime(0, null, tripB, time(9, 00), 0);
     BlockConfigurationEntry blockConfigB = linkBlockTrips(blockB, tripB);
     BlockInstance instanceB = new BlockInstance(blockConfigB, serviceDate);
@@ -188,8 +188,8 @@ public class BlockLocationRecordCacheImplTest {
 
     for (int i = 0; i < 20; i++) {
 
-      BlockEntryImpl block = block(Integer.toString(i));
-      TripEntryImpl trip = trip(Integer.toString(i), "serviceId");
+      StaticBlockEntryImpl block = block(Integer.toString(i));
+      StaticTripEntryImpl trip = trip(Integer.toString(i), "serviceId");
       stopTime(0, null, trip, time(9, 00), 0);
       BlockConfigurationEntry blockConfig = linkBlockTrips(block, trip);
       BlockInstance blockInstance = new BlockInstance(blockConfig, serviceDate);

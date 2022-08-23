@@ -26,13 +26,13 @@ import java.util.List;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data.model.EAccessibility;
-import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopSequenceIndex;
 import org.onebusaway.transit_data_federation.services.blocks.FrequencyBlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.blocks.FrequencyStopTripIndex;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 
-public class StopEntryImpl implements StopEntry, Serializable {
+public class StaticStopEntryImpl implements StopEntry, Serializable {
 
   private static final long serialVersionUID = 2L;
 
@@ -46,7 +46,7 @@ public class StopEntryImpl implements StopEntry, Serializable {
 
   private transient int _index;
 
-  private transient List<BlockStopTimeIndex> _stopTimeIndices = null;
+  private transient List<StaticBlockStopTimeIndex> _stopTimeIndices = null;
 
   private transient List<FrequencyBlockStopTimeIndex> _frequencyStopTimeIndices = null;
 
@@ -54,7 +54,7 @@ public class StopEntryImpl implements StopEntry, Serializable {
 
   private transient List<FrequencyStopTripIndex> _frequencyStopTripIndices = null;
 
-  public StopEntryImpl(AgencyAndId id, double lat, double lon) {
+  public StaticStopEntryImpl(AgencyAndId id, double lat, double lon) {
     if (id == null)
       throw new IllegalArgumentException("id must not be null");
     _id = id;
@@ -70,13 +70,13 @@ public class StopEntryImpl implements StopEntry, Serializable {
     _index = index;
   }
 
-  public void addStopTimeIndex(BlockStopTimeIndex stopTimeIndex) {
+  public void addStopTimeIndex(StaticBlockStopTimeIndex stopTimeIndex) {
     if (_stopTimeIndices == null)
-      _stopTimeIndices = new ArrayList<BlockStopTimeIndex>();
+      _stopTimeIndices = new ArrayList<StaticBlockStopTimeIndex>();
     _stopTimeIndices.add(stopTimeIndex);
   }
 
-  public List<BlockStopTimeIndex> getStopTimeIndices() {
+  public List<StaticBlockStopTimeIndex> getStopTimeIndices() {
     if (_stopTimeIndices == null)
       return Collections.emptyList();
     return _stopTimeIndices;

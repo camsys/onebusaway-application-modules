@@ -36,9 +36,9 @@ import org.onebusaway.transit_data_federation.impl.blocks.BlockStatusServiceImpl
 import org.onebusaway.transit_data_federation.impl.blocks.ScheduledBlockLocationServiceImpl;
 import org.onebusaway.transit_data_federation.impl.realtime.BlockLocationServiceImpl;
 import org.onebusaway.transit_data_federation.impl.realtime.VehicleLocationRecordCacheImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.model.StopTimeInstance;
 import org.onebusaway.transit_data_federation.model.TargetTime;
 import org.onebusaway.transit_data_federation.services.StopTimeService;
@@ -86,19 +86,19 @@ public class ArrivalAndDepartureServiceImplTest {
   private long mServiceDate = dateAsLong("2015-07-23 00:00");
 
   // Stops
-  private StopEntryImpl mStopA = stop("stopA", 47.0, -122.0);
+  private StaticStopEntryImpl mStopA = stop("stopA", 47.0, -122.0);
 
-  private StopEntryImpl mStopB = stop("stopB", 47.0, -128.0);
+  private StaticStopEntryImpl mStopB = stop("stopB", 47.0, -128.0);
   
-  private StopEntryImpl mStopC = stop("stopC", 47.0, -130.0);
+  private StaticStopEntryImpl mStopC = stop("stopC", 47.0, -130.0);
   
-  private StopEntryImpl mStopD = stop("stopD", 47.0, -134.0);
+  private StaticStopEntryImpl mStopD = stop("stopD", 47.0, -134.0);
   
-  private TripEntryImpl mTrip1 = trip("tripA", "sA", 3000);
+  private StaticTripEntryImpl mTrip1 = trip("tripA", "sA", 3000);
 
-  private TripEntryImpl mTrip2 = trip("tripB", "sB", 3000);
+  private StaticTripEntryImpl mTrip2 = trip("tripB", "sB", 3000);
   
-  private TripEntryImpl mTrip3 = trip("tripC", "sC", 3000);
+  private StaticTripEntryImpl mTrip3 = trip("tripC", "sC", 3000);
 
   @Before
   public void setup() {
@@ -1727,7 +1727,7 @@ public class ArrivalAndDepartureServiceImplTest {
     TargetTime target = new TargetTime(mCurrentTime, mCurrentTime);
 
     // Setup block
-    BlockEntryImpl block = block("blockA");
+    StaticBlockEntryImpl block = block("blockA");
 
     stopTime(0, mStopA, mTrip1, time(13, 30), time(13, 35), 1000,  40.0);
     stopTime(1, mStopB, mTrip1, time(13, 45), time(13, 50), 2000,  20.0);
@@ -1822,7 +1822,7 @@ public class ArrivalAndDepartureServiceImplTest {
     TargetTime target = new TargetTime(mCurrentTime, mCurrentTime);
 
     // Setup block
-    BlockEntryImpl block = block("blockA");
+    StaticBlockEntryImpl block = block("blockA");
 
     stopTime(0, mStopA, mTrip1, time(13, 30), time(13, 35), 1000);
     stopTime(1, mStopB, mTrip1, time(13, 45), time(13, 50), 2000);
@@ -1925,7 +1925,7 @@ public class ArrivalAndDepartureServiceImplTest {
     TargetTime target = new TargetTime(mCurrentTime, mCurrentTime);
 
     // Setup block
-    BlockEntryImpl block = block("blockA");
+    StaticBlockEntryImpl block = block("blockA");
 
     stopTime(0, mStopA, mTrip1, time(13, 30), time(13, 35), 1000);
     stopTime(1, mStopB, mTrip1, time(13, 45), time(13, 50), 2000);
@@ -2041,11 +2041,11 @@ public class ArrivalAndDepartureServiceImplTest {
    *         against the expected values
    */
   private List<ArrivalAndDepartureInstance> getArrivalsAndDeparturesForLoopRouteInTimeRangeByTimepointPredictionRecord(
-      List<TimepointPredictionRecord> timepointPredictions, StopEntryImpl stop) {
+      List<TimepointPredictionRecord> timepointPredictions, StaticStopEntryImpl stop) {
     TargetTime target = new TargetTime(mCurrentTime, mCurrentTime);
 
     // Setup block
-    BlockEntryImpl block = block("blockA");
+    StaticBlockEntryImpl block = block("blockA");
 
     stopTime(0, mStopA, mTrip1, time(13, 30), time(13, 35), 1000);
     stopTime(1, mStopB, mTrip1, time(13, 45), time(13, 50), 2000);
@@ -2157,11 +2157,11 @@ public class ArrivalAndDepartureServiceImplTest {
    *         against the expected values
    */
   private List<ArrivalAndDepartureInstance> getArrivalsAndDeparturesForLoopRouteInTimeRangeByTimepointPredictionRecordWithMultipleTrips(
-      List<TimepointPredictionRecord> timepointPredictions, StopEntryImpl stop) {
+      List<TimepointPredictionRecord> timepointPredictions, StaticStopEntryImpl stop) {
     TargetTime target = new TargetTime(mCurrentTime, mCurrentTime);
 
     // Setup block
-    BlockEntryImpl block = block("blockA");
+    StaticBlockEntryImpl block = block("blockA");
 
     stopTime(0, mStopA, mTrip1, time(13, 30), time(13, 35), 1000);
     stopTime(1, mStopB, mTrip1, time(13, 45), time(13, 50), 2000);
@@ -2340,8 +2340,8 @@ public class ArrivalAndDepartureServiceImplTest {
     return 0;
   }
 
-  private long getScheduledArrivalTimeByStopId(TripEntryImpl trip,
-      AgencyAndId id) {
+  private long getScheduledArrivalTimeByStopId(StaticTripEntryImpl trip,
+                                               AgencyAndId id) {
     for (StopTimeEntry ste : trip.getStopTimes()) {
       if (ste.getStop().getId().equals(id)) {
         return ste.getArrivalTime() + mServiceDate / 1000;
@@ -2350,8 +2350,8 @@ public class ArrivalAndDepartureServiceImplTest {
     return 0;
   }
   
-  private long getScheduledArrivalTimeByStopId(TripEntryImpl trip,
-      AgencyAndId id, int sequence) {
+  private long getScheduledArrivalTimeByStopId(StaticTripEntryImpl trip,
+                                               AgencyAndId id, int sequence) {
     for (StopTimeEntry ste : trip.getStopTimes()) {
       if (ste.getStop().getId().equals(id) && sequence == ste.getSequence()) {
         return ste.getArrivalTime() + mServiceDate / 1000;
@@ -2360,8 +2360,8 @@ public class ArrivalAndDepartureServiceImplTest {
     return 0;
   }
 
-  private long getScheduledDepartureTimeByStopId(TripEntryImpl trip,
-      AgencyAndId id) {
+  private long getScheduledDepartureTimeByStopId(StaticTripEntryImpl trip,
+                                                 AgencyAndId id) {
     for (StopTimeEntry ste : trip.getStopTimes()) {
       if (ste.getStop().getId().equals(id)) {
         return ste.getDepartureTime() + mServiceDate / 1000;

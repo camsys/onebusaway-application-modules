@@ -25,10 +25,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteCollectionEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteCollectionEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.alerts.service.ServiceAlerts.Id;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -51,10 +51,10 @@ public class GtfsRealtimeEntitySourceTest {
   @Test
   public void testGetRouteId() {
 
-    RouteCollectionEntryImpl routeCollection = new RouteCollectionEntryImpl();
+    StaticRouteCollectionEntryImpl routeCollection = new StaticRouteCollectionEntryImpl();
     routeCollection.setId(new AgencyAndId("2", "R10C"));
 
-    RouteEntryImpl route = new RouteEntryImpl();
+    StaticRouteEntryImpl route = new StaticRouteEntryImpl();
     route.setId(new AgencyAndId("2", "R10"));
     route.setParent(routeCollection);
 
@@ -71,7 +71,7 @@ public class GtfsRealtimeEntitySourceTest {
   @Test
   public void testGetTripId() {
 
-    TripEntryImpl trip = new TripEntryImpl();
+    StaticTripEntryImpl trip = new StaticTripEntryImpl();
     trip.setId(new AgencyAndId("2", "T10"));
     Mockito.when(_dao.getTripEntryForId(trip.getId())).thenReturn(trip);
 
@@ -87,7 +87,7 @@ public class GtfsRealtimeEntitySourceTest {
   @Test
   public void testGetTrip() {
 
-    TripEntryImpl trip = new TripEntryImpl();
+    StaticTripEntryImpl trip = new StaticTripEntryImpl();
     trip.setId(new AgencyAndId("2", "T10"));
     Mockito.when(_dao.getTripEntryForId(trip.getId())).thenReturn(trip);
 
@@ -101,7 +101,7 @@ public class GtfsRealtimeEntitySourceTest {
   @Test
   public void testGetStopId() {
 
-    StopEntryImpl stop = new StopEntryImpl(new AgencyAndId("2", "S10"), 0, 0);
+    StaticStopEntryImpl stop = new StaticStopEntryImpl(new AgencyAndId("2", "S10"), 0, 0);
     Mockito.when(_dao.getStopEntryForId(stop.getId())).thenReturn(stop);
 
     Id stopId = _source.getStopId("S10");

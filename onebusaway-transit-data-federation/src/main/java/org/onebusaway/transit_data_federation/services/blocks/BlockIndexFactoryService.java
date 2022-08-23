@@ -36,7 +36,7 @@ public interface BlockIndexFactoryService {
    * 
    ****/
 
-  public List<BlockTripIndex> createTripIndices(Iterable<BlockEntry> blocks);
+  public List<StaticBlockTripIndex> createTripIndices(Iterable<BlockEntry> blocks);
 
   public List<BlockLayoverIndex> createLayoverIndices(
       Iterable<BlockEntry> blocks);
@@ -51,7 +51,7 @@ public interface BlockIndexFactoryService {
    * 
    ****/
 
-  public BlockTripIndex createTripIndexForGroupOfBlockTrips(
+  public StaticBlockTripIndex createTripIndexForGroupOfBlockTrips(
       List<BlockTripEntry> blocks);
 
   public BlockLayoverIndex createLayoverIndexForGroupOfBlockTrips(

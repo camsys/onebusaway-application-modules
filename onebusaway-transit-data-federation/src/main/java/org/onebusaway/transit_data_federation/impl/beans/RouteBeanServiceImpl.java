@@ -47,7 +47,7 @@ import org.onebusaway.transit_data_federation.services.beans.ShapeBeanService;
 import org.onebusaway.transit_data_federation.services.beans.StopBeanService;
 import org.onebusaway.transit_data_federation.services.blocks.AbstractBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.FrequencyBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
@@ -236,7 +236,7 @@ class RouteBeanServiceImpl implements RouteBeanService {
     directionGrouping.setOrdered(true);
     result.addGrouping(directionGrouping);
 
-    List<BlockTripIndex> blockIndices = _blockIndexService.getBlockTripIndicesForRouteCollectionId(routeCollectionId);
+    List<StaticBlockTripIndex> blockIndices = _blockIndexService.getBlockTripIndicesForRouteCollectionId(routeCollectionId);
     List<FrequencyBlockTripIndex> frequencyBlockIndices = _blockIndexService.getFrequencyBlockTripIndicesForRouteCollectionId(routeCollectionId);
 
     List<BlockTripEntry> blockTripsUnfiltered = new ArrayList<BlockTripEntry>();

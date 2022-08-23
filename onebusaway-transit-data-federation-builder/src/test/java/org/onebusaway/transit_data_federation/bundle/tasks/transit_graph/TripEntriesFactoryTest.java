@@ -38,9 +38,9 @@ import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
 import org.onebusaway.transit_data_federation.bundle.tasks.ShapePointHelper;
 import org.onebusaway.transit_data_federation.bundle.tasks.UniqueServiceImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.ShapePointsFactory;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
@@ -103,7 +103,7 @@ public class TripEntriesFactoryTest {
 
     graph.putStopEntry(stop("stopB", 47.66852277218285, -122.3853882639923));
 
-    RouteEntryImpl routeEntry = route("routeA");
+    StaticRouteEntryImpl routeEntry = route("routeA");
     graph.putRouteEntry(routeEntry);
 
     graph.initialize();
@@ -130,7 +130,7 @@ public class TripEntriesFactoryTest {
 
     factory.processTrips(graph);
 
-    TripEntryImpl entry = graph.getTripEntryForId(trip.getId());
+    StaticTripEntryImpl entry = graph.getTripEntryForId(trip.getId());
     assertEquals(trip.getId(), entry.getId());
     assertEquals(route.getId(), entry.getRoute().getId());
     assertEquals(lsid("serviceId"), entry.getServiceId());

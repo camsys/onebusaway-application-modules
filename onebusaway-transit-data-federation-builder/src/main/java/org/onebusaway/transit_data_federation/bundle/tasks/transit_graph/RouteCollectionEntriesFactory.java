@@ -27,8 +27,8 @@ import org.onebusaway.gtfs.model.Route;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
 import org.onebusaway.transit_data_federation.bundle.services.UniqueService;
 import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteCollectionEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteCollectionEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphImpl;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
@@ -103,8 +103,8 @@ public class RouteCollectionEntriesFactory {
   }
 
   private void createOneToOneRouteCollectionMapping(TransitGraphImpl graph) {
-    for (RouteEntryImpl routeEntry : graph.getRoutes()) {
-      RouteCollectionEntryImpl routeCollectionEntry = new RouteCollectionEntryImpl();
+    for (StaticRouteEntryImpl routeEntry : graph.getRoutes()) {
+      StaticRouteCollectionEntryImpl routeCollectionEntry = new StaticRouteCollectionEntryImpl();
       routeCollectionEntry.setId(routeEntry.getId());
       ArrayList<RouteEntry> routes = new ArrayList<RouteEntry>();
       routes.add(routeEntry);
@@ -117,22 +117,22 @@ public class RouteCollectionEntriesFactory {
 
   private void createRouteShortNameRouteCollectionMapping(TransitGraphImpl graph) {
 
-    Map<AgencyAndId, List<RouteEntryImpl>> routesByKey = new HashMap<AgencyAndId, List<RouteEntryImpl>>();
+    Map<AgencyAndId, List<StaticRouteEntryImpl>> routesByKey = new HashMap<AgencyAndId, List<StaticRouteEntryImpl>>();
 
-    for (RouteEntryImpl routeEntry : graph.getRoutes()) {
+    for (StaticRouteEntryImpl routeEntry : graph.getRoutes()) {
       Route route = _gtfsDao.getRouteForId(routeEntry.getId());
       AgencyAndId key = getRouteCollectionIdForRoute(route);
-      List<RouteEntryImpl> forKey = routesByKey.get(key);
+      List<StaticRouteEntryImpl> forKey = routesByKey.get(key);
       if (forKey == null) {
-        forKey = new ArrayList<RouteEntryImpl>();
+        forKey = new ArrayList<StaticRouteEntryImpl>();
         routesByKey.put(key, forKey);
       }
       forKey.add(routeEntry);
     }
 
-    for (Map.Entry<AgencyAndId, List<RouteEntryImpl>> entry : routesByKey.entrySet()) {
+    for (Map.Entry<AgencyAndId, List<StaticRouteEntryImpl>> entry : routesByKey.entrySet()) {
       AgencyAndId key = entry.getKey();
-      List<RouteEntryImpl> routesForKey = entry.getValue();
+      List<StaticRouteEntryImpl> routesForKey = entry.getValue();
 
       ArrayList<RouteEntry> children = new ArrayList<RouteEntry>();
       children.addAll(routesForKey);
@@ -140,12 +140,12 @@ public class RouteCollectionEntriesFactory {
 
       key = _uniqueService.unique(key);
 
-      RouteCollectionEntryImpl routeCollectionEntry = new RouteCollectionEntryImpl();
+      StaticRouteCollectionEntryImpl routeCollectionEntry = new StaticRouteCollectionEntryImpl();
       routeCollectionEntry.setId(key);
       routeCollectionEntry.setChildren(children);
       graph.putRouteCollectionEntry(routeCollectionEntry);
 
-      for (RouteEntryImpl route : routesForKey)
+      for (StaticRouteEntryImpl route : routesForKey)
         route.setParent(routeCollectionEntry);
     }
   }

@@ -27,16 +27,16 @@ import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
  */
 public interface BlockIndexService {
 
-  public List<BlockTripIndex> getBlockTripIndices();
+  public List<StaticBlockTripIndex> getBlockTripIndices();
 
-  public List<BlockTripIndex> getBlockTripIndicesForAgencyId(String agencyId);
+  public List<StaticBlockTripIndex> getBlockTripIndicesForAgencyId(String agencyId);
 
-  public List<BlockTripIndex> getBlockTripIndicesForRouteCollectionId(
+  public List<StaticBlockTripIndex> getBlockTripIndicesForRouteCollectionId(
       AgencyAndId routeCollectionId);
 
-  public List<BlockTripIndex> getBlockTripIndicesForBlock(AgencyAndId blockId);
+  public List<StaticBlockTripIndex> getBlockTripIndicesForBlock(AgencyAndId blockId);
 
-  public List<BlockStopTimeIndex> getStopTimeIndicesForStop(StopEntry stopEntry);
+  public List<StaticBlockStopTimeIndex> getStopTimeIndicesForStop(StopEntry stopEntry);
 
   public List<BlockStopSequenceIndex> getStopSequenceIndicesForStop(
       StopEntry stopEntry);

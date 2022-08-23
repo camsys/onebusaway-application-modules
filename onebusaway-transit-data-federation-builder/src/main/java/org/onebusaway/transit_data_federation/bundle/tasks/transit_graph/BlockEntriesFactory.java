@@ -26,9 +26,9 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Route;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.util.LoggingIntervalUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,18 +56,18 @@ public class BlockEntriesFactory {
   }
 
   public void processBlocks(TransitGraphImpl graph) {
-    Map<AgencyAndId, List<TripEntryImpl>> tripsByBlockId = getTripsByBlockId(graph);
+    Map<AgencyAndId, List<StaticTripEntryImpl>> tripsByBlockId = getTripsByBlockId(graph);
     processBlockTrips(graph, tripsByBlockId);
   }
 
-  private Map<AgencyAndId, List<TripEntryImpl>> getTripsByBlockId(
+  private Map<AgencyAndId, List<StaticTripEntryImpl>> getTripsByBlockId(
       TransitGraphImpl graph) {
 
     Collection<Route> routes = _gtfsDao.getAllRoutes();
     int routeIndex = 0;
 
-    Map<AgencyAndId, List<TripEntryImpl>> tripsByBlockId = new FactoryMap<AgencyAndId, List<TripEntryImpl>>(
-        new ArrayList<TripEntryImpl>());
+    Map<AgencyAndId, List<StaticTripEntryImpl>> tripsByBlockId = new FactoryMap<AgencyAndId, List<StaticTripEntryImpl>>(
+        new ArrayList<StaticTripEntryImpl>());
 
     for (Route route : routes) {
 
@@ -77,7 +77,7 @@ public class BlockEntriesFactory {
 
       for (Trip trip : trips) {
 
-        TripEntryImpl tripEntry = graph.getTripEntryForId(trip.getId());
+        StaticTripEntryImpl tripEntry = graph.getTripEntryForId(trip.getId());
 
         // If null, probably indicates no stop times, or some other reason to
         // prune the trip
@@ -113,26 +113,26 @@ public class BlockEntriesFactory {
    * @return
    */
   private void processBlockTrips(TransitGraphImpl graph,
-      Map<AgencyAndId, List<TripEntryImpl>> tripsByBlockId) {
+      Map<AgencyAndId, List<StaticTripEntryImpl>> tripsByBlockId) {
 
     int blockIndex = 0; 
 	int logInterval = LoggingIntervalUtil.getAppropriateLoggingInterval(tripsByBlockId.keySet().size());
 
-    for (Map.Entry<AgencyAndId, List<TripEntryImpl>> entry : tripsByBlockId.entrySet()) {
+    for (Map.Entry<AgencyAndId, List<StaticTripEntryImpl>> entry : tripsByBlockId.entrySet()) {
 
       if (blockIndex % logInterval == 0)
         _log.info("block: " + blockIndex + "/" + tripsByBlockId.size());
       blockIndex++;
 
       AgencyAndId blockId = entry.getKey();
-      List<TripEntryImpl> tripsInBlock = entry.getValue();
+      List<StaticTripEntryImpl> tripsInBlock = entry.getValue();
 
       if (tripsInBlock.isEmpty()) {
         _log.warn("no trips for block=" + blockId);
         continue;
       }
 
-      BlockEntryImpl blockEntry = new BlockEntryImpl();
+      StaticBlockEntryImpl blockEntry = new StaticBlockEntryImpl();
       blockEntry.setId(blockId);
 
       _blockConfigurationEntriesFactory.processBlockConfigurations(blockEntry,
@@ -141,7 +141,7 @@ public class BlockEntriesFactory {
       graph.putBlockEntry(blockEntry);
 
       // Wire up the trip to block link
-      for (TripEntryImpl trip : tripsInBlock)
+      for (StaticTripEntryImpl trip : tripsInBlock)
         trip.setBlock(blockEntry);
     }
   }

@@ -25,7 +25,7 @@ import org.onebusaway.gtfs.model.Stop;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
 import org.onebusaway.transit_data.model.EAccessibility;
 import org.onebusaway.transit_data_federation.impl.transit_graph.AgencyEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphImpl;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.util.LoggingIntervalUtil;
@@ -67,7 +67,7 @@ public class StopEntriesFactory {
         _log.info("stops: " + stopIndex + "/" + stops.size());
       stopIndex++;
 
-      StopEntryImpl stopEntry = new StopEntryImpl(stop.getId(), stop.getLat(),
+      StaticStopEntryImpl stopEntry = new StaticStopEntryImpl(stop.getId(), stop.getLat(),
           stop.getLon());
       stopEntry.setWheelchairBoarding(getWheelchairBoardingAccessibilityForStop(stop));
       graph.putStopEntry(stopEntry);

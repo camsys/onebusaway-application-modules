@@ -29,9 +29,9 @@ import java.util.Map;
 import org.junit.Test;
 import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.DistanceAlongShapeLibrary.DistanceAlongShapeException;
 import org.onebusaway.transit_data_federation.impl.shapes.PointAndIndex;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopTimeEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.ShapePointsFactory;
 import org.onebusaway.transit_data_federation.testing.UnitTestingSupport;
@@ -43,7 +43,7 @@ public class DistanceAlongShapeLibraryTest {
   public void test01() throws IOException, DistanceAlongShapeException {
 
     ShapePoints shapePoints = readShapePoints("shapes-01.txt");
-    List<StopTimeEntryImpl> stopTimes = readStopTimes("stops-01.txt");
+    List<StaticStopTimeEntryImpl> stopTimes = readStopTimes("stops-01.txt");
 
     DistanceAlongShapeLibrary library = new DistanceAlongShapeLibrary();
     PointAndIndex[] points = library.getDistancesAlongShape(shapePoints,
@@ -71,7 +71,7 @@ public class DistanceAlongShapeLibraryTest {
   @Test
   public void test02() throws IOException, DistanceAlongShapeException {
     ShapePoints shapePoints = readShapePoints("shapes-02.txt");
-    List<StopTimeEntryImpl> stopTimes = readStopTimes("stops-02.txt");
+    List<StaticStopTimeEntryImpl> stopTimes = readStopTimes("stops-02.txt");
 
     DistanceAlongShapeLibrary library = new DistanceAlongShapeLibrary();
     PointAndIndex[] points = library.getDistancesAlongShape(shapePoints,
@@ -95,7 +95,7 @@ public class DistanceAlongShapeLibraryTest {
   public void test03() throws IOException, DistanceAlongShapeException {
 
     ShapePoints shapePoints = readShapePoints("shapes-03.txt");
-    List<StopTimeEntryImpl> stopTimes = readStopTimes("stops-03.txt");
+    List<StaticStopTimeEntryImpl> stopTimes = readStopTimes("stops-03.txt");
 
     DistanceAlongShapeLibrary library = new DistanceAlongShapeLibrary();
     PointAndIndex[] points = library.getDistancesAlongShape(shapePoints,
@@ -128,7 +128,7 @@ public class DistanceAlongShapeLibraryTest {
   @Test
   public void testWmataH6() throws IOException, DistanceAlongShapeException {
     ShapePoints shapePoints = readShapePoints("shapes-h6.txt");
-    List<StopTimeEntryImpl> stopTimes = readStopTimes("stops-h6.txt");
+    List<StaticStopTimeEntryImpl> stopTimes = readStopTimes("stops-h6.txt");
     DistanceAlongShapeLibrary library = new DistanceAlongShapeLibrary();
     PointAndIndex[] points = library.getDistancesAlongShape(shapePoints,
             stopTimes);
@@ -161,9 +161,9 @@ public class DistanceAlongShapeLibraryTest {
 
   }
 
-  private double matchStopToPoint(List<StopTimeEntryImpl> stopTimes, PointAndIndex[] points, int i, String stopId, double distanceAlongBlock) {
-    StopEntryImpl expectedStop = null;
-    for (StopTimeEntryImpl stei : stopTimes) {
+  private double matchStopToPoint(List<StaticStopTimeEntryImpl> stopTimes, PointAndIndex[] points, int i, String stopId, double distanceAlongBlock) {
+    StaticStopEntryImpl expectedStop = null;
+    for (StaticStopTimeEntryImpl stei : stopTimes) {
       if (stei.getStop().getId().getId().equals(stopId)) {
         expectedStop = stei.getStop();
       }
@@ -196,19 +196,19 @@ public class DistanceAlongShapeLibraryTest {
     return factory.create();
   }
 
-  private List<StopTimeEntryImpl> readStopTimes(String key) throws IOException {
+  private List<StaticStopTimeEntryImpl> readStopTimes(String key) throws IOException {
 
     BufferedReader reader = new BufferedReader(
         new InputStreamReader(getClass().getResourceAsStream(
             "DistancesAlongShapeLibraryTest-" + key)));
     String line = null;
 
-    Map<String, StopEntryImpl> stops = new HashMap<String, StopEntryImpl>();
+    Map<String, StaticStopEntryImpl> stops = new HashMap<String, StaticStopEntryImpl>();
 
     int index = 0;
 
-    TripEntryImpl trip = UnitTestingSupport.trip("trip");
-    List<StopTimeEntryImpl> stopTimes = new ArrayList<StopTimeEntryImpl>();
+    StaticTripEntryImpl trip = UnitTestingSupport.trip("trip");
+    List<StaticStopTimeEntryImpl> stopTimes = new ArrayList<StaticStopTimeEntryImpl>();
 
     while ((line = reader.readLine()) != null) {
       try {
@@ -217,13 +217,13 @@ public class DistanceAlongShapeLibraryTest {
         double lat = Double.parseDouble(tokens[1]);
         double lon = Double.parseDouble(tokens[2]);
 
-        StopEntryImpl stop = stops.get(stopId);
+        StaticStopEntryImpl stop = stops.get(stopId);
         if (stop == null) {
           stop = UnitTestingSupport.stop(stopId, lat, lon);
           stops.put(stopId, stop);
         }
 
-        StopTimeEntryImpl stopTime = UnitTestingSupport.stopTime(index, stop,
+        StaticStopTimeEntryImpl stopTime = UnitTestingSupport.stopTime(index, stop,
                 trip, index, index, Double.NaN);
         stopTimes.add(stopTime);
       } catch (ArrayIndexOutOfBoundsException a) {

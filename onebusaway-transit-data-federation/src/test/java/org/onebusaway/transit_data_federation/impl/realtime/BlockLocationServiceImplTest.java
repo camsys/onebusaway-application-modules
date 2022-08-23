@@ -29,9 +29,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.model.TargetTime;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -76,14 +76,14 @@ public class BlockLocationServiceImplTest {
   @Test
   public void testWithShapeInfo() {
 
-    StopEntryImpl stopA = stop("a", 47.5, -122.5);
-    StopEntryImpl stopB = stop("b", 47.6, -122.4);
-    StopEntryImpl stopC = stop("c", 47.5, -122.3);
+    StaticStopEntryImpl stopA = stop("a", 47.5, -122.5);
+    StaticStopEntryImpl stopB = stop("b", 47.6, -122.4);
+    StaticStopEntryImpl stopC = stop("c", 47.5, -122.3);
 
-    BlockEntryImpl block = block("block");
+    StaticBlockEntryImpl block = block("block");
 
-    TripEntryImpl tripA = trip("tripA", "serviceId");
-    TripEntryImpl tripB = trip("tripB", "serviceId");
+    StaticTripEntryImpl tripA = trip("tripA", "serviceId");
+    StaticTripEntryImpl tripB = trip("tripB", "serviceId");
 
     stopTime(0, stopA, tripA, 30, 90, 0, 50.0);
     stopTime(1, stopB, tripA, 120, 120, 100);

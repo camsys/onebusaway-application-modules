@@ -36,14 +36,14 @@ import org.junit.Test;
 import org.onebusaway.gtfs.impl.calendar.CalendarServiceImpl;
 import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.transit_data_federation.impl.ExtendedCalendarServiceImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockConfigurationEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockConfigurationEntryImpl.Builder;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockConfigurationEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockConfigurationEntryImpl.Builder;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.BlockLayoverIndex;
-import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.FrequencyBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
@@ -91,12 +91,12 @@ public class BlockCalendarServiceImplTest {
     ServiceIdActivation ids_B_not_A = serviceIds(lsids("sidB"), lsids("sidA"));
     ServiceIdActivation ids_A_and_B = serviceIds(lsids("sidA", "sidB"), lsids());
 
-    StopEntryImpl stopA = stop("stopA", 0.0, 0.0);
-    StopEntryImpl stopB = stop("stopB", 0.0, 0.0);
+    StaticStopEntryImpl stopA = stop("stopA", 0.0, 0.0);
+    StaticStopEntryImpl stopB = stop("stopB", 0.0, 0.0);
 
-    BlockEntryImpl blockA = block("blockA");
-    TripEntryImpl tripA = trip("tripA", "sidA");
-    TripEntryImpl tripB = trip("tripB", "sidB");
+    StaticBlockEntryImpl blockA = block("blockA");
+    StaticTripEntryImpl tripA = trip("tripA", "sidA");
+    StaticTripEntryImpl tripB = trip("tripB", "sidB");
 
     stopTime(0, stopA, tripA, time(9, 00), time(9, 00), 0);
     stopTime(1, stopB, tripA, time(9, 30), time(9, 30), 100);
@@ -111,10 +111,10 @@ public class BlockCalendarServiceImplTest {
     BlockConfigurationEntry bcA_B_A = findBlockConfig(blockA, ids_B_not_A);
     BlockConfigurationEntry bcA_AB = findBlockConfig(blockA, ids_A_and_B);
 
-    BlockEntryImpl blockB = block("blockB");
-    TripEntryImpl tripC = trip("tripC", "sidA");
-    TripEntryImpl tripD = trip("tripD", "sidB");
-    TripEntryImpl tripE = trip("tripE", "sidA");
+    StaticBlockEntryImpl blockB = block("blockB");
+    StaticTripEntryImpl tripC = trip("tripC", "sidA");
+    StaticTripEntryImpl tripD = trip("tripD", "sidB");
+    StaticTripEntryImpl tripE = trip("tripE", "sidA");
 
     stopTime(4, stopA, tripC, time(10, 00), time(10, 00), 0);
     stopTime(5, stopB, tripC, time(10, 30), time(10, 30), 0);
@@ -131,7 +131,7 @@ public class BlockCalendarServiceImplTest {
     BlockConfigurationEntry bcB_B_A = findBlockConfig(blockB, ids_B_not_A);
     BlockConfigurationEntry bcB_AB = findBlockConfig(blockB, ids_A_and_B);
 
-    List<BlockTripIndex> blocks = blockTripIndices(blockA, blockB);
+    List<StaticBlockTripIndex> blocks = blockTripIndices(blockA, blockB);
 
     List<BlockLayoverIndex> layoverIndices = Collections.emptyList();
 
@@ -307,13 +307,13 @@ public class BlockCalendarServiceImplTest {
   }
 
   private static void linkBlockTrips(ServiceIdActivation serviceIds,
-      BlockEntryImpl block, TripEntryImpl... trips) {
+                                     StaticBlockEntryImpl block, StaticTripEntryImpl... trips) {
 
     List<TripEntry> tripsInBlock = new ArrayList<TripEntry>();
-    for (TripEntryImpl trip : trips)
+    for (StaticTripEntryImpl trip : trips)
       tripsInBlock.add(trip);
 
-    Builder builder = BlockConfigurationEntryImpl.builder();
+    Builder builder = StaticBlockConfigurationEntryImpl.builder();
     builder.setBlock(block);
     builder.setTripGapDistances(new double[tripsInBlock.size()]);
     builder.setServiceIds(serviceIds);

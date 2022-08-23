@@ -31,7 +31,7 @@ import org.onebusaway.transit_data_federation.services.StopTimeService;
 import org.onebusaway.transit_data_federation.services.blocks.AbstractBlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopSequenceIndex;
-import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.blocks.FrequencyBlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.blocks.FrequencyStopTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.HasIndexedBlockStopTimes;
@@ -87,7 +87,7 @@ class StopTimeServiceImpl implements StopTimeService {
 
     List<StopTimeInstance> stopTimeInstances = new ArrayList<StopTimeInstance>();
 
-    for (BlockStopTimeIndex index : _blockIndexService.getStopTimeIndicesForStop(stopEntry)) {
+    for (StaticBlockStopTimeIndex index : _blockIndexService.getStopTimeIndicesForStop(stopEntry)) {
 
       Collection<Date> serviceDates = _calendarService.getServiceDatesWithinRange(
           index.getServiceIds(), index.getServiceInterval(), from, to);
@@ -118,11 +118,11 @@ class StopTimeServiceImpl implements StopTimeService {
 
     StopEntry stop = _graph.getStopEntryForId(stopId, true);
 
-    List<BlockStopTimeIndex> indices = _blockIndexService.getStopTimeIndicesForStop(stop);
+    List<StaticBlockStopTimeIndex> indices = _blockIndexService.getStopTimeIndicesForStop(stop);
 
     Range interval = new Range();
 
-    for (BlockStopTimeIndex index : indices) {
+    for (StaticBlockStopTimeIndex index : indices) {
       extendIntervalWithIndex(serviceDate, interval, index);
     }
 

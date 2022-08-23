@@ -28,15 +28,15 @@ import org.onebusaway.transit_data_federation.impl.ExtendedCalendarServiceImpl;
 import org.onebusaway.transit_data_federation.impl.blocks.BlockIndexFactoryServiceImpl;
 import org.onebusaway.transit_data_federation.impl.blocks.BlockIndexServiceImpl;
 import org.onebusaway.transit_data_federation.impl.narrative.NarrativeServiceImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteCollectionEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticBlockEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteCollectionEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticRouteEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopTimeEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.model.narrative.AgencyNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
-import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
+import org.onebusaway.transit_data_federation.services.blocks.StaticBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
@@ -63,9 +63,9 @@ public class RouteScheduleBeanServiceImplTest {
   private ServiceAlertsBeanServiceImpl serviceAlertsService = null;
   private TransitGraphDao dao = null;
   private BlockIndexFactoryServiceImpl factory = null;
-  private BlockTripIndex blockIndexWeekday = null;
-  private BlockTripIndex blockIndexSaturday = null;
-  private BlockTripIndex blockIndexSunday = null;
+  private StaticBlockTripIndex blockIndexWeekday = null;
+  private StaticBlockTripIndex blockIndexSaturday = null;
+  private StaticBlockTripIndex blockIndexSunday = null;
 
   @Test
   public void runTestSuite() {
@@ -199,87 +199,87 @@ public class RouteScheduleBeanServiceImplTest {
   private RouteCollectionEntry createRoutes(String agencyId,
                                             String routeId) {
 
-    RouteEntryImpl route  = route(ROUTE_ID);
-    BlockEntryImpl b1 = block("TacL1000");
-    TripEntryImpl t1a = trip("TacL1000", "WD_TL", 0);
-    TripEntryImpl t1b = trip("TacL1001", "WD_TL", 0);
+    StaticRouteEntryImpl route  = route(ROUTE_ID);
+    StaticBlockEntryImpl b1 = block("TacL1000");
+    StaticTripEntryImpl t1a = trip("TacL1000", "WD_TL", 0);
+    StaticTripEntryImpl t1b = trip("TacL1001", "WD_TL", 0);
     t1a.setDirectionId("0");
     t1a.setRoute(route);
     t1b.setDirectionId("1");
     t1b.setRoute(route);
-    BlockEntryImpl b2 = block("TacL1003");
-    TripEntryImpl t2a = trip("TacL1002", "WD_TL", 0);
-    TripEntryImpl t2b = trip("TacL1003", "WD_TL", 0);
+    StaticBlockEntryImpl b2 = block("TacL1003");
+    StaticTripEntryImpl t2a = trip("TacL1002", "WD_TL", 0);
+    StaticTripEntryImpl t2b = trip("TacL1003", "WD_TL", 0);
     t2a.setDirectionId("0");
     t2a.setRoute(route);
     t2b.setDirectionId("1");
     t2b.setRoute(route);
 
-    BlockEntryImpl b3 = block("TacL6000");
-    TripEntryImpl t3 = trip("TacL6000", "SA", 0);
+    StaticBlockEntryImpl b3 = block("TacL6000");
+    StaticTripEntryImpl t3 = trip("TacL6000", "SA", 0);
     t3.setDirectionId("0");
     t3.setRoute(route);
 
-    BlockEntryImpl b4 = block("TacL6001");
-    TripEntryImpl t4 = trip("TacL6001", "SA", 0);
+    StaticBlockEntryImpl b4 = block("TacL6001");
+    StaticTripEntryImpl t4 = trip("TacL6001", "SA", 0);
     t4.setDirectionId("1");
     t4.setRoute(route);
 
-    BlockEntryImpl b5 = block("TacL7000");
-    TripEntryImpl t5 = trip("TacL7000", "SU", 0);
+    StaticBlockEntryImpl b5 = block("TacL7000");
+    StaticTripEntryImpl t5 = trip("TacL7000", "SU", 0);
     t5.setDirectionId("1");
     t5.setRoute(route);
 
-    BlockEntryImpl b6 = block("TacL7001");
-    TripEntryImpl t6 = trip("TacL7001", "SU", 0);
+    StaticBlockEntryImpl b6 = block("TacL7001");
+    StaticTripEntryImpl t6 = trip("TacL7001", "SU", 0);
     t6.setDirectionId("1");
     t6.setRoute(route);
 
-    StopEntryImpl std = stop("TL_TD", 47.239868,-122.428118);
-    StopEntryImpl s25 = stop("TL_25", 47.239081,-122.434202);
-    StopEntryImpl sus = stop("TL_US", 47.244865,-122.436623);
-    StopEntryImpl scc = stop("TL_CC", 47.249496,-122.438552);
+    StaticStopEntryImpl std = stop("TL_TD", 47.239868,-122.428118);
+    StaticStopEntryImpl s25 = stop("TL_25", 47.239081,-122.434202);
+    StaticStopEntryImpl sus = stop("TL_US", 47.244865,-122.436623);
+    StaticStopEntryImpl scc = stop("TL_CC", 47.249496,-122.438552);
 
-    StopTimeEntryImpl st_1a_1 = stopTime(1, std, t1a, time(5, 0, 0), time(5, 0,0 ), 0);
-    StopTimeEntryImpl st_1a_2 = stopTime(1, s25, t1a, time(5, 2, 0), time(5, 2,0 ), 0);
-    StopTimeEntryImpl st_1a_3 = stopTime(1, sus, t1a, time(5, 4, 0), time(5, 4,0 ), 0);
-    StopTimeEntryImpl st_1a_4 = stopTime(1, scc, t1a, time(5, 6, 0), time(5, 6,0 ), 0);
+    StaticStopTimeEntryImpl st_1a_1 = stopTime(1, std, t1a, time(5, 0, 0), time(5, 0,0 ), 0);
+    StaticStopTimeEntryImpl st_1a_2 = stopTime(1, s25, t1a, time(5, 2, 0), time(5, 2,0 ), 0);
+    StaticStopTimeEntryImpl st_1a_3 = stopTime(1, sus, t1a, time(5, 4, 0), time(5, 4,0 ), 0);
+    StaticStopTimeEntryImpl st_1a_4 = stopTime(1, scc, t1a, time(5, 6, 0), time(5, 6,0 ), 0);
 
-    StopTimeEntryImpl st_1b_1 = stopTime(1, scc, t1b, time(5, 8, 0), time(5, 8,0 ), 0);
-    StopTimeEntryImpl st_1b_2 = stopTime(1, sus, t1b, time(5, 10, 0), time(5, 10, 0), 0);
-    StopTimeEntryImpl st_1b_3 = stopTime(1, s25, t1b, time(5, 12, 0), time(5, 12, 0), 0);
-    StopTimeEntryImpl st_1b_4 = stopTime(1, std, t1b, time(5, 14, 0), time(5, 14, 0), 0);
+    StaticStopTimeEntryImpl st_1b_1 = stopTime(1, scc, t1b, time(5, 8, 0), time(5, 8,0 ), 0);
+    StaticStopTimeEntryImpl st_1b_2 = stopTime(1, sus, t1b, time(5, 10, 0), time(5, 10, 0), 0);
+    StaticStopTimeEntryImpl st_1b_3 = stopTime(1, s25, t1b, time(5, 12, 0), time(5, 12, 0), 0);
+    StaticStopTimeEntryImpl st_1b_4 = stopTime(1, std, t1b, time(5, 14, 0), time(5, 14, 0), 0);
 
-    StopTimeEntryImpl st_2a_1 = stopTime(1, std, t2a, time(5, 16, 0),time(5, 16, 0), 0);
-    StopTimeEntryImpl st_2a_2 = stopTime(1, s25, t2a, time(5, 18, 0),time(5, 18, 0), 0);
+    StaticStopTimeEntryImpl st_2a_1 = stopTime(1, std, t2a, time(5, 16, 0),time(5, 16, 0), 0);
+    StaticStopTimeEntryImpl st_2a_2 = stopTime(1, s25, t2a, time(5, 18, 0),time(5, 18, 0), 0);
     //StopTimeEntryImpl st_2a_3 = stopTime(1, sus, t2a, time(5, 20, 0), time(5, 20, 0), 0);
-    StopTimeEntryImpl st_2a_4 = stopTime(1, scc, t2a, time(5, 22, 0),time(5, 22, 0), 0);
+    StaticStopTimeEntryImpl st_2a_4 = stopTime(1, scc, t2a, time(5, 22, 0),time(5, 22, 0), 0);
 
 
-    StopTimeEntryImpl st_2b_1 = stopTime(1, scc, t2b, time(5, 24, 0),time(5, 24, 0), 0);
-    StopTimeEntryImpl st_2b_2 = stopTime(1, sus, t2b, time(5, 26, 0),time(5, 26, 0), 0);
+    StaticStopTimeEntryImpl st_2b_1 = stopTime(1, scc, t2b, time(5, 24, 0),time(5, 24, 0), 0);
+    StaticStopTimeEntryImpl st_2b_2 = stopTime(1, sus, t2b, time(5, 26, 0),time(5, 26, 0), 0);
     //StopTimeEntryImpl st_2b_3 = stopTime(1, s25, t2b, time(5, 28, 0),time(5, 28, 0), 0);
-    StopTimeEntryImpl st_2b_4 = stopTime(1, std, t2b, time(5, 30, 0),time(5, 30, 0), 0);
+    StaticStopTimeEntryImpl st_2b_4 = stopTime(1, std, t2b, time(5, 30, 0),time(5, 30, 0), 0);
 
-    StopTimeEntryImpl st_3_1 = stopTime(1, std, t3, time(6, 0, 0), time(5, 0,0 ), 0);
-    StopTimeEntryImpl st_3_2 = stopTime(1, s25, t3, time(6, 2, 0), time(5, 2,0 ), 0);
-    StopTimeEntryImpl st_3_3 = stopTime(1, sus, t3, time(6, 4, 0), time(5, 4,0 ), 0);
-    StopTimeEntryImpl st_3_4 = stopTime(1, scc, t3, time(6, 6, 0), time(5, 6,0 ), 0);
+    StaticStopTimeEntryImpl st_3_1 = stopTime(1, std, t3, time(6, 0, 0), time(5, 0,0 ), 0);
+    StaticStopTimeEntryImpl st_3_2 = stopTime(1, s25, t3, time(6, 2, 0), time(5, 2,0 ), 0);
+    StaticStopTimeEntryImpl st_3_3 = stopTime(1, sus, t3, time(6, 4, 0), time(5, 4,0 ), 0);
+    StaticStopTimeEntryImpl st_3_4 = stopTime(1, scc, t3, time(6, 6, 0), time(5, 6,0 ), 0);
 
-    StopTimeEntryImpl st_4_1 = stopTime(1, scc, t4, time(6, 16, 0), time(5, 16,0 ), 0);
-    StopTimeEntryImpl st_4_2 = stopTime(1, sus, t4, time(6, 18, 0), time(5, 18,0 ), 0);
-    StopTimeEntryImpl st_4_3 = stopTime(1, s25, t4, time(6, 20, 0), time(5, 20,0 ), 0);
-    StopTimeEntryImpl st_4_4 = stopTime(1, std, t4, time(6, 22, 0), time(5, 22,0 ), 0);
+    StaticStopTimeEntryImpl st_4_1 = stopTime(1, scc, t4, time(6, 16, 0), time(5, 16,0 ), 0);
+    StaticStopTimeEntryImpl st_4_2 = stopTime(1, sus, t4, time(6, 18, 0), time(5, 18,0 ), 0);
+    StaticStopTimeEntryImpl st_4_3 = stopTime(1, s25, t4, time(6, 20, 0), time(5, 20,0 ), 0);
+    StaticStopTimeEntryImpl st_4_4 = stopTime(1, std, t4, time(6, 22, 0), time(5, 22,0 ), 0);
 
-    StopTimeEntryImpl st_5_1 = stopTime(1, std, t5, time(7, 0, 0), time(5, 0,0 ), 0);
-    StopTimeEntryImpl st_5_2 = stopTime(1, s25, t5, time(7, 2, 0), time(5, 2,0 ), 0);
-    StopTimeEntryImpl st_5_3 = stopTime(1, sus, t5, time(7, 4, 0), time(5, 4,0 ), 0);
-    StopTimeEntryImpl st_5_4 = stopTime(1, scc, t5, time(7, 6, 0), time(5, 6,0 ), 0);
+    StaticStopTimeEntryImpl st_5_1 = stopTime(1, std, t5, time(7, 0, 0), time(5, 0,0 ), 0);
+    StaticStopTimeEntryImpl st_5_2 = stopTime(1, s25, t5, time(7, 2, 0), time(5, 2,0 ), 0);
+    StaticStopTimeEntryImpl st_5_3 = stopTime(1, sus, t5, time(7, 4, 0), time(5, 4,0 ), 0);
+    StaticStopTimeEntryImpl st_5_4 = stopTime(1, scc, t5, time(7, 6, 0), time(5, 6,0 ), 0);
 
-    StopTimeEntryImpl st_6_1 = stopTime(1, scc, t6, time(7, 16, 0), time(5, 16,0 ), 0);
-    StopTimeEntryImpl st_6_2 = stopTime(1, sus, t6, time(7, 18, 0), time(5, 18,0 ), 0);
-    StopTimeEntryImpl st_6_3 = stopTime(1, s25, t6, time(7, 20, 0), time(5, 20,0 ), 0);
-    StopTimeEntryImpl st_6_4 = stopTime(1, std, t6, time(7, 22, 0), time(5, 22,0 ), 0);
+    StaticStopTimeEntryImpl st_6_1 = stopTime(1, scc, t6, time(7, 16, 0), time(5, 16,0 ), 0);
+    StaticStopTimeEntryImpl st_6_2 = stopTime(1, sus, t6, time(7, 18, 0), time(5, 18,0 ), 0);
+    StaticStopTimeEntryImpl st_6_3 = stopTime(1, s25, t6, time(7, 20, 0), time(5, 20,0 ), 0);
+    StaticStopTimeEntryImpl st_6_4 = stopTime(1, std, t6, time(7, 22, 0), time(5, 22,0 ), 0);
 
     ServiceIdActivation serviceIdActivationWeekday = serviceIds(lsids("WD_TL"), lsids());
     ServiceIdActivation serviceIdActivationSaturday = serviceIds(lsids("SA"), lsids());
@@ -293,7 +293,7 @@ public class RouteScheduleBeanServiceImplTest {
     BlockConfigurationEntry bc4 = blockConfiguration(b4, serviceIdActivationSaturday, t4);
     BlockConfigurationEntry bc5 = blockConfiguration(b5, serviceIdActivationSunday, t5);
     BlockConfigurationEntry bc6 = blockConfiguration(b6, serviceIdActivationSunday, t6);
-    RouteCollectionEntryImpl routeCollection = routeCollection(ROUTE_ID, route);
+    StaticRouteCollectionEntryImpl routeCollection = routeCollection(ROUTE_ID, route);
     route.setTrips(Arrays.asList(t1a, t1b, t2a, t2b, t3, t4, t5, t6));
 
     List<BlockTripEntry> weekdayTrips = new ArrayList<BlockTripEntry>();

@@ -32,8 +32,8 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticStopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StaticTripEntryImpl;
 import org.onebusaway.transit_data_federation.model.ShapePointsFactory;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.shapes.ShapePointService;
@@ -57,11 +57,11 @@ public class ScheduledBlockLocationServiceImplTest {
 
   private BlockStopTimeEntry _stopTimeC;
 
-  private StopEntryImpl _stopA;
+  private StaticStopEntryImpl _stopA;
 
-  private StopEntryImpl _stopB;
+  private StaticStopEntryImpl _stopB;
 
-  private StopEntryImpl _stopC;
+  private StaticStopEntryImpl _stopC;
 
   private BlockConfigurationEntry _blockConfig;
 
@@ -71,8 +71,8 @@ public class ScheduledBlockLocationServiceImplTest {
     _shapePointService = Mockito.mock(ShapePointService.class);
     _service.setShapePointService(_shapePointService);
 
-    TripEntryImpl tripA = trip("A", "serviceId", 1000.0);
-    TripEntryImpl tripB = trip("B", "serviceId", 1000.0);
+    StaticTripEntryImpl tripA = trip("A", "serviceId", 1000.0);
+    StaticTripEntryImpl tripB = trip("B", "serviceId", 1000.0);
 
     tripA.setShapeId(aid("shapeA"));
     tripB.setShapeId(aid("shapeB"));
