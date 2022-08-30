@@ -181,6 +181,8 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 	@Override
 	public ServiceAlertRecord getServiceAlertForId(AgencyAndId serviceAlertId) {
 	  if (_persister.cachedNeedsSync()) this.loadServiceAlerts();
+		Map<AgencyAndId, ServiceAlertRecord> serviceAlerts = _cache.getServiceAlerts();
+		ServiceAlertRecord result = serviceAlerts.get(serviceAlertId);
 		return _cache.getServiceAlerts().get(serviceAlertId);
 	}
 
@@ -221,6 +223,7 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 	@Override
 	public List<ServiceAlertRecord> getServiceAlertsForRouteId(long time, AgencyAndId routeId) {
 		Set<AgencyAndId> serviceAlertIds = new HashSet<AgencyAndId>();
+		routeId.setAgencyId("MTA");
 		getServiceAlertIdsForKey(_cache.getServiceAlertIdsByRouteId(), routeId, serviceAlertIds);
 		return getServiceAlertIdsAsObjects(serviceAlertIds, time);
 	}

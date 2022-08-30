@@ -36,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.transit.realtime.GtfsRealtime;
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinatePoint;
@@ -140,6 +141,8 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   private List<String> _agencyIds = new ArrayList<String>();
 
   private String filterRegexString;
+
+  private String debugFeed = "";
 
   /**
    * We keep track of vehicle location updates, only pushing them to the
@@ -584,6 +587,10 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
     this.filterRegexString = filterRegex;
   }
 
+  public void setDebugFeed(String debugData){
+    this.debugFeed = debugData;
+  }
+
 
   /*
   *  filterRegexString is read from the bean properties, and is used as the filter test
@@ -626,6 +633,14 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
       return;
     }
 
+    if(debugFeed != ""){
+      try {
+        alerts = FeedMessage.parseFrom(debugFeed.getBytes());
+      }catch (InvalidProtocolBufferException e) {
+        e.printStackTrace();
+      }
+    }
+
     Set<AgencyAndId> currentAlerts = new HashSet<AgencyAndId>();
     Set<ServiceAlertRecord> toAdd = new HashSet<>();
     Set<ServiceAlertRecord> toUpdate = new HashSet<>();
@@ -637,7 +652,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
         _log.warn("expected a FeedEntity with an Alert");
         continue;
       }
-
+      //This sets the service_alert_agency_id in the alerts_records table
       // NOTE!! Here we default agencyID to be of feed name
       AgencyAndId id = createId(entity.getId());
 
@@ -883,7 +898,8 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   }
 
   private AgencyAndId createId(String id) {
-    return new AgencyAndId(_agencyIds.get(0), id);
+    String result = _agencyIds.get(0);
+    return new AgencyAndId(result, id);
   }
 
   /**

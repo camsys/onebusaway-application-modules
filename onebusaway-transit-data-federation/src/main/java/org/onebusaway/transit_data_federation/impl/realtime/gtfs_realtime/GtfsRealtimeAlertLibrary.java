@@ -48,6 +48,12 @@ class GtfsRealtimeAlertLibrary {
   }
 
   private boolean _stripAgencyPrefix = true;
+
+  private boolean _useEntityId;
+
+  private void setUseEntityId(boolean b){
+    _useEntityId = b;
+  }
   public void setStripAgencyPrefix(boolean remove) {
     _stripAgencyPrefix = remove;
   }
@@ -102,7 +108,12 @@ class GtfsRealtimeAlertLibrary {
 		affects.setAgencyId(agencyId);
 	}
     if (selector.hasRouteId()) {
-      Id routeId = _entitySource.getRouteId(selector.getRouteId());
+            Id routeId;
+      if(selector.hasAgencyId()){
+        routeId = ServiceAlertLibrary.id(new AgencyAndId(selector.getAgencyId() , selector.getRouteId()));
+      }else{
+        routeId = _entitySource.getRouteId(selector.getRouteId());
+      }
       affects.setRouteId(routeId);
     }
     if (selector.hasStopId()) {
