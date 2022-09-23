@@ -2088,7 +2088,11 @@ function updateBuildList(id,buildType) {
 	if (buildType == "final") {
 		$buildBundle_fileList = jQuery("#buildBundle_finalFileList");
 	}
-	var lines = summaryList.split(/\n/);
+	var lines = "";
+	if (summaryList != null)
+	{
+		lines = summaryList.split(/\n/);
+	}
 	lines.pop(lines.length-1); // discard header
 	var fileDescriptionMap = new Array();
 	var fileCountMap = new Array();

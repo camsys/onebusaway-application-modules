@@ -24,16 +24,15 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
-import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.onebusaway.admin.model.ui.UserDetail;
 import org.onebusaway.admin.service.UserManagementService;
 import org.onebusaway.users.client.model.UserBean;
+import org.onebusaway.users.impl.authentication.VersionedPasswordEncoder;
 import org.onebusaway.users.model.User;
 import org.onebusaway.users.model.UserIndex;
 import org.onebusaway.users.model.UserRole;
@@ -399,7 +398,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 	 * @param passwordEncoder the passwordEncoder to set
 	 */
 	@Autowired
-	public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+	public void setPasswordEncoder(VersionedPasswordEncoder passwordEncoder) {
 		this.passwordEncoder = passwordEncoder;
 	}
 

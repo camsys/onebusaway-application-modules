@@ -60,6 +60,11 @@
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-siri-core</artifactId>
       <version>${onebusaway-siri-version}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+            </exclusion></exclusions>
     </dependency>
 
     <!-- For GTFS-realtime support -->
@@ -67,6 +72,12 @@
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-gtfs-realtime-api</artifactId>
       <version>${gtfs-api-version}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+            </exclusion></exclusions>
+
     </dependency>
 
 
@@ -94,11 +105,17 @@
       <artifactId>struts2-rest-plugin</artifactId>
     </dependency>
     <!-- This provides support for Struts2 Rome rss result type -->
-    <dependency>
-        <groupId>com.googlecode.s2rome</groupId>
-        <artifactId>struts2-rome-plugin</artifactId>
-        <version>0.3</version>
-    </dependency>
+<!--    <dependency>-->
+<!--        <groupId>com.googlecode.s2rome</groupId>-->
+<!--        <artifactId>struts2-rome-plugin</artifactId>-->
+<!--        <version>0.3</version>-->
+<!--        <exclusions>-->
+<!--            <exclusion>-->
+<!--                <groupId>org.slf4j</groupId>-->
+<!--                <artifactId>slf4j-api</artifactId>-->
+<!--            </exclusion></exclusions>-->
+
+<!--    </dependency>-->
       <dependency>
           <groupId>net.sf.json-lib</groupId>
           <artifactId>json-lib</artifactId>
@@ -106,11 +123,16 @@
           <classifier>jdk15</classifier>
       </dependency>
     <!-- Rome framework for RSS support -->
-    <dependency>
-        <groupId>com.rometools</groupId>
-        <artifactId>rome</artifactId>
-        <version>1.7.0</version>
-    </dependency>
+<!--    <dependency>-->
+<!--        <groupId>com.rometools</groupId>-->
+<!--        <artifactId>rome</artifactId>-->
+<!--        <version>1.7.0</version>-->
+<!--        <exclusions>-->
+<!--            <exclusion>-->
+<!--                <groupId>org.slf4j</groupId>-->
+<!--                <artifactId>slf4j-api</artifactId>-->
+<!--            </exclusion></exclusions>-->
+<!--    </dependency>-->
     <!-- We use HttpServletRequest in XmlResult -->
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -123,6 +145,11 @@
       <groupId>com.notnoop.apns</groupId>
       <artifactId>apns</artifactId>
       <version>0.1.6</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+            </exclusion></exclusions>
     </dependency>
       <dependency>
           <groupId>org.apache.logging.log4j</groupId>
@@ -156,8 +183,21 @@
 	<dependency>
     	<groupId>com.brsanthu</groupId>
     	<artifactId>google-analytics-java</artifactId>
-	</dependency>
-	<dependency>
+        <exclusions>
+            <exclusion>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+            </exclusion></exclusions>
+    </dependency>
+      <!-- while this is strange scope it is required -->
+      <dependency>
+          <groupId>org.tuckey</groupId>
+          <artifactId>urlrewritefilter</artifactId>
+          <version>3.2.0</version>
+          <type>jar</type>
+          <scope>compile</scope>
+      </dependency>
+      <dependency>
 		<groupId>org.apache.httpcomponents</groupId>
 		<artifactId>httpclient</artifactId>
 	</dependency>

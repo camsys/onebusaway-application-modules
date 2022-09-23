@@ -28,9 +28,10 @@ import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Stop;
+import org.onebusaway.gtfs.model.StopLocation;
 import org.onebusaway.gtfs.model.StopTime;
-import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
 import org.onebusaway.gtfs.model.Trip;
+import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
 import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.DistanceAlongShapeLibrary.DistanceAlongShapeException;
 import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.DistanceAlongShapeLibrary.StopIsTooFarFromShapeException;
 import org.onebusaway.transit_data_federation.impl.shapes.PointAndIndex;
@@ -205,7 +206,7 @@ private void removeDuplicateStopTimes(List<StopTime> stopTimes) {
     	  _log.error("Found null stopTime in stopTime=" + stopTimes);
     	  continue;
       }
-      Stop stop = stopTime.getStop();
+      StopLocation stop = stopTime.getStop();
       if (stop == null) {
     	  _log.error("Stop is null for stopTime" + stopTime.getId());
     	  continue;
@@ -426,8 +427,8 @@ private void removeDuplicateStopTimes(List<StopTime> stopTimes) {
          * arrival time. That's bad.
          */
         StopTime prevStopTime = stopTimes.get(i - 1);
-        Stop prevStop = prevStopTime.getStop();
-        Stop stop = stopTime.getStop();
+        StopLocation prevStop = prevStopTime.getStop();
+        StopLocation stop = stopTime.getStop();
 
         if (prevStop.equals(stop)
             && arrivalTimes[i] == departureTimes[i - 1] - 1) {
