@@ -350,6 +350,7 @@
 						<exclude>**/markerAnimate.js</exclude>
 						<exclude>**/rgbcolor.js</exclude>
 						<exclude>**/*.properties</exclude>
+						<exclude>**/log4j-stdout.xml</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

@@ -148,6 +148,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>
+			<artifactId>onebusaway-alerts-persistence</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-presentation</artifactId>
 			<version>${project.version}</version>
 			<exclusions>
@@ -246,7 +251,7 @@
 	<dependency>
 		<groupId>org.geotools</groupId>
 		<artifactId>gt-api</artifactId>
-		<version>20.5</version>
+		<version>${geotools.version}</version>
 	</dependency>
 	<dependency>
 		<groupId>org.geotools</groupId>
@@ -369,8 +374,8 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<properties>
-				<tds.path>http://localhost:8080/onebusaway-transit-data-federation-webapp</tds.path>
-				<vtms.path>http://localhost:8080/onebusaway-transit-data-federation-webapp</vtms.path>
+				<tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+				<vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
 				<log4j.appender>ROLL</log4j.appender>
 				<log4j.priority>info</log4j.priority>
 			</properties>
@@ -378,8 +383,8 @@
 		<profile>
 			<id>travis</id>
 			<properties>
-				<tds.path>http://localhost:8080/onebusaway-transit-data-federation-webapp</tds.path>
-				<vtms.path>http://localhost:8080/onebusaway-transit-data-federation-webapp</vtms.path>
+				<tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+				<vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
 				<bundle.builtPath>/var/lib/oba/bundles/builder</bundle.builtPath>
 				<bundle.stagedPath>/var/lib/oba/bundles/staged</bundle.stagedPath>
 				<bundle.deployPath>/var/lib/oba/bundles/active</bundle.deployPath>
@@ -443,6 +448,7 @@
 					<exclude>**/grid.*.js</exclude>
 					<exclude>**/CTBusStops*</exclude>
 					<exclude>**/leaflet.*</exclude>
+				    <exclude>**/log4j-stdout.xml</exclude>
 					<exclude>overlays/**</exclude>
 				  </excludes>
 				</configuration>

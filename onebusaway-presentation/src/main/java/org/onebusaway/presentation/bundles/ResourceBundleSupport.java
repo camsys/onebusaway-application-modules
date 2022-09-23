@@ -15,21 +15,14 @@
  */
 package org.onebusaway.presentation.bundles;
 
-import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
-import com.opensymphony.xwork2.LocaleProvider;
-import com.opensymphony.xwork2.StrutsTextProviderFactory;
-import com.opensymphony.xwork2.TextProvider;
-import com.opensymphony.xwork2.TextProviderFactory;
+import com.opensymphony.xwork2.util.StrutsLocalizedTextProvider;
 
 public class ResourceBundleSupport {
   public static Map<String, String> getLocaleMap(Class<?> resourceType) {
-    TextProviderFactory factory = new StrutsTextProviderFactory();
-    TextProvider provider = factory.createInstance(resourceType);
-    ResourceBundle bundle = provider.getTexts();
+    StrutsLocalizedTextProvider localizedTextProvider = new StrutsLocalizedTextProvider();
+    ResourceBundle bundle = localizedTextProvider.findResourceBundle(resourceType.getName(), Locale.getDefault());
     Map<String, String> m = new LinkedHashMap<String, String>();
     for (Enumeration<String> en = bundle.getKeys(); en.hasMoreElements();) {
       String key = en.nextElement();

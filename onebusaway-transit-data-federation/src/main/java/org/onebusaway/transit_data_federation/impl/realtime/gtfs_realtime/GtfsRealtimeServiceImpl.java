@@ -26,16 +26,16 @@ import com.google.transit.realtime.GtfsRealtimeConstants;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
-import org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertLocalizedString;
-import org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertRecord;
-import org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertTimeRange;
-import org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertsSituationAffectsClause;
+import org.onebusaway.alerts.impl.ServiceAlertLocalizedString;
+import org.onebusaway.alerts.impl.ServiceAlertRecord;
+import org.onebusaway.alerts.impl.ServiceAlertTimeRange;
+import org.onebusaway.alerts.impl.ServiceAlertsSituationAffectsClause;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStatusService;
 import org.onebusaway.transit_data_federation.services.realtime.BlockLocation;
 import org.onebusaway.transit_data_federation.services.realtime.VehicleStatus;
 import org.onebusaway.transit_data_federation.services.realtime.VehicleStatusService;
-import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlertsRecordService;
+import org.onebusaway.alerts.service.ServiceAlertsService;
 import org.onebusaway.transit_data_federation.services.transit_graph.*;
 import org.onebusaway.util.SystemTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,13 +44,14 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 import java.util.List;
 
+@Component
 class GtfsRealtimeServiceImpl implements GtfsRealtimeService {
 
   private VehicleStatusService _vehicleStatusService;
 
   private BlockStatusService _blockStatusService;
 
-  private ServiceAlertsRecordService _serviceAlertsRecordService;
+  private ServiceAlertsService _serviceAlertsService;
 
   @Autowired
   public void setVehicleStatusService(VehicleStatusService vehicleStatusService) {
@@ -63,8 +64,8 @@ class GtfsRealtimeServiceImpl implements GtfsRealtimeService {
   }
 
   @Autowired
-  public void setServiceAlertsService(ServiceAlertsRecordService serviceAlertsRecordService) {
-    _serviceAlertsRecordService = serviceAlertsRecordService;
+  public void setServiceAlertsService(ServiceAlertsService serviceAlertsService) {
+    _serviceAlertsService = serviceAlertsService;
   }
 
   @Override
@@ -207,7 +208,7 @@ class GtfsRealtimeServiceImpl implements GtfsRealtimeService {
   @Override
   public FeedMessage getAlerts() {
     FeedMessage.Builder feedMessage = createFeedWithDefaultHeader();
-    List<ServiceAlertRecord> serviceAlerts = _serviceAlertsRecordService.getAllServiceAlerts();
+    List<ServiceAlertRecord> serviceAlerts = _serviceAlertsService.getAllServiceAlerts();
     for (ServiceAlertRecord serviceAlert : serviceAlerts) {
 
       Alert.Builder alert = Alert.newBuilder();

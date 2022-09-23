@@ -139,17 +139,29 @@
             </bean>
         </property>
     </bean>
-    
-    <bean id="passwordEncoderV2" class="org.onebusaway.users.impl.authentication.VersionedPasswordEncoder">
-        <property name="versionId" value="v2" />
-        <property name="passwordEncoder">
-            <bean id="encoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
+
+    <bean id="legacyPasswordEncoder" class="org.onebusaway.users.impl.authentication.LegacyPasswordEncoder">
+        <constructor-arg value="SHA-256" />
+        <property name="encodeHashAsBase64" value="true" />
+    </bean>
+
+    <bean id="passwordEncoderV1" class="org.onebusaway.users.impl.authentication.VersionedPasswordEncoder">
+        <property name="versionId" value="v1" />
+        <property name="passwordEncoder" ref="legacyPasswordEncoder">
         </property>
     </bean>
 
-    <bean id="userService" class="org.onebusaway.users.impl.UserServiceImpl">
-        <property name="passwordEncoder" ref="passwordEncoderV2" />
-    </bean>
+    <!-- here we maintain legacy support for v1 passwords and dont embrace bcrypt support -->
+<!--    <bean id="passwordEncoderV2" class="org.onebusaway.users.impl.authentication.VersionedPasswordEncoder">-->
+<!--        <property name="versionId" value="v2" />-->
+<!--        <property name="passwordEncoder">-->
+<!--            <bean id="encoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>-->
+<!--        </property>-->
+<!--    </bean>-->
+
+<!--    <bean id="userService" class="org.onebusaway.users.impl.UserServiceImpl">-->
+<!--        <property name="passwordEncoder" ref="passwordEncoderV2" />-->
+<!--    </bean>-->
 
     <bean id="userLastAccessTimeServiceCache" class="org.onebusaway.container.spring.ehcache.EhCacheFactoryBean">
         <property name="cacheManager" ref="cacheManager" />
