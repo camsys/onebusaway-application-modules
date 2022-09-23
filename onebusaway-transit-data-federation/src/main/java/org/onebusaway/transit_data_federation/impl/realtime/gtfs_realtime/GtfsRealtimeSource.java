@@ -36,7 +36,6 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.transit.realtime.GtfsRealtime;
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinatePoint;
@@ -141,8 +140,6 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   private List<String> _agencyIds = new ArrayList<String>();
 
   private String filterRegexString;
-
-  private String debugFeed = "";
 
   /**
    * We keep track of vehicle location updates, only pushing them to the
@@ -587,10 +584,6 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
     this.filterRegexString = filterRegex;
   }
 
-  public void setDebugFeed(String debugData){
-    this.debugFeed = debugData;
-  }
-
 
   /*
   *  filterRegexString is read from the bean properties, and is used as the filter test
@@ -631,14 +624,6 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
       // don't let a single connection issue wipe out the set of alerts
       _log.error("missing alert header for " + getFeedId() + ", assuming connection issue and aborting");
       return;
-    }
-
-    if(debugFeed != ""){
-      try {
-        alerts = FeedMessage.parseFrom(debugFeed.getBytes());
-      }catch (InvalidProtocolBufferException e) {
-        e.printStackTrace();
-      }
     }
 
     Set<AgencyAndId> currentAlerts = new HashSet<AgencyAndId>();
@@ -898,8 +883,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   }
 
   private AgencyAndId createId(String id) {
-    String result = _agencyIds.get(0);
-    return new AgencyAndId(result, id);
+    return new AgencyAndId(_agencyIds.get(0), id);
   }
 
   /**

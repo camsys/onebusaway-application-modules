@@ -136,8 +136,7 @@ public class ServiceAlertsPersistenceDB implements ServiceAlertsPersistence {
         Query query = getSession().createQuery("SELECT serviceAlert FROM ServiceAlertRecord serviceAlert " +
                 "left join fetch serviceAlert.consequences cs " +
                 "left join fetch cs.detourStopIds dsi ");
-    List result = query.list();
-        return result;
+        return query.list();
   }
 
   @Override

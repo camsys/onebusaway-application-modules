@@ -48,12 +48,6 @@ class GtfsRealtimeAlertLibrary {
   }
 
   private boolean _stripAgencyPrefix = true;
-
-  private boolean _useEntityId;
-
-  private void setUseEntityId(boolean b){
-    _useEntityId = b;
-  }
   public void setStripAgencyPrefix(boolean remove) {
     _stripAgencyPrefix = remove;
   }
