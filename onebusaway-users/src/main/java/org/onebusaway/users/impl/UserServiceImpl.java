@@ -54,7 +54,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-@Component
 public class UserServiceImpl implements UserService {
 
   private UserDao _userDao;
@@ -100,8 +99,6 @@ public class UserServiceImpl implements UserService {
     _userIndexRegistrationService = userIndexRegistrationService;
   }
 
-  @Autowired
-  @Qualifier(value = "passwordEncoderV1")
   public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
     _passwordEncoder = passwordEncoder;
   }
