@@ -100,4 +100,9 @@ class StandardAuthoritiesServiceImpl implements StandardAuthoritiesService {
   public UserRole getReportingRole() {
     return getUserRoleForName(REPORTING);
   }
+
+  @Override
+  public UserRole getOpsApiRole() {
+    return getUserRoleForName(OPS_API);
+  }
 }
