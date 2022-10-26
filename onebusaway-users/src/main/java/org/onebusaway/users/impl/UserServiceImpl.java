@@ -50,10 +50,8 @@ import org.onebusaway.users.services.internal.UserRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 public class UserServiceImpl implements UserService {
@@ -259,13 +257,13 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public void enableOpsApiRoleForUser(User user) {
-    enableRoleForUser(user,_authoritiesService.getOpsApiRole());
+  public void enableRoleForUser(User user, String roleName) {
+    enableRoleForUser(user,_authoritiesService.getUserRoleForName(roleName));
   }
 
   @Override
-  public void disableOpsApiRoleForUser(User user) {
-    disableRoleForUser(user,_authoritiesService.getOpsApiRole());
+  public void disableRoleForUser(User user, String roleName) {
+    disableRoleForUser(user,_authoritiesService.getUserRoleForName(roleName));
   }
 
   @Override

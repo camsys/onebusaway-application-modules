@@ -318,10 +318,9 @@ public interface UserService {
    */
   public long getNumberOfStaleUsers();
 
+  void enableRoleForUser(User user, String roleName);
 
-  void enableOpsApiRoleForUser(User user);
-
-  void disableOpsApiRoleForUser(User user);
+  void disableRoleForUser(User user, String roleName);
 
   /**
    * Enable the admin role for a User. For admin bootstrapping, we have a check
