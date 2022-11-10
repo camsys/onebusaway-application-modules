@@ -102,12 +102,8 @@ class GtfsRealtimeAlertLibrary {
 		affects.setAgencyId(agencyId);
 	}
     if (selector.hasRouteId()) {
-            Id routeId;
-      if(selector.hasAgencyId()){
-        routeId = ServiceAlertLibrary.id(new AgencyAndId(selector.getAgencyId() , selector.getRouteId()));
-      }else{
-        routeId = _entitySource.getRouteId(selector.getRouteId());
-      }
+
+      Id routeId = _entitySource.getRouteId(selector.getRouteId());
       affects.setRouteId(routeId);
     }
     if (selector.hasStopId()) {
