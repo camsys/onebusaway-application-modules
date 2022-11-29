@@ -35,9 +35,9 @@ import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
+import org.onebusaway.util.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.BlockConfigurationEntriesProcessor;
 import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
@@ -166,7 +166,7 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
       graph.empty();
       _graph = null;
     }
-
+    
     if (path.exists()) {
       TransitGraphImpl graph = ObjectSerializationLibrary.readObject(path);
       graph.initialize();

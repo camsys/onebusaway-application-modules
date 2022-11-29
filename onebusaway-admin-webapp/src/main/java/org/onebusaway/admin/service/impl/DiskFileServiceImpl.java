@@ -236,6 +236,8 @@ public class DiskFileServiceImpl implements FileService {
 
 	@Override
 	public void validateFileName(String fileName) {
+		if (fileName == null)
+			throw new RuntimeException("File name not present to validate");
 		if(fileName.length() == 0) {
 			throw new RuntimeException("File name contains characters that could lead to directory " +
 					"traversal attack");

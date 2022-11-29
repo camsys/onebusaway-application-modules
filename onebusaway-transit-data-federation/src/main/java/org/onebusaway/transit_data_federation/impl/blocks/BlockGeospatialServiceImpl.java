@@ -429,29 +429,31 @@ class BlockGeospatialServiceImpl implements BlockGeospatialService {
 
       ShapePoints shapePoints = getShapePointsForShapeIdNonCached(shapeId);
 
-      for (int i = 0; i < shapePoints.getSize(); i++) {
+      if (shapePoints != null) {
+        for (int i = 0; i < shapePoints.getSize(); i++) {
 
-        double lat = shapePoints.getLatForIndex(i);
-        double lon = shapePoints.getLonForIndex(i);
+          double lat = shapePoints.getLatForIndex(i);
+          double lon = shapePoints.getLonForIndex(i);
 
-        addGridCellForShapePoint(shapeIdsByGridCellCorner, lat, lon, latStep,
-                lonStep, shapeId);
+          addGridCellForShapePoint(shapeIdsByGridCellCorner, lat, lon, latStep,
+                  lonStep, shapeId);
 
-        /**
-         * If there is a particularly long stretch between shape points, we want
-         * to fill in grid cells in-between
-         */
-        if (i > 0) {
-          double prevLat = shapePoints.getLatForIndex(i - 1);
-          double prevLon = shapePoints.getLonForIndex(i - 1);
-          double totalDistance = SphericalGeometryLibrary.distance(prevLat,
-                  prevLon, lat, lon);
-          for (double d = _gridSize; d < totalDistance; d += _gridSize) {
-            double r = d / totalDistance;
-            double latPart = (lat - prevLat) * r + prevLat;
-            double lonPart = (lon - prevLon) * r + prevLon;
-            addGridCellForShapePoint(shapeIdsByGridCellCorner, latPart,
-                    lonPart, latStep, lonStep, shapeId);
+          /**
+           * If there is a particularly long stretch between shape points, we want
+           * to fill in grid cells in-between
+           */
+          if (i > 0) {
+            double prevLat = shapePoints.getLatForIndex(i - 1);
+            double prevLon = shapePoints.getLonForIndex(i - 1);
+            double totalDistance = SphericalGeometryLibrary.distance(prevLat,
+                    prevLon, lat, lon);
+            for (double d = _gridSize; d < totalDistance; d += _gridSize) {
+              double r = d / totalDistance;
+              double latPart = (lat - prevLat) * r + prevLat;
+              double lonPart = (lon - prevLon) * r + prevLon;
+              addGridCellForShapePoint(shapeIdsByGridCellCorner, latPart,
+                      lonPart, latStep, lonStep, shapeId);
+            }
           }
         }
       }

@@ -30,6 +30,8 @@ public class MockStandardAuthoritiesServiceImpl implements
   
   private UserRole _reporting = new UserRole(REPORTING);
 
+  private UserRole _opsApi = new UserRole(OPS_API);
+
   @Override
   public UserRole getAdministratorRole() {
     return _admin;
@@ -48,6 +50,11 @@ public class MockStandardAuthoritiesServiceImpl implements
   @Override
   public UserRole getReportingRole() {
     return _reporting;
+  }
+
+  @Override
+  public UserRole getOpsApiRole() {
+    return _opsApi;
   }
 
   @Override

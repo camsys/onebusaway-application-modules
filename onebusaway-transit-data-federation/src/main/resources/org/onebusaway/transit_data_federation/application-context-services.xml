@@ -28,9 +28,7 @@
   <import resource="classpath:org/onebusaway/transit_data_federation/application-context-common.xml" />
 
   <context:component-scan base-package="org.onebusaway.transit_data_federation.impl" />
-
-  <bean id="transitDataServiceImpl" class="org.onebusaway.transit_data_federation.impl.federated.TransitDataServiceImpl" />
-    
+  <context:component-scan base-package="org.onebusaway.alerts.impl" />
   <!--
       List of Hibernate annotated classes: classes configured for Hibernate using annotations, as opposed to a
       Hibernate xml mapping file. This list can be extended by other modules with an
@@ -44,11 +42,11 @@
         <value>org.onebusaway.transit_data_federation.impl.realtime.history.ScheduleDeviationHistory</value>
         <value>org.onebusaway.transit_data_federation.impl.reporting.StopProblemReportRecord</value>
         <value>org.onebusaway.transit_data_federation.impl.reporting.TripProblemReportRecord</value>
-        <value>org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertRecord</value>
-        <value>org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertLocalizedString</value>
-        <value>org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertTimeRange</value>
-        <value>org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertsSituationAffectsClause</value>
-        <value>org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertSituationConsequenceClause</value>
+        <value>org.onebusaway.alerts.impl.ServiceAlertRecord</value>
+        <value>org.onebusaway.alerts.impl.ServiceAlertLocalizedString</value>
+        <value>org.onebusaway.alerts.impl.ServiceAlertTimeRange</value>
+        <value>org.onebusaway.alerts.impl.ServiceAlertsSituationAffectsClause</value>
+        <value>org.onebusaway.alerts.impl.ServiceAlertSituationConsequenceClause</value>
       </list>
     </property>
   </bean>
@@ -70,6 +68,9 @@
   <bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
   
   <bean id="refreshServiceImpl" class="org.onebusaway.container.refresh.RefreshServiceImpl" />
+
+  <bean id="transitDataServiceImpl" class="org.onebusaway.transit_data_federation.impl.federated.TransitDataServiceImpl" />
+<!--  <bean id="transitDataServiceTemplate" class="org.onebusaway.transit_data_federation.impl.federated.TransitDataServiceTemplateImpl" />-->
 
   <bean id="extendedCalendarServiceServiceDateRangeCache" class="org.onebusaway.container.spring.ehcache.EhCacheFactoryBean">
     <property name="cacheManager" ref="cacheManager" />
@@ -104,7 +105,7 @@
   <bean id="scheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean">
   
   </bean>
-	
+
   <bean id="stopHasRevenueCache" class="org.onebusaway.container.spring.ehcache.EhCacheFactoryBean">
     <property name="cacheManager" ref="cacheManager" />
     <property name="cacheName"
@@ -114,7 +115,7 @@
     <property name="overflowToDisk" value="false" />
     <property name="diskPersistent" value="false" />
   </bean>
-  
+
   <bean id="stopHasRevenueOnRouteCache" class="org.onebusaway.container.spring.ehcache.EhCacheFactoryBean">
     <property name="cacheManager" ref="cacheManager" />
     <property name="cacheName"
@@ -124,17 +125,13 @@
     <property name="overflowToDisk" value="false" />
     <property name="diskPersistent" value="false" />
   </bean>
-  
+
   <bean id="revenueSearchServiceImpl" class="org.onebusaway.transit_data_federation.impl.revenue.RevenueSearchServiceImpl">
     <property name="stopHasRevenueServiceCache" ref="stopHasRevenueCache" />
     <property name="stopHasRevenueServiceOnRouteCache" ref="stopHasRevenueOnRouteCache" />
   </bean>
 
   <bean id="bundleSearchService" class="org.onebusaway.transit_data_federation.impl.bundle.BundleSearchServiceImpl" />
-
-  <bean id="serviceAlertsRecordService" class="org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertsRecordServiceImpl" />
-
-  <bean id="serviceAlertsBeanService" class="org.onebusaway.transit_data_federation.impl.beans.ServiceAlertRecordBeanServiceImpl" />
 
   <bean id="gtfsRealtimeService" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeServiceImpl" />
 

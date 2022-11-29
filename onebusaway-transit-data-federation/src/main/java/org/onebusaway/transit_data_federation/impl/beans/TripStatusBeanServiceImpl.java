@@ -41,7 +41,7 @@ import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data_federation.impl.realtime.apc.VehicleOccupancyRecordCache;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.util.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.beans.ServiceAlertsBeanService;
 import org.onebusaway.transit_data_federation.services.beans.StopBeanService;
 import org.onebusaway.transit_data_federation.services.beans.TripBeanService;
@@ -348,7 +348,7 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
           bean.setOccupancyCapacity(vehicleOccupancyRecord.getCapacity());
 	    }
     }
-    
+
     bean.setPredicted(blockLocation.isPredicted());
 
     AgencyAndId vid = blockLocation.getVehicleId();
@@ -361,11 +361,16 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
       if (!situations.isEmpty())
         bean.setSituations(situations);
     }
-
     if (blockLocation.getTimepointPredictions() != null && blockLocation.getTimepointPredictions().size() > 0) {
       List<TimepointPredictionBean> timepointPredictions = new ArrayList<TimepointPredictionBean>();
       for (TimepointPredictionRecord tpr: blockLocation.getTimepointPredictions()) {
         TimepointPredictionBean tpb = new TimepointPredictionBean();
+        if (tpr.isSkipped()) {
+          tpb.setScheduleRealtionship(TimepointPredictionBean.ScheduleRelationship.SKIPPED.getValue());
+        } else {
+          tpb.setScheduleRealtionship(TimepointPredictionBean.ScheduleRelationship.SCHEDULED.getValue());
+        }
+
         tpb.setTimepointId(tpr.getTimepointId().toString());
 //        tpb.setTripId(tpr.getTripId().toString());
 //        tpb.setStopSequence(tpr.getStopSequence());
@@ -398,7 +403,6 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
   private TripDetailsBean getBlockLocationAsTripDetails(
       BlockTripInstance targetBlockTrip, BlockLocation blockLocation,
       TripDetailsInclusionBean inclusion, long time) {
-
     if (targetBlockTrip == null || blockLocation == null)
       return null;
 
@@ -409,6 +413,7 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
   private TripDetailsBean getTripEntryAndBlockLocationAsTripDetails(
       BlockTripInstance blockTripInstance, BlockLocation blockLocation,
       TripDetailsInclusionBean inclusion, long time) {
+
 
     TripBean trip = null;
     long serviceDate = blockTripInstance.getServiceDate();
@@ -440,13 +445,12 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
       if (stopTimes == null)
         missing = true;
     }
-
     if (inclusion.isIncludeTripStatus() && blockLocation != null) {
       status = getBlockLocationAsStatusBean(blockLocation, time);
       if (status == null || status.getStatus().equals(EVehicleStatus.SKIPPED.toString()))
         missing = true;
       else
-        vehicleId = AgencyAndIdLibrary.convertFromString(status.getVehicleId());
+      vehicleId = AgencyAndIdLibrary.convertFromString(status.getVehicleId());
     }
 
     List<ServiceAlertBean> situations = _serviceAlertBeanService.getServiceAlertsForVehicleJourney(

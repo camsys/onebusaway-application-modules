@@ -16,6 +16,8 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.siri;
 
+import org.onebusaway.alerts.impl.*;
+import org.onebusaway.alerts.service.ServiceAlertsService;
 import org.onebusaway.collections.CollectionsLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.VehicleLocationListener;
@@ -28,11 +30,9 @@ import org.onebusaway.siri.core.ESiriModuleType;
 import org.onebusaway.transit_data.model.service_alerts.ECause;
 import org.onebusaway.transit_data.model.service_alerts.EEffect;
 import org.onebusaway.transit_data.model.service_alerts.ESeverity;
-import org.onebusaway.transit_data_federation.impl.service_alerts.*;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.util.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
-import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlertsRecordService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -54,13 +54,14 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
+@Component
 public class SiriService {
 
   private static final Logger _log = LoggerFactory.getLogger(SiriService.class);
 
   private TransitGraphDao _transitGraphDao;
 
-  private ServiceAlertsRecordService _serviceAlertsRecordService;
+  private ServiceAlertsService _serviceAlertsService;
 
   private VehicleLocationListener _vehicleLocationListener;
 
@@ -82,8 +83,8 @@ public class SiriService {
   }
 
   @Autowired
-  public void setServiceAlertService(ServiceAlertsRecordService serviceAlertsRecordService) {
-    _serviceAlertsRecordService = serviceAlertsRecordService;
+  public void setServiceAlertService(ServiceAlertsService serviceAlertsService) {
+    _serviceAlertsService = serviceAlertsService;
   }
 
   @Autowired
@@ -276,10 +277,10 @@ public class SiriService {
 
     for (ServiceAlertRecord serviceAlert : serviceAlertsToUpdate){
       serviceAlert.setAgencyId(defaultAgencyId);
-      _serviceAlertsRecordService.createOrUpdateServiceAlert(serviceAlert);
+      _serviceAlertsService.createOrUpdateServiceAlert(serviceAlert);
     }
 
-    _serviceAlertsRecordService.removeServiceAlerts(serviceAlertIdsToRemove);
+    _serviceAlertsService.removeServiceAlerts(serviceAlertIdsToRemove);
   }
 
   private ServiceAlertRecord getPtSituationAsServiceAlert(

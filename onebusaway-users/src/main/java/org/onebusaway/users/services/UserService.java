@@ -22,6 +22,7 @@ import org.onebusaway.users.client.model.UserBean;
 import org.onebusaway.users.model.User;
 import org.onebusaway.users.model.UserIndex;
 import org.onebusaway.users.model.UserIndexKey;
+import org.onebusaway.users.model.UserRole;
 
 /**
  * Service methods for performing operations on user accounts.
@@ -316,4 +317,36 @@ public interface UserService {
    *         month
    */
   public long getNumberOfStaleUsers();
+
+  void enableRoleForUser(User user, String roleName);
+
+  void disableRoleForUser(User user, String roleName);
+
+  /**
+   * Enable the admin role for a User. For admin bootstrapping, we have a check
+   * that will only allow you to set an admin role if no other admins exist.
+   * This would be useful for marking the very first user in a system as admin.
+   *
+   * @param user the user to mark as an admin
+   * @param role the role to add to the specified user
+   */
+  public void enableRoleForUser(User user, UserRole role);
+
+  /**
+   * Remove the admin role for a User.
+   *
+   * @param user
+   * @param role the role to remove from the specified user
+   */
+  public void disableRoleForUser(User user, UserRole role);
+
+  boolean isOps(User user);
+
+  /**
+   * Is user a given role.
+   *
+   * @param user
+   * @param role the role to test for
+   */
+  public boolean isRole(User user, UserRole role);
 }

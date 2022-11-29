@@ -36,6 +36,8 @@ public interface StandardAuthoritiesService {
   public final static String SUPPORT = "ROLE_SUPPORT";
   
   public final static String REPORTING = "ROLE_REPORTING";
+
+  public final static String OPS_API = "ROLE_OPS_API";
   
 
   /**
@@ -43,7 +45,7 @@ public interface StandardAuthoritiesService {
    * are defined
    */
   public final static List<String> STANDARD_AUTHORITIES = Collections.unmodifiableList(Arrays.asList(
-      ADMINISTRATOR, OPERATOR, SUPPORT, REPORTING, ANONYMOUS, USER));
+      ADMINISTRATOR, OPERATOR, SUPPORT, REPORTING, ANONYMOUS, USER, OPS_API));
 
   public final static List<String> MANAGED_AUTHORITIES = Collections.unmodifiableList(Arrays.asList(
           ADMINISTRATOR, OPERATOR, SUPPORT, REPORTING));
@@ -66,4 +68,6 @@ public interface StandardAuthoritiesService {
   public UserRole getAdministratorRole();
   
   public UserRole getReportingRole();
+
+  public UserRole getOpsApiRole();
 }

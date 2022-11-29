@@ -47,12 +47,16 @@ import org.onebusaway.users.services.UserPropertiesService;
 import org.onebusaway.users.services.UserService;
 import org.onebusaway.users.services.internal.UserIndexRegistrationService;
 import org.onebusaway.users.services.internal.UserRegistration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 public class UserServiceImpl implements UserService {
+
+  private static Logger _log = LoggerFactory.getLogger(UserServiceImpl.class);
 
   private UserDao _userDao;
 
@@ -96,7 +100,6 @@ public class UserServiceImpl implements UserService {
       UserIndexRegistrationService userIndexRegistrationService) {
     _userIndexRegistrationService = userIndexRegistrationService;
   }
-
 
   public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
     _passwordEncoder = passwordEncoder;
@@ -215,6 +218,16 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  public boolean isOps(User user){
+    return user.getRoles().contains(_authoritiesService.getOpsApiRole());
+  }
+
+  @Override
+  public boolean isRole(User user, UserRole role){
+    return user.getRoles().contains(role);
+  }
+
+  @Override
   @Transactional
   public void enableAdminRoleForUser(User user, boolean onlyIfNoOtherAdmins) {
 
@@ -226,10 +239,7 @@ public class UserServiceImpl implements UserService {
         return;
     }
 
-    Set<UserRole> roles = user.getRoles();
-
-    if (roles.add(adminRole))
-      _userDao.saveOrUpdateUser(user);
+    enableRoleForUser(user,adminRole);
   }
 
   @Transactional
@@ -243,11 +253,43 @@ public class UserServiceImpl implements UserService {
         return;
     }
 
+    disableRoleForUser(user,adminRole);
+  }
+
+  @Override
+  public void enableRoleForUser(User user, String roleName) {
+    enableRoleForUser(user,_authoritiesService.getUserRoleForName(roleName));
+  }
+
+  @Override
+  public void disableRoleForUser(User user, String roleName) {
+    disableRoleForUser(user,_authoritiesService.getUserRoleForName(roleName));
+  }
+
+  @Override
+  public void enableRoleForUser(User user, UserRole role){
+
+    if(!_authoritiesService.STANDARD_AUTHORITIES.contains(role.getName())) {
+      _log.info("cannot identify role " + role.getName());
+      return;
+    }
+
     Set<UserRole> roles = user.getRoles();
 
-    if (roles.remove(adminRole))
+    if (roles.add(role))
       _userDao.saveOrUpdateUser(user);
   }
+
+  @Override
+  public void disableRoleForUser(User user, UserRole role){
+    Set<UserRole> roles = user.getRoles();
+
+    if (roles.remove(role))
+      _userDao.saveOrUpdateUser(user);
+  }
+
+
+
 
   @Override
   @Transactional(readOnly=true)

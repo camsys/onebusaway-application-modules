@@ -21,14 +21,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.transit_data_federation.services.EntityIdService;
-import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts;
-import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.Affects;
-import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.Consequence;
-import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.Consequence.Effect;
-import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.Id;
-import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.ServiceAlert;
-
+import org.onebusaway.alerts.impl.ServiceAlertLibrary;
+import org.onebusaway.alerts.service.ServiceAlerts;
+import org.onebusaway.alerts.service.ServiceAlerts.*;
 import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtime.Alert;
 import com.google.transit.realtime.GtfsRealtime.EntitySelector;
@@ -39,13 +34,13 @@ import com.google.transit.realtime.GtfsRealtime.TripDescriptor;
 public class GtfsRealtimeAlertLibraryTest {
 
   private GtfsRealtimeAlertLibrary _library;
-  private EntityIdService _entityIdService;
+  private GtfsRealtimeEntitySource _entitySource;
 
   @Before
   public void before() {
     _library = new GtfsRealtimeAlertLibrary();
-    _entityIdService = Mockito.mock(EntityIdService.class);
-    _library.setEntitySource(_entityIdService);
+    _entitySource = Mockito.mock(GtfsRealtimeEntitySource.class);
+    _library.setEntitySource(_entitySource);
   }
 
   @Test
@@ -92,12 +87,12 @@ public class GtfsRealtimeAlertLibraryTest {
     urls.addTranslation(url);
     alert.setUrl(urls);
 
-    Mockito.when(_entityIdService.getRouteId("routeId")).thenReturn(
-            new AgencyAndId("1", "routeId"));
-    Mockito.when(_entityIdService.getStopId("stopId")).thenReturn(
-            new AgencyAndId("2", "stopId"));
-    Mockito.when(_entityIdService.getTripId("tripId")).thenReturn(
-            new AgencyAndId("3", "tripId"));
+    Mockito.when(_entitySource.getRouteId("routeId")).thenReturn(
+        ServiceAlertLibrary.id("1", "routeId"));
+    Mockito.when(_entitySource.getStopId("stopId")).thenReturn(
+        ServiceAlertLibrary.id("2", "stopId"));
+    Mockito.when(_entitySource.getTripId("tripId")).thenReturn(
+        ServiceAlertLibrary.id("3", "tripId"));
 
     ServiceAlert.Builder serviceAlert = _library.getAlertAsServiceAlert(
         alertId, alert.build());
@@ -120,7 +115,7 @@ public class GtfsRealtimeAlertLibraryTest {
 
     assertEquals(1, serviceAlert.getConsequenceCount());
     Consequence consequence = serviceAlert.getConsequence(0);
-    assertEquals(Effect.DETOUR, consequence.getEffect());
+    assertEquals(Consequence.Effect.DETOUR, consequence.getEffect());
 
     ServiceAlerts.TranslatedString summaries = serviceAlert.getSummary();
     assertEquals(1, summaries.getTranslationCount());
