@@ -37,7 +37,6 @@
 			</div>
 	
 			<s:if test="%{routesWithArrivals.size&gt;0}">
-				<p class="stopResultGroupHeader">Buses en-route:</p>
 				<s:iterator value="routesWithArrivals">
 					<s:iterator value="directions">
 						<div class="directionAtStop">
