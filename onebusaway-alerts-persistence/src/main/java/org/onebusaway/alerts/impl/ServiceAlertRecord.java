@@ -99,7 +99,8 @@ public class ServiceAlertRecord {
   private String source = INTERNAL_SOURCE;
 
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy= GenerationType.AUTO, generator="native")
+  @GenericGenerator(name = "native", strategy = "native")
   private int id = 0;
 
   @Column(nullable = false, name="service_alert_agency_id", length = 50)
