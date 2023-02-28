@@ -183,7 +183,8 @@ public class TransitDataServiceImpl implements TransitDataService {
       throws ServiceException {
     blockUntilBundleIsReady();
     _log.info(stopId);
-    return null;
+    return _transitDataService.getStopWithArrivalsAndDepartures(
+        stopId, query);
   }
 
   @Override
