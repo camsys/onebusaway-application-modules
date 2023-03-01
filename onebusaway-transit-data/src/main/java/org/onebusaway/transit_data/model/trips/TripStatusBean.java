@@ -456,7 +456,7 @@ public void setPreviousStopDistanceFromVehicle(
     vehicleFeatures.remove(feature);
   }
 
-  public boolean hasFeature(VehicleFeature feature){
+  public boolean hasVehicleFeature(VehicleFeature feature){
     return vehicleFeatures.contains(feature);
   }
 
