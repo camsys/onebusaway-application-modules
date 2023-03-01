@@ -8,11 +8,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class KneelingVehicleServiceImpl implements KneelingVehicleService {
 
-    private Set<AgencyAndId> _kneelingVehicles =  new HashSet<>();
+    private Set<AgencyAndId> _kneelingVehicles =  ConcurrentHashMap.newKeySet();
     protected static Logger _log = LoggerFactory.getLogger(KneelingVehicleServiceImpl.class);
 
     @Override
