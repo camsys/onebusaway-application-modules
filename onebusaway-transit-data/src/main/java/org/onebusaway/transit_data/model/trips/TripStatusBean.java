@@ -16,10 +16,11 @@
 package org.onebusaway.transit_data.model.trips;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.realtime.api.OccupancyStatus;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.schedule.FrequencyBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
@@ -110,7 +111,7 @@ public final class TripStatusBean implements Serializable {
 
   private List<TimepointPredictionBean> timepointPredictions;
 
-  private boolean isKneelingVehicle;
+  private Set<VehicleFeature> vehicleFeatures = new HashSet<>();
 
   public TripBean getActiveTrip() {
     return activeTrip;
@@ -447,7 +448,23 @@ public void setPreviousStopDistanceFromVehicle(
     this.timepointPredictions = timepointPredictions;
   }
 
-  public void setKneelingVehicle(boolean kneelingVehicle) {
-    isKneelingVehicle = kneelingVehicle;
+  public void addVehicleFeature(VehicleFeature feature){
+    vehicleFeatures.add(feature);
+  }
+
+  public void removeVehicleFeature(VehicleFeature feature){
+    vehicleFeatures.remove(feature);
+  }
+
+  public boolean hasFeature(VehicleFeature feature){
+    return vehicleFeatures.contains(feature);
+  }
+
+  public Set<VehicleFeature> getVehicleFeatures(){
+    return vehicleFeatures;
+  }
+
+  public boolean isKneelingVehicle() {
+    return vehicleFeatures.contains(VehicleFeature.KNEELING);
   }
 }

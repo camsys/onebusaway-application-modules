@@ -31,15 +31,7 @@ import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.TripStopTimesBean;
 import org.onebusaway.transit_data.model.schedule.FrequencyBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
-import org.onebusaway.transit_data.model.trips.TimepointPredictionBean;
-import org.onebusaway.transit_data.model.trips.TripBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
-import org.onebusaway.transit_data.model.trips.TripStatusBean;
-import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
-import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
-import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
+import org.onebusaway.transit_data.model.trips.*;
 import org.onebusaway.transit_data_federation.impl.realtime.apc.VehicleOccupancyRecordCache;
 import org.onebusaway.transit_data_federation.services.KneelingVehicleService;
 import org.onebusaway.util.AgencyAndIdLibrary;
@@ -392,9 +384,7 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
 
     if(bean.getVehicleId()!=null) {
       if (_kneelingVehicleService.isVehicleKneeling(bean.getVehicleId())) {
-        bean.setKneelingVehicle(true);
-      } else {
-        bean.setKneelingVehicle(false);
+        bean.addVehicleFeature(VehicleFeature.KNEELING);
       }
     }
 
