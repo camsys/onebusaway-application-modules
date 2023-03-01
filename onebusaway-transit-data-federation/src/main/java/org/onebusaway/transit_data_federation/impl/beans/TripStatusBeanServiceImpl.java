@@ -41,6 +41,7 @@ import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data_federation.impl.realtime.apc.VehicleOccupancyRecordCache;
+import org.onebusaway.transit_data_federation.services.KneelingVehicleService;
 import org.onebusaway.util.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.beans.ServiceAlertsBeanService;
 import org.onebusaway.transit_data_federation.services.beans.StopBeanService;
@@ -82,6 +83,8 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
 
   private VehicleOccupancyRecordCache _vehicleOccupancyRecordCache;
 
+  private KneelingVehicleService _kneelingVehicleService;
+
   @Autowired
   public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
     _transitGraphDao = transitGraphDao;
@@ -117,6 +120,11 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
   @Autowired
   public void setVehicleOccupancyRecordCache(VehicleOccupancyRecordCache vehicleOccupancyRecordCache){
     _vehicleOccupancyRecordCache = vehicleOccupancyRecordCache;
+  }
+
+  @Autowired
+  public void setKneelingVehicleService(KneelingVehicleService kneelingVehicleService){
+    _kneelingVehicleService = kneelingVehicleService;
   }
 
   /****
@@ -379,6 +387,14 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
         timepointPredictions.add(tpb);
       }
       bean.setTimepointPredictions(timepointPredictions);
+    }
+
+    //NOT SURE THIS WORKS YET!! pls remove excess logging later!
+    _log.info("looking in kneelingVehicleService for {}",bean.getVehicleId());
+    if (_kneelingVehicleService.isVehicleKneeling(bean.getVehicleId())) {
+      bean.setKneelingVehicle(true);
+    } else {
+      bean.setKneelingVehicle(false);
     }
 
     return bean;

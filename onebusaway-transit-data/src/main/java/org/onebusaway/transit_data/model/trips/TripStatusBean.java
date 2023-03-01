@@ -110,6 +110,8 @@ public final class TripStatusBean implements Serializable {
 
   private List<TimepointPredictionBean> timepointPredictions;
 
+  private boolean isKneelingVehicle;
+
   public TripBean getActiveTrip() {
     return activeTrip;
   }
@@ -443,5 +445,9 @@ public void setPreviousStopDistanceFromVehicle(
 
   public void setTimepointPredictions(List<TimepointPredictionBean> timepointPredictions) {
     this.timepointPredictions = timepointPredictions;
+  }
+
+  public void setKneelingVehicle(boolean kneelingVehicle) {
+    isKneelingVehicle = kneelingVehicle;
   }
 }

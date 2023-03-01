@@ -1,10 +1,6 @@
 package org.onebusaway.transit_data_federation.services;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.transit_data.model.ListBean;
-import org.onebusaway.transit_data_federation.impl.CancelledTripServiceImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
