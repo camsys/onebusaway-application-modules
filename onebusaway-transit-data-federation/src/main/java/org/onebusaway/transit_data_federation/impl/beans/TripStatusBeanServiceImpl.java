@@ -389,12 +389,13 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
       bean.setTimepointPredictions(timepointPredictions);
     }
 
-    //NOT SURE THIS WORKS YET!! pls remove excess logging later!
-    _log.info("looking in kneelingVehicleService for {}",bean.getVehicleId());
-    if (_kneelingVehicleService.isVehicleKneeling(bean.getVehicleId())) {
-      bean.setKneelingVehicle(true);
-    } else {
-      bean.setKneelingVehicle(false);
+
+    if(bean.getVehicleId()!=null) {
+      if (_kneelingVehicleService.isVehicleKneeling(bean.getVehicleId())) {
+        bean.setKneelingVehicle(true);
+      } else {
+        bean.setKneelingVehicle(false);
+      }
     }
 
     return bean;
