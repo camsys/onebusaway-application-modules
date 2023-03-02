@@ -34,7 +34,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Request;
 
-import org.apache.wink.common.annotations.Parent;
+//import org.apache.wink.common.annotations.Parent;
 
 /**
  * Explores the Java classes in a given package, looking for annotations 
@@ -173,13 +173,13 @@ public class RESTEndpointsDocumenter {
                 path = ((Path)annotation).value() + path;
             }
             
-            Annotation parent = clazz.getAnnotation(Parent.class);
-            if (parent != null){
-                clazz = ((Parent)parent).value();
-            }
-            else {
-                clazz = null;
-            }
+//            Annotation parent = clazz.getAnnotation(Parent.class);
+//            if (parent != null){
+//                clazz = ((Parent)parent).value();
+//            }
+//            else {
+//                clazz = null;
+//            }
         }
         if (path.endsWith("/") == false){
             path = path + "/";

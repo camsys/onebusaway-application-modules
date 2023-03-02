@@ -16,7 +16,13 @@
 package org.onebusaway.gtfs.impl;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 
+import org.onebusaway.gtfs.model.Agency;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.gtfs.services.calendar.CalendarServiceDataFactory;
 import org.onebusaway.utility.ObjectSerializationLibrary;
@@ -37,6 +43,11 @@ public class SerializedCalendarServiceDataFactoryImpl implements
       throw new IllegalStateException("error reading service calendar data at "
           + _path, ex);
     }
+  }
+
+  @Override
+  public CalendarServiceData updateData(Collection<Agency> collection, Map<AgencyAndId, List<String>> map, Map<String, TimeZone> map1) {
+    return null;
   }
 
 }
