@@ -33,7 +33,7 @@ import org.onebusaway.transit_data.model.schedule.FrequencyBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.trips.*;
 import org.onebusaway.transit_data_federation.impl.realtime.apc.VehicleOccupancyRecordCache;
-import org.onebusaway.transit_data_federation.services.KneelingVehicleService;
+import org.onebusaway.transit_data_federation.services.StrollerVehicleService;
 import org.onebusaway.util.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.beans.ServiceAlertsBeanService;
 import org.onebusaway.transit_data_federation.services.beans.StopBeanService;
@@ -75,7 +75,7 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
 
   private VehicleOccupancyRecordCache _vehicleOccupancyRecordCache;
 
-  private KneelingVehicleService _kneelingVehicleService;
+  private StrollerVehicleService _strollerVehicleService;
 
   @Autowired
   public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
@@ -115,8 +115,8 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
   }
 
   @Autowired
-  public void setKneelingVehicleService(KneelingVehicleService kneelingVehicleService){
-    _kneelingVehicleService = kneelingVehicleService;
+  public void setStrollerVehicleService(StrollerVehicleService strollerVehicleService){
+    _strollerVehicleService = strollerVehicleService;
   }
 
   /****
@@ -383,8 +383,8 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
 
 
     if(bean.getVehicleId()!=null) {
-      if (_kneelingVehicleService.isVehicleKneeling(bean.getVehicleId())) {
-        bean.addVehicleFeature(VehicleFeature.KNEELING);
+      if (_strollerVehicleService.isVehicleStroller(bean.getVehicleId())) {
+        bean.addVehicleFeature(VehicleFeature.STROLLER);
       }
     }
 

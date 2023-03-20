@@ -464,7 +464,7 @@ public void setPreviousStopDistanceFromVehicle(
     return vehicleFeatures;
   }
 
-  public boolean isKneelingVehicle() {
-    return vehicleFeatures.contains(VehicleFeature.KNEELING);
+  public boolean isStrollerVehicle() {
+    return vehicleFeatures.contains(VehicleFeature.STROLLER);
   }
 }
