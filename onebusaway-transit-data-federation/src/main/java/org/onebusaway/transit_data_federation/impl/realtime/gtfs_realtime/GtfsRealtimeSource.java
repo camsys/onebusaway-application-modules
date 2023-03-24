@@ -78,6 +78,8 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -364,17 +366,17 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   public GtfsRealtimeTripLibrary getGtfsRealtimeTripLibrary() {
     return _tripsLibrary;
   }
-  
-  @PostConstruct
-  public void start() {
+
+  @EventListener
+  public void handleContextRefresh(ContextRefreshedEvent event) {
     if (_agencyIds.isEmpty()) {
       _log.info("no agency ids specified for GtfsRealtimeSource, so defaulting to full agency id set");
       List<String> agencyIds = _agencyService.getAllAgencyIds();
       _agencyIds.addAll(agencyIds);
       if (_agencyIds.size() > 3) {
         _log.warn("The default agency id set is quite large (n="
-            + _agencyIds.size()
-            + ").  You might consider specifying the applicable agencies for your GtfsRealtimeSource.");
+                + _agencyIds.size()
+                + ").  You might consider specifying the applicable agencies for your GtfsRealtimeSource.");
       }
     }
 
