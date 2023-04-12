@@ -208,7 +208,7 @@ public class RouteScheduleBeanServiceImplTest {
 
     StopsAndTripsForDirectionBean stdb2 = getStopTripDirection(bean.getStopTripDirections(), "Tacoma Dome Station", "1");
     assertNotNull(stdb2);
-    assertEquals(Arrays.asList(aId("st5"), aId("st2"), aId("st4"), aId("st1")),
+    assertEquals(Arrays.asList(aId("st5"), aId("st4"), aId("st2"), aId("st1")),
             stdb2.getStopIds());
     assertNotNull(stdb2.getStopTimes());
   }
@@ -474,7 +474,8 @@ public class RouteScheduleBeanServiceImplTest {
     BlockConfigurationEntry bc2a2 = blockConfiguration(b2, serviceIdActivationSaturday, t2a,t2b);
     BlockConfigurationEntry bc1a3 = blockConfiguration(b1, serviceIdActivationSunday, t1a,t1b);
     BlockConfigurationEntry bc2a3 = blockConfiguration(b2, serviceIdActivationSunday, t2a,t2b);
-    BlockConfigurationEntry bc_misc = blockConfiguration(b3, serviceIdActivationMisc, t3a,t3b);
+    BlockConfigurationEntry bc_misc1 = blockConfiguration(b3, serviceIdActivationMisc, t3a,t3b);
+    BlockConfigurationEntry bc_misc2 = blockConfiguration(b3, serviceIdActivationMisc, t3b);
 
 
 
@@ -498,7 +499,7 @@ public class RouteScheduleBeanServiceImplTest {
     }
     blockIndexSunday = factory.createTripIndexForGroupOfBlockTrips(sundayTrips);
     List<BlockTripEntry> miscTrips = new ArrayList<BlockTripEntry>();
-    for (BlockConfigurationEntry blockConfig : Arrays.asList(bc_misc)) {
+    for (BlockConfigurationEntry blockConfig : Arrays.asList(bc_misc1,bc_misc2)) {
       miscTrips.add(blockConfig.getTrips().get(0));
     }
     blockIndexMisc = factory.createTripIndexForGroupOfBlockTrips(miscTrips);

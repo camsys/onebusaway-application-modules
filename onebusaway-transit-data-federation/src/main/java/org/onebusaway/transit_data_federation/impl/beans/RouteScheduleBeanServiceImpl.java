@@ -146,7 +146,8 @@ public class RouteScheduleBeanServiceImpl implements RouteScheduleBeanService {
   private void addStopTripDirectionsViaBlockTrip(RouteScheduleBean rsb, AgencyAndId routeId) {
     List<BlockTripIndex> blockTripIndices = _blockIndexService.getBlockTripIndicesForRouteCollectionId(routeId);
 
-    Map<String,StopCollections> directionToStopCollectionsMap = new HashMap<>();
+    Map<String,StopCollections> directionToCompleteStopCollectionsMap = new HashMap<>();
+    Map<String,StopCollections> directionToTimeBoxedStopCollectionsMap = new HashMap<>();
     Map<String, StopsAndTripsForDirectionBean> directionToStopTripDirectionBeanMap = new HashMap<>();
     Set<AgencyAndId> serviceIds = new HashSet<>();
     Set<TripEntry> activeTrips = new LinkedHashSet<>();
@@ -157,6 +158,8 @@ public class RouteScheduleBeanServiceImpl implements RouteScheduleBeanService {
     for (BlockTripIndex bti : blockTripIndices) {
 
       for (BlockTripEntry blockTrip : bti.getTrips()) {
+
+        handleStopCollection(blockTrip,directionToCompleteStopCollectionsMap);
 
         //check that the calendar is active and act on that
         ServiceIdActivation idActivation = blockTrip.getPattern().getServiceIds();
@@ -182,20 +185,16 @@ public class RouteScheduleBeanServiceImpl implements RouteScheduleBeanService {
           // make a map of stopTripDirectionBeans to StopCollections
           // Condense the stop collections and reset the result as the new stops in stopTripDirectionBean
           StopsAndTripsForDirectionBean stdb = directionToStopTripDirectionBeanMap.get(directionId);
-          StopCollections sc = directionToStopCollectionsMap.get(directionId);
           if(stdb == null){
             stdb = new StopsAndTripsForDirectionBean();
             stdb.setDirectionId(directionId);
             stdb.setTripIds(new ArrayList<>());
             stdb.setStopIds(new ArrayList<>());
             directionToStopTripDirectionBeanMap.put(directionId,stdb);
-
-            sc = new StopCollections();
-            directionToStopCollectionsMap.put(directionId,sc);
           }
+          handleStopCollection(blockTrip,directionToTimeBoxedStopCollectionsMap);
           stdb.getTripIds().add(blockTrip.getTrip().getId());
           stdb.addTripHeadsign(headsign);
-          sc.addIfNotPresent(stops);
           serviceIds.add(blockTrip.getTrip().getServiceId().getId());
         }
         if (willServiceIdsBeActiveAfterServiceDate(
@@ -209,8 +208,8 @@ public class RouteScheduleBeanServiceImpl implements RouteScheduleBeanService {
     // collapse StopCollections down to canonical pattern
     for (String direction : directionToStopTripDirectionBeanMap.keySet()) {
       StopsAndTripsForDirectionBean bean = directionToStopTripDirectionBeanMap.get(direction);
-      StopCollections sc = directionToStopCollectionsMap.get(direction);
-      bean.setStopIds(collapse(directionToStopCollectionsMap.get(direction)));
+      bean.setStopIds(collapse(directionToTimeBoxedStopCollectionsMap.get(direction),
+              directionToCompleteStopCollectionsMap.get(direction)));
       addStopTimeReferences(references, bean, activeTrips, bean.getTripIds(), rsb.getScheduleDate());
     }
 
@@ -225,6 +224,21 @@ public class RouteScheduleBeanServiceImpl implements RouteScheduleBeanService {
     rsb.getTrips().addAll(references.getTrips());
     rsb.getStops().addAll(references.getStops());
     rsb.getStopTimes().addAll(references.getStopTimes());
+  }
+
+  private void handleStopCollection (BlockTripEntry blockTrip,
+                                  Map<String,StopCollections> directionToStopCollectionsMap){
+    // get identifying charectoristics of the trip
+    String directionId = blockTrip.getTrip().getDirectionId();
+    //make a relevant StopCollection
+    StopCollection stops = new StopCollection();
+    stops.addFromTrip(blockTrip.getTrip());
+    StopCollections sc = directionToStopCollectionsMap.get(directionId);
+    if(sc==null){
+      sc = new StopCollections();
+      directionToStopCollectionsMap.put(directionId,sc);
+    }
+    sc.addIfNotPresent(stops);
   }
 
   private boolean willServiceIdsBeActiveAfterServiceDate(ServiceIdActivation serviceIds,
@@ -269,6 +283,7 @@ public class RouteScheduleBeanServiceImpl implements RouteScheduleBeanService {
     return routeBean;
   }
 
+  //todo: add stoptime and trip references for trips that inform cannonical trip order?
   private void addStopTimeReferences(BeanReferences references,
                                      StopsAndTripsForDirectionBean stopsAndTripsForDirectionBean,
                                      Set<TripEntry> allTrips,
@@ -380,10 +395,24 @@ public class RouteScheduleBeanServiceImpl implements RouteScheduleBeanService {
   // this algorithm comes from RouteBeanServiceImpl.getStopsInOrder
   // it fails on very complex shapes, but otherwise makes a best
   // effort guess at a canonical stopping pattern for a route
-  private List<AgencyAndId> collapse(StopCollections stopCollections) {
+  private List<AgencyAndId> collapse(StopCollections timeboxedStopCollections,StopCollections completeStopCollections) {
+
+    DirectedGraph<StopEntry> timeboxedGraph = generateGraph(timeboxedStopCollections);
+    DirectedGraph<StopEntry> completeGraph = generateGraph(completeStopCollections);
+    // here we guess at a canonical route pattern via a topological sort order
+    // works well for simple routes, does poorly for loops
+    StopGraphComparator c = new StopGraphComparator(completeGraph);
+    List<AgencyAndId> ids = new ArrayList<>();
+    for ( StopEntry entry : timeboxedGraph.getTopologicalSort(c)) {
+      ids.add(entry.getId());
+    }
+    return ids;
+  }
+
+  private DirectedGraph<StopEntry> generateGraph(StopCollections collections){
     List<StopEntry> stopsInDefaultOrder = new ArrayList<>();
     DirectedGraph<StopEntry> graph = new DirectedGraph<>();
-    for (StopCollection sequence : stopCollections.getList()) {
+    for (StopCollection sequence : collections.getList()) {
       StopEntry prev = null;
       for (StopEntry stop : sequence.getStops()) {
         if (prev != null) {
@@ -397,14 +426,7 @@ public class RouteScheduleBeanServiceImpl implements RouteScheduleBeanService {
         prev = stop;
       }
     }
-    // here we guess at a canonical route pattern via a topological sort order
-    // works well for simple routes, does poorly for loops
-    StopGraphComparator c = new StopGraphComparator(graph);
-    List<AgencyAndId> ids = new ArrayList<>();
-    for ( StopEntry entry : graph.getTopologicalSort(c)) {
-      ids.add(entry.getId());
-    }
-    return ids;
+    return graph;
   }
 
   private String getDestinationForTrip(TripEntry trip) {
