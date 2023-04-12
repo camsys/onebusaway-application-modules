@@ -66,7 +66,10 @@ public class RouteScheduleBeanServiceImplTest {
   private BlockTripIndex blockIndexWeekday = null;
   private BlockTripIndex blockIndexSaturday = null;
   private BlockTripIndex blockIndexSunday = null;
+  private BlockTripIndex blockIndexMisc = null;
 
+
+  // test made to address ST - OTD-452
   @Test
   public void runTestSuite() {
     this.testGetScheduledArrivalsForDateStopTrips();
@@ -159,6 +162,55 @@ public class RouteScheduleBeanServiceImplTest {
     assertEquals(4, bean.getStops().size());
     assertEquals(4, bean.getTrips().size());
     assertEquals(14, bean.getStopTimes().size());
+  }
+
+  @Test
+  public void testRoutesWithTempServiceRemoval() {
+    RouteScheduleBeanServiceImpl impl = getImpl();
+
+    RouteCollectionEntry route = createBrokenRoutes(AGENCY_ID, ROUTE_ID);
+    assertNotNull(blockIndexWeekday.getTrips());
+    assertEquals(4, blockIndexWeekday.getTrips().size());
+    doReturn(Arrays.asList(blockIndexWeekday,blockIndexMisc))
+            .when(blockIndexService).getBlockTripIndicesForRouteCollectionId(new AgencyAndId(AGENCY_ID, ROUTE_ID));
+
+    TransitGraphDao graph = Mockito.mock(TransitGraphDao.class);
+    CalendarServiceData data = new CalendarServiceData();
+    data.putDatesForLocalizedServiceId(lsid("serv1"),
+            Arrays.asList(date("2020-11-30 00:00"), date("2020-12-04 00:00")));
+    data.putDatesForLocalizedServiceId(lsid("serv2"),
+            Arrays.asList(date("2020-10-10 00:00"), date("2020-11-29 00:00")));
+
+    CalendarServiceImpl simpleCalendarService = new CalendarServiceImpl();
+    simpleCalendarService.setData(data);
+
+    this.calendarService = new ExtendedCalendarServiceImpl();
+    this.calendarService.setCalendarService(simpleCalendarService);
+    this.calendarService.setTransitGraphDao(dao);
+    this.calendarService.start();
+    impl.setCalendarService(this.calendarService);
+
+    ServiceDate serviceDate = new ServiceDate(2020, 11, 30);
+    RouteScheduleBean bean = impl.getScheduledArrivalsForDate(new AgencyAndId(AGENCY_ID, ROUTE_ID),
+            serviceDate);
+    assertNotNull(bean);
+    assertEquals(route.getId(), bean.getRouteId());
+    assertEquals(Arrays.asList(aId("serv1")), bean.getServiceIds());
+    assertEquals(serviceDate, bean.getScheduleDate());
+
+    assertEquals(2, bean.getStopTripDirections().size());
+    StopsAndTripsForDirectionBean stdb1 = getStopTripDirection(bean.getStopTripDirections(), "Theater District Station", "0");
+    assertNotNull(stdb1);
+    Comparator<AgencyAndId> comparator = Comparator.comparing(AgencyAndId::getId);
+    assertEquals(Arrays.asList(aId("st1"), aId("st2"), aId("st4"), aId("st5")),
+            stdb1.getStopIds());
+    assertNotNull(stdb1.getStopTimes());
+
+    StopsAndTripsForDirectionBean stdb2 = getStopTripDirection(bean.getStopTripDirections(), "Tacoma Dome Station", "1");
+    assertNotNull(stdb2);
+    assertEquals(Arrays.asList(aId("st5"), aId("st2"), aId("st4"), aId("st1")),
+            stdb2.getStopIds());
+    assertNotNull(stdb2.getStopTimes());
   }
 
   private StopsAndTripsForDirectionBean getStopTripDirection(List<StopsAndTripsForDirectionBean> stopTripDirections, String headsign, String direction) {
@@ -312,6 +364,144 @@ public class RouteScheduleBeanServiceImplTest {
       sundayTrips.add(blockConfig.getTrips().get(0));
     }
     blockIndexSunday = factory.createTripIndexForGroupOfBlockTrips(sundayTrips);
+
+    TripNarrative.Builder tnA = TripNarrative.builder();
+    tnA.setTripHeadsign("Theater District Station");
+    TripNarrative.Builder tnB = TripNarrative.builder();
+    tnB.setTripHeadsign("Tacoma Dome Station");
+
+    Mockito.when(narrativeService.getTripForId(new AgencyAndId(AGENCY_ID, "TacL1000"))).thenReturn(tnA.create());
+    Mockito.when(narrativeService.getTripForId(new AgencyAndId(AGENCY_ID, "TacL1001"))).thenReturn(tnB.create());
+    Mockito.when(narrativeService.getTripForId(new AgencyAndId(AGENCY_ID, "TacL1002"))).thenReturn(tnA.create());
+    Mockito.when(narrativeService.getTripForId(new AgencyAndId(AGENCY_ID, "TacL1003"))).thenReturn(tnB.create());
+    Mockito.when(narrativeService.getTripForId(new AgencyAndId(AGENCY_ID, "TacL6000"))).thenReturn(tnA.create());
+    Mockito.when(narrativeService.getTripForId(new AgencyAndId(AGENCY_ID, "TacL6001"))).thenReturn(tnB.create());
+    Mockito.when(narrativeService.getTripForId(new AgencyAndId(AGENCY_ID, "TacL7000"))).thenReturn(tnA.create());
+    Mockito.when(narrativeService.getTripForId(new AgencyAndId(AGENCY_ID, "TacL7001"))).thenReturn(tnB.create());
+    AgencyNarrative.Builder narrative = AgencyNarrative.builder();
+    narrative.setLang("en");
+    narrative.setName("ACTA");
+    narrative.setPhone("123 123-1234");
+    narrative.setEmail("abuse@example.com");
+    narrative.setTimezone("America/Los_Angeles"); // we need to stay consistent with UnitTestingSupport
+    narrative.setUrl("http://example.com");
+    narrative.setFareUrl("http:/example.com");
+
+    Mockito.when(narrativeService.getAgencyForId(AGENCY_ID)).thenReturn(narrative.create());
+
+    Mockito.when(dao.getRouteCollectionForId(new AgencyAndId(AGENCY_ID, ROUTE_ID))).thenReturn(routeCollection);
+
+    // no service alerts
+    Mockito.when(serviceAlertsService.getServiceAlerts(any())).thenReturn(Collections.emptyList());
+
+    return route.getParent();
+  }
+
+
+  private RouteCollectionEntry createBrokenRoutes(String agencyId,
+                                            String routeId) {
+
+    RouteEntryImpl route  = route(ROUTE_ID);
+    BlockEntryImpl b1 = block("b1");
+    TripEntryImpl t1a = trip("b1_t1", "serv1", 0);
+    TripEntryImpl t1b = trip("b1_t2", "serv1", 0);
+    t1a.setDirectionId("0");
+    t1a.setRoute(route);
+    t1b.setDirectionId("1");
+    t1b.setRoute(route);
+    BlockEntryImpl b2 = block("b2");
+    TripEntryImpl t2a = trip("b2_t1", "serv1", 0);
+    TripEntryImpl t2b = trip("b2_t2", "serv1", 0);
+    t2a.setDirectionId("0");
+    t2a.setRoute(route);
+    t2b.setDirectionId("1");
+    t2b.setRoute(route);
+
+    BlockEntryImpl b3 = block("b3");
+    TripEntryImpl t3a = trip("b3_t1", "serv2", 0);
+    TripEntryImpl t3b = trip("b3_t2", "serv2", 0);
+    t3a.setDirectionId("0");
+    t3a.setRoute(route);
+    t3b.setDirectionId("1");
+    t3b.setRoute(route);
+
+
+    StopEntryImpl st1 = stop("st1", 47.239868,-122.428118);
+    StopEntryImpl st2 = stop("st2", 47.239081,-122.434202);
+    StopEntryImpl st3 = stop("st3", 47.244865,-122.436623);
+    StopEntryImpl st4 = stop("st4", 47.249496,-122.438552);
+    StopEntryImpl st5 = stop("st5", 47.250261,-122.439371);
+
+    StopTimeEntryImpl st_1a_1 = stopTime(1, st1, t1a, time(5, 0, 0), time(5, 0,0 ), 0);
+    StopTimeEntryImpl st_1a_2 = stopTime(1, st2, t1a, time(5, 2, 0), time(5, 2,0 ), 0);
+
+    StopTimeEntryImpl st_1b_1 = stopTime(1, st2, t1b, time(5, 4, 0), time(5, 4,0 ), 0);
+    StopTimeEntryImpl st_1b_2 = stopTime(1, st1, t1b, time(5, 6, 0), time(5, 6, 0), 0);
+
+
+    StopTimeEntryImpl st_2a_1 = stopTime(1, st4, t2a, time(5, 16, 0),time(5, 16, 0), 0);
+    StopTimeEntryImpl st_2a_2 = stopTime(1, st5, t2a, time(5, 18, 0),time(5, 18, 0), 0);
+
+
+    StopTimeEntryImpl st_2b_1 = stopTime(1, st5, t2b, time(5, 20, 0),time(5, 20, 0), 0);
+    StopTimeEntryImpl st_2b_2 = stopTime(1, st4, t2b, time(5, 22, 0),time(5, 22, 0), 0);
+
+    StopTimeEntryImpl st_3a_1 = stopTime(1, st1, t3a, time(6, 0, 0), time(6, 0,0 ), 0);
+    StopTimeEntryImpl st_3a_2 = stopTime(1, st2, t3a, time(6, 2, 0), time(6, 2,0 ), 0);
+    StopTimeEntryImpl st_3a_3 = stopTime(1, st3, t3a, time(6, 4, 0), time(6, 4,0 ), 0);
+    StopTimeEntryImpl st_3a_4 = stopTime(1, st4, t3a, time(6, 6, 0), time(6, 6,0 ), 0);
+    StopTimeEntryImpl st_3a_5 = stopTime(1, st5, t3a, time(6, 8, 0), time(6, 8,0 ), 0);
+
+
+    StopTimeEntryImpl st_3b_1 = stopTime(1, st5, t3b, time(6, 10, 0), time(6, 10,0 ), 0);
+    StopTimeEntryImpl st_3b_2 = stopTime(1, st4, t3b, time(6, 12, 0), time(6, 12,0 ), 0);
+    StopTimeEntryImpl st_3b_3 = stopTime(1, st3, t3b, time(6, 14, 0), time(6, 14,0 ), 0);
+    StopTimeEntryImpl st_3b_4 = stopTime(1, st2, t3b, time(6, 16, 0), time(6, 16,0 ), 0);
+    StopTimeEntryImpl st_3b_5 = stopTime(1, st1, t3b, time(6, 8, 0), time(6, 18,0 ), 0);
+
+
+    ServiceIdActivation serviceIdActivationWeekday = serviceIds(lsids("serv1"), lsids());
+    ServiceIdActivation serviceIdActivationSaturday = serviceIds(lsids("serv1"), lsids());
+    ServiceIdActivation serviceIdActivationSunday = serviceIds(lsids("serv1"), lsids());
+    ServiceIdActivation serviceIdActivationMisc = serviceIds(lsids("serv2"), lsids());
+
+
+    BlockConfigurationEntry bc1a = blockConfiguration(b1, serviceIdActivationWeekday, t1a,t1b);
+    BlockConfigurationEntry bc1b = blockConfiguration(b1, serviceIdActivationWeekday, t1b);
+    BlockConfigurationEntry bc2a = blockConfiguration(b2, serviceIdActivationWeekday, t2a,t2b);
+    BlockConfigurationEntry bc2b = blockConfiguration(b2, serviceIdActivationWeekday, t2b);
+    BlockConfigurationEntry bc1a2 = blockConfiguration(b1, serviceIdActivationSaturday, t1a,t1b);
+    BlockConfigurationEntry bc2a2 = blockConfiguration(b2, serviceIdActivationSaturday, t2a,t2b);
+    BlockConfigurationEntry bc1a3 = blockConfiguration(b1, serviceIdActivationSunday, t1a,t1b);
+    BlockConfigurationEntry bc2a3 = blockConfiguration(b2, serviceIdActivationSunday, t2a,t2b);
+    BlockConfigurationEntry bc_misc = blockConfiguration(b3, serviceIdActivationMisc, t3a,t3b);
+
+
+
+    RouteCollectionEntryImpl routeCollection = routeCollection(ROUTE_ID, route);
+    route.setTrips(Arrays.asList(t1a, t1b, t2a, t2b, t3a, t3b));
+
+    List<BlockTripEntry> weekdayTrips = new ArrayList<BlockTripEntry>();
+
+    for (BlockConfigurationEntry blockConfig : Arrays.asList(bc1a,bc1b,bc2a,bc2b)) {
+      weekdayTrips.add(blockConfig.getTrips().get(0));
+    }
+    blockIndexWeekday = factory.createTripIndexForGroupOfBlockTrips(weekdayTrips);
+    List<BlockTripEntry> saturdayTrips = new ArrayList<BlockTripEntry>();
+    for (BlockConfigurationEntry blockConfig : Arrays.asList(bc2a2,bc1a2)) {
+      saturdayTrips.add(blockConfig.getTrips().get(0));
+    }
+    blockIndexSaturday = factory.createTripIndexForGroupOfBlockTrips(saturdayTrips);
+    List<BlockTripEntry> sundayTrips = new ArrayList<BlockTripEntry>();
+    for (BlockConfigurationEntry blockConfig : Arrays.asList(bc1a3,bc2a3)) {
+      sundayTrips.add(blockConfig.getTrips().get(0));
+    }
+    blockIndexSunday = factory.createTripIndexForGroupOfBlockTrips(sundayTrips);
+    List<BlockTripEntry> miscTrips = new ArrayList<BlockTripEntry>();
+    for (BlockConfigurationEntry blockConfig : Arrays.asList(bc_misc)) {
+      miscTrips.add(blockConfig.getTrips().get(0));
+    }
+    blockIndexMisc = factory.createTripIndexForGroupOfBlockTrips(miscTrips);
 
     TripNarrative.Builder tnA = TripNarrative.builder();
     tnA.setTripHeadsign("Theater District Station");
