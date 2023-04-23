@@ -32,7 +32,7 @@ import java.io.Writer;
 
 public class CustomJsonLibHandler extends AbstractContentTypeHandler {
 
-        private String defaultEncoding = "ISO-8859-1";
+        private String defaultEncoding = "UTF-8";
         private ObjectMapper mapper = new ObjectMapper();
 
         public void toObject(ActionInvocation invocation, Reader in, Object target) throws IOException {
