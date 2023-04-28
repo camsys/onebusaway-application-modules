@@ -17,6 +17,7 @@ package org.onebusaway.geospatial.services;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.CoordinatePoint;
@@ -154,5 +155,31 @@ public class SphericalGeometryLibraryTest {
 
     assertEquals(40.73729256997116, r.getLat(), 0.0);
     assertEquals(-73.95537051431788, r.getLon(), 0.0);
+  }
+
+  @Test
+  @Ignore
+  public void getOrientationTest() {
+    /**
+     * These paired values have different position(lat and lon) but the SphericalGeometryLibrary.getOrientation function is giving the same orientation values.
+     * latFrom - 40.7775, latTo - 40.77726, lonFrom - -73.95918, lonTo - -73.95936, angle - 233.13010235469878
+     * latFrom - 40.76597, latTo - 40.76573, lonFrom - -73.96759, lonTo - -73.96777, angle - 233.13010235469878
+     *
+     *
+     * latFrom - 40.7883, latTo - 40.78806, lonFrom - -73.9513, lonTo - -73.95148, angle - 233.13010235388455
+     * latFrom - 40.76669, latTo - 40.76645, lonFrom - -73.96706, lonTo - -73.96724, angle - 233.13010235388455
+     *
+     * latFrom - 40.78854, latTo - 40.7883, lonFrom - -73.95113, lonTo - -73.9513, angle -   234.68878656060213
+     * latFrom - 40.80223, latTo - 40.80199, lonFrom - -73.94114, lonTo - -73.94131, angle - 234.68878656060213
+     */
+
+    // the "assertEquals" tests below should be updated with the correct "expected" value.
+    assertEquals(233.13010235469878,SphericalGeometryLibrary.getOrientation(40.7775,-73.95918,40.77726,-73.95936),0.1);
+    assertEquals(233.13010235469878, SphericalGeometryLibrary.getOrientation(40.76597,-73.96759,40.76573,-73.96777), 0.1);
+    assertEquals(233.13010235388455, SphericalGeometryLibrary.getOrientation(40.7883,-73.9513,40.78806,-73.95148), 0.1);
+    assertEquals(233.13010235388455, SphericalGeometryLibrary.getOrientation(40.76669,-73.96706,40.76645,-73.96724), 0.1);
+    assertEquals(234.68878656060213, SphericalGeometryLibrary.getOrientation(40.78854,-73.95113,40.7883,-73.9513), 0.1);
+    assertEquals(234.68878656060213, SphericalGeometryLibrary.getOrientation(40.80223,-73.94114,40.80199,-73.94131), 0.1);
+
   }
 }
