@@ -58,6 +58,27 @@ class ServiceAlertsBeanServiceImpl implements ServiceAlertsBeanService {
   }
 
   @Override
+  public boolean createServiceAlerts(String defaultAgencyId, List<ServiceAlertBean> serviceAlertBeans) {
+
+    List<ServiceAlertRecord> records = new ArrayList<>();
+    for (ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
+      ServiceAlertRecord serviceAlertRecord = getServiceAlertRecordFromServiceAlertBean(
+              serviceAlertBean, defaultAgencyId);
+      if (serviceAlertRecord != null) {
+        records.add(serviceAlertRecord);
+      }
+    }
+    _serviceAlertsService.createOrUpdateServiceAlerts(defaultAgencyId, records);
+    return true;
+  }
+
+  @Override
+  public boolean sync() {
+    return _serviceAlertsService.sync();
+  }
+
+
+  @Override
   public void updateServiceAlert(ServiceAlertBean situationBean) {
     AgencyAndId id = AgencyAndIdLibrary.convertFromString(situationBean.getId());
     ServiceAlertRecord serviceAlertRecord = getServiceAlertRecordFromServiceAlertBean(
