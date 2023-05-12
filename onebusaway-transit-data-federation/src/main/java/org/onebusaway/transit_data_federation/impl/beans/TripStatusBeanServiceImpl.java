@@ -31,16 +31,9 @@ import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.TripStopTimesBean;
 import org.onebusaway.transit_data.model.schedule.FrequencyBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
-import org.onebusaway.transit_data.model.trips.TimepointPredictionBean;
-import org.onebusaway.transit_data.model.trips.TripBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
-import org.onebusaway.transit_data.model.trips.TripStatusBean;
-import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
-import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
-import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
+import org.onebusaway.transit_data.model.trips.*;
 import org.onebusaway.transit_data_federation.impl.realtime.apc.VehicleOccupancyRecordCache;
+import org.onebusaway.transit_data_federation.services.StrollerVehicleService;
 import org.onebusaway.util.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.beans.ServiceAlertsBeanService;
 import org.onebusaway.transit_data_federation.services.beans.StopBeanService;
@@ -82,6 +75,8 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
 
   private VehicleOccupancyRecordCache _vehicleOccupancyRecordCache;
 
+  private StrollerVehicleService _strollerVehicleService;
+
   @Autowired
   public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
     _transitGraphDao = transitGraphDao;
@@ -117,6 +112,11 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
   @Autowired
   public void setVehicleOccupancyRecordCache(VehicleOccupancyRecordCache vehicleOccupancyRecordCache){
     _vehicleOccupancyRecordCache = vehicleOccupancyRecordCache;
+  }
+
+  @Autowired
+  public void setStrollerVehicleService(StrollerVehicleService strollerVehicleService){
+    _strollerVehicleService = strollerVehicleService;
   }
 
   /****
@@ -379,6 +379,13 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
         timepointPredictions.add(tpb);
       }
       bean.setTimepointPredictions(timepointPredictions);
+    }
+
+
+    if(bean.getVehicleId()!=null) {
+      if (_strollerVehicleService.isVehicleStroller(bean.getVehicleId())) {
+        bean.addVehicleFeature(VehicleFeature.STROLLER);
+      }
     }
 
     return bean;

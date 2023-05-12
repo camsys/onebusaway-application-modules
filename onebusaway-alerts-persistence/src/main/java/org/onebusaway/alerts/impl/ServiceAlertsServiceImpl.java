@@ -129,6 +129,13 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 
 	}
 
+	@Override
+	public boolean sync() {
+		 if (_persister.needsSync()) {
+			 this.loadServiceAlerts();
+		 }
+		 return true;
+	}
 
 	@Override
 	public synchronized ServiceAlertRecord copyServiceAlert(ServiceAlertRecord serviceAlertRecord) {

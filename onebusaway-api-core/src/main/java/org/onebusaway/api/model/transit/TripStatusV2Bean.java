@@ -17,8 +17,10 @@ package org.onebusaway.api.model.transit;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.transit_data.model.trips.VehicleFeature;
 
 public final class TripStatusV2Bean implements Serializable {
 
@@ -92,6 +94,8 @@ public final class TripStatusV2Bean implements Serializable {
   private String vehicleId;
 
   private List<String> situationIds;
+
+  private Set<VehicleFeature> vehicleFeatures;
 
   public String getActiveTripId() {
     return activeTripId;
@@ -310,4 +314,8 @@ public final class TripStatusV2Bean implements Serializable {
   public void setOccupancyCapacity(Integer occupancyCapacity) {
     this.occupancyCapacity = occupancyCapacity;
   }
+
+  public void setVehicleFeatures(Set<VehicleFeature> features){this.vehicleFeatures = features;}
+
+  public Set<VehicleFeature> getVehicleFeatures(){return vehicleFeatures;}
 }

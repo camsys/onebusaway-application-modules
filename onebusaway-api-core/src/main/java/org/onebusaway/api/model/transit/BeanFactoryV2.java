@@ -438,6 +438,8 @@ public class BeanFactoryV2 {
       bean.setSituationIds(situationIds);
     }
 
+    bean.setVehicleFeatures(tripStatus.getVehicleFeatures());
+
     return bean;
   }
 

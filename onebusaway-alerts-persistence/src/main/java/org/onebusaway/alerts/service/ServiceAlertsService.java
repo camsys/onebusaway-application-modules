@@ -101,4 +101,6 @@ public interface ServiceAlertsService {
   public List<ServiceAlertRecord> getServiceAlerts(SituationQueryBean query);
 
   List<ServiceAlertRecord> createOrUpdateServiceAlerts(String agencyId, List<ServiceAlertRecord> records);
+
+  boolean sync();
 }

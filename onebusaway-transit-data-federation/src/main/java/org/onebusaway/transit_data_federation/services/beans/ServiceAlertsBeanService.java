@@ -59,4 +59,8 @@ public interface ServiceAlertsBeanService {
 
   public List<ServiceAlertRecordBean> getServiceAlertRecordsForFederatedAgencyId(
 		String agencyId);
+
+  boolean createServiceAlerts(String defaultAgencyId, List<ServiceAlertBean> serviceAlertBeans);
+
+  boolean sync();
 }
