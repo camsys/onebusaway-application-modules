@@ -570,8 +570,9 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 		// start adding things to map once it's ready...
 		if(initialized === false) {
 			initialized = true;
-			
-		showLegend(map);
+			if(OBA.Config.legendVisibility === 'true'){
+				showLegend(map);
+			}
 
 
 			
