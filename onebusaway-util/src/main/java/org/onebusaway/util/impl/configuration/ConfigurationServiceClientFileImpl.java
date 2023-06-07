@@ -18,9 +18,7 @@ package org.onebusaway.util.impl.configuration;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,23 +45,38 @@ public class ConfigurationServiceClientFileImpl implements
 	private static long CACHE_TIME_MILLIS = 1 * 60 * 1000; // 1 min
 	private long lastCacheTime = 0;
 
+	private int connectionTimeout;
+	private int readTimeout;
+
 	private HashMap<String, Object> cachedMergeConfig = null;
 
 	// when populated merge values in from admin config service
 	private String externalConfigurationApiUrl;
+
 	@Override
 	public void setExternalConfigurationApiUrl(String url) {
 		this.externalConfigurationApiUrl = url;
 	}
 
+	@Override
+	public void setConnectionTimeout(int connectionTimeout) {
+		this.connectionTimeout = connectionTimeout;
+	}
+
+	@Override
+	public void setReadTimeout(int readTimeout) {
+		this.readTimeout = readTimeout;
+	}
+
 	private HashMap<String, Object> _config = null;
+
 	// for unit tests
 	public void setConfig(HashMap<String, Object> config) {
 		_config = config;
 	}
-	
+
 	private boolean isLocal = true;
-	
+
 	private String configFile = "/var/lib/oba/config.json";
 
 	public void setConfigFile(String file) {
@@ -143,7 +156,7 @@ public class ConfigurationServiceClientFileImpl implements
 
 	@Override
 	public List<JsonObject> getItemsForRequest(String baseObject,
-			String... params) throws Exception {
+											   String... params) throws Exception {
 		// TODO Auto-generated method stub
 		_log.info("empty getItemsForRequest");
 		return null;
@@ -151,7 +164,7 @@ public class ConfigurationServiceClientFileImpl implements
 
 	@Override
 	public List<Map<String, String>> getItems(String baseObject,
-			String... params) throws Exception {
+											  String... params) throws Exception {
 		_log.debug("getItems(" + baseObject + ", " + params + ")");
 		return (List<Map<String, String>>) getConfig().get("config");
 	}
@@ -161,42 +174,42 @@ public class ConfigurationServiceClientFileImpl implements
 		List<Map<String, String>> settings = getItems("config", "list");
 		if (settings == null) return null;
 		for (Map<String, String> setting : settings) {
-		  if (component == null) {
-		    if (setting.containsKey("key") && key.equals(setting.get("key"))) {
-		      _log.debug("getItem(no-component)(" + component  + ", " + key + ")=" + setting.get("value"));
-		      return setting.get("value");  
-		    }
-		  } else {
-			  // setting is a map of keys "component", "key", and "value"
-			  // corresponding to {"component": "admin", "key": "useTdm", "value": "false"},
-			  if ((setting.containsKey("component") &&
-  					component.equals(setting.get("component"))) &&
-  				setting.containsKey("key") && 
-  				key.equals(setting.get("key"))) {
-  			  _log.debug("getItem(" + component  + ", " + key + ")=" + setting.get("value"));
-  				return setting.get("value");
-  			}
-		  }
+			if (component == null) {
+				if (setting.containsKey("key") && key.equals(setting.get("key"))) {
+					_log.debug("getItem(no-component)(" + component  + ", " + key + ")=" + setting.get("value"));
+					return setting.get("value");
+				}
+			} else {
+				// setting is a map of keys "component", "key", and "value"
+				// corresponding to {"component": "admin", "key": "useTdm", "value": "false"},
+				if ((setting.containsKey("component") &&
+						component.equals(setting.get("component"))) &&
+						setting.containsKey("key") &&
+						key.equals(setting.get("key"))) {
+					_log.debug("getItem(" + component  + ", " + key + ")=" + setting.get("value"));
+					return setting.get("value");
+				}
+			}
 		}
 		return null;
 	}
 
     private HashMap<String, Object> getConfig() {
-		  if (_config != null) {
-			  return mergeConfig(_config);
-		  }
-		  
-		    try {
-		        String config = FileUtils.readFileToString(new File(configFile));
-		        HashMap<String, Object> o = new ObjectMapper(new JsonFactory()).readValue(
-		            config, new TypeReference<HashMap<String, Object>>() {
-		            });
-		        _config = o;
-		      } catch (Exception e) {
-		        _log.info("Failed to get configuration out of " + this.configFile + ", continuing without it.");
+		if (_config != null) {
+			return mergeConfig(_config);
+		}
 
-		      }
-		      return mergeConfig(_config);
+		try {
+			String config = FileUtils.readFileToString(new File(configFile));
+			HashMap<String, Object> o = new ObjectMapper(new JsonFactory()).readValue(
+					config, new TypeReference<HashMap<String, Object>>() {
+					});
+			_config = o;
+		} catch (Exception e) {
+			_log.info("Failed to get configuration out of " + this.configFile + ", continuing without it.");
+
+		}
+		return mergeConfig(_config);
 
 	}
 	// if configured, merge the staticConfig with dynamicConfig.  DynamicConfig
@@ -219,7 +232,7 @@ public class ConfigurationServiceClientFileImpl implements
 	}
 
 	HashMap<String, Object> mergeConfig(HashMap<String, Object> staticConfig,
-																			HashMap<String, Object> dynamicConfig) {
+										HashMap<String, Object> dynamicConfig) {
 
 		ArrayList<HashMap> mergedItems = new ArrayList<>();
 		// only merge config elements
@@ -269,10 +282,10 @@ public class ConfigurationServiceClientFileImpl implements
 	@Override
 	public Map<String, List<ConfigParameter>> getParametersFromLocalFile() {
 		try {
-		ObjectMapper mapper = new ObjectMapper();
-		ConfigFileStructure cfs = mapper.readValue(new File(configFile), ConfigFileStructure.class);
+			ObjectMapper mapper = new ObjectMapper();
+			ConfigFileStructure cfs = mapper.readValue(new File(configFile), ConfigFileStructure.class);
 
-		return cfs.getAgencies();
+			return cfs.getAgencies();
 		} catch (IOException e) {
 			_log.error("problem converting file config file contents to config map", e, e);
 		}
@@ -280,11 +293,11 @@ public class ConfigurationServiceClientFileImpl implements
 	}
 
 	private HashMap<String, String> getParametersFromCFS(ConfigFileStructure cfs){
-			HashMap<String, String> config = new HashMap<>();
-			for(ConfigItem item : cfs.getConfig()){
-				config.put(item.getComponent() + "." + item.getKey(), item.getValue());
-			}
-			return config;
+		HashMap<String, String> config = new HashMap<>();
+		for(ConfigItem item : cfs.getConfig()){
+			config.put(item.getComponent() + "." + item.getKey(), item.getValue());
+		}
+		return config;
 	}
 
 	public HashMap<String, Object> getConfigFromApi() {
@@ -304,7 +317,8 @@ public class ConfigurationServiceClientFileImpl implements
 		}
 		try {
 			URLConnection urlConnection = url.openConnection();
-			in = null;
+			urlConnection.setConnectTimeout(connectionTimeout);
+			urlConnection.setReadTimeout(readTimeout);
 
 			in = urlConnection.getInputStream();
 			ObjectMapper mapper = new ObjectMapper();
@@ -312,6 +326,9 @@ public class ConfigurationServiceClientFileImpl implements
 			});
 			_log.info("refreshing configuration with {}", config);
 			return config;
+		} catch (SocketTimeoutException e){
+			_log.info("timeout issue with url " + url + ", ex=" + e);
+			return null;
 		} catch (IOException ex) {
 			// todo this can happen, its not fatal
 			_log.info("connection issue with url " + url + ", ex=" + ex);
