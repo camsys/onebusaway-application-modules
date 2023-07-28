@@ -195,6 +195,9 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   // this is a change from the default, but is much safer
   private boolean _validateCurrentTime = false;
 
+  // some systems mis-report service data at midnight
+  private boolean _hackServiceDate = false;
+
   // a special case of some specific integration - drop unassigned trips
   private boolean _filterUnassigned = false;
 
@@ -439,6 +442,10 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
     _filterUnassigned = flag;
   }
 
+  public void setHackServiceDate(boolean flag) {
+    _hackServiceDate = flag;
+  }
+
   @Autowired
   public void setGtfsRealtimeCancelService(GtfsRealtimeCancelService service) {
     _cancelService = service;
@@ -471,6 +478,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
     _tripsLibrary.setBlockGeospatialService(_blockGeospatialService);
     _tripsLibrary.setUseLabelAsVehicleId(_useLabelAsId);
     _tripsLibrary.setValidateCurrentTime(_validateCurrentTime);
+    _tripsLibrary.setHackServiceDate(_hackServiceDate);
     _tripsLibrary.setAddedTripService(new AddedTripServiceImpl());
     _tripsLibrary.setFilterUnassigned(_filterUnassigned);
     DuplicatedTripServiceImpl duplicatedTripService = new DuplicatedTripServiceImpl();
