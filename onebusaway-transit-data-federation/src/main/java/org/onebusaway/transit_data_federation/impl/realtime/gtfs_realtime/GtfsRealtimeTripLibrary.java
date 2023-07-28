@@ -833,7 +833,7 @@ public class GtfsRealtimeTripLibrary {
       // see if we got a bad date
       Calendar cal = Calendar.getInstance();
       cal.setTimeInMillis(getCurrentTime());
-      if (cal.get(Calendar.HOUR) < 3) {
+      if (cal.get(Calendar.HOUR_OF_DAY) < 3) {
         if (serviceDate.getDay() == cal.get(Calendar.DAY_OF_MONTH)) {
           cal.add(Calendar.DAY_OF_MONTH, -1);
           // this is likely wrong, block likely started yesterday
