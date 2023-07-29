@@ -25,7 +25,7 @@ import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.RouteBean;
-import org.onebusaway.transit_data.model.RouteSort;
+import org.onebusaway.transit_data.model.RouteSorting;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ public class RouteAction extends ApiSearchAction {
   private ArrivalsAndDeparturesQueryBean _query = new ArrivalsAndDeparturesQueryBean();
 
   @Autowired
-  private RouteSort customRouteSort;
+  private RouteSorting customRouteSort;
 
   public RouteAction() {
     super(V2);
