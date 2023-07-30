@@ -83,6 +83,8 @@ public class GtfsRealtimeTripLibrary {
   private DuplicatedTripService _duplicatedTripService;
 
   private DynamicTripBuilder _dynamicTripBuilder;
+
+  private BlockFinder _blockFinder;
   /**
    * This is primarily here to assist with unit testing.
    */
@@ -114,6 +116,7 @@ public class GtfsRealtimeTripLibrary {
 
   public void setBlockCalendarService(BlockCalendarService blockCalendarService) {
     _blockCalendarService = blockCalendarService;
+    _blockFinder = new BlockFinder(_blockCalendarService);
   }
 
   public long getCurrentTime() {
@@ -816,66 +819,16 @@ public class GtfsRealtimeTripLibrary {
       
       return null;
     }
-    
-    ServiceDate serviceDate = null;
-    BlockInstance instance;
-    
-    BlockEntry block = tripEntry.getBlock();
-    if (trip.hasStartDate() && ! "0".equals(trip.getStartDate())) {
-    	try {
-    		serviceDate = ServiceDate.parseString(trip.getStartDate());
-    	} catch (ParseException ex) {
-    		_log.debug("Could not parse service date " + trip.getStartDate(), ex);
-    	}
-    }
 
-    if (serviceDate != null && _hackServiceDate) {
-      // see if we got a bad date
-      Calendar cal = Calendar.getInstance();
-      cal.setTimeInMillis(getCurrentTime());
-      if (cal.get(Calendar.HOUR_OF_DAY) < 3) {
-        if (serviceDate.getDay() == cal.get(Calendar.DAY_OF_MONTH)) {
-          cal.add(Calendar.DAY_OF_MONTH, -1);
-          // this is likely wrong, block likely started yesterday
-          serviceDate = new ServiceDate(cal);
-        }
-      }
+    BlockServiceDate _blockserviceDate = _blockFinder.getBlockServiceDateFromTrip(tripEntry, currentTime);
+    if (_blockserviceDate == null) {
+      // service date is mandatory, we need to aboart
+      _log.error("could not determine service date for trip {}", trip.getTripId());
+      return null;
     }
+    BlockInstance instance = _blockserviceDate.getBlockInstance();
+    ServiceDate serviceDate = _blockserviceDate.getServiceDate();
 
-    if (serviceDate != null) {
-    	instance = _blockCalendarService.getBlockInstance(block.getId(),
-    			serviceDate.getAsDate().getTime());
-    	if (instance == null) {
-    		_log.debug("block " + block.getId() + " does not exist on service date "
-    				+ serviceDate);
-    		return null;
-    	}
-    } else {
-      // we have legacy support for missing service date
-      // mostly for unit tests but also legacy feeds
-    	long timeFrom = currentTime - 30 * 60 * 1000;
-    	long timeTo = currentTime + 30 * 60 * 1000;
-    	
-    	List<BlockInstance> instances = _blockCalendarService.getActiveBlocks(
-    			block.getId(), timeFrom, timeTo);
-    	
-    	if (instances.isEmpty()) {
-    		instances = _blockCalendarService.getClosestActiveBlocks(block.getId(), 
-    				currentTime);
-    	}
-    	
-    	if (instances.isEmpty()) {
-    		_log.debug("could not find any active instances for the specified block="
-    				+ block.getId() + " trip=" + trip);
-    		return null;
-    	}
-    	instance = instances.get(0);
-    }
-    
-    if (serviceDate == null) {
-    	serviceDate = new ServiceDate(new Date(instance.getServiceDate()));
-    }
-    
     BlockDescriptor blockDescriptor = new BlockDescriptor();
     blockDescriptor.setBlockInstance(instance);
     blockDescriptor.setStartDate(serviceDate);
