@@ -587,17 +587,22 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   private synchronized void handleUpdates(MonitoredResult result, FeedMessage tripUpdates,
                                           FeedMessage vehiclePositions, FeedMessage alerts,
                                           ServiceAlerts.ServiceAlertsCollection alertCollection) {
-	  
-	long time = tripUpdates.getHeader().getTimestamp() * 1000;
-	_tripsLibrary.setCurrentTime(time);
 
-    List<CombinedTripUpdatesAndVehiclePosition> combinedUpdates = _tripsLibrary.groupTripUpdatesAndVehiclePositions(result,
-            tripUpdates, vehiclePositions);
-    result.setRecordsTotal(combinedUpdates.size());
-    handleCombinedUpdates(result, combinedUpdates);
-    cacheVehicleLocations(vehiclePositions);
-    handleAlerts(alerts);
-    handleAlertCollection(alertCollection);
+    try {
+      long time = tripUpdates.getHeader().getTimestamp() * 1000;
+      _tripsLibrary.setCurrentTime(time);
+
+      List<CombinedTripUpdatesAndVehiclePosition> combinedUpdates = _tripsLibrary.groupTripUpdatesAndVehiclePositions(result,
+              tripUpdates, vehiclePositions);
+      result.setRecordsTotal(combinedUpdates.size());
+      handleCombinedUpdates(result, combinedUpdates);
+      cacheVehicleLocations(vehiclePositions);
+      handleAlerts(alerts);
+      handleAlertCollection(alertCollection);
+    } catch (Throwable t){
+      _log.error("Exception in handleUpdates", t);
+    }
+
   }
 
   private void cacheVehicleLocations(FeedMessage vehiclePositions) {
