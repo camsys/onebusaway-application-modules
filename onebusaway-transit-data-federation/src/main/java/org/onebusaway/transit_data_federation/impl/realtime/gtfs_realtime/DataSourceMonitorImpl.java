@@ -17,6 +17,8 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime;
 
 import org.onebusaway.cloud.api.ExternalServices;
 import org.onebusaway.cloud.api.ExternalServicesBridgeFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -33,6 +35,8 @@ public class DataSourceMonitorImpl implements DataSourceMonitor {
   private ExternalServices _externalServices = null;
   private Map<String, Long> _lastUpdateByFeedId = new HashMap<>();
 
+  private static final Logger _log = LoggerFactory.getLogger(GtfsRealtimeSource.class);
+
   @Override
   public void logUpdate(MonitoredResult result) {
     ExternalServices es = new ExternalServicesBridgeFactory().getExternalServices();
@@ -42,10 +46,15 @@ public class DataSourceMonitorImpl implements DataSourceMonitor {
   }
 
   private void logUpdate(ExternalServices es, MonitoredResult result) {
-    long lastUpdate = getLastUpdate(result);
-    if (hasUpdateExpired(lastUpdate)) {
-      publishMetric(es, result);
-      markUpdated(result);
+    try {
+      long lastUpdate = getLastUpdate(result);
+      if (hasUpdateExpired(lastUpdate)) {
+        publishMetric(es, result);
+        markUpdated(result);
+      }
+    } catch (Throwable t) {
+      // do not let a monitoring exception stop the actual update
+      _log.error("exception pushing metrics: ", t);
     }
   }
 
