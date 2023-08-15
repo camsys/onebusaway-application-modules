@@ -15,16 +15,10 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime;
 
-import com.google.transit.realtime.GtfsRealtime;
-import com.google.transit.realtime.GtfsRealtimeNYCT;
-
-/**
- * GTFS-RT added trips are experimental/non-standard so there are multiple ways
- * of supporting thims.  This service encapsulates the multiple ways that
- * OneBusAway supports.
- */
-public interface AddedTripService {
-  AddedTripInfo handleNyctDescriptor(GtfsRealtimeServiceSource serviceSource, GtfsRealtime.TripUpdate tu, GtfsRealtimeNYCT.NyctTripDescriptor nyctTripDescriptor, long currentTIme);
-
-  AddedTripInfo handleAddedDescriptor(GtfsRealtimeServiceSource serivceSource, String agencyId, GtfsRealtime.TripUpdate tu, long currentTime);
+public interface DataSourceMonitor {
+  /**
+   * log or publish details of the MonitoredResult
+   * @param result
+   */
+  void logUpdate(MonitoredResult result);
 }

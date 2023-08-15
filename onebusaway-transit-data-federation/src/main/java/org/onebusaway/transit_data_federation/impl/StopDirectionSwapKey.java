@@ -13,54 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.transit_data_federation.model.narrative;
+package org.onebusaway.transit_data_federation.impl;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 
 import java.io.Serializable;
 
 /**
- * Key for pattern narrative.
+ * Key for Stop direction route swap -- aka wrong way concurrency.
  */
-public class StopDirectionKey implements Serializable {
-
-  private AgencyAndId stopId;
+public class StopDirectionSwapKey implements Serializable {
+  private AgencyAndId routeId;
   private String directionId;
+  private AgencyAndId stopId;
 
-  public StopDirectionKey(AgencyAndId stopId, String directionId) {
-    this.stopId = stopId;
+  public StopDirectionSwapKey(AgencyAndId routeId, String directionId, AgencyAndId fromStop) {
+    this.routeId = routeId;
     this.directionId = directionId;
+    this.stopId = fromStop;
   }
-
-  public AgencyAndId getStopId() {
-    return stopId;
-  }
-
-  public String getDirectionId() {
-    return directionId;
-  }
-
   @Override
   public boolean equals(Object obj) {
     if (obj == null)
       return false;
-    if (!(obj instanceof StopDirectionKey))
+    if (!(obj instanceof StopDirectionSwapKey))
       return false;
-    StopDirectionKey sd = (StopDirectionKey) obj;
-    if (sd.stopId == null && stopId != null)
-      return false;
-    if (sd.directionId == null && directionId != null)
-      return false;
-    return stopId.equals(sd.stopId)
-            && directionId.equals(sd.directionId);
+    StopDirectionSwapKey k = (StopDirectionSwapKey) obj;
+    return k.routeId.equals(routeId)
+            && k.directionId.equals(directionId)
+            && k.stopId.equals(stopId);
   }
+
   @Override
   public int hashCode() {
-    int hash = 17;
-    if (stopId != null)
-      hash += stopId.hashCode();
-    if (directionId != null)
-      hash += directionId.hashCode();
-    return hash;
+    return routeId.hashCode() + directionId.hashCode()
+            + stopId.hashCode();
   }
 }
