@@ -18,12 +18,10 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Methods for searching for a block.
@@ -47,11 +45,20 @@ public class BlockFinder {
               serviceDateGuess.getAsDate().getTime());
       if (blockInstance != null) {
         serviceDate = new ServiceDate(new Date(blockInstance.getServiceDate()));
-        return new BlockServiceDate(serviceDate, blockInstance);
+        if (hasTrip(blockInstance, tripEntry)) {
+          return new BlockServiceDate(serviceDate, blockInstance);
+        }
       }
     }
+    return null;
+  }
 
-      return null;
+  private boolean hasTrip(BlockInstance blockInstance, TripEntry tripEntry) {
+    for (BlockTripEntry testTrip : blockInstance.getBlock().getTrips()) {
+      if (testTrip.getTrip().getId().equals(tripEntry.getId()))
+        return true;
+    }
+    return false;
   }
 
   private List<ServiceDate> getPossibleServiceDates(long currentTime) {

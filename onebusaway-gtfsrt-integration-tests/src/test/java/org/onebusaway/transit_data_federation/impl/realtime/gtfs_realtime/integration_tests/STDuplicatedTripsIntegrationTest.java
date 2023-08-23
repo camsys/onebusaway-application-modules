@@ -48,7 +48,7 @@ import java.util.TimeZone;
 
 import static org.junit.Assert.*;
 
-public class STDuplicatedTripsIntegrationTest extends AbstractGtfsRealtimeIntegrationTest  {
+public class STDuplicatedTripsIntegrationTest extends AbstractGtfsRealtimeJsonIntegrationTest  {
   protected String getIntegrationTestPath() {
     return "org/onebusaway/transit_data_federation/impl/realtime/gtfs_realtime/integration_tests/st_duplicated_trips";
   }
@@ -147,11 +147,4 @@ public class STDuplicatedTripsIntegrationTest extends AbstractGtfsRealtimeIntegr
 //    assertTrue(foundDuplicate);
   }
 
-  private void writeFeed(GtfsRealtime.FeedMessage feed, URL feedLocation) throws IOException {
-    feed.writeTo(Files.newOutputStream(Path.of(feedLocation.getFile())));
-  }
-
-  private URL createFeedLocation() throws IOException {
-    return File.createTempFile("trip_updates", "pb").toURI().toURL();
-  }
 }

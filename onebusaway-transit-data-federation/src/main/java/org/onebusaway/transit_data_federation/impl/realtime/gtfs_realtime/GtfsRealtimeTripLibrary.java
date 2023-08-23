@@ -862,12 +862,23 @@ public class GtfsRealtimeTripLibrary {
     	blockStartTime = getBlockStartTimeForTripStartTime(instance,
     			tripEntry.getId(), tripStartTime);
     	if (blockStartTime < 0) {
-          _log.debug("invalid blockStartTime for trip " + trip + " for instance=" + instance);
+          _log.error("invalid blockStartTime for trip " + trip + " for instance=" + instance);
           return null;
-        }
+      }
     	blockDescriptor.setStartTime(blockStartTime);
     }
     return blockDescriptor;
+  }
+
+  private Integer getFirstStopTime(TripEntry tripEntry) {
+    if (tripEntry == null) return null;
+    if (tripEntry.getStopTimes().isEmpty()) return null;
+    StopTimeEntry stopTimeEntry = tripEntry.getStopTimes().get(0);
+    if (stopTimeEntry.getArrivalTime() > 0)
+      return stopTimeEntry.getArrivalTime();
+    if (stopTimeEntry.getDepartureTime() > 0)
+      return stopTimeEntry.getDepartureTime();
+    return null;
   }
 
   private boolean isDynamicTrip(TripEntry trip) {
