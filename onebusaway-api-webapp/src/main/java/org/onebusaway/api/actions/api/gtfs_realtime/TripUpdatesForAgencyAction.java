@@ -16,7 +16,7 @@
  */
 package org.onebusaway.api.actions.api.gtfs_realtime;
 
-import com.google.transit.realtime.GtfsRealtime;
+
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data.model.*;
 import org.onebusaway.transit_data.model.trips.*;
@@ -29,9 +29,7 @@ import com.google.transit.realtime.GtfsRealtime.VehicleDescriptor;
 import org.onebusaway.util.AgencyAndIdLibrary;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class TripUpdatesForAgencyAction extends GtfsRealtimeActionSupport {
 
@@ -75,6 +73,7 @@ public class TripUpdatesForAgencyAction extends GtfsRealtimeActionSupport {
         vehicleDesc.setId(normalizeId(vehicle.getVehicleId()));
       }
     }
+    setLastModifiedHeader(timestamp);
     addCancelledTrips(agencyId, feed, timestamp);
   }
 
@@ -86,9 +85,6 @@ public class TripUpdatesForAgencyAction extends GtfsRealtimeActionSupport {
     for (TripDetailsBean tripDetailsBean : tripsForAgency.getList()) {
       if (tripDetailsBean.getStatus() != null) {
         String status = tripDetailsBean.getStatus().getStatus();
-        if (!"default".equals(status)) {
-          System.out.println("status=" + status);
-        }
         if (TransitDataConstants.STATUS_CANCELED.equals(tripDetailsBean.getStatus().getStatus())) {
           FeedEntity.Builder entity = feed.addEntityBuilder();
 
