@@ -51,9 +51,16 @@ public final class NarrativeProviderImpl implements Serializable {
 
   private Map<StopDirectionKey, RouteAndHeadsignNarrative> _patternCache = new HashMap<>();
 
-  @Refreshable(dependsOn = RefreshableResources.TRANSIT_GRAPH)
   public void reset() {
-//    _dynamicShapesById.clear();
+    _agencyNarratives.clear();
+    _stopNarratives.clear();
+    _routeCollectionNarratives.clear();
+    _tripNarratives.clear();
+    _stopTimeNarrativesByTripIdAndStopTimeSequence.clear();
+    _patternToStopTimeNarratives.clear();
+    _shapePointsById.clear();
+    _dynamicShapesById.clear();
+    _patternCache.clear();
   }
 
     public void setNarrativeForAgency(String agencyId, AgencyNarrative narrative) {
@@ -186,6 +193,18 @@ public final class NarrativeProviderImpl implements Serializable {
 
   public void addShapePoints(ShapePoints shapePoints) {
     _dynamicShapesById.put(shapePoints.getShapeId(), shapePoints);
+  }
+
+  public void copyFrom(NarrativeProviderImpl impl) {
+    _agencyNarratives.putAll(impl._agencyNarratives);
+    _stopNarratives.putAll(impl._stopNarratives);
+    _routeCollectionNarratives.putAll(impl._routeCollectionNarratives);
+    _tripNarratives.putAll(impl._tripNarratives);
+    _stopTimeNarrativesByTripIdAndStopTimeSequence.putAll(impl._stopTimeNarrativesByTripIdAndStopTimeSequence);
+    _patternToStopTimeNarratives.putAll(impl._patternToStopTimeNarratives);
+    _shapePointsById.putAll(impl._shapePointsById);
+    _dynamicShapesById.putAll(impl._dynamicShapesById);
+    _patternCache.putAll(impl._patternCache);
   }
 
   public static class RoutePattern implements Serializable {

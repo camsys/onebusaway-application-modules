@@ -37,7 +37,7 @@ public class ConsolidatedStopIdModificationStrategy implements AgencyAndIdModifi
 
     private TransitDataService _transitDataService;
 
-    private Map<Pair<String, AgencyAndId>, AgencyAndId> _map;
+    private Map<Pair<String, AgencyAndId>, AgencyAndId> _map = new HashMap<>();
 
     @Autowired
     public void setTransitDataService(TransitDataService transitDataService) {
@@ -63,7 +63,7 @@ public class ConsolidatedStopIdModificationStrategy implements AgencyAndIdModifi
         @Override
         public void run() {
             _log.info("background thread starting up....");
-            _map = new HashMap<Pair<String, AgencyAndId>, AgencyAndId>();
+            _map.clear();
             _log.info("calling getAllConsolidatedStops");
             ListBean<ConsolidatedStopMapBean> beans = _transitDataService.getAllConsolidatedStops();
             _log.info("getAllConsolidatedStops returned " + beans.getList().size() + " entries");

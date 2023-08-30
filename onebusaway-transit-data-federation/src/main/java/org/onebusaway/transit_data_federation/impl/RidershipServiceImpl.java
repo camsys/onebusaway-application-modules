@@ -42,11 +42,11 @@ public class RidershipServiceImpl implements RidershipService {
     private static Logger _log = LoggerFactory.getLogger(RidershipServiceImpl.class);
 
     private FederatedTransitDataBundle _bundle;
-    private List<HistoricalRidership> _riderships;
-    private Map<AgencyAndId, List<HistoricalRidership>> _tripRiderships;
-    private Map<AgencyAndId, List<HistoricalRidership>> _routeRiderships;
-    private Map<AgencyAndId, List<HistoricalRidership>> _stopRiderships;
-    private Map<String, List<HistoricalRidership>> _tuppleRiderships;
+    private List<HistoricalRidership> _riderships = new ArrayList<>();
+    private Map<AgencyAndId, List<HistoricalRidership>> _tripRiderships = new HashMap<>();
+    private Map<AgencyAndId, List<HistoricalRidership>> _routeRiderships = new HashMap<>();
+    private Map<AgencyAndId, List<HistoricalRidership>> _stopRiderships = new HashMap<>();
+    private Map<String, List<HistoricalRidership>> _tuppleRiderships = new HashMap<>();
 
     @Autowired
     public void setBundle(FederatedTransitDataBundle bundle) { _bundle = bundle; }
@@ -63,10 +63,11 @@ public class RidershipServiceImpl implements RidershipService {
             _log.info("historical riderships not found at " + path);
             _riderships = new ArrayList<>();
         }
-        _tripRiderships = new HashMap<>();
-        _routeRiderships = new HashMap<>();
-        _stopRiderships = new HashMap<>();
-        _tuppleRiderships = new HashMap<>();
+        _riderships.clear();
+        _tripRiderships.clear();
+        _routeRiderships.clear();
+        _stopRiderships.clear();
+        _tuppleRiderships.clear();
 
         _log.info("generating historical ridership indexes");
         createIndexes();

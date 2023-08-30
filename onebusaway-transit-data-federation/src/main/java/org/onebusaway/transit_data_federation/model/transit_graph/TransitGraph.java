@@ -53,4 +53,7 @@ public interface TransitGraph {
   public List<RouteEntry> getAllRoutes();
 
   public RouteEntry getRouteForId(AgencyAndId id);
+
+  public void empty();
+  public void initialize();
 }

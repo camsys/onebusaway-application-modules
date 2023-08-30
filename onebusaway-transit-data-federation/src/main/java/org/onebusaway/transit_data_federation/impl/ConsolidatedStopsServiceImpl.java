@@ -43,7 +43,7 @@ public class ConsolidatedStopsServiceImpl implements ConsolidatedStopsService {
     private static Logger _log = LoggerFactory.getLogger(ConsolidatedStopsServiceImpl.class);
     private FederatedTransitDataBundle _bundle;
 
-    private Map<AgencyAndId, ConsolidatedStopMapBean> _index;
+    private Map<AgencyAndId, ConsolidatedStopMapBean> _index = new HashMap<AgencyAndId, ConsolidatedStopMapBean>();
 
     @Autowired
     public void setBundle(FederatedTransitDataBundle bundle) {
@@ -52,7 +52,6 @@ public class ConsolidatedStopsServiceImpl implements ConsolidatedStopsService {
 
     @Override
     public Collection<ConsolidatedStopMapBean> getAllConsolidatedStops() {
-        if (_index == null) return new ArrayList<ConsolidatedStopMapBean>();
         return _index.values();
     }
 
@@ -75,7 +74,7 @@ public class ConsolidatedStopsServiceImpl implements ConsolidatedStopsService {
 
     private void buildIndex(File file) throws IOException {
 
-        _index = new HashMap<AgencyAndId, ConsolidatedStopMapBean>();
+        _index.clear();
 
         FileInputStream in = new FileInputStream(file);
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));

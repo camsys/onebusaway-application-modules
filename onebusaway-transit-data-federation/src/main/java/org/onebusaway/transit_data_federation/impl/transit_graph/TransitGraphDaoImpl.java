@@ -48,7 +48,7 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
 
   private FederatedTransitDataBundle _bundle;
 
-  private TransitGraph _graph;
+  private TransitGraph _graph = new TransitGraphImpl();
 
   private DynamicGraph _dynamicGraph;
 
@@ -70,18 +70,16 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   public void setup() throws IOException, ClassNotFoundException {
     File path = _bundle.getTransitGraphPath();
 
-    if(_graph != null) {
-      TransitGraphImpl graph = (TransitGraphImpl)_graph;
-      graph.empty();
-      _graph = null;
-    }
-    
+    _graph.empty();
+
     if (path.exists()) {
-      TransitGraphImpl graph = ObjectSerializationLibrary.readObject(path);
-      graph.initialize();
-      _graph = graph;
-    } else {
-      _graph = new TransitGraphImpl();
+      // would like to copyFrom here but difficult because of interface
+      if (_graph instanceof TransitGraphImpl) {
+        ((TransitGraphImpl)_graph).copyFrom(ObjectSerializationLibrary.readObject(path));
+      } else {
+        _graph = ObjectSerializationLibrary.readObject(path);
+      }
+      _graph.initialize();
     }
   }
 

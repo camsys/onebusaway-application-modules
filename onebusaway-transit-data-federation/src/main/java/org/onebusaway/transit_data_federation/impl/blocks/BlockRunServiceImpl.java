@@ -41,7 +41,7 @@ public class BlockRunServiceImpl implements BlockRunService {
   private static Logger _log = LoggerFactory.getLogger(BlockRunServiceImpl.class);
   
   private FederatedTransitDataBundle _bundle;
-  private Map<String, List<BlockRunIndex>> _map = null;
+  private Map<String, List<BlockRunIndex>> _map = new HashMap<>();
   @Autowired
   public void setBundle(FederatedTransitDataBundle bundle) {
     _bundle = bundle;
@@ -52,14 +52,11 @@ public class BlockRunServiceImpl implements BlockRunService {
   public void setup() throws IOException, ClassNotFoundException {
     _log.info("bundle path=" + _bundle.getPath());
     File path = _bundle.getBlockRunDataPath();
+    _map.clear();
     if (path.exists()) {
       _log.info("loading BlockRunIndex...");
-      _map = ObjectSerializationLibrary.readObject(path);
+      _map.putAll(ObjectSerializationLibrary.readObject(path));
       _log.info("loading BlockRunIndex...done");
-    } else {
-      // this index is optional, do not fail if not found
-      _log.info("failed BlockRunIndex load, path not found of " + path);
-      _map = new HashMap<String, List<BlockRunIndex>>();
     }
   }
   

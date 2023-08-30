@@ -110,9 +110,12 @@ public class BundleSearchServiceImpl implements BundleSearchService, Application
 						}
 					}
 				}
-				suggestions = searchState.getSuggestions();
-				stopSuggestions = searchState.getStopSuggestions();
-				routeSuggestions = searchState.getRouteSuggestions();
+				suggestions.clear();
+				suggestions.putAll(searchState.getSuggestions());
+				stopSuggestions.clear();
+				stopSuggestions.putAll(searchState.getStopSuggestions());
+				routeSuggestions.clear();
+				routeSuggestions.putAll(searchState.getRouteSuggestions());
 				_log.info("complete");
 			}
 		};

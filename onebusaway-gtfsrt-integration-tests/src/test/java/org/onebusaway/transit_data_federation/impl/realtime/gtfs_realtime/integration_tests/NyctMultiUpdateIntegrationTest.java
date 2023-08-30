@@ -17,28 +17,14 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.integ
 
 import org.junit.Test;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.realtime.api.VehicleLocationListener;
-import org.onebusaway.transit_data.model.*;
-import org.onebusaway.transit_data.model.trips.TimepointPredictionBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.impl.realtime.BlockLocationServiceImpl;
 import org.onebusaway.transit_data_federation.impl.realtime.TestVehicleLocationListener;
 import org.onebusaway.transit_data_federation.impl.realtime.VehicleStatusServiceImpl;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.AbstractGtfsRealtimeIntegrationTest;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource;
-import org.onebusaway.transit_data_federation.model.TargetTime;
-import org.onebusaway.transit_data_federation.model.narrative.StopTimeNarrative;
-import org.onebusaway.transit_data_federation.services.ArrivalAndDepartureService;
-import org.onebusaway.transit_data_federation.services.beans.ArrivalsAndDeparturesBeanService;
-import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
-import org.onebusaway.transit_data_federation.services.realtime.ArrivalAndDepartureInstance;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
-import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.dynamic.DynamicBlockConfigurationEntryImpl;
-import org.onebusaway.util.AgencyAndIdLibrary;
 import org.springframework.core.io.ClassPathResource;
 
 import java.util.*;

@@ -96,23 +96,53 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
   }
 
   public void empty() {
-    _agencyEntriesById.clear();
-    _stopEntriesById.clear();
-    _tripEntriesById.clear();
-    _blockEntriesById.clear();
-    _routeCollectionEntriesById.clear();
-    _routeEntriesById.clear();
-    
-    _routeCollections.clear();
-    _blocks.clear();
-    _trips.clear();
-    _stops.clear();
-    _routes.clear();
-    _agencies.clear();
+    if (_agencyEntriesById != null)
+      _agencyEntriesById.clear();
+    if (_stopEntriesById != null)
+      _stopEntriesById.clear();
+    if (_tripEntriesById != null)
+      _tripEntriesById.clear();
+    if (_blockEntriesById != null)
+      _blockEntriesById.clear();
+    if (_routeCollectionEntriesById != null)
+      _routeCollectionEntriesById.clear();
+    if (_routeEntriesById != null)
+      _routeEntriesById.clear();
+
+    if (_routeCollections != null)
+      _routeCollections.clear();
+    if (_blocks != null)
+      _blocks.clear();
+    if (_trips != null)
+      _trips.clear();
+    if (_stops != null)
+      _stops.clear();
+    if (_routes != null)
+      _routes.clear();
+    if (_agencies != null)
+      _agencies.clear();
 
     _stopLocationTree = null;        
   }
-  
+
+  public void copyFrom(TransitGraphImpl graph) {
+    _agencyEntriesById.putAll(graph._agencyEntriesById);
+    _stopEntriesById.putAll(graph._stopEntriesById);
+    _tripEntriesById.putAll(graph._tripEntriesById);
+    _blockEntriesById.putAll(graph._blockEntriesById);
+    _routeCollectionEntriesById.putAll(graph._routeCollectionEntriesById);
+    _routeEntriesById.putAll(graph._routeEntriesById);
+
+    _routeCollections.addAll(graph._routeCollections);
+    _blocks.addAll(graph._blocks);
+    _trips.addAll(graph._trips);
+    _stops.addAll(graph._stops);
+    _routes.addAll(graph._routes);
+    _agencies.addAll(graph._agencies);
+
+    _stopLocationTree = graph._stopLocationTree;
+  }
+
   public void initialize() {
     if (_stopLocationTree == null) {
       System.out.println("initializing transit graph...");
@@ -219,37 +249,55 @@ public class TransitGraphImpl implements Serializable, TransitGraph {
   }
 
   public void refreshAgencyMapping() {
-    _agencyEntriesById = new HashMap<String, AgencyEntryImpl>();
+    if (_agencyEntriesById == null)
+      _agencyEntriesById = new HashMap<String, AgencyEntryImpl>();
+    else
+      _agencyEntriesById.clear();
     for (AgencyEntryImpl entry : _agencies)
       _agencyEntriesById.put(entry.getId(), entry);
   }
 
   public void refreshTripMapping() {
-    _tripEntriesById = new HashMap<AgencyAndId, TripEntryImpl>();
+    if (_tripEntriesById == null)
+      _tripEntriesById = new HashMap<AgencyAndId, TripEntryImpl>();
+    else
+      _tripEntriesById.clear();
     for (TripEntryImpl entry : _trips)
       _tripEntriesById.put(entry.getId(), entry);
   }
 
   public void refreshBlockMapping() {
-    _blockEntriesById = new HashMap<AgencyAndId, BlockEntryImpl>();
+    if (_blockEntriesById == null)
+      _blockEntriesById = new HashMap<>();
+    else
+      _blockEntriesById.clear();
     for (BlockEntryImpl entry : _blocks)
       _blockEntriesById.put(entry.getId(), entry);
   }
 
   public void refreshStopMapping() {
-    _stopEntriesById = new HashMap<AgencyAndId, StopEntryImpl>();
+    if (_stopEntriesById == null)
+      _stopEntriesById = new HashMap<>();
+    else
+      _stopEntriesById.clear();
     for (StopEntryImpl entry : _stops)
       _stopEntriesById.put(entry.getId(), entry);
   }
 
   public void refreshRouteMapping() {
-    _routeEntriesById = new HashMap<AgencyAndId, RouteEntryImpl>();
+    if (_routeEntriesById == null)
+      _routeEntriesById = new HashMap<>();
+    else
+      _routeEntriesById.clear();
     for (RouteEntryImpl entry : _routes)
       _routeEntriesById.put(entry.getId(), entry);
   }
 
   public void refreshRouteCollectionMapping() {
-    _routeCollectionEntriesById = new HashMap<AgencyAndId, RouteCollectionEntryImpl>();
+    if (_routeCollectionEntriesById == null)
+      _routeCollectionEntriesById = new HashMap<>();
+    else
+    _routeCollectionEntriesById.clear();
     for (RouteCollectionEntryImpl entry : _routeCollections)
       _routeCollectionEntriesById.put(entry.getId(), entry);
   }

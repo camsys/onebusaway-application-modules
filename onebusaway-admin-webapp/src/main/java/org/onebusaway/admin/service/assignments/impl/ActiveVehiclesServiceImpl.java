@@ -46,7 +46,7 @@ public class ActiveVehiclesServiceImpl implements ActiveVehiclesService {
 
     private ScheduledExecutorService _executor;
     private Locale _locale = null;
-    private List<String> _activeVehicles;
+    private List<String> _activeVehicles = Collections.synchronizedList(new ArrayList<String>());
     private String _activeVehiclesUrl;
     private ObjectMapper mapper = new ObjectMapper();
 
@@ -60,7 +60,7 @@ public class ActiveVehiclesServiceImpl implements ActiveVehiclesService {
         if (_locale == null)
             _locale = Locale.getDefault();
 
-        _activeVehicles = Collections.synchronizedList(new ArrayList<String>());
+        _activeVehicles.clear();
         _activeVehiclesUrl = configurationService.getConfigurationValueAsString("vehicleListUrl", null);
 
         _executor = Executors.newSingleThreadScheduledExecutor();
@@ -109,7 +109,8 @@ public class ActiveVehiclesServiceImpl implements ActiveVehiclesService {
                 for (DeviceList deviceList : accountRecord.getDeviceList()) {
                     latestActiveVehicles.add(deviceList.getDevice());
                 }
-                _activeVehicles = latestActiveVehicles;
+                _activeVehicles.clear();
+                _activeVehicles.addAll(latestActiveVehicles);
 
             } catch (MalformedURLException mue) {
                 _log.error("URL is formatted incorrectly. Please double check the provided URL " + _activeVehiclesUrl, mue);

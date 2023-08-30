@@ -38,6 +38,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.servlet.ServletContext;
 
 public class BundleRequestServiceImpl implements BundleRequestService, ServletContextAware {
@@ -72,7 +73,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     _executorService = Executors.newFixedThreadPool(1);
   }
 
-  @PostConstruct
+  @PreDestroy
   public void shutdown() {
     if (_executorService != null) {
       _executorService.shutdownNow();

@@ -49,10 +49,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class NarrativeServiceImpl implements NarrativeService {
 
+  private static final int CACHE_TIMEOUT = 18 * 60 * 60 * 1000; // 18 hours
   private static Logger _log = LoggerFactory.getLogger(NarrativeServiceImpl.class);
-  private Map<AgencyAndId, TripNarrative> _dynamicTripCache = new HashMap<>();
 
-  private NarrativeProviderImpl _provider;
+  private Map<AgencyAndId, TripNarrative> _dynamicTripCache = new PassiveExpiringMap<>(CACHE_TIMEOUT);
+
+  private NarrativeProviderImpl _provider = new NarrativeProviderImpl();
 
   private FederatedTransitDataBundle _bundle;
 
@@ -68,12 +70,10 @@ public class NarrativeServiceImpl implements NarrativeService {
   @PostConstruct
   @Refreshable(dependsOn = RefreshableResources.NARRATIVE_DATA)
   public void setup() throws IOException, ClassNotFoundException {
-//    _dynamicTripCache.clear();
     File path = _bundle.getNarrativeProviderPath();
+    _provider.reset();
     if (path.exists()) {
-      _provider = ObjectSerializationLibrary.readObject(path);
-    } else {
-      _provider = new NarrativeProviderImpl();
+      _provider.copyFrom(ObjectSerializationLibrary.readObject(path));
     }
   }
 

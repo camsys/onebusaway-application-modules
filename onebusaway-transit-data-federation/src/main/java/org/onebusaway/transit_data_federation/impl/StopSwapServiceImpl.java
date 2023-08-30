@@ -53,22 +53,19 @@ public class StopSwapServiceImpl implements StopSwapService {
     _transitDataService = tds;
   }
 
-  private Map<StopDirectionSwapKey, StopDirectionSwap> _cache;
+  private Map<StopDirectionSwapKey, StopDirectionSwap> _cache = new HashMap<>();
   @PostConstruct
   @Refreshable(dependsOn = RefreshableResources.TRANSIT_GRAPH)
   public void setup() throws IOException, ClassNotFoundException {
     File path = _bundle.getStopSwapPath();
+    _cache.clear();
     if (path.exists()) {
       _log.info("loading Stop Swap / Wrong Way Concurrencies at {}", path);
       try {
-        _cache = ObjectSerializationLibrary.readObject(path);
+        _cache.putAll(ObjectSerializationLibrary.readObject(path));
       } catch (Throwable t) {
-        // this is optional, don't let it fail the load
-        _cache = new HashMap<>();
+        // no-op
       }
-    } else {
-      // this index is optional, do not fail if not found
-      _cache = new HashMap<>();
     }
 
   }

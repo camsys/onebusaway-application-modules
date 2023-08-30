@@ -54,7 +54,7 @@ public class BundleBuilder {
     String bundleInputDir = bundleResource.getURL().getFile();
     String bundleRootDir =
             addSlash(System.getProperty("java.io.tmpdir"))
-                    + "bundle" + System.currentTimeMillis();
+                    + "bundle-int-test";
     makeTempDirectory(bundleRootDir, System.getProperty("bundle.keep"));
 
     String bundleName = "v" + System.currentTimeMillis();
