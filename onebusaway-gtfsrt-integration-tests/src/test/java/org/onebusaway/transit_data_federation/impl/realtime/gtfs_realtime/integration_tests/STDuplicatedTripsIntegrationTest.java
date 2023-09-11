@@ -81,7 +81,8 @@ public class STDuplicatedTripsIntegrationTest extends AbstractGtfsRealtimeIntegr
     source.setMonitoredResult(testResult);
 
     // example is in json, convert to protocol buffer
-    String jsonFilename = "org/onebusaway/transit_data_federation/impl/realtime/gtfs_realtime/integration_tests/st_duplicated_trips/trip_update_1683740698.json";
+//    String jsonFilename = "org/onebusaway/transit_data_federation/impl/realtime/gtfs_realtime/integration_tests/st_duplicated_trips/trip_update_1683740698.json";
+    String jsonFilename = "org/onebusaway/transit_data_federation/impl/realtime/gtfs_realtime/integration_tests/st_duplicated_trips/TripUpdate-DUPLICATED-1690679342.json";
     ClassPathResource gtfsRtResource = new ClassPathResource(jsonFilename);
     if (!gtfsRtResource.exists()) throw new RuntimeException(jsonFilename + " not found in classpath!");
     GtfsRtBuilder builder = new GtfsRtBuilder();
@@ -90,6 +91,13 @@ public class STDuplicatedTripsIntegrationTest extends AbstractGtfsRealtimeIntegr
     writeFeed(feed, tmpFeedLocation);
     source.setTripUpdatesUrl(tmpFeedLocation);
     source.refresh(); // launch
+
+    // this is the gtfs-rt protocol-buffer file to match to the loaded bundle
+//    String gtfsrtFilename = "org/onebusaway/transit_data_federation/impl/realtime/gtfs_realtime/integration_tests/st_duplicated_trips/TripUpdate-DUPLICATED-1690679342.pb";
+//    ClassPathResource gtfsRtResource = new ClassPathResource(gtfsrtFilename);
+//    if (!gtfsRtResource.exists()) throw new RuntimeException(gtfsrtFilename + " not found in classpath!");
+//    source.setTripUpdatesUrl(gtfsRtResource.getURL());
+//    source.refresh(); // launch
 
 
     for (VehicleLocationRecord vehicleLocationRecord : listener.getRecords()) {
@@ -102,9 +110,11 @@ public class STDuplicatedTripsIntegrationTest extends AbstractGtfsRealtimeIntegr
     TransitGraphDao graph = getBundleLoader().getApplicationContext().getBean(TransitGraphDao.class);
     long window = 75 * 60 * 1000; // 75 minutes
 
-    StopEntry firstStop = graph.getStopEntryForId(AgencyAndId.convertFromString("40_99914")); // 9:55 trip duplicated to 10:43
-    long firstStopTime = 1683740698000L;
-    long serviceDate = new ServiceDate(2023,5,10).getAsDate().getTime();
+    StopEntry firstStop = graph.getStopEntryForId(AgencyAndId.convertFromString("40_990005")); // 9:55 trip duplicated to 10:43
+//    long firstStopTime = 1683740698000L;
+//    long serviceDate = new ServiceDate(2023,5,10).getAsDate().getTime();
+    long firstStopTime = 1690679342000L;
+    long serviceDate = new ServiceDate(2023,7,29).getAsDate().getTime();
 
     List<ArrivalAndDepartureInstance> list = arrivalAndDepartureService.getArrivalsAndDeparturesForStopInTimeRange(firstStop,new TargetTime(firstStopTime,firstStopTime),firstStopTime - window, firstStopTime + window);
     assertNotNull(list);
@@ -114,8 +124,10 @@ public class STDuplicatedTripsIntegrationTest extends AbstractGtfsRealtimeIntegr
     int actualDuplicatedTripsSize = 0;
 
     List<String> expectedduplicatedTrips = new ArrayList<>();
-    expectedduplicatedTrips.add("LLR_2023-03-18_Weekday_100479_1043_Dup");
-    expectedduplicatedTrips.add("LLR_2023-03-18_Weekday_100479_2047");
+//    expectedduplicatedTrips.add("LLR_2023-03-18_Weekday_100479_1043_Dup");
+//    expectedduplicatedTrips.add("LLR_2023-03-18_Saturday_100479_2021_Dup");
+    expectedduplicatedTrips.add("LLR_2023-03-18_Weekday_100479_1015_Dup");
+
 
       List<TripEntry> DynamictripsFound = new ArrayList<>();
     for(ArrivalAndDepartureInstance instance : list){
@@ -125,7 +137,7 @@ public class STDuplicatedTripsIntegrationTest extends AbstractGtfsRealtimeIntegr
         DynamictripsFound.add(instance.getStopTimeInstance().getStopTime().getTrip().getTrip());
         actualDuplicatedTripsSize++;
         assertTrue(instance.getPredictedArrivalTime() > 0 || instance.getPredictedDepartureTime() > 0);
-        if ("40_LLR_2023-03-18_Weekday_100479_1043_Dup".equals(instance.getBlockInstance().getBlock().getBlock().getId().toString())) {
+        if ("LLR_2023-03-18_Weekday_100479_1015_Dup".equals(instance.getBlockInstance().getBlock().getBlock().getId().toString())) {
           BlockLocation blockLocation =  instance.getBlockLocation();
           assertNotNull(blockLocation);
           List<TimepointPredictionRecord> timepointPredictions = blockLocation.getTimepointPredictions();
@@ -133,7 +145,7 @@ public class STDuplicatedTripsIntegrationTest extends AbstractGtfsRealtimeIntegr
           for(TimepointPredictionRecord timepointPrediction : timepointPredictions){
             assertTrue(timepointPrediction.getTimepointPredictedArrivalTime() > 0 ||
             timepointPrediction.getTimepointPredictedDepartureTime() > 0);
-            assertEquals("40_LLR_2023-03-18_Weekday_100479_1043_Dup",timepointPrediction.getTripId().toString());
+            assertEquals("LLR_2023-03-18_Weekday_100479_1015_Dup",timepointPrediction.getTripId().toString());
             assertNotNull(timepointPrediction.getTimepointId());
           }
         }

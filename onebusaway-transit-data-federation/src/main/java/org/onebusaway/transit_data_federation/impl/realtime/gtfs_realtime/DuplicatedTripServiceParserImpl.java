@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -58,10 +59,32 @@ public class DuplicatedTripServiceParserImpl implements DuplicatedTripServicePar
             ServiceDate serviceDate = new ServiceDate(new Date(parseDate(tu.getTrip().getStartTime())));
             duplicatedTrip.setTripStartTime(getTimeOfFirstStop(tu.getStopTimeUpdateList(), serviceDate));
             duplicatedTrip.setServiceDate(serviceDate.getAsDate().getTime());
-        } else {
+        } else if(tu.getTrip().getStartTime().contains(":")){
             // CASE II:
             // start_time: "HH:MM:SS"
-            // start_date: "YYmmDD"
+            // start_date: "YYYYmmDD"
+            try {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+                Date startDate = dateFormat.parse(tu.getTrip().getStartDate());
+                SimpleDateFormat timeSdf = new SimpleDateFormat("HH:mm:ss");
+
+                Calendar timeCalendar = Calendar.getInstance();
+                timeCalendar.setTime(timeSdf.parse(tu.getTrip().getStartTime()));
+
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(startDate);
+                calendar.set(Calendar.HOUR_OF_DAY, timeCalendar.get(Calendar.HOUR_OF_DAY));
+                calendar.set(Calendar.MINUTE, timeCalendar.get(Calendar.MINUTE));
+                calendar.set(Calendar.SECOND, timeCalendar.get(Calendar.SECOND));
+
+                ServiceDate serviceDate = new ServiceDate(startDate);
+
+                duplicatedTrip.setTripStartTime(getTimeOfFirstStop(tu.getStopTimeUpdateList(), serviceDate));
+                duplicatedTrip.setServiceDate(calendar.getTimeInMillis());
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
             throw new UnsupportedOperationException("not implemented yet");
         }
         duplicatedTrip.setTripId(tripId + "_Dup");

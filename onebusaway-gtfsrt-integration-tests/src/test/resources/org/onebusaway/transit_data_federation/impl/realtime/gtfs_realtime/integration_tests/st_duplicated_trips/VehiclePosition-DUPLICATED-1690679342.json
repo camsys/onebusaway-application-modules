@@ -1,0 +1,803 @@
+{
+  "header": {
+    "gtfs_realtime_version": "2.0",
+    "incrementality": "FULL_DATASET",
+    "timestamp": 1690679342
+  },
+  "entity": [
+    {
+      "id": "9D055CD2-EEB8-4131-B51B-88FBD132C2AB",
+      "vehicle": {
+        "trip": {
+          "trip_id": "LLR_2023-03-18_Saturday_100479_1085",
+          "route_id": "100479",
+          "direction_id": 1,
+          "start_time": "18:16:00",
+          "start_date": "20230729",
+          "schedule_relationship": "SCHEDULED"
+        },
+        "vehicle": {
+          "id": "631.158043",
+          "label": "8 [261-256-224-262]"
+        },
+        "position": {
+          "latitude": 47.422614,
+          "longitude": -122.29773
+        },
+        "current_stop_sequence": 1,
+        "stop_id": "99914",
+        "current_status": "STOPPED_AT",
+        "timestamp": 1690679338,
+        "multi_carriage_details": [
+          {
+            "id": "261",
+            "label": "261",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 1
+          },
+          {
+            "id": "256",
+            "label": "256",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 2
+          },
+          {
+            "id": "224",
+            "label": "224",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 3
+          },
+          {
+            "id": "262",
+            "label": "262",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "CE34E829-7C7F-47AB-A190-E5CCF03149AD",
+      "vehicle": {
+        "trip": {
+          "trip_id": "LLR_2023-03-18_Saturday_100479_2085",
+          "route_id": "100479",
+          "direction_id": 0,
+          "start_time": "18:13:00",
+          "start_date": "20230729",
+          "schedule_relationship": "SCHEDULED"
+        },
+        "vehicle": {
+          "id": "630.177934",
+          "label": "1 [290-258-278-286]"
+        },
+        "position": {
+          "latitude": 47.702507,
+          "longitude": -122.328207
+        },
+        "current_stop_sequence": 2,
+        "stop_id": "990003",
+        "current_status": "IN_TRANSIT_TO",
+        "timestamp": 1690679316,
+        "multi_carriage_details": [
+          {
+            "id": "290",
+            "label": "290",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 1
+          },
+          {
+            "id": "258",
+            "label": "258",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 2
+          },
+          {
+            "id": "278",
+            "label": "278",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 3
+          },
+          {
+            "id": "286",
+            "label": "286",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "FA5FAD98-0BBD-46C7-A014-433EB8AEEF9D",
+      "vehicle": {
+        "trip": {
+          "trip_id": "LLR_2023-03-18_Saturday_100479_2021",
+          "route_id": "100479",
+          "direction_id": 0,
+          "start_time": "18:03:40",
+          "start_date": "20230729",
+          "schedule_relationship": "DUPLICATED"
+        },
+        "vehicle": {
+          "id": "674.245294",
+          "label": "73 []"
+        },
+        "position": {
+          "latitude": 0,
+          "longitude": 0
+        },
+        "current_status": "IN_TRANSIT_TO",
+        "timestamp": 1690679342,
+        "multi_carriage_details": []
+      }
+    },
+    {
+      "id": "7C2459F9-80D1-4B11-819B-C136E88A7552",
+      "vehicle": {
+        "trip": {
+          "trip_id": "LLR_2023-03-18_Saturday_100479_2079",
+          "route_id": "100479",
+          "direction_id": 0,
+          "start_time": "17:13:00",
+          "start_date": "20230729",
+          "schedule_relationship": "SCHEDULED"
+        },
+        "vehicle": {
+          "id": "631.920871",
+          "label": "9 [222-263-289-299]"
+        },
+        "position": {
+          "latitude": 47.449356,
+          "longitude": -122.297369
+        },
+        "current_stop_sequence": 18,
+        "stop_id": "99904",
+        "current_status": "INCOMING_AT",
+        "timestamp": 1690679326,
+        "multi_carriage_details": [
+          {
+            "id": "222",
+            "label": "222",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 1
+          },
+          {
+            "id": "263",
+            "label": "263",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 2
+          },
+          {
+            "id": "289",
+            "label": "289",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 3
+          },
+          {
+            "id": "299",
+            "label": "299",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "63D03867-E447-49DE-92B9-B629B211E542",
+      "vehicle": {
+        "trip": {
+          "trip_id": "LLR_2023-03-18_Saturday_100479_1083",
+          "route_id": "100479",
+          "direction_id": 1,
+          "start_time": "17:56:00",
+          "start_date": "20230729",
+          "schedule_relationship": "SCHEDULED"
+        },
+        "vehicle": {
+          "id": "665.101575",
+          "label": "6 [149-103-134-109]"
+        },
+        "position": {
+          "latitude": 47.511573,
+          "longitude": -122.278515
+        },
+        "current_stop_sequence": 4,
+        "stop_id": "55578",
+        "current_status": "IN_TRANSIT_TO",
+        "timestamp": 1690679332,
+        "multi_carriage_details": [
+          {
+            "id": "149",
+            "label": "149",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 1
+          },
+          {
+            "id": "103",
+            "label": "103",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 2
+          },
+          {
+            "id": "134",
+            "label": "134",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 3
+          },
+          {
+            "id": "109",
+            "label": "109",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "C5F800F9-4139-4B54-8228-D9B6AF41F505",
+      "vehicle": {
+        "trip": {
+          "trip_id": "LLR_2023-03-18_Saturday_100479_2082",
+          "route_id": "100479",
+          "direction_id": 0,
+          "start_time": "17:43:00",
+          "start_date": "20230729",
+          "schedule_relationship": "SCHEDULED"
+        },
+        "vehicle": {
+          "id": "665.661324",
+          "label": "12 [118-111-158-117]"
+        },
+        "position": {
+          "latitude": 47.581338,
+          "longitude": -122.327439
+        },
+        "current_stop_sequence": 11,
+        "stop_id": "99111",
+        "current_status": "STOPPED_AT",
+        "timestamp": 1690679338,
+        "multi_carriage_details": [
+          {
+            "id": "118",
+            "label": "118",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 1
+          },
+          {
+            "id": "111",
+            "label": "111",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 2
+          },
+          {
+            "id": "158",
+            "label": "158",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 3
+          },
+          {
+            "id": "117",
+            "label": "117",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "30B0384A-F467-450D-A0EA-3D9073F000B9",
+      "vehicle": {
+        "trip": {
+          "trip_id": "LLR_2023-03-18_Saturday_100479_1081",
+          "route_id": "100479",
+          "direction_id": 1,
+          "start_time": "17:36:00",
+          "start_date": "20230729",
+          "schedule_relationship": "SCHEDULED"
+        },
+        "vehicle": {
+          "id": "628.362825",
+          "label": "4 [294-239-301-284]"
+        },
+        "position": {
+          "latitude": 47.591132,
+          "longitude": -122.32711
+        },
+        "current_stop_sequence": 10,
+        "stop_id": "99260",
+        "current_status": "STOPPED_AT",
+        "timestamp": 1690679301,
+        "multi_carriage_details": [
+          {
+            "id": "294",
+            "label": "294",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 1
+          },
+          {
+            "id": "239",
+            "label": "239",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 2
+          },
+          {
+            "id": "301",
+            "label": "301",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 3
+          },
+          {
+            "id": "284",
+            "label": "284",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "3E5FEA06-DE67-4BA4-9AF6-8B323555B47B",
+      "vehicle": {
+        "trip": {
+          "trip_id": "LLR_2023-03-18_Saturday_100479_2080",
+          "route_id": "100479",
+          "direction_id": 0,
+          "start_time": "17:23:00",
+          "start_date": "20230729",
+          "schedule_relationship": "SCHEDULED"
+        },
+        "vehicle": {
+          "id": "632.572793",
+          "label": "10 [253-293-221-283]"
+        },
+        "position": {
+          "latitude": 47.52958,
+          "longitude": -122.28068
+        },
+        "current_stop_sequence": 16,
+        "stop_id": "56173",
+        "current_status": "IN_TRANSIT_TO",
+        "timestamp": 1690679314,
+        "multi_carriage_details": [
+          {
+            "id": "253",
+            "label": "253",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 1
+          },
+          {
+            "id": "293",
+            "label": "293",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 2
+          },
+          {
+            "id": "221",
+            "label": "221",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 3
+          },
+          {
+            "id": "283",
+            "label": "283",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "DB8EB47E-280E-40A1-8291-467CB81EEE3F",
+      "vehicle": {
+        "trip": {
+          "trip_id": "LLR_2023-03-18_Saturday_100479_1079",
+          "route_id": "100479",
+          "direction_id": 1,
+          "start_time": "17:16:00",
+          "start_date": "20230729",
+          "schedule_relationship": "SCHEDULED"
+        },
+        "vehicle": {
+          "id": "631.222357",
+          "label": "2 [259-201-234-254]"
+        },
+        "position": {
+          "latitude": 47.654253,
+          "longitude": -122.304236
+        },
+        "current_stop_sequence": 17,
+        "stop_id": "990002",
+        "current_status": "IN_TRANSIT_TO",
+        "timestamp": 1690679339,
+        "multi_carriage_details": [
+          {
+            "id": "259",
+            "label": "259",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 1
+          },
+          {
+            "id": "201",
+            "label": "201",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 2
+          },
+          {
+            "id": "234",
+            "label": "234",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 3
+          },
+          {
+            "id": "254",
+            "label": "254",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "7A1B2CBB-F525-49A1-9A34-7B6EDC0C8B23",
+      "vehicle": {
+        "trip": {
+          "trip_id": "LLR_2023-03-18_Saturday_100479_1080",
+          "route_id": "100479",
+          "direction_id": 1,
+          "start_time": "17:26:00",
+          "start_date": "20230729",
+          "schedule_relationship": "SCHEDULED"
+        },
+        "vehicle": {
+          "id": "631.859200",
+          "label": "3 [246-250-302-251]"
+        },
+        "position": {
+          "latitude": 47.610937,
+          "longitude": -122.337983
+        },
+        "current_stop_sequence": 14,
+        "stop_id": "1121",
+        "current_status": "STOPPED_AT",
+        "timestamp": 1690679302,
+        "multi_carriage_details": [
+          {
+            "id": "246",
+            "label": "246",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 1
+          },
+          {
+            "id": "250",
+            "label": "250",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 2
+          },
+          {
+            "id": "302",
+            "label": "302",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 3
+          },
+          {
+            "id": "251",
+            "label": "251",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "B6F15157-6728-4134-9C71-0EFEAC6F596B",
+      "vehicle": {
+        "trip": {
+          "trip_id": "LLR_2023-03-18_Saturday_100479_1084",
+          "route_id": "100479",
+          "direction_id": 1,
+          "start_time": "18:06:00",
+          "start_date": "20230729",
+          "schedule_relationship": "SCHEDULED"
+        },
+        "vehicle": {
+          "id": "642.913778",
+          "label": "7 [213-226-264-281]"
+        },
+        "position": {
+          "latitude": 47.445392,
+          "longitude": -122.296831
+        },
+        "current_stop_sequence": 2,
+        "stop_id": "99903",
+        "current_status": "STOPPED_AT",
+        "timestamp": 1690679312,
+        "multi_carriage_details": [
+          {
+            "id": "213",
+            "label": "213",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 1
+          },
+          {
+            "id": "226",
+            "label": "226",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 2
+          },
+          {
+            "id": "264",
+            "label": "264",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 3
+          },
+          {
+            "id": "281",
+            "label": "281",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "8BFEE3D4-D850-47FD-A579-0A95F740676F",
+      "vehicle": {
+        "trip": {
+          "trip_id": "LLR_2023-03-18_Saturday_100479_2084",
+          "route_id": "100479",
+          "direction_id": 0,
+          "start_time": "18:03:00",
+          "start_date": "20230729",
+          "schedule_relationship": "SCHEDULED"
+        },
+        "vehicle": {
+          "id": "630.367902",
+          "label": "14 [105-151-130-129]"
+        },
+        "position": {
+          "latitude": 47.659481,
+          "longitude": -122.314246
+        },
+        "current_stop_sequence": 3,
+        "stop_id": "990001",
+        "current_status": "STOPPED_AT",
+        "timestamp": 1690679303,
+        "multi_carriage_details": [
+          {
+            "id": "105",
+            "label": "105",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 1
+          },
+          {
+            "id": "151",
+            "label": "151",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 2
+          },
+          {
+            "id": "130",
+            "label": "130",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 3
+          },
+          {
+            "id": "129",
+            "label": "129",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "E7BAC687-3270-4C51-ACF9-F99740A77C4A",
+      "vehicle": {
+        "trip": {
+          "trip_id": "LLR_2023-03-18_Saturday_100479_1082",
+          "route_id": "100479",
+          "direction_id": 1,
+          "start_time": "17:46:00",
+          "start_date": "20230729",
+          "schedule_relationship": "SCHEDULED"
+        },
+        "vehicle": {
+          "id": "629.748137",
+          "label": "5 [252-298-245-269]"
+        },
+        "position": {
+          "latitude": 47.560898,
+          "longitude": -122.293413
+        },
+        "current_stop_sequence": 6,
+        "stop_id": "55778",
+        "current_status": "STOPPED_AT",
+        "timestamp": 1690679338,
+        "multi_carriage_details": [
+          {
+            "id": "252",
+            "label": "252",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 1
+          },
+          {
+            "id": "298",
+            "label": "298",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 2
+          },
+          {
+            "id": "245",
+            "label": "245",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 3
+          },
+          {
+            "id": "269",
+            "label": "269",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "63520367-C918-4762-971A-9297F282A4D7",
+      "vehicle": {
+        "trip": {
+          "trip_id": "LLR_2023-03-18_Saturday_100479_2081",
+          "route_id": "100479",
+          "direction_id": 0,
+          "start_time": "17:33:00",
+          "start_date": "20230729",
+          "schedule_relationship": "SCHEDULED"
+        },
+        "vehicle": {
+          "id": "633.293435",
+          "label": "11 [288-233-292-243]"
+        },
+        "position": {
+          "latitude": 47.574504,
+          "longitude": -122.296858
+        },
+        "current_stop_sequence": 14,
+        "stop_id": "56039",
+        "current_status": "IN_TRANSIT_TO",
+        "timestamp": 1690679333,
+        "multi_carriage_details": [
+          {
+            "id": "288",
+            "label": "288",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 1
+          },
+          {
+            "id": "233",
+            "label": "233",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 2
+          },
+          {
+            "id": "292",
+            "label": "292",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 3
+          },
+          {
+            "id": "243",
+            "label": "243",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "E476395E-AD43-4768-83AD-8E224B870872",
+      "vehicle": {
+        "trip": {
+          "trip_id": "LLR_2023-03-18_Saturday_100479_2083",
+          "route_id": "100479",
+          "direction_id": 0,
+          "start_time": "17:53:00",
+          "start_date": "20230729",
+          "schedule_relationship": "SCHEDULED"
+        },
+        "vehicle": {
+          "id": "642.794356",
+          "label": "13 [223-271-229-279]"
+        },
+        "position": {
+          "latitude": 47.611003,
+          "longitude": -122.338096
+        },
+        "current_stop_sequence": 7,
+        "stop_id": "455",
+        "current_status": "INCOMING_AT",
+        "timestamp": 1690679302,
+        "multi_carriage_details": [
+          {
+            "id": "223",
+            "label": "223",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 1
+          },
+          {
+            "id": "271",
+            "label": "271",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 2
+          },
+          {
+            "id": "229",
+            "label": "229",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 3
+          },
+          {
+            "id": "279",
+            "label": "279",
+            "occupancy_status": "NO_DATA_AVAILABLE",
+            "occupancy_percentage": -1,
+            "carriage_sequence": 4
+          }
+        ]
+      }
+    }
+  ]
+}
