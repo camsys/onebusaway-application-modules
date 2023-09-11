@@ -16,7 +16,9 @@
 package org.onebusaway.transit_data_federation.impl.realtime;
 
 import org.apache.commons.collections4.map.PassiveExpiringMap;
+import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.impl.blocks.BlockIndexFactoryServiceImpl;
 import org.onebusaway.transit_data_federation.impl.blocks.BlockStopTimeIndicesFactory;
 import org.onebusaway.transit_data_federation.model.narrative.StopTimeNarrative;
@@ -42,8 +44,8 @@ import java.util.*;
 public class DynamicBlockIndexServiceImpl implements DynamicBlockIndexService {
 
   private static Logger _log = LoggerFactory.getLogger(DynamicBlockIndexServiceImpl.class);
+  private static final int CACHE_TIMEOUT = 18 * 60 * 60 * 1000; // 18 hours
 
-  static final int CACHE_TIMEOUT = 12 * 60 * 60 * 1000; // 12 hours
   @Autowired
   private BlockIndexFactoryServiceImpl blockIndexFactoryService;
   private NarrativeService _narrativeService;
@@ -52,9 +54,9 @@ public class DynamicBlockIndexServiceImpl implements DynamicBlockIndexService {
 
   private Map<AgencyAndId, List<BlockTripIndex>> blockTripIndexByRouteCollectionId = new PassiveExpiringMap<>(CACHE_TIMEOUT);
   private BlockStopTimeIndicesFactory blockStopTimeIndicesFactory = new BlockStopTimeIndicesFactory();
-  // we trivially expire the cache after CACHE_TIMEOUT minutes
+
   private Map<AgencyAndId, BlockInstance> cacheByBlockId = new PassiveExpiringMap<>(CACHE_TIMEOUT);
-  // we trivially expire the cache after CACHE_TIMEOUT minutes
+
   private Map<AgencyAndId, Set<BlockStopTimeIndex>> blockStopTimeIndicesByStopId = new PassiveExpiringMap<>(CACHE_TIMEOUT);
 
   private Map<AgencyAndId, List<BlockTripIndex>> blockTripByBlockId = new PassiveExpiringMap<>(CACHE_TIMEOUT);
@@ -66,6 +68,15 @@ public class DynamicBlockIndexServiceImpl implements DynamicBlockIndexService {
   @Autowired
   public void setDynamicGraph(DynamicGraph dynamicGraph) {
     _dynamicGraph = dynamicGraph;
+  }
+
+  @Refreshable(dependsOn = RefreshableResources.TRANSIT_GRAPH)
+  public void reset() {
+    // we don't clear these here as they transcend the bundle swap (they aren't dependent on bundle data)
+//    blockTripIndexByRouteCollectionId.clear();
+//    cacheByBlockId.clear();
+//    blockStopTimeIndicesByStopId.clear();
+//    blockTripByBlockId.clear();
   }
   @Override
   public List<BlockStopTimeIndex> getStopTimeIndicesForStop(StopEntry stopEntry) {
