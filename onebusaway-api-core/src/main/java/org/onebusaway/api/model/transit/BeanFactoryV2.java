@@ -238,12 +238,12 @@ public class BeanFactoryV2 {
 
   private void agencySort(List<AgencyV2Bean> agencies) {
     if (primarySortAgency != null) {
-      agencies.sort((a, b) -> {
-        if (a.getId().equals(primarySortAgency)) return -1;
-        if (b.getId().equals(primarySortAgency)) return 1;
-        return a.getId().compareTo(b.getId());
-      });
-    }
+    agencies.sort((a,b) -> {
+      if(a.getId().equals(primarySortAgency)) return -1;
+      if(b.getId().equals(primarySortAgency)) return 1;
+      return a.getId().compareTo(b.getId());
+    });
+  }
   }
 
   private List<RouteV2Bean> finalSort(List<RouteV2Bean> response) {
