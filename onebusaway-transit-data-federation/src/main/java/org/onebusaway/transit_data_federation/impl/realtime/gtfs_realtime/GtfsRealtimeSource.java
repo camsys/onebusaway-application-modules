@@ -617,17 +617,22 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
 
     try {
       for (CombinedTripUpdatesAndVehiclePosition update : updates) {
+        String metricTripId = null;
+        if (update.getTripUpdates() != null && update.getTripUpdatesSize() > 0) {
+          if (update.getTripUpdates().get(0).hasTrip()) {
+            metricTripId = update.getTripUpdates().get(0).getTrip().getTripId();
+          }
+        }
+
         if (update.block == null) {
-          String tripId = null;
-          if (update.getTripUpdates() != null && update.getTripUpdatesSize() > 0)
-            if (update.getTripUpdates().get(0).hasTrip())
-              tripId = update.getTripUpdates().get(0).getTrip().getTripId();
-          _log.error("null block {} for agencies {}, bailing...", tripId, _agencyIds);
+          _log.error("null block {} for agencies {}, bailing...", metricTripId, _agencyIds);
+          result.addUnmatchedTripId(metricTripId);
           continue;
         }
         BlockDescriptor.ScheduleRelationship scheduleRelationship = update.block.getScheduleRelationship();
         if (scheduleRelationship == null) {
           _log.error("no schedule relationship for update {}", update);
+          result.addUnmatchedTripId(metricTripId);
           continue;
         }
         boolean isDynamicTrip = TransitDataConstants.STATUS_ADDED.equals(scheduleRelationship.name())
@@ -646,16 +651,19 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
             // tripId will be null if block was matched
             result.addUnmatchedTripId(record.getTripId().toString());
           }
+
           AgencyAndId vehicleId = record.getVehicleId();
           // here we try to get a more accurate count of updates
           // some providers re-send old data or future data cluttering the feed
           // the TDS will discard these
           if (!isDynamicTrip && blockNotActive(record)) {
             _log.debug("discarding v: " + vehicleId + " as block not active");
+            result.addUnmatchedTripId(metricTripId);
             continue;
           }
           if (!isDynamicTrip && !isValidLocation(record, update)) {
             _log.debug("discarding v: " + vehicleId + " as location is bad");
+            result.addUnmatchedTripId(metricTripId);
             continue;
           }
           seenVehicles.add(vehicleId);
