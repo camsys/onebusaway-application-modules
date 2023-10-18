@@ -268,12 +268,14 @@ public class TripResource extends MetricResource {
       double validRealtimeTrips = getValidRealtimeTripIds(agencyId, feedId).size();
       double cancelledTrips = getCancelledTripIdCt(agencyId, feedId);
       double addedTrips = getAddedTripIdCt(agencyId, feedId);
+      double duplicatedTrips = getDuplicatedTripIdCt(agencyId, feedId);
 
       _log.info("agencytrips size=" + scheduleTrips + ", validRealtimeTrips=" + validRealtimeTrips
-              + " cancelled=" + cancelledTrips + ", addedTrips-" + addedTrips
+              + " cancelled=" + cancelledTrips + ", addedTrips-" + addedTrips + ", duplicatedTrips=" + duplicatedTrips
               + " for feedId=" + feedId + ", routeId=" + routeId);
       // TODO: OBA doesn't support ADDED trips yet so not added to the metric!!!
-      double percent = Math.abs(( (validRealtimeTrips /*+ addedTrips*/ - cancelledTrips) / scheduleTrips) * 100);
+//      double percent = Math.abs(( (validRealtimeTrips /*+ addedTrips*/ - cancelledTrips) / scheduleTrips) * 100);
+      double percent = Math.abs(( (validRealtimeTrips + addedTrips + duplicatedTrips - cancelledTrips) / scheduleTrips) * 100);
       return Response.ok(ok("buses-in-service-percent", percent)).build();
     } catch (Exception e) {
       _log.error("getBusesInServicePercent broke", e);

@@ -169,6 +169,24 @@ public abstract class MetricResource {
     }
     return addedTripCt;
   }
+
+  protected int getDuplicatedTripIdCt(String agencyId, String feedId){
+    int duplicatedTripCt = 0;
+
+    for (MonitoredDataSource mds : getDataSources()) {
+      MonitoredResult result = mds.getMonitoredResult();
+      if (result == null) continue;
+      if (feedId == null || feedId.equals(mds.getFeedId())) {
+        for (String mAgencyId : result.getAgencyIds()) {
+          if (agencyId.equals(mAgencyId)) {
+            duplicatedTripCt += result.getDuplicatedTripIds().size();
+          }
+        }
+      }
+    }
+    return duplicatedTripCt;
+  }
+
   protected int getCancelledTripIdCt(String agencyId, String feedId) {
     int cancelledTripCt = 0;
 
