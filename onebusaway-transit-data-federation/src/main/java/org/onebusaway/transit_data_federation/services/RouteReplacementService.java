@@ -13,23 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime;
+package org.onebusaway.transit_data_federation.services;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.transit_data.model.trips.TripDetailsBean;
-import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
 
-import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
-/**
- * Canceling service when GTFS-RT input is replacing the existing service.
- */
-public interface GtfsRealtimeCancelService {
+public interface RouteReplacementService {
+  boolean containsRoute(AgencyAndId routeId);
 
-  Set<RouteEntry> findRoutesForIds(List<AgencyAndId> ids);
-  List<TripDetailsBean> findActiveTripsForRoute(RouteEntry route, long timestamp);
-  void cancel(List<TripDetailsBean> tripsToCancel);
+  AgencyAndId replace(AgencyAndId routeId);
 
-  void cancelServiceForRoutes(List<AgencyAndId> routeIdsToCancel, long timestamp);
+  void putAll(Map<String, String> remaps);
 }

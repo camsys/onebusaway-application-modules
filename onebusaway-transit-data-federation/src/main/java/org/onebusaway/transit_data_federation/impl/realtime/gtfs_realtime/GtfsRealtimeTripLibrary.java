@@ -624,6 +624,8 @@ public class GtfsRealtimeTripLibrary {
             record.setTripId(new AgencyAndId(agencyId, tripUpdate.getTrip().getTripId()));
           }
         }
+        // TODO: this be actual index but that proves difficult with
+        // variability of realtime.
         int sequence = 0;
         for (StopTimeUpdate stu : tripUpdate.getStopTimeUpdateList()) {
           TimepointPredictionRecord tpr = new TimepointPredictionRecord();
@@ -640,7 +642,7 @@ public class GtfsRealtimeTripLibrary {
           } else {
             tpr.setTripId(new AgencyAndId(agencyId, tripUpdate.getTrip().getTripId()));
           }
-          tpr.setStopSequence(sequence);
+          tpr.setStopSequence(-1); // don't set the stop sequence if its not from GTFS
           sequence++;
           switch (stu.getScheduleRelationship()) {
             case SCHEDULED:
