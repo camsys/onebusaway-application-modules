@@ -54,9 +54,11 @@ import org.onebusaway.alerts.impl.ServiceAlertRecord;
 import org.onebusaway.alerts.impl.ServiceAlertSituationConsequenceClause;
 import org.onebusaway.alerts.impl.ServiceAlertTimeRange;
 import org.onebusaway.alerts.impl.ServiceAlertsSituationAffectsClause;
+import org.onebusaway.transit_data_federation.impl.RouteReplacementServiceImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntriesFactory;
 import org.onebusaway.transit_data_federation.services.AgencyService;
 import org.onebusaway.transit_data_federation.services.ConsolidatedStopsService;
+import org.onebusaway.transit_data_federation.services.RouteReplacementService;
 import org.onebusaway.transit_data_federation.services.StopSwapService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
@@ -540,7 +542,9 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
     result.setFeedId(getFeedId());
 
     if (_routeIdsToCancel != null) {
-      _cancelService.cancelServiceForRoutes(_routeIdsToCancel);
+      long currentTime = _tripsLibrary.getCurrentTime();
+      if (currentTime == 0) currentTime = System.currentTimeMillis();
+      _cancelService.cancelServiceForRoutes(_routeIdsToCancel, currentTime);
     }
 
     handleUpdates(result, tripUpdates, vehiclePositions, alerts, alertCollection);
@@ -644,8 +648,8 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
             if (_monitoredResult.getLastUpdate() < record.getTimeOfRecord()) {
               _monitoredResult.setLastUpdate(record.getTimeOfRecord());
             }
-            _monitoredResult.addAddedTripId(record.getTripId().toString());
-            _serviceSource.getDynamicBlockIndexService().register(update.block.getBlockInstance());
+            int effectiveTime = (int)(record.getServiceDate() - record.getTimeOfRecord()) / 1000;
+            _serviceSource.getDynamicBlockIndexService().register(update.block.getBlockInstance(), effectiveTime);
           }
           if (record.getTripId() != null) {
             // tripId will be null if block was matched
@@ -1266,6 +1270,13 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
 	  }
 	}
   }
+
+  public void setRouteRemap(Map<String, String> remaps) {
+    RouteReplacementService routeReplacementService = new RouteReplacementServiceImpl();
+    routeReplacementService.putAll(remaps);
+    _entitySource.setRouteReplacementService(routeReplacementService);
+  }
+
   /****
    *
    ****/
