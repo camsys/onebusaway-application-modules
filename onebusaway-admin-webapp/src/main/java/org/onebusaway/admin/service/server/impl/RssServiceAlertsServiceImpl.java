@@ -118,7 +118,7 @@ public class RssServiceAlertsServiceImpl implements IntegratingServiceAlertsServ
         // re-build internal route cache
         _executor.scheduleAtFixedRate(new RefreshDataTask(), 0, 1, TimeUnit.HOURS);
         // poll feed after cache is built above
-        _executor.scheduleAtFixedRate(new PollRssTask(), 1, 5, TimeUnit.MINUTES);
+        _executor.scheduleAtFixedRate(new PollRssTask(), 1, 2, TimeUnit.MINUTES);
     }
 
     @PreDestroy
