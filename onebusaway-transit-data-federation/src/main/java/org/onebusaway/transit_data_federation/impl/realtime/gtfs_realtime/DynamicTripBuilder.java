@@ -122,28 +122,12 @@ public class DynamicTripBuilder {
     String expectedStops = fingerprintBlockStops(instance.getBlock().getStopTimes());
     if (expectedStops.contains(actualStops)) {
       // added trip info can have less stops but needs to be in the same order
-      // now make sure end stop is the same to catch short-turn changes
-      String lastAddedStop = lastStopIdAddedStop(addedTripInfo.getStops());
-      if (lastAddedStop == null || lastAddedStop.equals(lastStopIdStopTime(instance.getBlock().getStopTimes()))) {
         return true;
       }
-    }
     // the patterns were divergent
     return false;
   }
 
-  private String lastStopIdStopTime(List<BlockStopTimeEntry> stopTimes) {
-    if (stopTimes != null && !stopTimes.isEmpty())
-    return AgencyAndId.convertToString(stopTimes.get(stopTimes.size()-1).getStopTime().getStop().getId());
-    return null;
-  }
-
-  private String lastStopIdAddedStop(List<AddedStopInfo> stops) {
-    if (stops != null && !stops.isEmpty()) {
-      return stops.get(stops.size() - 1).getStopId();
-    }
-    return null;
-  }
 
   private String fingerprintTripInfoStops(List<AddedStopInfo> stops) {
     StringBuffer sb = new StringBuffer();
