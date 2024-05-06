@@ -104,5 +104,5 @@ public interface ServiceAlertsService {
 
   boolean sync();
 
-  void deleteOrphans();
+  boolean deleteOrphans();
 }

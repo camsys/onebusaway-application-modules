@@ -19,10 +19,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
-import org.hibernate.HibernateException;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import org.hibernate.*;
 import org.onebusaway.util.SystemTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -162,6 +159,23 @@ public class ServiceAlertsPersistenceDB implements ServiceAlertsPersistence {
       query.setString("serviceAlertId", serviceAlertId);
       query.setString("agencyId", agencyId);
       return (ServiceAlertRecord) query.uniqueResult();
+  }
+
+  @Transactional
+  public boolean deleteOrphans() {
+    try {
+      SQLQuery sqlQuery = getSession().createSQLQuery("delete from transit_data_service_alerts_localized_strings where servicealert_url_id is null AND servicealert_summary_id is null AND servicealert_description_id is null");
+      sqlQuery.executeUpdate();
+      sqlQuery = getSession().createSQLQuery("delete from transit_data_service_alerts_situation_affects where serviceAlertRecord_Id is null");
+      sqlQuery.executeUpdate();
+      sqlQuery = getSession().createSQLQuery("delete from transit_data_service_alerts_situation_consequence where serviceAlertRecord_Id is null");
+      sqlQuery.executeUpdate();
+      sqlQuery = getSession().createSQLQuery("delete from transit_data_service_alerts_time_ranges where serviceAlertRecord_id is null AND servicealert_publication_window_id is null AND servicealert_active_window_id is null");
+      sqlQuery.executeUpdate();
+    } catch (Exception any) {
+      return false;
+    }
+    return true;
   }
 
   private Long getLastModified() {

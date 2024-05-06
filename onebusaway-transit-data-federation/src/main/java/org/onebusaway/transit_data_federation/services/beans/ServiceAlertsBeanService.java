@@ -64,5 +64,5 @@ public interface ServiceAlertsBeanService {
 
   boolean sync();
 
-  void deleteOrphans();
+  boolean deleteOrphans();
 }
