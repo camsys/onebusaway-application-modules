@@ -39,21 +39,21 @@
       <artifactId>jstl</artifactId>
     </dependency>
     <!-- jetty dependencies -->
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-server</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-webapp</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlet</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>org.eclipse.jetty</groupId>-->
+<!--      <artifactId>jetty-server</artifactId>-->
+<!--      <version>${jetty.version}</version>-->
+<!--    </dependency>-->
+<!--    <dependency>-->
+<!--      <groupId>org.eclipse.jetty</groupId>-->
+<!--      <artifactId>jetty-webapp</artifactId>-->
+<!--      <version>${jetty.version}</version>-->
+<!--    </dependency>-->
+<!--    <dependency>-->
+<!--      <groupId>org.eclipse.jetty</groupId>-->
+<!--      <artifactId>jetty-servlet</artifactId>-->
+<!--      <version>${jetty.version}</version>-->
+<!--    </dependency>-->
     <!-- due to legal issues jsp 2.1 support is not yet present as an official eclipse artifact. This might change with jetty 
       8 -->
     <dependency>
