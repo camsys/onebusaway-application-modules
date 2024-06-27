@@ -353,6 +353,9 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 		return alerts;
 	}
 
+	public boolean deleteOrphans() {
+		return _persister.deleteOrphans();
+	}
 	/****
 	 * Private Methods
 	 ****/

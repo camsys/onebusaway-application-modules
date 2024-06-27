@@ -103,4 +103,6 @@ public interface ServiceAlertsService {
   List<ServiceAlertRecord> createOrUpdateServiceAlerts(String agencyId, List<ServiceAlertRecord> records);
 
   boolean sync();
+
+  boolean deleteOrphans();
 }

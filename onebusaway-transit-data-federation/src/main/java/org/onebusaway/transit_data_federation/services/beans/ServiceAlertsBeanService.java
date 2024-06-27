@@ -63,4 +63,6 @@ public interface ServiceAlertsBeanService {
   boolean createServiceAlerts(String defaultAgencyId, List<ServiceAlertBean> serviceAlertBeans);
 
   boolean sync();
+
+  boolean deleteOrphans();
 }

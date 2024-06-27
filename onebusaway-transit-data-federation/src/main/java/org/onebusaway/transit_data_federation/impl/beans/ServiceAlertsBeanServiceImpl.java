@@ -198,4 +198,9 @@ class ServiceAlertsBeanServiceImpl implements ServiceAlertsBeanService {
     return ServiceAlertBeanHelper.list(serviceAlerts);
   }
 
+  @Override
+  public boolean deleteOrphans() {
+    return _serviceAlertsService.deleteOrphans();
+  }
+
 }
