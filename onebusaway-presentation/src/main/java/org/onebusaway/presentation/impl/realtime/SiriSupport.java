@@ -235,6 +235,9 @@ public final class SiriSupport {
 		if ((showRawLocation && currentVehicleTripStatus.getLastKnownLocation() != null) || (presentationService.isOnDetour(currentVehicleTripStatus))) {
 			location.setLatitude(new BigDecimal(df.format(currentVehicleTripStatus.getLastKnownLocation().getLat())));
 			location.setLongitude(new BigDecimal(df.format(currentVehicleTripStatus.getLastKnownLocation().getLon())));
+			if (currentVehicleTripStatus.isLastKnownOrientationSet()) {
+				monitoredVehicleJourney.setBearing((float) currentVehicleTripStatus.getLastKnownOrientation());
+			}
 		} else { //show snapped location
 			if (currentVehicleTripStatus.getLocation() != null) {
 				location.setLatitude(new BigDecimal(df.format(currentVehicleTripStatus.getLocation().getLat())));
@@ -340,7 +343,7 @@ public final class SiriSupport {
 	}
 
 	private static OccupancyEnumeration mapOccupancyStatusToEnumeration(VehicleOccupancyRecord vor) {
-		if (vor == null) return null;
+		if (vor == null || vor.getOccupancyStatus() == null) return null;
 		switch (vor.getOccupancyStatus()) {
 			case UNKNOWN:
 				return null;
