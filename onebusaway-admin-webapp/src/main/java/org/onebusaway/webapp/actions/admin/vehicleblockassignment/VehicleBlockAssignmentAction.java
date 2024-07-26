@@ -23,7 +23,6 @@ import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
-import org.jsoup.helper.StringUtil;
 import org.onebusaway.admin.model.assignments.ActiveBlock;
 import org.onebusaway.admin.model.assignments.BlockSummary;
 import org.onebusaway.admin.service.assignments.VehicleAssignmentService;
@@ -77,7 +76,7 @@ public class VehicleBlockAssignmentAction extends ActionSupport implements
             String blockId = blockSummary.getBlockId();
             String vehicleId = blockSummary.getVehicleId();
 
-            if(!StringUtil.isBlank(blockId) && (StringUtil.isBlank(vehicleId) || _activeVehicleIds.contains(vehicleId))) {
+            if(!StringUtils.isBlank(blockId) && (StringUtils.isBlank(vehicleId) || _activeVehicleIds.contains(vehicleId))) {
                 vehicleAssignmentService.assign(blockId, vehicleId);
             }
         }
