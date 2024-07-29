@@ -36,10 +36,10 @@ public class UserIndexKey implements Serializable, Comparable<UserIndexKey> {
 
   private static final long serialVersionUID = 1L;
 
-  @Column(columnDefinition = "VARCHAR(50)")
+  @Column(length = 200)
   private String type;
 
-  @Column(columnDefinition = "VARCHAR(200)")
+  @Column(length = 200)
   private String value;
 
   public UserIndexKey() {

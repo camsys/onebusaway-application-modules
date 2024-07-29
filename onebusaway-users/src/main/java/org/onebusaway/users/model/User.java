@@ -103,10 +103,11 @@ public class User extends IdentityBean<Integer> {
 
   private Date lastAccessTime;
 
-  @Column(columnDefinition = "BIT", length = 1)
+  @Column(length = 1)
   private boolean temporary;
 
   @Lob
+  @Column(columnDefinition = "blob")
   private UserProperties properties;
 
   @ManyToMany(fetch = FetchType.EAGER)
