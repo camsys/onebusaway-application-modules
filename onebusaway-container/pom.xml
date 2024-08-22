@@ -65,8 +65,9 @@
 
         <!-- Database Connection Pooling -->
         <dependency>
-            <groupId>commons-dbcp2</groupId>
+            <groupId>org.apache.commons</groupId>
             <artifactId>commons-dbcp2</artifactId>
+            <version>2.12.0</version>
         </dependency>
 
         <!-- We support hsqldb out of the box -->
