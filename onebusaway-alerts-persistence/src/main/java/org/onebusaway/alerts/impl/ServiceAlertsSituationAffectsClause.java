@@ -18,7 +18,7 @@ package org.onebusaway.alerts.impl;
 
 import javax.persistence.*;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 @Entity
 @Table(name = "transit_data_service_alerts_situation_affects")

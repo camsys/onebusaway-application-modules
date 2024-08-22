@@ -16,7 +16,7 @@
  */
 package org.onebusaway.transit_data.model.service_alerts;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.util.AgencyAndIdLibrary;
 

@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.onebusaway.util.services.configuration.ConfigurationServiceClient;

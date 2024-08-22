@@ -19,7 +19,7 @@ import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geocoder.enterprise.model.EnterpriseBingGeocoderResult;
 import org.onebusaway.geocoder.enterprise.services.EnterpriseGeocoderResult;
 import org.apache.commons.digester.Digester;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -16,8 +16,8 @@
 package org.onebusaway.util.impl.configuration;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
 
+import org.mockito.junit.MockitoJUnitRunner;
 import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.util.impl.configuration.ConfigurationServiceClientFileImpl;
 import org.onebusaway.util.impl.configuration.ConfigurationServiceImpl;
@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.net.URL;
 

@@ -135,7 +135,7 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <!--  admin web app needs newer version of mockito -->
-            <version>3.3.3</version>
+            <version>5.11.0</version>
         </dependency>
         <!-- for amazon deployment -->
         <dependency>
@@ -413,7 +413,7 @@
                 <plugin>
                     <groupId>com.mycila</groupId>
                     <artifactId>license-maven-plugin</artifactId>
-                    <version>2.12</version>
+                    <version>4.5</version>
                     <configuration>
                         <excludes combine.children="append">
                             <!-- JQuery Excludes -->
@@ -464,7 +464,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-war-plugin</artifactId>
-                    <version>2.1</version>
+                    <version>3.4.0</version>
                     <configuration>
                         <archive>
                             <manifestEntries>
