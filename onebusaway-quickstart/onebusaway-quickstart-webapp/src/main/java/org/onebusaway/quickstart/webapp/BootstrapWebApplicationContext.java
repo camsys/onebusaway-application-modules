@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.apache.commons.cli.CommandLine;
 import org.onebusaway.quickstart.WebappCommon;
