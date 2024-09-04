@@ -111,12 +111,12 @@
         <module>onebusaway-admin-webapp</module>
         <module>onebusaway-agency-metadata</module>
         <module>onebusaway-api-core</module>
-        <module>onebusaway-api-webapp</module>
+        <!--<module>onebusaway-api-webapp</module>-->
         <module>onebusaway-combined-webapp</module>
         <module>onebusaway-container</module>
         <module>onebusaway-core</module>
         <module>onebusaway-enterprise-acta-webapp</module>
-        <module>onebusaway-enterprise-webapp</module>
+        <!--<module>onebusaway-enterprise-webapp</module>-->
         <module>onebusaway-federations</module>
         <module>onebusaway-federations-webapp</module>
         <module>onebusaway-frontend-webapp</module>
@@ -129,10 +129,10 @@
         <module>onebusaway-nextbus-api-webapp</module>
         <module>onebusaway-phone</module>
         <module>onebusaway-phone-webapp</module>
-        <module>onebusaway-twilio-webapp</module>
+        <!--<module>onebusaway-twilio-webapp</module>-->
         <module>onebusaway-presentation</module>
         <module>onebusaway-quickstart</module>
-        <module>onebusaway-sms-webapp</module>
+        <!--<module>onebusaway-sms-webapp</module>-->
         <module>onebusaway-realtime-api</module>
         <module>onebusaway-transit-data</module>
         <module>onebusaway-transit-data-federation</module>

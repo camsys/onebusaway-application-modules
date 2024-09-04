@@ -37,6 +37,8 @@ import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndEntryImpl;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.feed.synd.SyndFeedImpl;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Results({@Result(type = "rss", params={"feedName", "feed", "feedType", "rss_2.0"})})
 public class ServiceAlertsUpdateAction extends OneBusAwayEnterpriseActionSupport {
@@ -57,6 +59,7 @@ public class ServiceAlertsUpdateAction extends OneBusAwayEnterpriseActionSupport
 	    _feed = new SyndFeedImpl();
 	    StringBuilder title = new StringBuilder();
 	    title.append("OneBusAway Agency Advisories");
+
 
 	    HttpServletRequest request = ServletActionContext.getRequest();
 
