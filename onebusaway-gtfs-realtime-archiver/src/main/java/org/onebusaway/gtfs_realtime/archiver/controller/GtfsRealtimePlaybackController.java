@@ -20,8 +20,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.onebusaway.gtfs_realtime.archiver.service.GtfsRealtimeRetriever;
 import org.onebusaway.gtfs_realtime.archiver.service.GtfsRealtimeRetriever.EntityType;

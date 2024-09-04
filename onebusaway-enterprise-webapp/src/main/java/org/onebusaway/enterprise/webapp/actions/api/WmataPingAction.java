@@ -20,7 +20,7 @@ import java.util.List;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import org.apache.struts2.ServletActionContext;
 import org.onebusaway.enterprise.webapp.actions.OneBusAwayEnterpriseActionSupport;

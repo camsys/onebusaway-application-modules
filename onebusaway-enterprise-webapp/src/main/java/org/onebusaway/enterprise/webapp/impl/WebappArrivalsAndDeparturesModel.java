@@ -18,7 +18,7 @@ package org.onebusaway.enterprise.webapp.impl;
 import java.util.Date;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.struts2.ServletActionContext;
 import org.onebusaway.enterprise.webapp.actions.bundles.ArrivalAndDepartureMessages;

@@ -46,6 +46,13 @@
 			<version>${log4j.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>6.1.0</version>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- OneBusAway Dependencies -->
 		<dependency>
 			<groupId>org.onebusaway</groupId>
@@ -164,6 +171,12 @@
             <version>${project.version}</version>
             <type>war</type>
         </dependency>
+		<dependency>
+			<groupId>jakarta.servlet.jsp</groupId>
+			<artifactId>jakarta.servlet.jsp-api</artifactId>
+			<version>4.0.0</version>
+			<scope>compile</scope>
+		</dependency>
 
 	</dependencies>
 

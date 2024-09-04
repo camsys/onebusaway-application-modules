@@ -18,8 +18,8 @@ package org.onebusaway.enterprise.webapp.actions.m.wiki;
 import java.text.DateFormat;
 import java.util.Date;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.jsp.JspException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.jsp.JspException;
 
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.onebusaway.enterprise.webapp.actions.OneBusAwayEnterpriseActionSupport;

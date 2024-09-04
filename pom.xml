@@ -147,7 +147,8 @@
         <module>onebusaway-gtfsrt-integration-tests</module>
     </modules>
 
-    <!-- This is where we control the master dependency version used by all modules -->
+    <!-- This is where we control the master dependency version used by all modules (defines the dependency, does not pull it in)
+    try to override here, but might need to see where it is declared if its a plugin-->
     <dependencyManagement>
 
         <dependencies>
@@ -446,6 +447,19 @@
                                 </pluginExecution>
                             </pluginExecutions>
                         </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>3.4.0</version>
+                    <configuration>
+                        <archive>
+                            <manifestEntries>
+                                <Implementation-Build>${gitDescribe}</Implementation-Build>
+                            </manifestEntries>
+                        </archive>
+                        <failOnMissingWebXml>false</failOnMissingWebXml>
                     </configuration>
                 </plugin>
                 <plugin>

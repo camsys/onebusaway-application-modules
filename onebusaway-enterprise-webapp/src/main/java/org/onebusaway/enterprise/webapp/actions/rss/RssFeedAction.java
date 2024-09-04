@@ -20,7 +20,7 @@ import org.onebusaway.enterprise.webapp.actions.OneBusAwayEnterpriseActionSuppor
 import org.onebusaway.enterprise.webapp.actions.status.service.StatusProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Base class for Actions that do RSS work.
