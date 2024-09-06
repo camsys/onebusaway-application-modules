@@ -26,7 +26,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 import org.onebusaway.admin.service.server.ConsoleServiceAlertsService;
-import org.onebusaway.admin.service.server.IntegratingServiceAlertsService;
+import org.onebusaway.admin.service.server.RssServiceAlertsService;
 import org.onebusaway.alerts.service.ServiceAlerts;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data.model.ListBean;
@@ -44,14 +44,15 @@ import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @Component
-public class RssServiceAlertsServiceImpl implements IntegratingServiceAlertsService {
+public class RssServiceAlertsSerivceImpl implements RssServiceAlertsService {
 
-    private static Logger _log = LoggerFactory.getLogger(RssServiceAlertsServiceImpl.class);
+    private static Logger _log = LoggerFactory.getLogger(RssServiceAlertsSerivceImpl.class);
 
     private String _defaultAgencyId = null;
     private String _serviceStatusUrlString = null;
@@ -70,11 +71,9 @@ public class RssServiceAlertsServiceImpl implements IntegratingServiceAlertsServ
     private FeedMessage _feed = null;
     private Locale _locale = null;
 
-    private int _refreshRate = 2; // minutes
-
     @Autowired
     public void setTransitDataService(TransitDataService tds) {
-      _transitDataService = tds;
+        _transitDataService = tds;
     }
 
     @Autowired
@@ -82,52 +81,45 @@ public class RssServiceAlertsServiceImpl implements IntegratingServiceAlertsServ
         _serviceAlertsService = service;
     }
     public void setDefaultAgencyId(String agencyId) {
-      this._defaultAgencyId = agencyId;
-    }
-    
-    public void setServiceStatusUrlString(String url) {
-      _serviceStatusUrlString = url;
-    }
-    
-    public void setServiceAdvisoryUrlString(String url) {
-      _serviceAdvisoryUrlString = url;
-    }
-    
-    public void setAlertSource(String source) {
-      _alertSource = source;
-    }
-    
-    public void setLocale(Locale locale) {
-      _locale = locale;
+        this._defaultAgencyId = agencyId;
     }
 
-    public void setRefreshRate(int rateInMinutes) {
-        this._refreshRate = rateInMinutes;
+    public void setServiceStatusUrlString(String url) {
+        _serviceStatusUrlString = url;
     }
-    public int getRefreshRate() {
-        return _refreshRate;
+
+    public void setServiceAdvisoryUrlString(String url) {
+        _serviceAdvisoryUrlString = url;
+    }
+
+    public void setAlertSource(String source) {
+        _alertSource = source;
+    }
+
+    public void setLocale(Locale locale) {
+        _locale = locale;
     }
 
     public boolean isEnabled() {
-      return _serviceStatusUrlString != null && _serviceAdvisoryUrlString != null;
+        return _serviceStatusUrlString != null && _serviceAdvisoryUrlString != null;
     }
 
     public String getAgencyId() {
-      if (_defaultAgencyId != null) return _defaultAgencyId;
-      // not configured, default to the first agency
-      return _transitDataService.getAgenciesWithCoverage().get(0).getAgency().getId();
+        if (_defaultAgencyId != null) return _defaultAgencyId;
+        // not configured, default to the first agency
+        return _transitDataService.getAgenciesWithCoverage().get(0).getAgency().getId();
     }
-    
+
     @PostConstruct
     public void start() throws Exception {
         if (_locale == null)
-          _locale = Locale.getDefault();
-        
+            _locale = Locale.getDefault();
+
         _executor = Executors.newSingleThreadScheduledExecutor();
         // re-build internal route cache
         _executor.scheduleAtFixedRate(new RefreshDataTask(), 0, 1, TimeUnit.HOURS);
         // poll feed after cache is built above
-        _executor.scheduleAtFixedRate(new PollRssTask(), 1, getRefreshRate(), TimeUnit.MINUTES);
+        _executor.scheduleAtFixedRate(new PollRssTask(), 1, 5, TimeUnit.MINUTES);
     }
 
     @PreDestroy
@@ -137,15 +129,15 @@ public class RssServiceAlertsServiceImpl implements IntegratingServiceAlertsServ
     }
 
     @Override
-    public FeedMessage getServiceAlertFeed() {
-      return _feed;
+    public FeedMessage getServlceAlertFeed() {
+        return _feed;
     }
-    
+
     protected List<ServiceAlertBean> pollServiceAdvisoryRssFeed() throws Exception {
 
         List<ServiceAlertBean> alerts = new ArrayList<ServiceAlertBean>();
         if (_serviceAdvisoryUrlString == null) return alerts;
-        
+
         HttpMethod httpget = new GetMethod(_serviceAdvisoryUrlString);
         int response = _httpClient.executeMethod(httpget);
         if (response != HttpStatus.SC_OK) {
@@ -159,8 +151,8 @@ public class RssServiceAlertsServiceImpl implements IntegratingServiceAlertsServ
         if(language == null)
             language = _locale.getLanguage();  //they don't send language for this feed currently, perhaps they'll start?
         if(language.equals("en-us")) {
-          // java prefers en
-          language = _locale.getLanguage();
+            // java prefers en
+            language = _locale.getLanguage();
         }
         for(Element itemElement : elements){
             String title = itemElement.getChild("title").getValue();
@@ -194,9 +186,9 @@ public class RssServiceAlertsServiceImpl implements IntegratingServiceAlertsServ
     }
 
     protected List<ServiceAlertBean>  pollServiceStatusRssFeed() throws Exception {
-        List<ServiceAlertBean> alerts = new ArrayList<ServiceAlertBean>();  
+        List<ServiceAlertBean> alerts = new ArrayList<ServiceAlertBean>();
         if (_serviceStatusUrlString == null) return alerts;
-        
+
         HttpMethod httpget = new GetMethod(_serviceStatusUrlString);
         int response = _httpClient.executeMethod(httpget);
         if (response != HttpStatus.SC_OK) {
@@ -209,10 +201,10 @@ public class RssServiceAlertsServiceImpl implements IntegratingServiceAlertsServ
         List<Element> elements = doc.getRootElement().getChild("channel").getChildren("item");
         String language = doc.getRootElement().getChild("channel").getChildText("language");
         if (language == null) {
-          language = _locale.getLanguage();
+            language = _locale.getLanguage();
         }
         if (language.equals("en-us")) {
-          language = _locale.getLanguage();
+            language = _locale.getLanguage();
         }
         for(Element itemElement : elements){
             String title = itemElement.getChild("title").getValue();
@@ -297,10 +289,9 @@ public class RssServiceAlertsServiceImpl implements IntegratingServiceAlertsServ
                             + " and link=" + linkText);
                     if (!_alertCache.keySet().contains(serviceAlertBean.getId())
                             && serviceAlertBean.getSource() != null
-                            /* WMATA_alert or WMATA_advisory */
-                            && serviceAlertBean.getSource().contains(_alertSource + "_")) {
+                            && serviceAlertBean.getSource().equals(_alertSource)) {
                         _log.info("new service alert=" + serviceAlertBean.getSummaries().get(0).getValue()
-                            + " and link=" + linkText);
+                                + " and link=" + linkText);
                         _alertCache.put(serviceAlertBean.getId(), serviceAlertBean);
                     }
                 }
@@ -331,11 +322,8 @@ public class RssServiceAlertsServiceImpl implements IntegratingServiceAlertsServ
                     String guid = cachedAlertsGuidIter.next();
                     if (!currentRssAlertMap.keySet().contains(guid)) {
                         _log.info("Removing expired alert with guid " + guid);
-                        try {
-                            toRemove.add(AgencyAndId.convertFromString(guid));
-                        } catch (Exception any) {
-                            _log.error("invalid guid=" + guid);
-                        }
+
+                        toRemove.add(new AgencyAndId(getAgencyId(), guid));
                         cachedAlertsGuidIter.remove();
                     } else {
                         ServiceAlertBean currentAlert = _alertCache.get(guid);
@@ -386,7 +374,7 @@ public class RssServiceAlertsServiceImpl implements IntegratingServiceAlertsServ
                     ListBean<RouteBean> routes =  _transitDataService.getRoutesForAgencyId(getAgencyId());
                     Map<String, String> mutableRouteMap = new HashMap<String, String>();
                     for(RouteBean route : routes.getList()){
-                      AgencyAndId routeId = AgencyAndId.convertFromString(route.getId());
+                        AgencyAndId routeId = AgencyAndId.convertFromString(route.getId());
                         mutableRouteMap.put(route.getShortName().toUpperCase(), routeId.toString());
                     }
                     _routeShortNameToRouteIdMap = Collections.unmodifiableMap(mutableRouteMap);

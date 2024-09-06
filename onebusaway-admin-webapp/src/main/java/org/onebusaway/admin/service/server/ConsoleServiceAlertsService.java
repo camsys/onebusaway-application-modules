@@ -17,7 +17,6 @@ package org.onebusaway.admin.service.server;
 
 import com.google.transit.realtime.GtfsRealtime;
 import org.onebusaway.alerts.impl.ServiceAlertRecord;
-import org.onebusaway.alerts.service.ServiceAlerts;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
@@ -27,9 +26,8 @@ import java.util.List;
 
 public interface ConsoleServiceAlertsService {
 
+    GtfsRealtime.FeedMessage getAll();
     ListBean<ServiceAlertBean> getAllServiceAlertsForAgencyId(String agencyId);
-
-    ListBean<ServiceAlertBean> getActiveServiceAlertsForAgencyId(String agencyId);
 
     void removeServiceAlert(AgencyAndId id);
 
@@ -54,11 +52,4 @@ public interface ConsoleServiceAlertsService {
     void createServiceAlerts(String agencyId, List<ServiceAlertBean> toAdd);
 
     GtfsRealtime.FeedMessage getAlerts(String agencyId);
-
-    GtfsRealtime.FeedMessage getActiveAlerts(String agencyId);
-
-    ServiceAlerts.ServiceAlertsCollection getAlertsCollection(String agencyId);
-
-    ServiceAlerts.ServiceAlertsCollection getActiveAlertsCollection(String agencyId);
-
 }

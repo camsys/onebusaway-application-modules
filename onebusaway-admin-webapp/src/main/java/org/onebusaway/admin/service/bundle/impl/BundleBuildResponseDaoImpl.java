@@ -38,7 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
  * the server was restarted the Map was reset and that data was lost. This DAO
  * is for facilitating the persisting of the BundleBuildResponses to a database
  * and provides database operations specific to the BundleBuildResponse model.
- * 
+ *
  * @author jpearson
  *
  */
@@ -46,9 +46,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class BundleBuildResponseDaoImpl implements BundleBuildResponseDao {
 
   protected static Logger _log = LoggerFactory
-      .getLogger(BundleBuildResponseDaoImpl.class);
+          .getLogger(BundleBuildResponseDaoImpl.class);
   private SessionFactory _sessionFactory;
-  
+
   @Autowired
   public void setSessionFactory(SessionFactory sessionFactory) {
     _sessionFactory = sessionFactory;
@@ -70,7 +70,7 @@ public class BundleBuildResponseDaoImpl implements BundleBuildResponseDao {
     Session session = getSession();
     List<BundleBuildResponse> responses;
     Query query = session
-        .createQuery("from BundleBuildResponse where id=:id");
+            .createQuery("from BundleBuildResponse where id=:id");
     query.setParameter("id", id);
     responses = query.list();
     BundleBuildResponse bbr = responses.get(0);
@@ -83,12 +83,12 @@ public class BundleBuildResponseDaoImpl implements BundleBuildResponseDao {
     int maxId = 0;
     Session session = getSession();
     List<String> bundleIds = session.createCriteria(BundleBuildResponse.class)
-        .setProjection(Projections.property("id")).list();
+            .setProjection(Projections.property("id")).list();
     for (String bundleId : bundleIds) {
       int thisId = Integer.parseInt(bundleId);
       maxId = (thisId > maxId) ? thisId : maxId;
     }
-    
+
     return maxId;
   }
 }

@@ -57,7 +57,6 @@ import org.onebusaway.transit_data_federation.bundle.tasks.MultiCSVLogger;
 import org.onebusaway.transit_data_federation.bundle.tasks.stif.StifTask;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
 import org.onebusaway.util.SystemTime;
-import org.onebusaway.util.impl.configuration.ConfigurationServiceImpl;
 import org.onebusaway.util.logging.LoggingService;
 import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.onebusaway.util.services.configuration.ConfigurationServiceClient;
@@ -69,12 +68,13 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.remoting.RemoteConnectFailureException;
 
-import static org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleConventionMain.*;
-
 public class BundleBuildingServiceImpl implements BundleBuildingService {
   private static final String BUNDLE_RESOURCE = "classpath:org/onebusaway/transit_data_federation/bundle/application-context-bundle-admin.xml";
   private static final String DEFAULT_STIF_CLEANUP_URL = "https://github.com/camsys/onebusaway-nyc/raw/master/onebusaway-nyc-stif-loader/fix-stif-date-codes.py";
   private static final String DEFAULT_AGENCY = "MTA";
+  private static final String DATA_DIR = "data";
+  private static final String OUTPUT_DIR = "outputs";
+  private static final String INPUTS_DIR = "inputs";
   private static final String METADATA_FILENAME = "metadata.json";
   private static final String DEFAULT_TRIP_TO_DSC_FILE = "tripToDSCMap.txt";
   private static final String ARG_THROW_EXCEPTION_INVALID_STOPS = "tripEntriesFactory.throwExceptionOnInvalidStopToShapeMappingException";
@@ -88,7 +88,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   private String _auxConfig = null;
   private String _stopConsolidationConfig = null;
   private boolean _debug = false;
-  
+
   public void setDebug(boolean flag) {
     _debug = flag;
   }
@@ -107,9 +107,9 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   /**
    * @param configurationService the configurationService to set
    */
-   @Autowired
+  @Autowired
   public void setConfigurationService(ConfigurationService configurationService) {
-	this.configurationService = configurationService;
+    this.configurationService = configurationService;
   }
 
   /**
@@ -117,18 +117,17 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
    */
   @Autowired
   public void setLoggingService(LoggingService loggingService) {
-	this.loggingService = loggingService;
+    this.loggingService = loggingService;
   }
 
   @Override
   public void setup() {
     _executorService = Executors.newFixedThreadPool(1);
   }
-  
+
   @PreDestroy
   public void stop() {
-    if (_executorService != null)
-      _executorService.shutdownNow();
+    _executorService.shutdownNow();
   }
 
   public void setAuxConfig(String flag) {
@@ -137,7 +136,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   public String getAuxConfig() {
     return _auxConfig;
   }
-  
+
   @Override
   public void doBuild(BundleBuildRequest request, BundleBuildResponse response) {
     response.setId(request.getId());
@@ -148,17 +147,17 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     upload(request, response);
     response.addStatusMessage("Bundle build process complete");
     String component = System.getProperty("admin.chefRole");
-    loggingService.log(component, Level.INFO, "Bundle build process complete for bundle '" 
-    			+request.getBundleName() + "'");
+    loggingService.log(component, Level.INFO, "Bundle build process complete for bundle '"
+            +request.getBundleName() + "'");
   }
   /**
-   * download from S3 and stage for building 
+   * download from S3 and stage for building
    */
   @Override
   public void download(BundleBuildRequest request, BundleBuildResponse response) {
     String bundleDir = request.getBundleDirectory();
     String tmpDirectory = request.getTmpDirectory();
-    if (tmpDirectory == null) { 
+    if (tmpDirectory == null) {
       tmpDirectory = new NYCFileUtils().createTmpDirectory();
       request.setTmpDirectory(tmpDirectory);
     }
@@ -166,10 +165,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
     // download gtfs
     List<String> gtfs = _fileService.list( bundleDir + "/" + _fileService.getGtfsPath(), -1);
-	
-    
+
+
     NYCFileUtils fs = new NYCFileUtils();
-    
+
     String parentDir = _fileService.getGtfsPath(); // Parent of agency dir
     for (String file : gtfs) {
       _log.debug("downloading gtfs:" + file);
@@ -181,7 +180,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       if (agencyDir != null) {
         File toRename = new File(gtfsFileName);
         String newNameStr = fs.parseDirectory(gtfsFileName) + File.separator + agencyDir
-              + "_" + toRename.getName();
+                + "_" + toRename.getName();
         try {
           fs.moveFile(gtfsFileName, newNameStr);
           response.addGtfsFile(newNameStr);
@@ -191,15 +190,15 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
           // use the old one and carry on
           response.addGtfsFile(gtfsFileName);
         }
-        
+
       } else {
-        response.addGtfsFile(gtfsFileName);  
+        response.addGtfsFile(gtfsFileName);
       }
     }
     _log.debug("finished download gtfs");
     // download aux files, which could be stif or hastus, etc
     List<String> aux = _fileService.list(
-        bundleDir + "/" + _fileService.getAuxPath(), -1);
+            bundleDir + "/" + _fileService.getAuxPath(), -1);
     parentDir = _fileService.getAuxPath(); // Parent of agency dir
     for (String file : aux) {
       _log.info("downloading aux:" + aux);
@@ -211,7 +210,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         String auxFileName = _fileService.get(file, tmpDirectory);
         File toRename = new File(file);
         String newNameStr = fs.parseDirectory(auxFileName) + File.separator
-            + agencyDir + "_" + toRename.getName();
+                + agencyDir + "_" + toRename.getName();
         try {
           _log.info(auxFileName + " moved to " + newNameStr);
           fs.moveFile(auxFileName, newNameStr);
@@ -221,12 +220,12 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
           // use the old one and carry on
           response.addAuxZipFile(auxFileName);
         }
-     }
+      }
     }
     _log.info("finished download aux files");
     // download optional configuration files
     List<String> config = _fileService.list(
-        bundleDir + "/" + _fileService.getConfigPath(), -1);
+            bundleDir + "/" + _fileService.getConfigPath(), -1);
     for (String file : config) {
       _log.debug("downloading config:" + config);
       response.addStatusMessage("downloading config file " + file);
@@ -242,32 +241,32 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   @Override
   public void prepare(BundleBuildRequest request, BundleBuildResponse response) {
 
-	response.addStatusMessage("preparing for build");
+    response.addStatusMessage("preparing for build");
     NYCFileUtils fs = new NYCFileUtils();
-    
+
     // copy source data to inputs
     String rootPath = request.getTmpDirectory() + File.separator + request.getBundleName();
     response.setBundleRootDirectory(rootPath);
     File rootDir = new File(rootPath);
     rootDir.mkdirs();
-    
-    String inputsPath = request.getTmpDirectory() + File.separator + request.getBundleName() 
-        + File.separator + INPUTS_DIR;
+
+    String inputsPath = request.getTmpDirectory() + File.separator + request.getBundleName()
+            + File.separator + INPUTS_DIR;
     response.setBundleInputDirectory(inputsPath);
     File inputsDir = new File(inputsPath);
     inputsDir.mkdirs();
-    
+
     String outputsPath = request.getTmpDirectory() + File.separator + request.getBundleName()
-        + File.separator + OUTPUT_DIR;
+            + File.separator + OUTPUT_DIR;
     response.setBundleOutputDirectory(outputsPath);
     File outputsDir = new File(outputsPath);
     outputsDir.mkdirs();
 
     String dataPath = request.getTmpDirectory() + File.separator + request.getBundleName()
-        + File.separator + DATA_DIR;
-    
-    
-    
+            + File.separator + DATA_DIR;
+
+
+
     File dataDir = new File(dataPath);
     response.setBundleDataDirectory(dataPath);
     dataDir.mkdirs();
@@ -283,29 +282,29 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       }
     }
     _log.debug("finished prepping gtfs!");
-    
+
     for (String stif: response.getAuxZipList()) {
       _log.debug("prepping stif:" + stif);
-      String outputFilename = inputsPath + File.separator + fs.parseFileName(stif); 
+      String outputFilename = inputsPath + File.separator + fs.parseFileName(stif);
       fs.copyFiles(new File(stif), new File(outputFilename));
     }
-    
+
     for (String stifZip : response.getAuxZipList()) {
       _log.debug("stif copying " + stifZip + " to " + request.getTmpDirectory() + File.separator
-          + "stif");
+              + "stif");
       new NYCFileUtils().unzip(stifZip, request.getTmpDirectory() + File.separator
-          + "stif");
+              + "stif");
     }
 
     _log.debug("stip unzip complete ");
-    
+
     // stage baseLocations
     InputStream baseLocationsStream = this.getClass().getResourceAsStream("/BaseLocations.txt");
     new NYCFileUtils().copy(baseLocationsStream, dataPath + File.separator + "BaseLocations.txt");
-    
+
     File configPath = new File(inputsPath + File.separator + "config");
     configPath.mkdirs();
-    
+
     // stage any configuration files
     for (String config : response.getConfigList()) {
       _log.debug("config copying " + config + " to " + inputsPath + File.separator + "config");
@@ -313,7 +312,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       String outputFilename = inputsPath + File.separator + "config" + File.separator + fs.parseFileName(config);
       fs.copyFiles(new File(config), new File(outputFilename));
     }
-    
+
     if (isStifTaskApplicable()) {
       _log.info("running stif with auxconfig=" + this._auxConfig);
       prepStif(request, response);
@@ -321,22 +320,22 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       _log.info("running hastus with auxconfig=" + this._auxConfig);
       prepHastus(request, response);
     }
-    
+
   }
 
-   private void prepHastus(BundleBuildRequest request,
-      BundleBuildResponse response) {
-     NYCFileUtils fs = new NYCFileUtils();
-     // create AUX dir as well
-     String auxPath = request.getTmpDirectory() + File.separator + "aux";
-     File auxDir = new File(auxPath);
-     _log.info("creating aux directory=" + auxPath);
-     auxDir.mkdirs();
+  private void prepHastus(BundleBuildRequest request,
+                          BundleBuildResponse response) {
+    NYCFileUtils fs = new NYCFileUtils();
+    // create AUX dir as well
+    String auxPath = request.getTmpDirectory() + File.separator + "aux";
+    File auxDir = new File(auxPath);
+    _log.info("creating aux directory=" + auxPath);
+    auxDir.mkdirs();
   }
 
   //clean stifs via STIF_PYTHON_CLEANUP_SCRIPT
   private void prepStif(BundleBuildRequest request, BundleBuildResponse response) {
-    
+
     NYCFileUtils fs = new NYCFileUtils();
     // create STIF dir as well
     String stifPath = request.getTmpDirectory() + File.separator + "stif";
@@ -347,20 +346,20 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     try {
       File[] stifDirectories = stifDir.listFiles();
       if (stifDirectories != null) {
-        
-        fs = new NYCFileUtils(request.getTmpDirectory());
-          String stifUtilUrl = getStifCleanupUrl();
-          response.addStatusMessage("downloading " + stifUtilUrl + " to clean stifs");
-          fs.wget(stifUtilUrl);
-          String stifUtilName = fs.parseFileName(stifUtilUrl);
-          // make executable
-          fs.chmod("500", request.getTmpDirectory() + File.separator + stifUtilName);
 
-        // for each subdirectory of stif, run the script 
+        fs = new NYCFileUtils(request.getTmpDirectory());
+        String stifUtilUrl = getStifCleanupUrl();
+        response.addStatusMessage("downloading " + stifUtilUrl + " to clean stifs");
+        fs.wget(stifUtilUrl);
+        String stifUtilName = fs.parseFileName(stifUtilUrl);
+        // make executable
+        fs.chmod("500", request.getTmpDirectory() + File.separator + stifUtilName);
+
+        // for each subdirectory of stif, run the script
         for (File stifSubDir : stifDirectories) {
-          String cmd = request.getTmpDirectory() + File.separator + stifUtilName + " " 
-            + stifSubDir.getCanonicalPath();
-          
+          String cmd = request.getTmpDirectory() + File.separator + stifUtilName + " "
+                  + stifSubDir.getCanonicalPath();
+
           // kick off process and collect output
           ProcessUtil pu = new ProcessUtil(cmd);
           pu.exec();
@@ -376,11 +375,11 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
           }
         }
         response.addStatusMessage("stif cleaning complete");
-      } 
+      }
     } catch (Exception any) {
       response.setException(any);
     }
-    
+
   }
 
   private String parseAgencyDir(String parentDir, String path) {
@@ -403,7 +402,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     }
     return DEFAULT_STIF_CLEANUP_URL;
   }
-  
+
   /**
    * call FederatedTransitDataBundleCreator
    */
@@ -414,39 +413,35 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
      */
     PrintStream stdOut = System.out;
     PrintStream logFile = null;
-    
+
     // pass a mini spring context to the bundle builder so we can cleanup
     ConfigurableApplicationContext context = null;
     try {
       File outputPath = new File(response.getBundleDataDirectory());
       File loggingPath = new File(response.getBundleOutputDirectory());
-      
+
       // beans assume bundlePath is set -- this will be where files are written!
       System.setProperty("bundlePath", outputPath.getAbsolutePath());
-      
+
       String logFilename = outputPath + File.separator + "bundleBuilder.out.txt";
       logFile = new PrintStream(new FileOutputStream(new File(logFilename)));
 
       // swap standard out for logging
       System.setOut(logFile);
       configureLogging(System.out);
-      
+
       FederatedTransitDataBundleCreator creator = new FederatedTransitDataBundleCreator();
 
       Map<String, BeanDefinition> beans = new HashMap<String, BeanDefinition>();
       creator.setContextBeans(beans);
-      
+
       List<GtfsBundle> gtfsBundles = createGtfsBundles(response);
       List<String> contextPaths = new ArrayList<String>();
       contextPaths.add(BUNDLE_RESOURCE);
-      
+
       BeanDefinitionBuilder bean = BeanDefinitionBuilder.genericBeanDefinition(GtfsBundles.class);
       bean.addPropertyValue("bundles", gtfsBundles);
       beans.put("gtfs-bundles", bean.getBeanDefinition());
-
-      // pass through configuration service so its available to tasks
-      bean = BeanDefinitionBuilder.genericBeanDefinition(ConfigurationServiceImpl.class);
-      beans.put("configurationServiceImpl", bean.getBeanDefinition());
 
       bean = BeanDefinitionBuilder.genericBeanDefinition(GtfsRelationalDaoImpl.class);
       beans.put("gtfsRelationalDaoImpl", bean.getBeanDefinition());
@@ -454,16 +449,16 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       BeanDefinitionBuilder multiCSVLogger = BeanDefinitionBuilder.genericBeanDefinition(MultiCSVLogger.class);
       multiCSVLogger.addPropertyValue("basePath", loggingPath);
       beans.put("multiCSVLogger", multiCSVLogger.getBeanDefinition());
-      
+
       BeanDefinitionBuilder entityReplacementLogger = BeanDefinitionBuilder.genericBeanDefinition(EntityReplacementLoggerImpl.class);
       beans.put("entityReplacementLogger", entityReplacementLogger.getBeanDefinition());
-      
+
 
       BeanDefinitionBuilder requestDef = BeanDefinitionBuilder.genericBeanDefinition(BundleRequestResponse.class);
       requestDef.addPropertyValue("request", request);
       requestDef.addPropertyValue("response", response);
       beans.put("bundleRequestResponse", requestDef.getBeanDefinition());
-      
+
       // configure for NYC specifics
       BeanDefinitionBuilder bundle = BeanDefinitionBuilder.genericBeanDefinition(FederatedTransitDataBundle.class);
       bundle.addPropertyValue("path", outputPath);
@@ -472,17 +467,17 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       BeanDefinitionBuilder outputDirectoryReference = BeanDefinitionBuilder.genericBeanDefinition(String.class);
       outputDirectoryReference.addPropertyValue("", response.getBundleOutputDirectory());
 
-      
+
       // TODO move this to application-context-bunlde-admin.xml and have it look for config to turn on/off
       BeanDefinitionBuilder task = null;
       if (isStifTaskApplicable()) {
         addStifTask(beans, request, response);
       }
-      
+
       if (isStopConsolidationApplicable()) {
         addStopConsolidationMappings(beans, request, response);
       }
-      
+
 
       _log.debug("setting outputPath=" + outputPath);
       creator.setOutputPath(outputPath);
@@ -506,7 +501,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       BeanDefinitionBuilder propertyOverrides = BeanDefinitionBuilder.genericBeanDefinition(PropertyOverrideConfigurer.class);
       propertyOverrides.addPropertyValue("properties", cmdOverrides);
       beans.put("myCustomPropertyOverrides",
-          propertyOverrides.getBeanDefinition());
+              propertyOverrides.getBeanDefinition());
 
       // manage our own context to recover from exceptions
       Map<String, BeanDefinition> contextBeans = new HashMap<String, BeanDefinition>();
@@ -537,8 +532,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
           /*
            * here we cleanup the spring context so we can process follow on requests.
            */
-        context.stop();
-        context.close();
+          context.stop();
+          context.close();
         } catch (Throwable t) {
           _log.error("buried context close:", t);
         }
@@ -546,7 +541,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       // restore standard out
       deconfigureLogging(System.out);
       System.setOut(stdOut);
-      
+
       if (logFile != null) {
         logFile.close();
       }
@@ -559,9 +554,9 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       return null;
     return configurationService.getConfigurationValueAsString("admin.stopMappingUrl", null);
   }
-  
+
   private void monitorStatus(BundleBuildResponse response,
-      StatusMessages statusMessages) {
+                             StatusMessages statusMessages) {
     if (_executorService == null) {
       _executorService = Executors.newFixedThreadPool(1);
     }
@@ -570,41 +565,39 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   }
 
   private void demonitorStatus() {
-    if (_executorService != null) {
-      _executorService.shutdownNow();
-      _executorService = null;
-    }
+    _executorService.shutdown();
+    _executorService = null;
   }
-  
+
   // configure entity replacement strategy to consolidate stops based on configurable URL
   private void addStopConsolidationMappings(Map<String, BeanDefinition> beans,
-      BundleBuildRequest request, BundleBuildResponse response) {
+                                            BundleBuildRequest request, BundleBuildResponse response) {
     String stopMappingUrl = configurationService.getConfigurationValueAsString("admin.stopMappingUrl", null);
-    
+
     if (stopMappingUrl != null ) {
-      _log.info("configuring stopConsolidation(" 
-          + ", stops=" + stopMappingUrl);
-      
+      _log.info("configuring stopConsolidation("
+              + ", stops=" + stopMappingUrl);
+
       BeanDefinitionBuilder erFactory = BeanDefinitionBuilder.genericBeanDefinition(EntityReplacementStrategyFactory.class);
-      
+
       Map<String, String> mappings = new HashMap<String, String>();
       mappings.put("org.onebusaway.gtfs.model.Stop", stopMappingUrl);
       erFactory.addPropertyValue("entityMappings", mappings);
-      
+
       beans.put("entityReplacementStrategyFactory", erFactory.getBeanDefinition());
-      
+
       BeanDefinitionBuilder er = BeanDefinitionBuilder.genericBeanDefinition();
 
       er.getRawBeanDefinition().setFactoryBeanName("entityReplacementStrategyFactory");
       er.getRawBeanDefinition().setFactoryMethodName("create");
       beans.put("entityReplacementStrategy", er.getBeanDefinition());
-      
+
       response.addStatusMessage("configuration StopMappingUrl=" + stopMappingUrl);
     } else {
-      _log.info("not configuring stopConsolidation(" 
-           + ", stops=" + stopMappingUrl);
+      _log.info("not configuring stopConsolidation("
+              + ", stops=" + stopMappingUrl);
     }
-    
+
   }
 
   private void addStifTask(Map<String, BeanDefinition> beans, BundleBuildRequest request, BundleBuildResponse response) {
@@ -614,20 +607,20 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     stifLoaderTask.addPropertyReference("logger", "multiCSVLogger");
     // TODO this is a convention, pull out into config?
     stifLoaderTask.addPropertyValue("stifPath", request.getTmpDirectory()
-        + File.separator + "stif");
+            + File.separator + "stif");
     String notInServiceDirString = request.getTmpDirectory()
-        + File.separator + "config";
+            + File.separator + "config";
     String notInServiceFilename = notInServiceDirString +  File.separator + "NotInServiceDSCs.txt";
 
     _log.info("creating NotInServiceDSCs file = " + notInServiceFilename);
     new File(notInServiceDirString).mkdirs();
     new NYCFileUtils().createFile(notInServiceFilename,
-        listToFile(request.getNotInServiceDSCList()));
+            listToFile(request.getNotInServiceDSCList()));
     stifLoaderTask.addPropertyValue("notInServiceDscPath",
-        notInServiceFilename);
+            notInServiceFilename);
 
     String dscMapPath = response.getBundleInputDirectory() + File.separator
-        + "config" + File.separator + getTripToDSCFilename();
+            + "config" + File.separator + getTripToDSCFilename();
     _log.info("looking for configuration at " + dscMapPath);
     File dscMapFile = new File(dscMapPath);
     if (dscMapFile.exists()) {
@@ -636,10 +629,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       stifLoaderTask.addPropertyValue("tripToDSCOverridePath", dscMapPath);
     } else {
       response.addStatusMessage(getTripToDSCFilename()
-          + " not found, override ignored");
+              + " not found, override ignored");
     }
     beans.put("stifLoaderTask", stifLoaderTask.getBeanDefinition());
-    
+
     BeanDefinitionBuilder task = null;
     task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
     task.addPropertyValue("taskName", "stifLoaderTask");
@@ -648,12 +641,12 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     task.addPropertyReference("task", "stifLoaderTask");
     beans.put("stifLoaderTaskDef", task.getBeanDefinition());
 
-    
+
   }
 
   private boolean isStifTaskApplicable() {
     boolean isStifTaskApplicable = true; // on by default for NYC
-    
+
     if (_auxConfig == null) {
       try {
         _auxConfig = configurationService.getConfigurationValueAsString("admin.auxSupport", null);
@@ -661,8 +654,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       } catch (Exception any) {
         _log.debug(any.toString(), any);
       }
-    }    
-    if (_auxConfig != null) { 
+    }
+    if (_auxConfig != null) {
       isStifTaskApplicable =  !"true".equals(_auxConfig);
     }
 
@@ -672,7 +665,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   private boolean isStopConsolidationApplicable() {
     boolean isStopConsolidationApplicable = false; // off by default for NYC
-    
+
     if (_stopConsolidationConfig == null) {
       try {
         _stopConsolidationConfig = configurationService.getConfigurationValueAsString("admin.stopConsolidation", null);
@@ -680,8 +673,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       } catch (Exception any) {
         _log.debug(any.toString(), any);
       }
-    }    
-    if (_stopConsolidationConfig != null) { 
+    }
+    if (_stopConsolidationConfig != null) {
       isStopConsolidationApplicable =  "true".equals(_stopConsolidationConfig);
     }
 
@@ -690,12 +683,12 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   }
 
 
-  
+
   private String getTripToDSCFilename() {
     String dscFilename = null;
     try {
-        dscFilename = configurationService.getConfigurationValueAsString("admin.tripToDSCFilename", DEFAULT_TRIP_TO_DSC_FILE);
-        
+      dscFilename = configurationService.getConfigurationValueAsString("admin.tripToDSCFilename", DEFAULT_TRIP_TO_DSC_FILE);
+
     } catch (Exception any) {
       return DEFAULT_TRIP_TO_DSC_FILE;
     }
@@ -706,7 +699,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   }
 
   /**
-   * tear down the logger for the bundle building activity. 
+   * tear down the logger for the bundle building activity.
    */
   private void deconfigureLogging(OutputStream os) {
     if (_debug) return;
@@ -725,10 +718,11 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   }
 
   /**
-   * setup a logger just for the bundle building activity. 
+   * setup a logger just for the bundle building activity.
    */
   private void configureLogging(OutputStream os) {
     if (_debug) return;
+
     final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
     final Configuration config = ctx.getConfiguration();
 
@@ -765,14 +759,14 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     response.addStatusMessage("creating bundle=" + filename + " for root dir=" + request.getTmpDirectory());
     String baseDir = request.getTmpDirectory();
     fs.tarcvf(baseDir, paths, filename);
-    
+
     // now copy inputs and outputs to root for easy access
     // inputs
     String inputsPath = request.getTmpDirectory() + File.separator + INPUTS_DIR;
     File inputsDestDir = new File(inputsPath);
     inputsDestDir.mkdir();
     File inputsDir = new File(response.getBundleInputDirectory());
-    
+
     _log.debug("copying input");
     File[] inputFiles = inputsDir.listFiles();
     if (inputFiles != null) {
@@ -783,18 +777,18 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     }
 
     _log.debug("copying output");
-    
+
     // outputs
     String outputsPath = request.getTmpDirectory() + File.separator + OUTPUT_DIR;
     File outputsDestDir = new File(outputsPath);
     outputsDestDir.mkdir();
-    
+
     // copy log file to outputs
     File outputPath = new File(response.getBundleDataDirectory());
     String logFilename = outputPath + File.separator + "bundleBuilder.out.txt";
     fs.copyFiles(new File(logFilename), new File(response.getBundleOutputDirectory() + File.separator + "bundleBuilder.out.txt"));
     response.addOutputFile("bundleBuilder.out.txt");
-    
+
     // copy the rest of the bundle content to outputs directory
     File outputsDir = new File(response.getBundleOutputDirectory());
     File[] outputFiles = outputsDir.listFiles();
@@ -804,7 +798,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         fs.copyFiles(output, new File(outputsPath + File.separator + output.getName()));
       }
     }
-    
+
   }
 
   // Check if there was a previous build with this path.  If there was,
@@ -813,7 +807,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     String basePath = _fileService.getBucketName();
     String versionString = createVersionString(request, response);
     String metadataFileName = basePath + File.separator + versionString
-        + File.separator + OUTPUT_DIR + File.separator + METADATA_FILENAME;
+            + File.separator + OUTPUT_DIR + File.separator + METADATA_FILENAME;
     File metadataFile = new File(metadataFileName);
     String bundleId = null;
     if (metadataFile.exists()) {
@@ -829,11 +823,11 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     if (bundleId != null) {
       // Update bundle id in outputs directory
       String metadataFileName = response.getBundleRootDirectory() + File.separator
-          + OUTPUT_DIR + File.separator + METADATA_FILENAME;
+              + OUTPUT_DIR + File.separator + METADATA_FILENAME;
       BundleBuildingUtil.setBundleId(metadataFileName, bundleId);
       // Update bundle id in data directory
       metadataFileName = response.getBundleRootDirectory() + File.separator
-          + DATA_DIR + File.separator + METADATA_FILENAME;
+              + DATA_DIR + File.separator + METADATA_FILENAME;
       BundleBuildingUtil.setBundleId(metadataFileName, bundleId);
     }
     return;
@@ -849,13 +843,13 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   private List<GtfsBundle> createGtfsBundles(BundleBuildResponse response) {
     List<String> gtfsList = response.getGtfsList();
-    final String gtfsMsg = "constructing configuration for bundles=" + gtfsList; 
+    final String gtfsMsg = "constructing configuration for bundles=" + gtfsList;
     response.addStatusMessage(gtfsMsg);
     _log.info(gtfsMsg);
-    
+
     List<GtfsBundle> bundles = new ArrayList<GtfsBundle>(gtfsList.size());
     String defaultAgencyId = getDefaultAgencyId();
- 
+
     response.addStatusMessage("default agency configured to be |" + defaultAgencyId + "|");
     for (String path : gtfsList) {
       GtfsBundle gtfsBundle = new GtfsBundle();
@@ -872,8 +866,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
           gtfsBundle.setDefaultAgencyId(defaultAgencyId);
         }
       }
-      Map<String, String> mappings = getAgencyIdMappings(path); 
-      if (mappings != null) { 
+      Map<String, String> mappings = getAgencyIdMappings(path);
+      if (mappings != null) {
         _log.info("using agency specific mappings=" + mappings);
         gtfsBundle.setAgencyIdMappings(mappings);
       }
@@ -881,7 +875,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     }
     return bundles;
   }
-  
+
   private String getStopVerificationURL() {
     String path = null;
     try {
@@ -889,7 +883,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         path = configurationServiceClient.getItem(null, "admin.stopVerificationUrl");
       }
     } catch (Exception e) {
-      _log.error("configuration service lookup issue:", e); 
+      _log.error("configuration service lookup issue:", e);
     }
     _log.info("stopVerificationPath = " + path);
     return path;
@@ -918,7 +912,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       }
       if (map.size() == 0) {
         _log.error("Agency mapping is not configured for agencyId " + agencyId
-            + ".");
+                + ".");
       }
     } catch (Exception e) {
       _log.error("getAgencyIdMappings failed:", e);
@@ -931,7 +925,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     if (lastSlash < 1) return null;
     int firstBar = path.indexOf("_", lastSlash);
     if (firstBar < 1) return null;
-    
+
     return path.substring(lastSlash+1, firstBar);
   }
 
@@ -939,7 +933,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     String agencyId = parseAgencyFromPath(path);
     _log.info("getAgencySpecificId(" + path + ")=" + agencyId);
     return agencyId;
-    
+
   }
 
   @Override
@@ -963,38 +957,38 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     response.setRemoteInputDirectory(versionString + File.separator + INPUTS_DIR);
     _fileService.put(versionString + File.separator + OUTPUT_DIR, response.getBundleOutputDirectory());
     response.setRemoteOutputDirectory(versionString + File.separator + OUTPUT_DIR);
-    
-    _fileService.put(versionString + File.separator + request.getBundleName() + ".tar.gz", 
-        response.getBundleTarFilename());
 
-    /* TODO implement delete 
-     * for now we rely on cloud restart to delete volume for us, but that is lazy 
+    _fileService.put(versionString + File.separator + request.getBundleName() + ".tar.gz",
+            response.getBundleTarFilename());
+
+    /* TODO implement delete
+     * for now we rely on cloud restart to delete volume for us, but that is lazy
      */
   }
 
   private String createVersionString(BundleBuildRequest request,
-      BundleBuildResponse response) {
+                                     BundleBuildResponse response) {
     String bundleName = request.getBundleName();
     _log.info("createVersionString found bundleName=" + bundleName);
     if (bundleName == null || bundleName.length() == 0) {
       bundleName = "b" + SystemTime.currentTimeMillis();
     }
-    return request.getBundleDirectory() + File.separator + 
-        _fileService.getBuildPath() +  File.separator +
-        bundleName;
+    return request.getBundleDirectory() + File.separator +
+            _fileService.getBuildPath() +  File.separator +
+            bundleName;
   }
 
 
-    private boolean isValidGtfs(ZipFile gtfs){
-        String[] gtfsValidator = {"agency.txt", "trips.txt", "stops.txt",
-        		"routes.txt", "calendar.txt"};
-    	for(String validationStr : gtfsValidator){
-    		if (gtfs.getEntry(validationStr)==null){
-    			return false;
-    		}
-    	}
-    	return true;
+  private boolean isValidGtfs(ZipFile gtfs){
+    String[] gtfsValidator = {"agency.txt", "trips.txt", "stops.txt",
+            "routes.txt", "calendar.txt"};
+    for(String validationStr : gtfsValidator){
+      if (gtfs.getEntry(validationStr)==null){
+        return false;
+      }
     }
+    return true;
+  }
 
   private class StatusMessageThread implements Runnable {
     private BundleBuildResponse response;
@@ -1002,7 +996,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     int lastMessageSize = 0;
 
     public StatusMessageThread(BundleBuildResponse response,
-        StatusMessages statusMessages) {
+                               StatusMessages statusMessages) {
       this.response = response;
       this.statusMessages = statusMessages;
     }
