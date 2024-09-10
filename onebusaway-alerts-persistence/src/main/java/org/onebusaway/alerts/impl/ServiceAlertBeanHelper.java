@@ -40,6 +40,9 @@ public class ServiceAlertBeanHelper {
 
     public static List<ServiceAlertBean> list(List<ServiceAlertRecord> serviceAlerts) {
         List<ServiceAlertBean> beans = new ArrayList<ServiceAlertBean>();
+        if (serviceAlerts == null){
+            return beans;
+        }
         for (ServiceAlertRecord serviceAlert : serviceAlerts)
             beans.add(getServiceAlertAsBean(serviceAlert));
         return beans;
@@ -75,7 +78,6 @@ public class ServiceAlertBeanHelper {
         bean.setAllAffects(getAffectsAsBeans(serviceAlert));
         bean.setConsequences(getConsequencesAsBeans(serviceAlert));
         bean.setSource(serviceAlert.getSource());
-        bean.setConsequenceMessage(serviceAlert.getConsequenceMessage());
 
         return bean;
     }
@@ -103,7 +105,6 @@ public class ServiceAlertBeanHelper {
          * Reasons
          */
         serviceAlertRecord.setCause(getReasonAsCause(bean.getReason()));
-        serviceAlertRecord.setConsequenceMessage(bean.getConsequenceMessage());
 
         /**
          * Text descriptions

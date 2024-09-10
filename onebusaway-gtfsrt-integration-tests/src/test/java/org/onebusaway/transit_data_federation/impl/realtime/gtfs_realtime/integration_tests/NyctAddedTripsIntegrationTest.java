@@ -17,7 +17,6 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.integ
 
 import org.junit.Test;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.AbstractGtfsRealtimeIntegrationTest;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource;
 
 import java.io.File;

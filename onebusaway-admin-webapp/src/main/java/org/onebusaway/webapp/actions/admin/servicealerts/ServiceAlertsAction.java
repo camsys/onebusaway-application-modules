@@ -15,10 +15,8 @@
  */
 package org.onebusaway.webapp.actions.admin.servicealerts;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.struts2.convention.annotation.AllowedMethods;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
 import org.apache.struts2.interceptor.validation.SkipValidation;
@@ -41,9 +39,8 @@ import com.opensymphony.xwork2.validator.annotations.Validations;
 import org.springframework.remoting.RemoteConnectFailureException;
 
 @Results({@Result(type = "redirectAction", name = "redirect", params = {
-    "actionName", "service-alerts!agency", "agencyId", "${agencyId}", "parse",
-    "true"})})
-@AllowedMethods({"agency", "deleteAlert", "removeAllForAgency"})
+        "actionName", "service-alerts!agency", "agencyId", "${agencyId}", "parse",
+        "true"})})
 public class ServiceAlertsAction extends OneBusAwayNYCAdminActionSupport {
 
   private static final long serialVersionUID = 1L;
@@ -80,7 +77,7 @@ public class ServiceAlertsAction extends OneBusAwayNYCAdminActionSupport {
   public String getAgencyId() {
     return _agencyId;
   }
-  
+
   public String get_alertId() {
     return _alertId;
   }
@@ -124,7 +121,7 @@ public class ServiceAlertsAction extends OneBusAwayNYCAdminActionSupport {
   public void setSubmit(String submit) {
     this.submit = true;
   }
-  
+
   public void setClear(String clear) {
     this.clear = true;
   }
@@ -145,10 +142,10 @@ public class ServiceAlertsAction extends OneBusAwayNYCAdminActionSupport {
         //return "clearResult";
      }
      */
-  
-  	// Check that we have permission:
-  	super.execute();
-	
+
+    // Check that we have permission:
+    super.execute();
+
     try {
       _agencies = _transitDataService.getAgenciesWithCoverage();
       _situationsByAgency = new List[_agencies.size()];
@@ -157,22 +154,7 @@ public class ServiceAlertsAction extends OneBusAwayNYCAdminActionSupport {
         AgencyWithCoverageBean agency = _agencies.get(i);
         String agencyId = agency.getAgency().getId();
         ListBean<ServiceAlertRecordBean> result = _alerts.getAllServiceAlertRecordsForAgencyId(agencyId);
-
-        //don't include alerts that are global for non-admin
-        List<ServiceAlertRecordBean> serviceAlerts = new ArrayList<>();
-        if (!isAdminUser()) {
-          for (int j = 0; j < result.getList().size(); j++)
-            if (result.getList().get(j).getServiceAlertBean() != null &&
-                    result.getList().get(j).getServiceAlertBean().getAllAffects() != null) {
-              for (int k = 0; k < result.getList().get(j).getServiceAlertBean().getAllAffects().size(); k++) {
-                if (!"__ALL_OPERATORS__".equals(result.getList().get(j).getServiceAlertBean().getAllAffects().get(k).getAgencyId()))
-                  serviceAlerts.add(result.getList().get(j));
-              }
-            }
-            else serviceAlerts.add(result.getList().get(j));//just add it since there aren't any affects
-        }
-        else serviceAlerts = result.getList();
-
+        List<ServiceAlertRecordBean> serviceAlerts = result.getList();
         _situationsByAgency[i] = serviceAlerts;
       }
       for (int i=0; i<_agencies.size(); ++i) {
@@ -189,17 +171,17 @@ public class ServiceAlertsAction extends OneBusAwayNYCAdminActionSupport {
     }
     return SUCCESS;
   }
-  
+
   public boolean isActive(List<TimeRangeBean> windows){
-	  if(windows != null && !windows.isEmpty()){
-		  long now = SystemTime.currentTimeMillis();
-		  TimeRangeBean timeRangeBean = windows.get(0);
-		  if((timeRangeBean.getTo() > 0 &&  timeRangeBean.getTo() <= now) ||
-				  (timeRangeBean.getFrom() > 0 &&  timeRangeBean.getFrom() >= now)){
-			  return false;
-		  }
-	  }
-	  return true;
+    if(windows != null && !windows.isEmpty()){
+      long now = SystemTime.currentTimeMillis();
+      TimeRangeBean timeRangeBean = windows.get(0);
+      if((timeRangeBean.getTo() > 0 &&  timeRangeBean.getTo() <= now) ||
+              (timeRangeBean.getFrom() > 0 &&  timeRangeBean.getFrom() >= now)){
+        return false;
+      }
+    }
+    return true;
   }
 
   @Validations(requiredStrings = {@RequiredStringValidator(fieldName = "agencyId", message = "missing required agencyId field")})
@@ -220,7 +202,7 @@ public class ServiceAlertsAction extends OneBusAwayNYCAdminActionSupport {
     return "SUCCESS";
   }
 
-  
+
   @Validations(requiredStrings = {@RequiredStringValidator(fieldName = "agencyId", message = "missing required agencyId field")})
   public String removeAllForAgency() {
     try {
@@ -231,5 +213,5 @@ public class ServiceAlertsAction extends OneBusAwayNYCAdminActionSupport {
     }
     return "redirect";
   }
-  
+
 }

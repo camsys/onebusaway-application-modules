@@ -36,18 +36,14 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import com.google.transit.realtime.*;
+import com.google.transit.realtime.GtfsRealtime;
 import org.apache.commons.lang.StringUtils;
-import org.onebusaway.api.model.transit.realtime.GtfsRealtimeConstantsV2;
-import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
-import org.onebusaway.realtime.api.VehicleOccupancyListener;
-import org.onebusaway.realtime.api.VehicleOccupancyRecord;
-import org.onebusaway.transit_data.model.TransitDataConstants;
 import org.onebusaway.transit_data.model.service_alerts.ECause;
 import org.onebusaway.transit_data.model.service_alerts.ESeverity;
 import org.onebusaway.alerts.impl.ServiceAlertLocalizedString;
@@ -55,21 +51,15 @@ import org.onebusaway.alerts.impl.ServiceAlertRecord;
 import org.onebusaway.alerts.impl.ServiceAlertSituationConsequenceClause;
 import org.onebusaway.alerts.impl.ServiceAlertTimeRange;
 import org.onebusaway.alerts.impl.ServiceAlertsSituationAffectsClause;
-import org.onebusaway.transit_data_federation.impl.RefreshableResources;
-import org.onebusaway.transit_data_federation.impl.RouteReplacementServiceImpl;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntriesFactory;
-import org.onebusaway.transit_data_federation.services.*;
+import org.onebusaway.transit_data_federation.services.AgencyService;
+import org.onebusaway.transit_data_federation.services.ConsolidatedStopsService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
-import org.onebusaway.transit_data_federation.services.blocks.DynamicBlockIndexService;
-import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
 import org.onebusaway.transit_data_federation.services.realtime.BlockLocation;
 import org.onebusaway.transit_data_federation.services.realtime.BlockLocationService;
 import org.onebusaway.alerts.service.ServiceAlerts;
 import org.onebusaway.alerts.service.ServiceAlerts.ServiceAlert;
 import org.onebusaway.alerts.service.ServiceAlertsService;
-import org.onebusaway.transit_data_federation.services.shapes.ShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,13 +70,19 @@ import com.google.transit.realtime.GtfsRealtime.Alert;
 import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import com.google.transit.realtime.GtfsRealtime.FeedHeader;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
+import com.google.transit.realtime.GtfsRealtimeConstants;
+import com.google.transit.realtime.GtfsRealtimeOneBusAway;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GtfsRealtimeSource implements MonitoredDataSource {
 
@@ -99,21 +95,17 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   static {
     _registry.add(GtfsRealtimeOneBusAway.obaFeedEntity);
     _registry.add(GtfsRealtimeOneBusAway.obaTripUpdate);
-    _registry.add(GtfsRealtimeMTARR.mtaRailroadStopTimeUpdate); // track number
-    _registry.add(GtfsRealtimeServiceStatus.mercuryAlert);
-    // NYCT support for added trips
-    _registry.add(GtfsRealtimeNYCT.nyctFeedHeader);
-    _registry.add(GtfsRealtimeNYCT.nyctTripDescriptor);
-    _registry.add(GtfsRealtimeNYCT.nyctStopTimeUpdate);
-    // MTA Bus Time Crowding
-    _registry.add(GtfsRealtimeCrowding.crowdingDescriptor);
-    // Stroller support
-    _registry.add(GtfsRealtimeOneBusAway.obaVehicleDescriptor);
   }
 
-  private VehicleLocationListener _vehicleLocationListener;
+  private AgencyService _agencyService;
 
-  private VehicleOccupancyListener _vehicleOccupancyListener;
+  private TransitGraphDao _transitGraphDao;
+
+  private BlockCalendarService _blockCalendarService;
+
+  private BlockLocationService _blockLocationService;
+
+  private VehicleLocationListener _vehicleLocationListener;
 
   private ServiceAlertsService _serviceAlertService;
 
@@ -122,8 +114,6 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   private ConsolidatedStopsService _consolidatedStopsService;
 
   private ScheduledFuture<?> _refreshTask;
-
-  private DataSourceMonitor _monitor;
 
   private URL _tripUpdatesUrl;
 
@@ -134,8 +124,6 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   private String _sftpVehiclePositionsUrl;
 
   private URL _alertsUrl;
-
-  private URL _alertCollectionUrl;
 
   private String _sftpAlertsUrl;
 
@@ -149,11 +137,11 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
 
   private Map _alertAgencyIdMap;
 
+  private boolean _stripAgencyPrefixesFromFeed = false;
+
   private List<String> _agencyIds = new ArrayList<String>();
 
-  private List<String> _scheduleTripIdRegexs = null;
-
-  private List<String> _realtimeTripIdRegexes = null;
+  private String filterRegexString;
 
   /**
    * We keep track of vehicle location updates, only pushing them to the
@@ -171,21 +159,21 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
    */
   private Map<AgencyAndId, ServiceAlert> _alertsById = new HashMap<AgencyAndId, ServiceAlerts.ServiceAlert>();
 
-  private GtfsRealtimeEntitySource _entitySource = new GtfsRealtimeEntitySource();
-
-  private GtfsRealtimeServiceSource _serviceSource  = new GtfsRealtimeServiceSource();
+  private GtfsRealtimeEntitySource _entitySource;
 
   private GtfsRealtimeTripLibrary _tripsLibrary;
 
   private GtfsRealtimeAlertLibrary _alertLibrary;
-  
+
   private MonitoredResult _monitoredResult = new MonitoredResult();
-  
+
   private String _feedId = null;
-  
+
   private StopModificationStrategy _stopModificationStrategy = null;
-  
+
   private boolean _scheduleAdherenceFromLocation = false;
+
+  private BlockGeospatialService _blockGeospatialService;
 
   private boolean _enabled = true;
 
@@ -193,42 +181,24 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
 
   private boolean _ignoreAlertTripId = false;
 
-  private String _alertSourcePrefix = null;
-
-  // this is a change from the default, but is much safer
-  private boolean _validateCurrentTime = false;
-
-  // a special case of some specific integration - drop unassigned trips
-  private boolean _filterUnassigned = false;
-
-  // allow trip_ids to match fuzzily instead of strictly
-  private boolean _enableFuzzyMatching = false;
-
-  private List<AgencyAndId> _routeIdsToCancel = null;
-
-  private GtfsRealtimeCancelService _cancelService;
-
-  // minimize operations while bundle is changing as state is inconsistent
-  private boolean isBundleReady = false;
-
   @Autowired
   public void setAgencyService(AgencyService agencyService) {
-    _serviceSource.setAgencyService(agencyService);
+    _agencyService = agencyService;
   }
 
   @Autowired
   public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
-    _entitySource.setTransitGraphDao(transitGraphDao);
+    _transitGraphDao = transitGraphDao;
   }
 
   @Autowired
   public void setBlockCalendarService(BlockCalendarService blockCalendarService) {
-    _serviceSource.setBlockCalendarService(blockCalendarService);
+    _blockCalendarService = blockCalendarService;
   }
 
   @Autowired
   public void setBlockLocationService(BlockLocationService blockLocationService) {
-    _serviceSource.setBlockLocationService(blockLocationService);
+    _blockLocationService = blockLocationService;
   }
 
   @Autowired
@@ -237,29 +207,9 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   }
 
   @Autowired
-  @Qualifier("dynamicBlockIndexServiceImpl")
-  public void setDynamicBlockIndexService(DynamicBlockIndexService dynamicBlockIndexService) {
-    _serviceSource.setDynamicBlockIndexService(dynamicBlockIndexService);
-  }
-
-  @Autowired
-  public void setDataSourceMonitor(DataSourceMonitor monitor) {
-    this._monitor = monitor;
-  }
-  @Autowired
-  public void setNarrativeService(NarrativeService service) {
-    _serviceSource.setNarrativeService(service);
-  }
-
-  @Autowired
   public void setVehicleLocationListener(
-      VehicleLocationListener vehicleLocationListener) {
+          VehicleLocationListener vehicleLocationListener) {
     _vehicleLocationListener = vehicleLocationListener;
-  }
-
-  @Autowired
-  public void setVehicleOccupancyListener(VehicleOccupancyListener vehicleOccupancyListener) {
-    _vehicleOccupancyListener = vehicleOccupancyListener;
   }
 
   @Autowired
@@ -269,59 +219,13 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
 
   @Autowired
   public void setScheduledExecutorService(
-      ScheduledExecutorService scheduledExecutorService) {
+          ScheduledExecutorService scheduledExecutorService) {
     _scheduledExecutorService = scheduledExecutorService;
   }
-  
+
   @Autowired
   public void setBlockGeospatialService(BlockGeospatialService blockGeospatialService) {
-   _serviceSource.setBlockGeospatialService(blockGeospatialService);
-  }
-
-  @Autowired
-  public void setStopTimeEntriesFactory(StopTimeEntriesFactory stopTimeEntriesFactory) {
-    _serviceSource.setStopTimeEntriesFactory(stopTimeEntriesFactory);
-  }
-
-  @Autowired
-  public void setShapePointService(ShapePointService service) {
-    _serviceSource.setShapePointService(service);
-  }
-
-  @Autowired
-  public void setStopSwapService(StopSwapService service) {
-    _serviceSource.setStopSwapServce(service);
-  }
-
-  @Autowired
-  public void setBlockIndexService(BlockIndexService service) {
-    _serviceSource.setBlockIndexService(service);
-  }
-
-  @Autowired
-  public void setCalendarService(ExtendedCalendarService service) {
-    _serviceSource.setCalendarService(service);
-  }
-
-  public void bundleSwapListener() {
-    _log.info("bundleSwapListener invoked");
-    if (_entitySource != null && _entitySource.getRealtimeFuzzyMatcher() != null) {
-      _entitySource.getRealtimeFuzzyMatcher().reset();
-    }
-    // force cache update
-    if (_serviceSource.getBlockFinder() != null) {
-      _serviceSource.getBlockFinder().reset();
-    }
-  }
-
-  @Refreshable(dependsOn = RefreshableResources.MARK_START_BUNDLE_SWAP)
-  public void markBundleNotReady() {
-    isBundleReady = false;
-  }
-  @Refreshable(dependsOn = RefreshableResources.MARK_STOP_BUNDLE_SWAP)
-  public void markBundleReady() {
-    isBundleReady = true;
-    bundleSwapListener();
+    _blockGeospatialService = blockGeospatialService;
   }
 
   public void setStopModificationStrategy(StopModificationStrategy strategy) {
@@ -332,7 +236,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   public void setTripUpdatesUrl(URL tripUpdatesUrl) {
     _tripUpdatesUrl = tripUpdatesUrl;
   }
-  
+
   public URL getTripUpdatesUrl() {
     return _tripUpdatesUrl;
   }
@@ -348,7 +252,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   public URL getVehiclePositionsUrl() {
     return _vehiclePositionsUrl;
   }
-  
+
   public void setSftpVehiclePositionsUrl(String sftpVehiclePositionsUrl) {
     _sftpVehiclePositionsUrl = sftpVehiclePositionsUrl;
   }
@@ -357,16 +261,10 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
     _alertsUrl = alertsUrl;
   }
 
-  public void setAlertCollectionUrl(URL alertCollectionUrl) {
-    _alertCollectionUrl = alertCollectionUrl;
-  }
-
   public URL getAlertsUrl() {
     return _alertsUrl;
   }
 
-  public URL getAlertCollectionUrl() { return _alertCollectionUrl; }
-  
   public void setSftpAlertsUrl(String sftpAlertsUrl) {
     _sftpAlertsUrl = sftpAlertsUrl;
   }
@@ -374,7 +272,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   public void setRefreshInterval(int refreshInterval) {
     _refreshInterval = refreshInterval;
   }
-  
+
   public int getRefreshInterval() {
     return _refreshInterval;
   }
@@ -389,11 +287,11 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   public Integer getMaxDeltaLocationMeters() { return _maxDeltaLocationMeters; }
 
   public void setHeadersMap(Map<String,String> headersMap) {
-	_headersMap = headersMap;
+    _headersMap = headersMap;
   }
 
   public void setAlertAgencyIdMap(Map alertAgencyIdMap) {
-	_alertAgencyIdMap = alertAgencyIdMap;
+    _alertAgencyIdMap = alertAgencyIdMap;
   }
 
   public void setAgencyId(String agencyId) {
@@ -404,22 +302,14 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
     _agencyIds.addAll(agencyIds);
   }
 
-  public void setScheduleTripIdRegexes(List<String> regexes) {
-    _scheduleTripIdRegexs = regexes;
-  }
-
-  public void setRealtimeTripIdRegexes(List<String> regexes) {
-    _realtimeTripIdRegexes = regexes;
-  }
-
   public void setShowNegativeScheduledArrivals(boolean _showNegativeScheduledArrivals) {
     this._showNegativeScheduledArrivals = _showNegativeScheduledArrivals;
   }
-  
+
   public boolean getShowNegativeScheduledArrivals() {
     return _showNegativeScheduledArrivals;
   }
-  
+
   public List<String> getAgencyIds() {
     return _agencyIds;
   }
@@ -427,32 +317,34 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   public void setMonitoredResult(MonitoredResult result) {
     _monitoredResult = result;
   }
-  
+
   public MonitoredResult getMonitoredResult() {
     return _monitoredResult;
   }
-  
+
   public String getFeedId() {
     if (_feedId == null)
       _feedId = _agencyIds.toString();
     return _feedId;
   }
-  
+
   public void setFeedId(String id) {
     _feedId = id;
   }
-  
+
   public void setScheduleAdherenceFromLocation(boolean scheduleAdherenceFromLocation) {
     _scheduleAdherenceFromLocation = scheduleAdherenceFromLocation;
   }
-  
+
   public void setEnabled(boolean enabled) {
     this._enabled = enabled;
   }
-  
+
   public boolean getEnabled() {
     return _enabled;
   }
+
+  public void setStripAgencyPrefixesFromFeed(boolean strip) { _stripAgencyPrefixesFromFeed = strip; }
 
   /**
    * use the vehicle label as the id.
@@ -475,102 +367,47 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
     return _tripsLibrary;
   }
 
-  public String getAlertSourcePrefix() {
-    return _alertSourcePrefix;
-  }
-
-  /**
-   * if alerts come in via alternative means such as an RSS feed, set the name of that
-   * source here to associate and merge them with this feed
-   *
-   * @param prefix
-   */
-  public void setAlertSourcePrefix(String prefix) {
-    _alertSourcePrefix = prefix;
-  }
-
-  public void setRouteIdsToCancel(List<String> routeAgencyIds) {
-    if (routeAgencyIds != null) {
-      _routeIdsToCancel = new ArrayList<>();
-      for (String routeAgencyId : routeAgencyIds) {
-        try {
-          _routeIdsToCancel.add(AgencyAndId.convertFromString(routeAgencyId));
-        } catch (IllegalStateException ise) {
-          _log.error("invalid routeId {}", ise);
-        }
-      }
-    }
-  }
-
-  public void setFilterUnassigned(boolean flag) {
-    _filterUnassigned = flag;
-  }
-
-  public void setEnableFuzzyMatching(boolean flag) {
-    _enableFuzzyMatching = flag;
-  }
-
-  @Autowired
-  public void setGtfsRealtimeCancelService(GtfsRealtimeCancelService service) {
-    _cancelService = service;
-  }
-  @PostConstruct
-  public void start() {
+  @EventListener
+  public void handleContextRefresh(ContextRefreshedEvent event) {
     if (_agencyIds.isEmpty()) {
       _log.info("no agency ids specified for GtfsRealtimeSource, so defaulting to full agency id set");
-      List<String> agencyIds = _serviceSource.getAgencyService().getAllAgencyIds();
+      List<String> agencyIds = _agencyService.getAllAgencyIds();
       _agencyIds.addAll(agencyIds);
       if (_agencyIds.size() > 3) {
         _log.warn("The default agency id set is quite large (n="
-            + _agencyIds.size()
-            + ").  You might consider specifying the applicable agencies for your GtfsRealtimeSource.");
+                + _agencyIds.size()
+                + ").  You might consider specifying the applicable agencies for your GtfsRealtimeSource.");
       }
     }
 
+    _entitySource = new GtfsRealtimeEntitySource();
     _entitySource.setAgencyIds(_agencyIds);
-    _entitySource.setTripIdRegexs(_scheduleTripIdRegexs);
+    _entitySource.setTransitGraphDao(_transitGraphDao);
     _entitySource.setConsolidatedStopService(_consolidatedStopsService);
 
-    if (_enableFuzzyMatching) {
-      RealtimeFuzzyMatcher fuzzyMatcher = new RealtimeFuzzyMatcher(_entitySource.getTransitGraphDao(),
-              _serviceSource.getCalendarService());
-      fuzzyMatcher.setRealtimeTripIdRegexes(_realtimeTripIdRegexes);
-      fuzzyMatcher.setScheduleTripIdRegexs(_scheduleTripIdRegexs);
-      fuzzyMatcher.setAgencies(new HashSet<>(_agencyIds));
-
-      _entitySource.setRealtimeFuzzyMatcher(fuzzyMatcher);
-    }
-
-
     _tripsLibrary = new GtfsRealtimeTripLibrary();
+    _tripsLibrary.setAgencyIds(getAgencyIds());
+    _tripsLibrary.setStripAgencyPrefix(_stripAgencyPrefixesFromFeed);
+    _tripsLibrary.setBlockCalendarService(_blockCalendarService);
     _tripsLibrary.setEntitySource(_entitySource);
-    _tripsLibrary.setServiceSource(_serviceSource);
     if (_stopModificationStrategy != null) {
       _tripsLibrary.setStopModificationStrategy(_stopModificationStrategy);
     }
     _tripsLibrary.setScheduleAdherenceFromLocation(_scheduleAdherenceFromLocation);
+    _tripsLibrary.setBlockGeospatialService(_blockGeospatialService);
     _tripsLibrary.setUseLabelAsVehicleId(_useLabelAsId);
-    _tripsLibrary.setValidateCurrentTime(_validateCurrentTime);
 
-    _tripsLibrary.setFilterUnassigned(_filterUnassigned);
-    DuplicatedTripServiceImpl duplicatedTripService = new DuplicatedTripServiceImpl();
-    duplicatedTripService.setGtfsRealtimeEntitySource(_entitySource);
-    _serviceSource.setDuplicatedTripService(duplicatedTripService);
-    DynamicTripBuilder tripBuilder = new DynamicTripBuilder();
-    tripBuilder.setServiceSource(_serviceSource);
-    tripBuilder.setEntityource(_entitySource);
-    _serviceSource.setDynamicTripBuilder(tripBuilder);
-
-    
     _alertLibrary = new GtfsRealtimeAlertLibrary();
     _alertLibrary.setEntitySource(_entitySource);
+    _alertLibrary.setAgencyIds(getAgencyIds());
+    _alertLibrary.setStripAgencyPrefix(_stripAgencyPrefixesFromFeed);
 
     if (_refreshInterval > 0) {
       _refreshTask = _scheduledExecutorService.scheduleAtFixedRate(
-          new RefreshTask(), 0, _refreshInterval, TimeUnit.SECONDS);
+              new RefreshTask(), 0, _refreshInterval, TimeUnit.SECONDS);
     }
   }
-  
+
   public void reset() {
     _lastVehicleUpdate.clear();
   }
@@ -589,68 +426,49 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
       return;
     }
     FeedMessage tripUpdates = _sftpTripUpdatesUrl != null ?
-        readOrReturnDefault(_sftpTripUpdatesUrl)
-        : readOrReturnDefault(_tripUpdatesUrl);
+            readOrReturnDefault(_sftpTripUpdatesUrl)
+            : readOrReturnDefault(_tripUpdatesUrl);
     FeedMessage vehiclePositions = _sftpVehiclePositionsUrl != null ?
-        readOrReturnDefault(_sftpVehiclePositionsUrl)
-        : readOrReturnDefault(_vehiclePositionsUrl);
+            readOrReturnDefault(_sftpVehiclePositionsUrl)
+            : readOrReturnDefault(_vehiclePositionsUrl);
     FeedMessage alerts = _sftpAlertsUrl != null ?
-        readOrReturnDefault(_sftpAlertsUrl)
-        : readOrReturnDefault(_alertsUrl);
-    ServiceAlerts.ServiceAlertsCollection alertCollection
-            = readOrReturnDefaultCollection(_alertCollectionUrl);
-
+            readOrReturnDefault(_sftpAlertsUrl)
+            : readOrReturnDefault(_alertsUrl);
     MonitoredResult result = new MonitoredResult();
     result.setAgencyIds(_agencyIds);
-    result.setFeedId(getFeedId());
-
-    if (_routeIdsToCancel != null) {
-      long currentTime = _tripsLibrary.getCurrentTime();
-      if (currentTime == 0) currentTime = System.currentTimeMillis();
-      _cancelService.cancelServiceForRoutes(_routeIdsToCancel, currentTime);
-    }
-
-    handleUpdates(result, tripUpdates, vehiclePositions, alerts, alertCollection);
+    handleUpdates(result, tripUpdates, vehiclePositions, alerts);
     // update reference in a thread safe manner
     _monitoredResult = result;
-  }
-
-  private ServiceAlerts.ServiceAlertsCollection readOrReturnDefaultCollection(URL alertCollectionUrl) throws IOException {
-    return readAlertCollectionFromUrl(alertCollectionUrl);
   }
 
   /****
    * Private Methods
    ****/
 
-  // test if the transit graph is ready
-  protected boolean graphReady() {
-    if (!isBundleReady) {
-      return false;
-    }
-    return true;
+  private boolean graphReady() {
+    return _transitGraphDao != null
+            && _transitGraphDao.getAllRoutes() != null
+            && !_transitGraphDao.getAllRoutes().isEmpty();
   }
 
   /**
-   * 
+   *
    * @param tripUpdates
    * @param vehiclePositions
    * @param alerts
    */
   private synchronized void handleUpdates(MonitoredResult result, FeedMessage tripUpdates,
-                                          FeedMessage vehiclePositions, FeedMessage alerts,
-                                          ServiceAlerts.ServiceAlertsCollection alertCollection) {
-	  
-	long time = tripUpdates.getHeader().getTimestamp() * 1000;
-	_tripsLibrary.setCurrentTime(_tripsLibrary.ensureMillis(time));
+                                          FeedMessage vehiclePositions, FeedMessage alerts) {
+
+    long time = tripUpdates.getHeader().getTimestamp() * 1000;
+    _tripsLibrary.setCurrentTime(time);
 
     List<CombinedTripUpdatesAndVehiclePosition> combinedUpdates = _tripsLibrary.groupTripUpdatesAndVehiclePositions(result,
             tripUpdates, vehiclePositions);
     result.setRecordsTotal(combinedUpdates.size());
-    handleCombinedUpdatesLogged(result, combinedUpdates);
+    handleCombinedUpdates(result, combinedUpdates);
     cacheVehicleLocations(vehiclePositions);
-    handleAlerts(alerts);
-    handleAlertCollection(alertCollection);
+    handleAlerts(filterAlerts(alerts));
   }
 
   private void cacheVehicleLocations(FeedMessage vehiclePositions) {
@@ -668,100 +486,53 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
     }
   }
 
-  void handleCombinedUpdatesLogged(MonitoredResult result,
-                             List<CombinedTripUpdatesAndVehiclePosition> updates) {
-    try {
-      handleCombinedUpdates(result, updates);
-    } catch (Throwable t) {
-      _log.error("handleCombinedUpdates source-exception: {}", t, t);
-    }
-  }
-  // package private for unit tests
-   void handleCombinedUpdates(MonitoredResult result,
-      List<CombinedTripUpdatesAndVehiclePosition> updates) {
-    long methodStarTime = System.currentTimeMillis();
+  private void handleCombinedUpdates(MonitoredResult result,
+                                     List<CombinedTripUpdatesAndVehiclePosition> updates) {
+
     // exit if we are configured in alerts mode
     if (_tripUpdatesUrl == null) return;
 
     Set<AgencyAndId> seenVehicles = new HashSet<AgencyAndId>();
 
-    try {
-      for (CombinedTripUpdatesAndVehiclePosition update : updates) {
-        String metricTripId = null;
-        if (update.getTripUpdates() != null && update.getTripUpdatesSize() > 0) {
-          if (update.getTripUpdates().get(0).hasTrip()) {
-            metricTripId = update.getTripUpdates().get(0).getTrip().getTripId();
-          }
+    for (CombinedTripUpdatesAndVehiclePosition update : updates) {
+      VehicleLocationRecord record = _tripsLibrary.createVehicleLocationRecordForUpdate(result, update);
+      if (record != null) {
+        if (record.getTripId() != null) {
+          // tripId will be null if block was matched
+          result.addUnmatchedTripId(record.getTripId().toString());
         }
-
-        if (update.block == null) {
-          _log.error("null block {} for agencies {}, bailing...", metricTripId, _agencyIds);
-          result.addUnmatchedTripId(metricTripId);
+        AgencyAndId vehicleId = record.getVehicleId();
+        // here we try to get a more accurate count of updates
+        // some providers re-send old data or future data cluttering the feed
+        // the TDS will discard these
+        if (blockNotActive(record)) {
+          _log.debug("discarding v: " + vehicleId + " as block not active");
           continue;
         }
-        BlockDescriptor.ScheduleRelationship scheduleRelationship = update.block.getScheduleRelationship();
-        if (scheduleRelationship == null) {
-          _log.error("no schedule relationship for update {}", update);
-          result.addUnmatchedTripId(metricTripId);
+        if (!isValidLocation(record, update)) {
+          _log.debug("discarding v: " + vehicleId + " as location is bad");
           continue;
         }
-        boolean isDynamicTrip = TransitDataConstants.STATUS_ADDED.equals(scheduleRelationship.name())
-                || TransitDataConstants.STATUS_DUPLICATED.equals(scheduleRelationship.name());
-
-        VehicleLocationRecord record = _tripsLibrary.createVehicleLocationRecordForUpdate(result, update);
-        if (record != null) {
-          if (isDynamicTrip) {
-            if (_monitoredResult.getLastUpdate() < record.getTimeOfRecord()) {
-              _monitoredResult.setLastUpdate(record.getTimeOfRecord());
-            }
-            _serviceSource.getDynamicBlockIndexService().register(update.block.getBlockInstance(), record.getTimeOfRecord());
-          }
-          if (record.getTripId() != null) {
-            // tripId will be null if block was matched
-            result.addUnmatchedTripId(record.getTripId().toString());
-          }
-
-          AgencyAndId vehicleId = record.getVehicleId();
-          // here we try to get a more accurate count of updates
-          // some providers re-send old data or future data cluttering the feed
-          // the TDS will discard these
-          if (!isDynamicTrip && blockNotActive(record)) {
-            _log.debug("discarding v: " + vehicleId + " as block not active");
-            result.addUnmatchedTripId(metricTripId);
-            continue;
-          }
-          if (!isDynamicTrip && !isValidLocation(record, update)) {
-            _log.debug("discarding v: " + vehicleId + " as location is bad");
-            result.addUnmatchedTripId(metricTripId);
-            continue;
-          }
-          seenVehicles.add(vehicleId);
-          VehicleOccupancyRecord vor = _tripsLibrary.createVehicleOccupancyRecordForUpdate(result, update);
-          Date timestamp = new Date(getGtfsRealtimeTripLibrary().ensureMillis(record.getTimeOfRecord()));
-          Date prev = _lastVehicleUpdate.get(vehicleId);
-          if (prev == null || prev.before(timestamp)) {
-            _log.debug("matched vehicle " + vehicleId + " on block=" + record.getBlockId() + " with scheduleDeviation=" + record.getScheduleDeviation());
-            _vehicleLocationListener.handleVehicleLocationRecord(record);
-            if (vor != null) {
-              _vehicleOccupancyListener.handleVehicleOccupancyRecord(vor);
-            }
-            _lastVehicleUpdate.put(vehicleId, timestamp);
-          } else {
-            _log.debug("discarding: update for vehicle " + vehicleId
-                    + " as timestamp in past (" + (timestamp.getTime()-prev.getTime()) + "ms)");
-          }
+        seenVehicles.add(vehicleId);
+        Date timestamp = new Date(record.getTimeOfRecord());
+        Date prev = _lastVehicleUpdate.get(vehicleId);
+        if (prev == null || prev.before(timestamp)) {
+          _log.debug("matched vehicle " + vehicleId + " on block=" + record.getBlockId() + " with scheduleDeviation=" + record.getScheduleDeviation());
+          // if its in the GTFS-RT its assumed IN SERVICE
+          record.setPhase(EVehiclePhase.IN_PROGRESS);
+          record.setStatus("blockInf");
+          _vehicleLocationListener.handleVehicleLocationRecord(record);
+          _lastVehicleUpdate.put(vehicleId, timestamp);
+        } else {
+          _log.debug("discarding: update for vehicle " + vehicleId + " as timestamp in past");
         }
       }
-
-    } catch (Throwable t) {
-      _log.error("fatal exception {}", t, t);
     }
+
     Calendar c = Calendar.getInstance();
-    if (getGtfsRealtimeTripLibrary() != null)
-      c.setTime(new Date(getGtfsRealtimeTripLibrary().getCurrentTime()));
     c.add(Calendar.MINUTE, -15);
     Date staleRecordThreshold = c.getTime();
-    long newestUpdate = 0; 
+    long newestUpdate = 0;
     Iterator<Map.Entry<AgencyAndId, Date>> it = _lastVehicleUpdate.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry<AgencyAndId, Date> entry = it.next();
@@ -771,24 +542,15 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
         newestUpdate = lastUpdateTime.getTime();
       }
       if (!seenVehicles.contains(vehicleId)
-          && lastUpdateTime.before(staleRecordThreshold)) {
+              && lastUpdateTime.before(staleRecordThreshold)) {
         _log.debug("removing stale vehicleId=" + vehicleId);
         it.remove();
       }
     }
     // NOTE: this implies receiving stale updates is equivalent to not being updated at all
     result.setLastUpdate(newestUpdate);
-    if (_monitor != null) {
-      _monitor.logUpdate(result);
-    }
-    long methodEndTime = System.currentTimeMillis();
-    _log.info("Agency " + getFeedId() + " has active vehicles=" + seenVehicles.size()
-            + ", matched=" + result.getMatchedTripIds().size() + " (" + result.getUnmatchedTripIds().size() + ")"
-            + ", added=" + result.getAddedTripIds().size()
-            + ", duplicated=" + result.getDuplicatedTripIds().size()
-            + ", cancelled=" + result.getCancelledTripIds().size()
-            + " for updates=" + updates.size() + " with most recent timestamp " + new Date(newestUpdate)
-            + " in " + (methodEndTime-methodStarTime) + "ms");
+    _log.info("Agency " + this.getAgencyIds().get(0) + " has active vehicles=" + seenVehicles.size()
+            + " for updates=" + updates.size() + " with most recent timestamp " + new Date(newestUpdate));
   }
 
   private boolean isValidLocation(VehicleLocationRecord record, CombinedTripUpdatesAndVehiclePosition update) {
@@ -796,8 +558,8 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
     CoordinatePoint reported = new CoordinatePoint(update.vehiclePosition.getPosition().getLatitude(),
             update.vehiclePosition.getPosition().getLongitude());
 
-    BlockLocation blockLocation = _serviceSource.getBlockLocationService().getScheduledLocationForBlockInstance(update.block.getBlockInstance(), record.getTimeOfRecord());
-      if (blockLocation == null) return true; // this record will be tossed for other reasons
+    BlockLocation blockLocation = _blockLocationService.getScheduledLocationForBlockInstance(update.block.getBlockInstance(), record.getTimeOfRecord());
+    if (blockLocation == null) return true; // this record will be tossed for other reasons
     CoordinatePoint calculated = blockLocation.getLocation();
     double delta = SphericalGeometryLibrary.distanceFaster(reported.getLat(), reported.getLon(),
             calculated.getLat(), calculated.getLon());
@@ -815,224 +577,42 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
         _log.debug("discarding v: " + record.getVehicleId() + " for schDev=" + record.getScheduleDeviation());
         return true;
       }
-      
+
     }
     return false;
   }
 
-  private void handleAlertCollection(ServiceAlerts.ServiceAlertsCollection alertsCollection) {
-    if (_alertCollectionUrl == null) {
-      return;
-    }
-
-    if (alertsCollection == null) {
-      // don't let a single connection issue wipe out the set of alerts
-      _log.info("handleAlertCollection nothing to do");
-      return;
-    }
-
-    Set<AgencyAndId> currentAlerts = new HashSet<AgencyAndId>();
-    Set<ServiceAlertRecord> toAdd = new HashSet<>();
-    Set<ServiceAlertRecord> toUpdate = new HashSet<>();
-
-    long start = System.currentTimeMillis();
-    _log.info("[" + getFeedId() + "] handleAlertCollection running....");
-
-    ArrayList<AgencyAndId> idsInCollection = new ArrayList<>();
-    for (ServiceAlerts.ServiceAlert alert : alertsCollection.getServiceAlertsList()) {
-
-      AgencyAndId id = new AgencyAndId(alert.getId().getAgencyId(), alert.getId().getId());
-      idsInCollection.add(id);
-      handleSingleAlert(id, alert.toBuilder(), currentAlerts, toAdd, toUpdate, alert);
-    }
-
-    _serviceAlertService.createOrUpdateServiceAlerts(getAgencyIds().get(0), new ArrayList<ServiceAlertRecord>(toAdd));
-    _serviceAlertService.createOrUpdateServiceAlerts(getAgencyIds().get(0), new ArrayList<ServiceAlertRecord>(toUpdate));
-
-    Set<AgencyAndId> toBeDeleted = new HashSet<AgencyAndId>();
-    for (ServiceAlertRecord sa : _serviceAlertService.getAllServiceAlerts()) {
-      AgencyAndId testId = new AgencyAndId(sa.getAgencyId(), sa.getServiceAlertId());
-
-      /* consider other feed sources that may be merged here as well */
-      if (sa.getSource() != null
-              && (sa.getSource().equals(getFeedId())
-                || (_alertSourcePrefix != null && sa.getSource().contains(_alertSourcePrefix)))) {
-        try {
-          if (!currentAlerts.contains(testId)) {
-            _log.debug("[" + getFeedId() + "] cleaning up alert id " + testId
-                    + " with source=" + sa.getSource());
-            toBeDeleted.add(testId);
-          }
-          else if (getAgencyIds().contains(testId.getAgencyId()) && !idsInCollection.contains(testId)) {
-            //delete if the alert came from this feed but isn't there anymore
-            toBeDeleted.add(testId);
-          }
-        } catch (Exception e) {
-          _log.error("invalid AgencyAndId " + sa.getServiceAlertId());
-        }
-      }
-      else if (getAgencyIds().contains(testId.getAgencyId()) && !idsInCollection.contains(testId)) {
-        //delete if the alert came from this feed but isn't there anymore
-        toBeDeleted.add(testId);
-      }
-    }
-
-    _serviceAlertService.removeServiceAlerts(new ArrayList<AgencyAndId>(toBeDeleted));
-    _serviceAlertService.cleanup();
-    _log.info("[" + getFeedId() + "] handleAlertCollection complete with "
-            + currentAlerts.size()
-            + " active alerts and "
-            + toBeDeleted.size()
-            + " deleted in "
-            + (System.currentTimeMillis() - start) + " ms");
-
+  public void setFilterRegex(String filterRegex) {
+    this.filterRegexString = filterRegex;
   }
 
-  private void handleSingleAlert(AgencyAndId id,
-                                 ServiceAlert.Builder serviceAlertBuilder,
-                                 Set<AgencyAndId> currentAlerts,
-                                 Set<ServiceAlertRecord> toAdd,
-                                 Set<ServiceAlertRecord> toUpdate,
-                                 ServiceAlert alert) {
 
-    ServiceAlert serviceAlert = alert;
-    // cache value of alert
-    ServiceAlert existingAlert = _alertsById.get(id);
-    // data store value of service alert
-    ServiceAlertRecord existingRecord = _serviceAlertService.getServiceAlertForId(new AgencyAndId(id.getAgencyId(), id.getId()));
+  /*
+   *  filterRegexString is read from the bean properties, and is used as the filter test
+   *  The FeedMessage alerts parameter is being run through the filter
+   *  Breaks the FeedMessage into a list, and goes through each alert in the list.
+   *     If an alert matches the regex, it will be filtered out.
+   *  Returns a new FeedMessage containing all the alerts that weren't filtered out (didn't match the regex)
+   */
 
-    // don't update if there's nothing to do
-    if ((existingAlert == null
-            || !existingAlert.equals(serviceAlert))) {
-      _alertsById.put(id, serviceAlert);
+  public FeedMessage filterAlerts(FeedMessage originalFeedMessage){
+    if(filterRegexString == null){
+      return originalFeedMessage; // if no filter is set, don't filter anything. Return input.
+    }
+    Pattern pattern = Pattern.compile(filterRegexString);
 
-      ServiceAlertRecord serviceAlertRecord = new ServiceAlertRecord();
-      // indicate this came from a feed so we can prune expired alerts
-      if (serviceAlert.hasSource()) {
-        serviceAlertRecord.setSource(serviceAlert.getSource());
-      } else {
-        serviceAlertRecord.setSource(getFeedId());
+    GtfsRealtime.FeedMessage.Builder filteredFeedMessageBuilder = GtfsRealtime.FeedMessage.newBuilder(); //new empty FeedMessage for output
+    filteredFeedMessageBuilder.setHeader(originalFeedMessage.getHeader().toBuilder()); //Copy the header
+
+    java.util.List<com.google.transit.realtime.GtfsRealtime.FeedEntity> allEntities = originalFeedMessage.getEntityList();
+    for(com.google.transit.realtime.GtfsRealtime.FeedEntity entity : allEntities){ //for each alert in the original FeedMessage
+      Matcher matcher = pattern.matcher(entity.toString());
+      if(! matcher.find()){ //if it doesn't match the regex
+        filteredFeedMessageBuilder.addEntity(entity); //include in output
       }
-
-      serviceAlertRecord.setConsequenceMessage(serviceAlert.getConsequenceMessage());
-
-      serviceAlertRecord.setAgencyId(id.getAgencyId()); // AGENCY from feed configuration
-      serviceAlertRecord.setServiceAlertId(id.getId()); // ID ONLY
-
-      serviceAlertRecord.setActiveWindows(new HashSet<ServiceAlertTimeRange>());
-      if (serviceAlert.getActiveWindowList() != null) {
-        for (ServiceAlerts.TimeRange timeRange : serviceAlert.getActiveWindowList()) {
-          ServiceAlertTimeRange serviceAlertTimeRange = new ServiceAlertTimeRange();
-          if (timeRange.hasStart()) {
-            if (timeRange.getStart() > 0) {
-              serviceAlertTimeRange.setFromValue(timeRange.getStart());
-            }
-          }
-          if (timeRange.hasEnd()) {
-            if (timeRange.getEnd() > 0) {
-              serviceAlertTimeRange.setToValue(timeRange.getEnd());
-            }
-          }
-          serviceAlertRecord.getActiveWindows().add(serviceAlertTimeRange);
-        }
-      }
-
-      serviceAlertRecord.setAllAffects(new HashSet<ServiceAlertsSituationAffectsClause>());
-      if (serviceAlert.getAffectsList() != null) {
-        for (ServiceAlerts.Affects affects : serviceAlertBuilder.getAffectsList()) {
-          ServiceAlertsSituationAffectsClause serviceAlertsSituationAffectsClause = new ServiceAlertsSituationAffectsClause();
-
-          /*
-           * if the affects clause has empty but non-null fields the Affects...Factory references will break
-           */
-          if (!StringUtils.isBlank(affects.getAgencyId()))
-            serviceAlertsSituationAffectsClause.setAgencyId(affects.getAgencyId());
-
-          if (!StringUtils.isBlank(affects.getApplicationId()))
-            serviceAlertsSituationAffectsClause.setApplicationId(affects.getApplicationId());
-
-          if (!StringUtils.isBlank(affects.getDirectionId()))
-            serviceAlertsSituationAffectsClause.setDirectionId(affects.getDirectionId());
-
-          if (affects.getRouteId() != null && affects.getRouteId().hasId())
-            serviceAlertsSituationAffectsClause.setRouteId(new AgencyAndId(affects.getRouteId().getAgencyId(), affects.getRouteId().getId()).toString());
-
-          if (affects.getStopId().getId() != null && affects.getStopId().hasId()) {
-            serviceAlertsSituationAffectsClause.setStopId(new AgencyAndId(affects.getStopId().getAgencyId(), affects.getStopId().getId()).toString());
-          }
-
-          if (!_ignoreAlertTripId && affects.getTripId() != null && affects.getTripId().hasId())
-            serviceAlertsSituationAffectsClause.setTripId(new AgencyAndId(affects.getTripId().getAgencyId(), affects.getTripId().getId()).toString());
-          serviceAlertRecord.getAllAffects().add(serviceAlertsSituationAffectsClause);
-        }
-      }
-
-      serviceAlertRecord.setCause(getECause(serviceAlert.getCause()));
-      serviceAlertRecord.setConsequences(new HashSet<ServiceAlertSituationConsequenceClause>());
-      if (serviceAlert.getConsequenceList() != null) {
-        for (ServiceAlerts.Consequence consequence : serviceAlert.getConsequenceList()) {
-          ServiceAlertSituationConsequenceClause serviceAlertSituationConsequenceClause = new ServiceAlertSituationConsequenceClause();
-          serviceAlertSituationConsequenceClause.setDetourPath(consequence.getDetourPath());
-          serviceAlertSituationConsequenceClause.setDetourStopIds(new HashSet<String>());
-          if (consequence.getDetourStopIdsList() != null) {
-            for (ServiceAlerts.Id stopId : consequence.getDetourStopIdsList()) {
-              serviceAlertSituationConsequenceClause.getDetourStopIds().add(stopId.getId());
-            }
-          }
-          serviceAlertRecord.getConsequences().add(serviceAlertSituationConsequenceClause);
-        }
-      }
-
-      serviceAlertRecord.setCreationTime(serviceAlert.getCreationTime());
-      serviceAlertRecord.setDescriptions(
-              new HashSet<ServiceAlertLocalizedString>());
-      if (serviceAlert.getDescription() != null) {
-        for (ServiceAlerts.TranslatedString.Translation translation : serviceAlert.getDescription().getTranslationList()) {
-          ServiceAlertLocalizedString string = new ServiceAlertLocalizedString();
-          string.setValue(translation.getText());
-          string.setLanguage(translation.getLanguage());
-          serviceAlertRecord.getDescriptions().add(string);
-        }
-      }
-
-      serviceAlertRecord.setModifiedTime(serviceAlert.getModifiedTime());
-      serviceAlertRecord.setPublicationWindows(new HashSet<ServiceAlertTimeRange>());
-
-      serviceAlertRecord.setSeverity(getESeverity(serviceAlert.getSeverity()));
-
-      serviceAlertRecord.setSummaries(new HashSet<ServiceAlertLocalizedString>());
-      if (serviceAlert.getSummary() != null) {
-        for (ServiceAlerts.TranslatedString.Translation translation : serviceAlert.getSummary().getTranslationList()) {
-          ServiceAlertLocalizedString string = new ServiceAlertLocalizedString();
-          string.setValue(translation.getText());
-          string.setLanguage(translation.getLanguage());
-          serviceAlertRecord.getSummaries().add(string);
-        }
-      }
-
-      serviceAlertRecord.setUrls(new HashSet<ServiceAlertLocalizedString>());
-      if (serviceAlert.getUrl() != null) {
-        for (ServiceAlerts.TranslatedString.Translation translation : serviceAlert.getUrl().getTranslationList()) {
-          ServiceAlertLocalizedString string = new ServiceAlertLocalizedString();
-          string.setValue(translation.getText());
-          string.setLanguage(translation.getLanguage());
-          serviceAlertRecord.getUrls().add(string);
-        }
-      }
-
-      if (existingAlert == null) {
-        _log.debug("creating alert " + serviceAlertRecord.getAgencyId() + ":" + serviceAlertRecord.getServiceAlertId());
-        toAdd.add(serviceAlertRecord);
-      } else {
-        _log.debug("updating alert " + serviceAlertRecord.getAgencyId() + ":" + serviceAlertRecord.getServiceAlertId());
-        toUpdate.add(serviceAlertRecord);
-      }
-      currentAlerts.add(new AgencyAndId(serviceAlertRecord.getAgencyId(), serviceAlertRecord.getServiceAlertId()));
-    } else {
-      _log.debug("not updating alert " + id);
-      currentAlerts.add(id);
     }
 
+    return filteredFeedMessageBuilder.build();
   }
 
   private void handleAlerts(FeedMessage alerts) {
@@ -1052,7 +632,6 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
     Set<ServiceAlertRecord> toAdd = new HashSet<>();
     Set<ServiceAlertRecord> toUpdate = new HashSet<>();
 
-    long start = System.currentTimeMillis();
     _log.info("[" + getFeedId() + "] handleAlerts running....");
     for (FeedEntity entity : alerts.getEntityList()) {
       Alert alert = entity.getAlert();
@@ -1060,7 +639,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
         _log.warn("expected a FeedEntity with an Alert");
         continue;
       }
-
+      //This sets the service_alert_agency_id in the alerts_records table
       // NOTE!! Here we default agencyID to be of feed name
       AgencyAndId id = createId(entity.getId());
 
@@ -1073,11 +652,146 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
         ServiceAlert serviceAlert = serviceAlertBuilder.build();
         // cache value of alert
         ServiceAlert existingAlert = _alertsById.get(id);
+        // data store value of service alert
+        ServiceAlertRecord existingRecord = _serviceAlertService.getServiceAlertForId(new AgencyAndId(id.getAgencyId(), id.getId()));
 
-        handleSingleAlert(id, serviceAlertBuilder, currentAlerts, toAdd, toUpdate, serviceAlert);
+        // don't update if there's nothing to do or if the owner changed to admin console
+        if ((existingAlert == null
+                || !existingAlert.equals(serviceAlert))
+                && (existingRecord == null
+                || !"console".equals(existingRecord.getSource()))) {
+          _alertsById.put(id, serviceAlert);
 
+          ServiceAlertRecord serviceAlertRecord = new ServiceAlertRecord();
+          // indicate this came from a feed so we can prune expired alerts
+          serviceAlertRecord.setSource(getFeedId());
+          serviceAlertRecord.setAgencyId(id.getAgencyId()); // AGENCY from feed configuration
+          serviceAlertRecord.setServiceAlertId(id.getId()); // ID ONLY
+
+          serviceAlertRecord.setActiveWindows(new HashSet<ServiceAlertTimeRange>());
+          if (serviceAlert.getActiveWindowList() != null) {
+            for (ServiceAlerts.TimeRange timeRange : serviceAlert.getActiveWindowList()) {
+              ServiceAlertTimeRange serviceAlertTimeRange = new ServiceAlertTimeRange();
+              serviceAlertTimeRange.setFromValue(timeRange.getStart());
+              serviceAlertTimeRange.setToValue(timeRange.getEnd());
+              serviceAlertRecord.getActiveWindows().add(serviceAlertTimeRange);
+            }
+          }
+
+          serviceAlertRecord.setAllAffects(new HashSet<ServiceAlertsSituationAffectsClause>());
+          if (serviceAlert.getAffectsList() != null) {
+            for (ServiceAlerts.Affects affects : serviceAlertBuilder.getAffectsList()) {
+              ServiceAlertsSituationAffectsClause serviceAlertsSituationAffectsClause = new ServiceAlertsSituationAffectsClause();
+
+              /*
+               * if the affects clause has empty but non-null fields the Affects...Factory references will break
+               */
+              if (!StringUtils.isBlank(affects.getAgencyId()))
+                serviceAlertsSituationAffectsClause.setAgencyId(affects.getAgencyId());
+
+              if (!StringUtils.isBlank(affects.getApplicationId()))
+                serviceAlertsSituationAffectsClause.setApplicationId(affects.getApplicationId());
+
+              if (!StringUtils.isBlank(affects.getDirectionId()))
+                serviceAlertsSituationAffectsClause.setDirectionId(affects.getDirectionId());
+
+              if (affects.getRouteId() != null && affects.getRouteId().hasId())
+                serviceAlertsSituationAffectsClause.setRouteId(new AgencyAndId(affects.getRouteId().getAgencyId(), affects.getRouteId().getId()).toString());
+
+              if (affects.getStopId().getId() != null && affects.getStopId().hasId()) {
+                serviceAlertsSituationAffectsClause.setStopId(new AgencyAndId(affects.getStopId().getAgencyId(), affects.getStopId().getId()).toString());
+              }
+
+              if (!_ignoreAlertTripId && affects.getTripId() != null && affects.getTripId().hasId())
+                serviceAlertsSituationAffectsClause.setTripId(new AgencyAndId(affects.getTripId().getAgencyId(), affects.getTripId().getId()).toString());
+              serviceAlertRecord.getAllAffects().add(serviceAlertsSituationAffectsClause);
+            }
+          }
+
+          serviceAlertRecord.setCause(getECause(serviceAlert.getCause()));
+          serviceAlertRecord.setConsequences(new HashSet<ServiceAlertSituationConsequenceClause>());
+          if (serviceAlert.getConsequenceList() != null) {
+            for (ServiceAlerts.Consequence consequence : serviceAlert.getConsequenceList()) {
+              ServiceAlertSituationConsequenceClause serviceAlertSituationConsequenceClause = new ServiceAlertSituationConsequenceClause();
+              serviceAlertSituationConsequenceClause.setDetourPath(consequence.getDetourPath());
+              serviceAlertSituationConsequenceClause.setDetourStopIds(new HashSet<String>());
+              if (consequence.getDetourStopIdsList() != null) {
+                for (ServiceAlerts.Id stopId : consequence.getDetourStopIdsList()) {
+                  serviceAlertSituationConsequenceClause.getDetourStopIds().add(stopId.getId());
+                }
+              }
+              serviceAlertRecord.getConsequences().add(serviceAlertSituationConsequenceClause);
+            }
+          }
+
+          serviceAlertRecord.setCreationTime(serviceAlert.getCreationTime());
+          serviceAlertRecord.setDescriptions(
+                  new HashSet<ServiceAlertLocalizedString>());
+          if (serviceAlert.getDescription() != null) {
+            for (ServiceAlerts.TranslatedString.Translation translation : serviceAlert.getDescription().getTranslationList()) {
+              ServiceAlertLocalizedString string = new ServiceAlertLocalizedString();
+              string.setValue(translation.getText());
+              string.setLanguage(translation.getLanguage());
+              serviceAlertRecord.getDescriptions().add(string);
+            }
+          }
+
+          serviceAlertRecord.setModifiedTime(serviceAlert.getModifiedTime());
+          serviceAlertRecord.setPublicationWindows(new HashSet<ServiceAlertTimeRange>());
+
+          serviceAlertRecord.setSeverity(getESeverity(serviceAlert.getSeverity()));
+
+          serviceAlertRecord.setSummaries(new HashSet<ServiceAlertLocalizedString>());
+          if (serviceAlert.getSummary() != null) {
+            for (ServiceAlerts.TranslatedString.Translation translation : serviceAlert.getSummary().getTranslationList()) {
+              ServiceAlertLocalizedString string = new ServiceAlertLocalizedString();
+              string.setValue(translation.getText());
+              string.setLanguage(translation.getLanguage());
+              serviceAlertRecord.getSummaries().add(string);
+            }
+          }
+
+          serviceAlertRecord.setUrls(new HashSet<ServiceAlertLocalizedString>());
+          if (serviceAlert.getUrl() != null) {
+            for (ServiceAlerts.TranslatedString.Translation translation : serviceAlert.getUrl().getTranslationList()) {
+              ServiceAlertLocalizedString string = new ServiceAlertLocalizedString();
+              string.setValue(translation.getText());
+              string.setLanguage(translation.getLanguage());
+              serviceAlertRecord.getUrls().add(string);
+            }
+          }
+
+          if (serviceAlert.getActiveWindowList().size() > 0) {
+            _log.info("[" + serviceAlert.getId().getId() + "] "
+                    + serviceAlert.getActiveWindowList().size() + " active windows");
+            List<ServiceAlerts.TimeRange> activeWindowList = serviceAlert.getActiveWindowList();
+            for (ServiceAlerts.TimeRange str : serviceAlert.getActiveWindowList()) {
+              ServiceAlertTimeRange satr = new ServiceAlertTimeRange();
+              if (str.hasStart())
+                satr.setFromValue(str.getStart());
+              if (str.hasEnd())
+                satr.setToValue(str.getEnd());
+              _log.info("[" + serviceAlert.getId().getId() + "] adding "
+                      + satr.getFromValue() + "->" + satr.getToValue());
+              serviceAlertRecord.getActiveWindows().add(satr);
+            }
+          }
+
+          if (existingAlert == null) {
+            _log.info("creating alert " + serviceAlertRecord.getAgencyId() + ":" + serviceAlertRecord.getServiceAlertId());
+            toAdd.add(serviceAlertRecord);
+          } else {
+            _log.debug("updating alert " + serviceAlertRecord.getAgencyId() + ":" + serviceAlertRecord.getServiceAlertId());
+            toUpdate.add(serviceAlertRecord);
+          }
+          currentAlerts.add(new AgencyAndId(serviceAlertRecord.getAgencyId(), serviceAlertRecord.getServiceAlertId()));
+        } else {
+          _log.debug("not updating alert " + id);
+          currentAlerts.add(id);
+        }
       }
     }
+
 
     _serviceAlertService.createOrUpdateServiceAlerts(getAgencyIds().get(0), new ArrayList<ServiceAlertRecord>(toAdd));
     _serviceAlertService.createOrUpdateServiceAlerts(getAgencyIds().get(0), new ArrayList<ServiceAlertRecord>(toUpdate));
@@ -1087,31 +801,28 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
       if (sa.getSource() != null && sa.getSource().equals(getFeedId())) {
         try {
           AgencyAndId testId = new AgencyAndId(sa.getAgencyId(), sa.getServiceAlertId());
-          /* consider other feed sources that may be merged here as well */
-          if (!currentAlerts.contains(testId)
-                  && (getFeedId().equals(sa.getSource())
-                    || (_alertSourcePrefix != null && sa.getSource().contains(_alertSourcePrefix)))) {
-            _log.debug("[" + getFeedId() + "] cleaning up alert id " + testId
+          if (!currentAlerts.contains(testId) && getFeedId().equals(sa.getSource())) {
+            _log.info("[" + getFeedId() + "] cleaning up alert id " + testId
                     + " with source=" + sa.getSource());
             toBeDeleted.add(testId);
           } else {
-            _log.debug("[" + getFeedId() + "] appears to still be valid with id=" + testId + ", ("
+            _log.info("[" + getFeedId() + "] appears to still be valid with id=" + testId + ", ("
                     + sa.getAllAffects().iterator().next().getRouteId() + ")");
           }
         } catch (Exception e) {
+
           _log.error("invalid AgencyAndId " + sa.getServiceAlertId());
         }
       }
     }
 
     _serviceAlertService.removeServiceAlerts(new ArrayList<AgencyAndId>(toBeDeleted));
-    _serviceAlertService.cleanup();
+
     _log.info("[" + getFeedId() + "] handleAlerts complete with "
             + currentAlerts.size()
             + " active alerts and "
             + toBeDeleted.size()
-            + " deleted in "
-            + (System.currentTimeMillis() - start) + " ms");
+            + " deleted");
 
   }
 
@@ -1178,7 +889,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   }
 
   /**
-   * 
+   *
    * @param url
    * @return a {@link FeedMessage} constructed from the protocol buffer content
    *         of the specified url, or a default empty {@link FeedMessage} if the
@@ -1199,46 +910,19 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   private FeedMessage getDefaultFeedMessage() {
     FeedMessage.Builder builder = FeedMessage.newBuilder();
     FeedHeader.Builder header = FeedHeader.newBuilder();
-    header.setGtfsRealtimeVersion(GtfsRealtimeConstantsV2.VERSION);
+    header.setGtfsRealtimeVersion(GtfsRealtimeConstants.VERSION);
     builder.setHeader(header);
     return builder.build();
   }
-  
+
   /**
-   * 
+   *
    * @param url the {@link URL} to read from
    * @return a {@link FeedMessage} constructed from the protocol buffer content
    *         of the specified url
    * @throws IOException
    */
   private FeedMessage readFeedFromUrl(URL url) throws IOException {
-   URLConnection urlConnection = url.openConnection();
-   if (System.getProperty(GTFS_CONNECT_TIMEOUT) != null) {
-     urlConnection.setConnectTimeout(Integer.parseInt(System.getProperty(GTFS_CONNECT_TIMEOUT)));
-   }
-   if (System.getProperty(GTFS_READ_TIMEOUT) != null) {
-     urlConnection.setReadTimeout(Integer.parseInt(System.getProperty(GTFS_READ_TIMEOUT)));
-   }
-   setHeadersToUrlConnection(urlConnection);
-   InputStream in = null;
-   try {
-     in = urlConnection.getInputStream();
-     return FeedMessage.parseFrom(in, _registry);
-   } catch (IOException ex) {
-     _log.error("connection issue with url " + url + ", ex=" + ex);
-     return getDefaultFeedMessage();
-   } finally {
-      try {
-        if (in != null) in.close();
-      } catch (IOException ex) {
-        _log.error("error closing url stream " + url);
-      }
-    }
-  }
-
-  private ServiceAlerts.ServiceAlertsCollection readAlertCollectionFromUrl(URL url) throws IOException {
-    if (url == null) return ServiceAlerts.ServiceAlertsCollection.newBuilder().build();
-
     URLConnection urlConnection = url.openConnection();
     if (System.getProperty(GTFS_CONNECT_TIMEOUT) != null) {
       urlConnection.setConnectTimeout(Integer.parseInt(System.getProperty(GTFS_CONNECT_TIMEOUT)));
@@ -1250,10 +934,10 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
     InputStream in = null;
     try {
       in = urlConnection.getInputStream();
-      return ServiceAlerts.ServiceAlertsCollection.parseFrom(in, _registry);
+      return FeedMessage.parseFrom(in, _registry);
     } catch (IOException ex) {
       _log.error("connection issue with url " + url + ", ex=" + ex);
-      return getDefaultServiceAlertsCollection();
+      return getDefaultFeedMessage();
     } finally {
       try {
         if (in != null) in.close();
@@ -1261,11 +945,6 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
         _log.error("error closing url stream " + url);
       }
     }
-  }
-
-  private ServiceAlerts.ServiceAlertsCollection getDefaultServiceAlertsCollection() {
-    ServiceAlerts.ServiceAlertsCollection.Builder builder = ServiceAlerts.ServiceAlertsCollection.newBuilder();
-    return builder.build();
   }
 
   /**
@@ -1278,81 +957,78 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
    * @throws IOException
    */
   private FeedMessage readFeedFromUrl(String url) throws IOException {
-   Session session = null;
-   Channel channel = null;
-   ChannelSftp downloadChannelSftp = null;
-   InputStream in = null;
-   JSch jsch=new JSch();
+    Session session = null;
+    Channel channel = null;
+    ChannelSftp downloadChannelSftp = null;
+    InputStream in = null;
+    JSch jsch=new JSch();
 
-   // Parse SFTP URL
-   int idx = url.indexOf("//") + 2;
-   int idx2 = url.indexOf(":", idx);
-   String user = url.substring(idx, idx2);
-   idx = idx2 + 1;
-   idx2 = url.indexOf("@");
-   String pw = url.substring(idx, idx2);
-   url = url.substring(idx2 + 1);
-   idx = url.indexOf(":");
-   String host = url.substring(0, idx);
-   String rdir = "";
-   idx = url.indexOf("/") + 1;
-   idx2 = url.lastIndexOf("/");
-   if (idx2 > idx) {
-     rdir = url.substring(idx, idx2);
-   } else {
-     idx2 = idx-1;
-   }
-   String rfile = url.substring(idx2+1);
+    // Parse SFTP URL
+    int idx = url.indexOf("//") + 2;
+    int idx2 = url.indexOf(":", idx);
+    String user = url.substring(idx, idx2);
+    idx = idx2 + 1;
+    idx2 = url.indexOf("@");
+    String pw = url.substring(idx, idx2);
+    url = url.substring(idx2 + 1);
+    idx = url.indexOf(":");
+    String host = url.substring(0, idx);
+    String rdir = "";
+    idx = url.indexOf("/") + 1;
+    idx2 = url.lastIndexOf("/");
+    if (idx2 > idx) {
+      rdir = url.substring(idx, idx2);
+    } else {
+      idx2 = idx-1;
+    }
+    String rfile = url.substring(idx2+1);
 
-   try {
-     session=jsch.getSession(user, host, 22);
-     session.setPassword(pw);
-     session.setConfig("StrictHostKeyChecking", "no");
-     session.connect(10000);  // Set timeout to 10 seconds
-     channel = session.openChannel("sftp");
-     channel.connect();
-     downloadChannelSftp = (ChannelSftp) channel;
-     downloadChannelSftp.cd(downloadChannelSftp.getHome() + "/" + rdir);
-     File downloadFile = new File(downloadChannelSftp.getHome() + "/" + rfile);
-     in = downloadChannelSftp.get(downloadFile.getName());
+    try {
+      session=jsch.getSession(user, host, 22);
+      session.setPassword(pw);
+      session.setConfig("StrictHostKeyChecking", "no");
+      session.connect(10000);  // Set timeout to 10 seconds
+      channel = session.openChannel("sftp");
+      channel.connect();
+      downloadChannelSftp = (ChannelSftp) channel;
+      downloadChannelSftp.cd(downloadChannelSftp.getHome() + "/" + rdir);
+      File downloadFile = new File(downloadChannelSftp.getHome() + "/" + rfile);
+      in = downloadChannelSftp.get(downloadFile.getName());
 
-     return FeedMessage.parseFrom(in, _registry);
-   } catch (JSchException ex) {
-     _log.error("connection issue with sftp url " + url);
-     return getDefaultFeedMessage();
-   } catch (SftpException e) {
-     _log.error("connection issue with sftp");
-     e.printStackTrace();
-    return getDefaultFeedMessage();
-  } finally {
-     try {
-       if (channel != null) channel.disconnect();
-       if (session != null) session.disconnect();
-       if (in != null) in.close();
-     } catch (IOException ex) {
-       _log.error("error closing url stream " + url);
-     }
-   }
- }
+      return FeedMessage.parseFrom(in, _registry);
+    } catch (JSchException ex) {
+      _log.error("connection issue with sftp url " + url);
+      return getDefaultFeedMessage();
+    } catch (SftpException e) {
+      _log.error("connection issue with sftp");
+      e.printStackTrace();
+      return getDefaultFeedMessage();
+    } finally {
+      try {
+        if (channel != null) channel.disconnect();
+        if (session != null) session.disconnect();
+        if (in != null) in.close();
+      } catch (IOException ex) {
+        _log.error("error closing url stream " + url);
+      }
+    }
+  }
 
-/**
- * Set the headers to the urlConnection if any
- * @param urlConnection
- * @return, the urlConnection with the headers set
- */
+  /**
+   * Set the headers to the urlConnection if any
+   * @param urlConnection
+   * @return, the urlConnection with the headers set
+   */
   private void setHeadersToUrlConnection(URLConnection urlConnection) {
-   if (_headersMap != null) {
-	  for (Map.Entry<String, String> headerEntry : _headersMap.entrySet()) {
-	    urlConnection.setRequestProperty(headerEntry.getKey(), headerEntry.getValue());
-	  }
-	}
+    if (_headersMap != null) {
+      for (Map.Entry<String, String> headerEntry : _headersMap.entrySet()) {
+        urlConnection.setRequestProperty(headerEntry.getKey(), headerEntry.getValue());
+      }
+    }
   }
 
-  public void setRouteRemap(Map<String, String> remaps) {
-    RouteReplacementService routeReplacementService = new RouteReplacementServiceImpl();
-    routeReplacementService.putAll(remaps);
-    _entitySource.setRouteReplacementService(routeReplacementService);
-  }
+
+
 
   /****
    *
@@ -1367,7 +1043,7 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
           refresh();
         }
       } catch (Throwable ex) {
-        _log.warn("Error updating from GTFS-realtime data sources for config {}, {}", getFeedId(), ex, ex);
+        _log.warn("Error updating from GTFS-realtime data sources", ex);
       }
     }
   }

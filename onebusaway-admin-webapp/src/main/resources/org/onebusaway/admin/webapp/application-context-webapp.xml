@@ -17,16 +17,15 @@
 
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
-  xmlns:sec="http://www.springframework.org/schema/security"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:sec="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
            http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-5.3.xsd">
-           
+
     <!-- This turns on automatic annotation configuration -->
     <context:annotation-config />
 
-    <import resource="classpath:org/onebusaway/container/application-context-hibernate.xml" />
     <import resource="classpath:org/onebusaway/users/application-context.xml" />
     <import resource="classpath:org/onebusaway/users/application-context-security.xml" />
     <import resource="classpath:org/onebusaway/presentation/application-context.xml" />
@@ -42,7 +41,7 @@
     <context:component-scan base-package="org.onebusaway.admin.service.bundle.impl" />
     <context:component-scan base-package="org.onebusaway.alerts.impl" />
 
-    
+
     <bean id="currentUserStrategyImpl" class="org.onebusaway.users.impl.CurrentUserStrategyImpl" primary="true" />
 
     <!-- force hibernates understanding of the following classes -->
@@ -74,7 +73,6 @@
                 <value>org.onebusaway.transit_data_federation.impl.realtime.history.ScheduleDeviationHistory</value>
                 <value>org.onebusaway.transit_data_federation.impl.reporting.StopProblemReportRecord</value>
                 <value>org.onebusaway.transit_data_federation.impl.reporting.TripProblemReportRecord</value>
-
             </list>
         </property>
     </bean>
@@ -82,24 +80,24 @@
     <bean id="serviceAlerts" class="org.onebusaway.admin.service.server.impl.ConsoleServiceAlertsServiceImpl" />
 
     <bean id="createAdmin" class="org.onebusaway.webapp.actions.admin.usermanagement.RegisterUserAction"
-        init-method="init">
-      <property name="username" value="admin"/>
-      <property name="password" value="admin"/>
-      <property name="role" value="ROLE_ADMINISTRATOR"/>
+          init-method="init">
+        <property name="username" value="admin"/>
+        <property name="password" value="admin"/>
+        <property name="role" value="ROLE_ADMINISTRATOR"/>
     </bean>
-    
+
     <bean id="createOperator" class="org.onebusaway.webapp.actions.admin.usermanagement.RegisterUserAction"
-        init-method="init">
-      <property name="username" value="operator"/>
-      <property name="password" value="operator"/>
+          init-method="init">
+        <property name="username" value="operator"/>
+        <property name="password" value="operator"/>
         <property name="role" value="ROLE_OPERATOR"/>
     </bean>
-    
+
     <sec:http auto-config="false" entry-point-ref="loginUrlAuthenticationEntryPoint">
         <sec:intercept-url pattern="/admin/**" access="hasAnyRole('ROLE_ADMINISTRATOR','ROLE_USER','ROLE_REPORTING','ROLE_OPERATOR','ROLE_SUPPORT')" />
         <sec:intercept-url pattern="/transitime/**" access="hasAnyRole('ROLE_ADMINISTRATOR','ROLE_REPORTING','ROLE_OPERATOR')" />
         <!--  we cannot use form-login as we override the default behaviour -->
-        <!-- 
+        <!--
         <sec:form-login login-page="/login.action" authentication-failure-url="/login.action?error=1"
               default-target-url="/admin/index.action" always-use-default-target="true" />
         -->
@@ -126,93 +124,92 @@
                 <prop key="userIndexAuthenticationFilter.usernameParameter">j_username</prop>
                 <prop key="userIndexAuthenticationFilter.passwordParameter">j_password</prop>
                 <prop key="resourceServiceImpl.prefix">/resource.action?id=</prop>
-          </props>
+            </props>
         </property>
     </bean>
-    
+
     <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
-      <property name="order" value="-2" />
-      <property name="properties">
-        <props>
-          <prop key="admin.chefRole">ADMIN</prop>
-        </props>
-      </property>
+        <property name="order" value="-2" />
+        <property name="properties">
+            <props>
+                <prop key="admin.chefRole">ADMIN</prop>
+            </props>
+        </property>
     </bean>
-   <bean id="fileService" class="org.onebusaway.admin.service.impl.FileServiceBridge">
-      <property name="bucketName" value="obanyc-bundle-data-test"/>
-      <property name="gtfsPath" value="gtfs_latest" />
-      <property name="auxPath" value="aux_latest" />
+    <bean id="fileService" class="org.onebusaway.admin.service.impl.FileServiceBridge">
+        <property name="bucketName" value="obanyc-bundle-data-test"/>
+        <property name="gtfsPath" value="gtfs_latest" />
+        <property name="auxPath" value="aux_latest" />
         <property name="configPath" value="config" />
-      <property name="buildPath" value="builds" />
-   </bean>
-  
-   <bean id="diffService" class="org.onebusaway.admin.service.impl.DiffServiceImpl" >
-     <property name="configurationServiceClient" ref="configurationServiceClient" />
-   </bean>
-  
-   <bean id="emailService" class="org.onebusaway.admin.service.impl.EmailServiceImpl" />
-      
-   <bean id="bundleRequestService" class="org.onebusaway.admin.service.impl.BundleRequestServiceImpl" />
-      
-   <bean id="bundleValidationService" class="org.onebusaway.admin.service.bundle.impl.BundleValidationServiceImpl" />
-      
-   <bean id="bundleBuildingService" class="org.onebusaway.admin.service.bundle.impl.BundleBuildingServiceImpl" />
-   
-   <bean id="gtfsArchiveService" class="org.onebusaway.admin.service.bundle.impl.GtfsArchiveServiceImpl" />
-
-   <bean id="bundleServerService" class="org.onebusaway.admin.service.server.impl.BundleServerServiceImpl" />
-
-   <bean id="bundleInfo" class="org.onebusaway.admin.util.BundleInfo" />
-
-   <bean id="keyTranslator" class="org.onebusaway.admin.util.ConfigurationKeyTranslator" />
-   
-   <bean id="loginEventListener" class="org.onebusaway.admin.event.handler.LoginEventListener" />
-   
-   <bean id="logoutEventListener" class="org.onebusaway.admin.event.handler.LogoutEventListener" />
-   
-   <bean id="jsonTool" class="com.google.gson.Gson" />
-   
-   <bean id="gsonTool" class="org.onebusaway.admin.json.LowerCaseWDashesGsonJsonTool">
-    <property name="prettyPrintOutput" value="false" />
+        <property name="buildPath" value="builds" />
     </bean>
-   
-   <bean id="bundleStagingSource"
-    class="org.onebusaway.admin.bundle.DirectoryBundleSource">
-    <constructor-arg type="java.lang.String" value="${bundle.stagedPath}" />
-    <constructor-arg ref="gsonTool" />
-    </bean>
-   
-	  <bean id="bundleDeploySource"
-	    class="org.onebusaway.admin.bundle.DirectoryBundleSource">
-	    <constructor-arg type="java.lang.String" value="${bundle.deployPath}" />
-	    <constructor-arg ref="gsonTool" />
-	  </bean>
-	  
-	  <bean id="bundleStagingProvider" 
-	    class="org.onebusaway.admin.bundle.BundleProvider">
-	    <constructor-arg ref="bundleStagingSource" />
-	  </bean>
-	  
-	  <bean id="bundleDeployProvider" 
-      class="org.onebusaway.admin.bundle.BundleProvider">
-      <constructor-arg ref="bundleDeploySource" />
-    </bean>
-	
-	   <bean id="bundleStager"
-	    class="org.onebusaway.admin.service.bundle.impl.DirectoryBundleStagerImpl">
-	    <property name="builtBundleDirectory" value="${bundle.builtPath}" />
-	    <property name="stagedBundleDirectory" value="${bundle.stagedPath}" />
-	  </bean>
 
-	  <bean id="bundleDeployer"
-	    class="org.onebusaway.admin.service.bundle.impl.DirectoryBundleDeployerImpl">
-	    <property name="deployBundleDirectory" value="${bundle.deployPath}" />
-	  </bean>
-	
-	  <bean id="configurationServiceClient" class="org.onebusaway.util.impl.configuration.ConfigurationServiceClientFileImpl" >
-	  </bean>
+    <bean id="diffService" class="org.onebusaway.admin.service.impl.DiffServiceImpl" >
+        <property name="configurationServiceClient" ref="configurationServiceClient" />
+    </bean>
 
-    <bean id="rssServiceAlertsService" class="org.onebusaway.admin.service.server.impl.RssServiceAlertsServiceImpl" />
-    <bean id="cleverServiceAlertsService" class="org.onebusaway.admin.service.server.impl.CleverServiceAlertsServiceImpl" />
+    <bean id="emailService" class="org.onebusaway.admin.service.impl.EmailServiceImpl" />
+
+    <bean id="bundleRequestService" class="org.onebusaway.admin.service.impl.BundleRequestServiceImpl" />
+
+    <bean id="bundleValidationService" class="org.onebusaway.admin.service.bundle.impl.BundleValidationServiceImpl" />
+
+    <bean id="bundleBuildingService" class="org.onebusaway.admin.service.bundle.impl.BundleBuildingServiceImpl" />
+
+    <bean id="gtfsArchiveService" class="org.onebusaway.admin.service.bundle.impl.GtfsArchiveServiceImpl" />
+
+    <bean id="bundleServerService" class="org.onebusaway.admin.service.server.impl.BundleServerServiceImpl" />
+
+    <bean id="bundleInfo" class="org.onebusaway.admin.util.BundleInfo" />
+
+    <bean id="keyTranslator" class="org.onebusaway.admin.util.ConfigurationKeyTranslator" />
+
+    <bean id="loginEventListener" class="org.onebusaway.admin.event.handler.LoginEventListener" />
+
+    <bean id="logoutEventListener" class="org.onebusaway.admin.event.handler.LogoutEventListener" />
+
+    <bean id="jsonTool" class="com.google.gson.Gson" />
+
+    <bean id="gsonTool" class="org.onebusaway.admin.json.LowerCaseWDashesGsonJsonTool">
+        <property name="prettyPrintOutput" value="false" />
+    </bean>
+
+    <bean id="bundleStagingSource"
+          class="org.onebusaway.admin.bundle.DirectoryBundleSource">
+        <constructor-arg type="java.lang.String" value="${bundle.stagedPath}" />
+        <constructor-arg ref="gsonTool" />
+    </bean>
+
+    <bean id="bundleDeploySource"
+          class="org.onebusaway.admin.bundle.DirectoryBundleSource">
+        <constructor-arg type="java.lang.String" value="${bundle.deployPath}" />
+        <constructor-arg ref="gsonTool" />
+    </bean>
+
+    <bean id="bundleStagingProvider"
+          class="org.onebusaway.admin.bundle.BundleProvider">
+        <constructor-arg ref="bundleStagingSource" />
+    </bean>
+
+    <bean id="bundleDeployProvider"
+          class="org.onebusaway.admin.bundle.BundleProvider">
+        <constructor-arg ref="bundleDeploySource" />
+    </bean>
+
+    <bean id="bundleStager"
+          class="org.onebusaway.admin.service.bundle.impl.DirectoryBundleStagerImpl">
+        <property name="builtBundleDirectory" value="${bundle.builtPath}" />
+        <property name="stagedBundleDirectory" value="${bundle.stagedPath}" />
+    </bean>
+
+    <bean id="bundleDeployer"
+          class="org.onebusaway.admin.service.bundle.impl.DirectoryBundleDeployerImpl">
+        <property name="deployBundleDirectory" value="${bundle.deployPath}" />
+    </bean>
+
+    <bean id="configurationServiceClient" class="org.onebusaway.util.impl.configuration.ConfigurationServiceClientFileImpl" >
+    </bean>
+
+    <bean id="rssServiceAlertsService" class="org.onebusaway.admin.service.server.impl.RssServiceAlertsSerivceImpl" />
 
 </beans>

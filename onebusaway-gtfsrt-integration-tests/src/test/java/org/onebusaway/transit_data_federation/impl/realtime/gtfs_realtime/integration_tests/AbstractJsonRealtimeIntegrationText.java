@@ -19,7 +19,6 @@ import com.google.transit.realtime.GtfsRealtime;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.transit_data_federation.impl.realtime.TestVehicleLocationListener;
 import org.onebusaway.transit_data_federation.impl.realtime.VehicleStatusServiceImpl;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.AbstractGtfsRealtimeIntegrationTest;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRtBuilder;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.MonitoredResult;

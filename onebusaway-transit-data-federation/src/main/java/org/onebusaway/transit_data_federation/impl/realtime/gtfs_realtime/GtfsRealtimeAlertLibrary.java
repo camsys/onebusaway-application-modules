@@ -15,9 +15,9 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime;
 
+import java.util.List;
 import java.util.Map;
 
-import com.google.transit.realtime.GtfsRealtimeServiceStatus;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.alerts.service.ServiceAlerts;
 import org.onebusaway.alerts.service.ServiceAlerts.*;
@@ -37,12 +37,23 @@ class GtfsRealtimeAlertLibrary {
 
   private GtfsRealtimeEntitySource _entitySource;
 
+  private List<String> _agencyIds;
+
   public void setEntitySource(GtfsRealtimeEntitySource entitySource) {
     _entitySource = entitySource;
   }
-  
+
+  public void setAgencyIds(List<String> agencyIds) {
+    _agencyIds = agencyIds;
+  }
+
+  private boolean _stripAgencyPrefix = true;
+  public void setStripAgencyPrefix(boolean remove) {
+    _stripAgencyPrefix = remove;
+  }
+
   public ServiceAlert.Builder getAlertAsServiceAlert(AgencyAndId id, Alert alert) {
-	return getAlertAsServiceAlert(id, alert, null);
+    return getAlertAsServiceAlert(id, alert, null);
   }
 
   public ServiceAlert.Builder getAlertAsServiceAlert(AgencyAndId id, Alert alert, Map agencyIdMap) {
@@ -55,12 +66,10 @@ class GtfsRealtimeAlertLibrary {
     b.setId(ServiceAlertLibrary.id(id));
     for (GtfsRealtime.TimeRange range : alert.getActivePeriodList()) {
       ServiceAlerts.TimeRange.Builder rangeBuilder = ServiceAlerts.TimeRange.newBuilder();
-      if (range.hasStart() && range.getStart() > 0) {
-        rangeBuilder.setStart(toMillis(range.getStart()));
-      }
-      if (range.hasEnd() && range.getEnd() > 0) {
-        rangeBuilder.setEnd(toMillis(range.getEnd()));
-      }
+      if (range.hasStart())
+        rangeBuilder.setStart(range.getStart());
+      if (range.hasEnd())
+        rangeBuilder.setEnd(range.getEnd());
       b.addActiveWindow(rangeBuilder);
     }
     if (alert.hasCause())
@@ -80,36 +89,20 @@ class GtfsRealtimeAlertLibrary {
     }
     if (alert.hasUrl())
       b.setUrl(convertTranslatedString(alert.getUrl()));
-
-    // custom extensions
-    GtfsRealtimeServiceStatus.MercuryAlert mercuryAlert = null;
-    if (alert.hasExtension(GtfsRealtimeServiceStatus.mercuryAlert)) {
-      mercuryAlert =
-              alert.getExtension(GtfsRealtimeServiceStatus.mercuryAlert);
-      if (mercuryAlert.hasAlertType()) {
-        b.setConsequenceMessage(mercuryAlert.getAlertType());
-      }
-    }
     return b;
-  }
-
-  private long toMillis(long secondsOrMillis) {
-    // spec has this as seconds, but internally we use millis
-    if (secondsOrMillis < 1000000000000l)
-      return secondsOrMillis * 1000;
-    return secondsOrMillis;
   }
 
   private Affects.Builder getEntitySelectorAsAffects(EntitySelector selector, Map agencyIdMap, boolean ignoreTripIds) {
     Affects.Builder affects = Affects.newBuilder();
     if (selector.hasAgencyId()) {
-		String agencyId = selector.getAgencyId();
-		if (agencyIdMap != null && agencyIdMap.get(agencyId) != null) {
-			agencyId = (String) agencyIdMap.get(agencyId);
-		}
-		affects.setAgencyId(agencyId);
-	}
+      String agencyId = selector.getAgencyId();
+      if (agencyIdMap != null && agencyIdMap.get(agencyId) != null) {
+        agencyId = (String) agencyIdMap.get(agencyId);
+      }
+      affects.setAgencyId(agencyId);
+    }
     if (selector.hasRouteId()) {
+
       Id routeId = _entitySource.getRouteId(selector.getRouteId());
       affects.setRouteId(routeId);
     }
@@ -187,7 +180,7 @@ class GtfsRealtimeAlertLibrary {
   }
 
   private ServiceAlerts.TranslatedString convertTranslatedString(
-      GtfsRealtime.TranslatedString string) {
+          GtfsRealtime.TranslatedString string) {
     ServiceAlerts.TranslatedString.Builder b = ServiceAlerts.TranslatedString.newBuilder();
     for (GtfsRealtime.TranslatedString.Translation translation : string.getTranslationList()) {
       ServiceAlerts.TranslatedString.Translation.Builder tb = ServiceAlerts.TranslatedString.Translation.newBuilder();

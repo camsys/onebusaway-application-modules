@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2011 Brian Ferris <bdferris@onebusaway.org>
  * Copyright (C) 2011 Google, Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,21 +34,19 @@ public interface ServiceAlertsService {
    * in a call to {@link #getServiceAlertsForFederatedAgencyId(String)}. This
    * also determines the agency id used in the service alerts id (
    * {@link ServiceAlert#getId()}).
-   * 
+   *
    * @param builder the filled-in service alert builder
    * @param defaultAgencyId the agency to assign the service alert to
-   * 
+   *
    * @return the built service alert
    */
-
-  void cleanup();
 
   void loadServiceAlerts();
 
   public ServiceAlertRecord createOrUpdateServiceAlert(ServiceAlertRecord serviceAlertRecord);
 
   public void removeServiceAlert(AgencyAndId serviceAlertId);
-  
+
   public ServiceAlertRecord copyServiceAlert(ServiceAlertRecord serviceAlertRecord);
 
   public void removeServiceAlerts(List<AgencyAndId> serviceAlertIds);
@@ -57,7 +55,7 @@ public interface ServiceAlertsService {
    * Remove all service alerts with the specified agency id. This would remove
    * all the service alerts returned by a call to
    * {@link #getServiceAlertsForFederatedAgencyId(String)}.
-   * 
+   *
    * @param agencyId
    */
   public void removeAllServiceAlertsForFederatedAgencyId(String agencyId);
@@ -72,7 +70,7 @@ public interface ServiceAlertsService {
    * {@link #createServiceAlert(String, org.onebusaway.alerts.service.ServiceAlertService.ServiceAlert.Builder)}
    * . Contrast this with {@link #getServiceAlertsForAgencyId(long, String)},
    * which find service alerts affecting a particular agency.
-   * 
+   *
    * @param agencyId
    * @return
    */
@@ -81,17 +79,17 @@ public interface ServiceAlertsService {
   /**
    * This returns the set of service alerts affecting a particular agency, as
    * determined by {@link Affects#getAgencyId()}.
-   * 
+   *
    * @param time
    * @param agencyId
    * @return the set of service alerts affecting the specified agency
    */
   public List<ServiceAlertRecord> getServiceAlertsForAgencyId(long time,
-      String agencyId);
+                                                              String agencyId);
 
   public List<ServiceAlertRecord> getServiceAlertsForStopId(long time,
-      AgencyAndId stopId);
-  
+                                                            AgencyAndId stopId);
+
   List<ServiceAlertRecord> getServiceAlertsForRouteId(long time, AgencyAndId routeId);
 
   List<ServiceAlertRecord> getServiceAlertsForRouteAndStopId(long time, AgencyAndId routeId, AgencyAndId stopId);
@@ -103,4 +101,8 @@ public interface ServiceAlertsService {
   public List<ServiceAlertRecord> getServiceAlerts(SituationQueryBean query);
 
   List<ServiceAlertRecord> createOrUpdateServiceAlerts(String agencyId, List<ServiceAlertRecord> records);
+
+  boolean sync();
+
+  boolean deleteOrphans();
 }

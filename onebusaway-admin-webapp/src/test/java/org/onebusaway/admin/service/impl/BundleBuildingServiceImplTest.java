@@ -17,20 +17,20 @@ package org.onebusaway.admin.service.impl;
 
 import static org.junit.Assert.*;
 
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.DefaultConfiguration;
+import org.junit.Ignore;
 import org.onebusaway.admin.model.BundleBuildRequest;
 import org.onebusaway.admin.model.BundleBuildResponse;
 import org.onebusaway.admin.service.FileService;
 import org.onebusaway.admin.service.bundle.impl.BundleBuildingServiceImpl;
 import org.onebusaway.admin.util.NYCFileUtils;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.Test;
-import org.onebusaway.util.impl.configuration.ConfigurationServiceImpl;
-import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +38,8 @@ public class BundleBuildingServiceImplTest {
   private static Logger _log = LoggerFactory.getLogger(BundleBuildingServiceImplTest.class);
   private static String CT_GIS_ZIP = "29_gis.zip";
   private static String CT_SCHEDULE_ZIP = "29_HastusRoutesAndSchedules.zip";
+  private static String MTA_GTFS_M34 = "gtfs-m34.zip";
+  private static String MTA_STIF_M34 = "stif-m34.zip";
   private BundleBuildingServiceImpl _service;
 
   public void setup() {
@@ -47,7 +49,7 @@ public class BundleBuildingServiceImplTest {
         return null;
       }
     };
-    
+
     _service.setDebug(true);
     FileService fileService;
     fileService = new S3FileServiceImpl() {
@@ -87,13 +89,13 @@ public class BundleBuildingServiceImplTest {
         _log.debug("list called with " + directory);
         ArrayList<String> list = new ArrayList<String>();
         if (directory.equals("test/gtfs_latest")) {
-          list.add("gtfs-m34.zip");
+          list.add(MTA_GTFS_M34);
         } else if (directory.equals("test/aux_latest")) {
           if ("true".equals(_service.getAuxConfig())) {
             list.add(CT_GIS_ZIP);
             list.add(CT_SCHEDULE_ZIP);
           } else {
-            list.add("stif-m34.zip");
+            list.add(MTA_STIF_M34);
           }
         } else if (directory.equals("test/config")) {
           // do nothing
@@ -107,11 +109,10 @@ public class BundleBuildingServiceImplTest {
       public String get(String key, String tmpDir) {
         _log.debug("get called with " + key);
         InputStream source = null;
-        if (key.equals("gtfs-m34.zip")) {
-          source = this.getClass().getResourceAsStream(
-              "gtfs-m34.zip");
-        } else if (key.equals("stif-m34.zip")) {
-          source = this.getClass().getResourceAsStream("stif-m34.zip");
+        if (key.equals(MTA_GTFS_M34)) {
+          source = this.getClass().getResourceAsStream(MTA_GTFS_M34);
+        } else if (key.equals(MTA_STIF_M34)) {
+          source = this.getClass().getResourceAsStream(MTA_STIF_M34);
         } else if (key.equals(CT_GIS_ZIP)) {
           source = this.getClass().getResourceAsStream(CT_GIS_ZIP);
         } else if (key.equals(CT_SCHEDULE_ZIP)) {
@@ -147,30 +148,77 @@ public class BundleBuildingServiceImplTest {
     // fileService.setConfigPath("config");
     // fileService.setup();
     _service.setFileService(fileService);
-
-    ConfigurationService configService = new ConfigurationServiceImpl() {
-      @Override
-      public String getConfigurationValueAsString(String configurationItemKey,
-                                                  String defaultValue) {
-        return defaultValue;
-      }
-
-      public String getItem(String component, String key) throws Exception {
-        return null;
-      }
-    };
-    _service.setConfigurationService(configService);
-
     _service.setup();
 
   }
 
   @Test
+  @Ignore
   public void testMe() {
-//    setup();
-//    testBuildHastus();
+    Configurator.initialize(new DefaultConfiguration());
+    setup();
+    testBuildStif();
+    setup();
+    testBuildHastus();
   }
 
+
+  private void testBuildStif() {
+    _service.setAuxConfig("false");
+    String bundleDir = "test";
+    String tmpDir = new NYCFileUtils().createTmpDirectory();
+
+    BundleBuildRequest request = new BundleBuildRequest();
+    request.setBundleDirectory(bundleDir);
+    request.setBundleName("testname");
+    request.setTmpDirectory(tmpDir);
+    request.setBundleStartDate("2012-04-08");
+    request.setBundleEndDate("2012-07-07");
+    request.setBundleComment("Test");
+    assertNotNull(request.getTmpDirectory());
+    assertNotNull(request.getBundleDirectory());
+    BundleBuildResponse response = new BundleBuildResponse(""
+            + System.currentTimeMillis());
+    assertEquals(0, response.getStatusList().size());
+
+    // step 1
+    _service.download(request, response);
+    assertNotNull(response.getGtfsList());
+    assertEquals(1, response.getGtfsList().size());
+
+    assertNotNull(response.getAuxZipList());
+    assertEquals(1, response.getAuxZipList().size());
+
+    assertNotNull(response.getStatusList());
+    assertTrue(response.getStatusList().size() > 0);
+
+    assertNotNull(response.getConfigList());
+    assertEquals(0, response.getConfigList().size());
+
+    // step 2
+    _service.prepare(request, response);
+
+
+    assertFalse(response.isComplete());
+
+    // step 3
+    int rc = _service.build(request, response);
+    if (response.getException() != null) {
+      _log.error("Failed with exception=" + response.getException(), response.getException());
+    }
+    assertNull(response.getException());
+    assertFalse(response.isComplete());
+    assertEquals(0, rc);
+
+    // step 4
+    // OBANYC-1451 -- fails on OSX TODO
+    //_service.assemble(request, response);
+
+    // step 5
+    _service.upload(request, response);
+    assertFalse(response.isComplete()); // set by BundleRequestService
+
+  }
 
   private void testBuildHastus() {
     _service.setAuxConfig("true");
@@ -186,7 +234,7 @@ public class BundleBuildingServiceImplTest {
     assertNotNull(request.getTmpDirectory());
     assertNotNull(request.getBundleDirectory());
     BundleBuildResponse response = new BundleBuildResponse(""
-        + System.currentTimeMillis());
+            + System.currentTimeMillis());
     assertEquals(0, response.getStatusList().size());
 
     // step 1
@@ -196,19 +244,19 @@ public class BundleBuildingServiceImplTest {
 
     assertNotNull(response.getAuxZipList());
     assertEquals(2, response.getAuxZipList().size());
-     
+
     assertNotNull(response.getStatusList());
     assertTrue(response.getStatusList().size() > 0);
 
     assertNotNull(response.getConfigList());
     assertEquals(0, response.getConfigList().size());
-    
+
     // step 2
     _service.prepare(request, response);
 
-    
+
     assertFalse(response.isComplete());
-    
+
     // step 3
     int rc = _service.build(request, response);
     if (response.getException() != null) {
@@ -217,7 +265,7 @@ public class BundleBuildingServiceImplTest {
     assertNull(response.getException());
     assertFalse(response.isComplete());
     assertEquals(0, rc);
-    
+
     // step 4
     // OBANYC-1451 -- fails on OSX TODO
     //_service.assemble(request, response);
@@ -228,5 +276,5 @@ public class BundleBuildingServiceImplTest {
 
   }
 
-  
+
 }

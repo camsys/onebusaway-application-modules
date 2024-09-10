@@ -17,7 +17,6 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.integ
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.AbstractGtfsRealtimeBeanVerificationTest;
 
 import java.util.HashMap;
 import java.util.Map;

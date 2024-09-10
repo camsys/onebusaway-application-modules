@@ -34,7 +34,7 @@ import java.util.*;
 @Component
 public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 
-  private static Logger _log = LoggerFactory.getLogger(ServiceAlertsServiceImpl.class);
+	private static Logger _log = LoggerFactory.getLogger(ServiceAlertsServiceImpl.class);
 
 	/**
 	 * While a service alert affects clause ({@link Affects} or
@@ -48,34 +48,34 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 	}
 
 	private ServiceAlertsCache _cache;
-	
+
 	private ServiceAlertsPersistence _persister;
 
 	@Autowired
 	public void setServiceAlertsCache(ServiceAlertsCache cache) {
-	  _cache = cache;
+		_cache = cache;
 	}
-	
+
 	public ServiceAlertsCache getServiceAlertsCache() {
 		return _cache;
 	}
 
 	@Autowired
 	public void setServiceAlertsPersistence(ServiceAlertsPersistence persister) {
-	  _persister = persister;
+		_persister = persister;
 	}
-	
+
 	public ServiceAlertsPersistence getServiceAlertsPeristence() {
-	  return _persister;
+		return _persister;
 	}
 
 	@PostConstruct
 	public void start() {
-	  try {
-	    loadServiceAlerts();
-	  } catch (Throwable t) {
-	    _log.error("issue loading service alerts: ", t);
-	  }
+		try {
+			loadServiceAlerts();
+		} catch (Throwable t) {
+			_log.error("issue loading service alerts: ", t);
+		}
 	}
 
 	@PreDestroy
@@ -89,10 +89,10 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 
 	@Override
 	public synchronized ServiceAlertRecord createOrUpdateServiceAlert(
-      ServiceAlertRecord serviceAlertRecord) {
+			ServiceAlertRecord serviceAlertRecord) {
 
-	  if (_persister.needsSync()) this.loadServiceAlerts();
-	  
+		if (_persister.needsSync()) this.loadServiceAlerts();
+
 		if (serviceAlertRecord.getServiceAlertId() == null) {
 			UUID uuid = UUID.randomUUID();
 			serviceAlertRecord.setServiceAlertId(uuid.toString());
@@ -100,7 +100,7 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 
 		long lastModified = SystemTime.currentTimeMillis();
 		if (serviceAlertRecord.getCreationTime() < 1l)
-        serviceAlertRecord.setCreationTime(lastModified);
+			serviceAlertRecord.setCreationTime(lastModified);
 
 		updateReferences(serviceAlertRecord);
 		saveDBServiceAlerts(serviceAlertRecord, lastModified);
@@ -129,22 +129,29 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 
 	}
 
+	@Override
+	public boolean sync() {
+		if (_persister.needsSync()) {
+			this.loadServiceAlerts();
+		}
+		return true;
+	}
 
 	@Override
 	public synchronized ServiceAlertRecord copyServiceAlert(ServiceAlertRecord serviceAlertRecord) {
-		
+
 		if (_persister.needsSync()) this.loadServiceAlerts();
 		UUID uuid = UUID.randomUUID();
 		serviceAlertRecord.setServiceAlertId(uuid.toString());
 
 		long lastModified = SystemTime.currentTimeMillis();
-        serviceAlertRecord.setCreationTime(lastModified);
-        serviceAlertRecord.setCopy(Boolean.TRUE);
-		
+		serviceAlertRecord.setCreationTime(lastModified);
+		serviceAlertRecord.setCopy(Boolean.TRUE);
+
 		updateReferences(serviceAlertRecord);
 		saveDBServiceAlerts(serviceAlertRecord, lastModified);
 		return serviceAlertRecord;
-	}	
+	}
 
 	@Override
 	public synchronized void removeServiceAlert(AgencyAndId serviceAlertId) {
@@ -153,21 +160,21 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 
 	@Override
 	public synchronized void removeServiceAlerts(List<AgencyAndId> serviceAlertIds) {
-	  if (_persister.needsSync()) this.loadServiceAlerts();
+		if (_persister.needsSync()) this.loadServiceAlerts();
 		for (AgencyAndId serviceAlertId : serviceAlertIds) {
-      ServiceAlertRecord existingServiceAlert = _cache.removeServiceAlert(serviceAlertId);
+			ServiceAlertRecord existingServiceAlert = _cache.removeServiceAlert(serviceAlertId);
 
 			if (existingServiceAlert != null) {
 				updateReferences(existingServiceAlert, null);
 			}
-			
+
 			//Now remove from the DataBase.
 			ServiceAlertRecord existingServiceAlertRecord = getServiceAlertRecordByAlertId(serviceAlertId.getAgencyId(), serviceAlertId.getId());
-			_log.debug("deleting service alert " + serviceAlertId.getId());
+			_log.info("deleting service alert " + serviceAlertId.getId());
 			if (existingServiceAlertRecord != null) {
-			  _persister.delete(existingServiceAlertRecord);
+				_persister.delete(existingServiceAlertRecord);
 			}
-		}    
+		}
 	}
 
 	@Override
@@ -180,27 +187,27 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 
 	@Override
 	public ServiceAlertRecord getServiceAlertForId(AgencyAndId serviceAlertId) {
-	  if (_persister.cachedNeedsSync()) this.loadServiceAlerts();
+		if (_persister.cachedNeedsSync()) this.loadServiceAlerts();
 		return _cache.getServiceAlerts().get(serviceAlertId);
 	}
 
 	@Override
 	public List<ServiceAlertRecord> getAllServiceAlerts() {
-	  if (_persister.cachedNeedsSync()) this.loadServiceAlerts();
+		if (_persister.cachedNeedsSync()) this.loadServiceAlerts();
 		return new ArrayList<ServiceAlertRecord>(_cache.getServiceAlerts().values());
 	}
 
 	@Override
 	public List<ServiceAlertRecord> getServiceAlertsForFederatedAgencyId(String agencyId) {
-	  if (_persister.cachedNeedsSync()) this.loadServiceAlerts();
+		if (_persister.cachedNeedsSync()) this.loadServiceAlerts();
 		Set<AgencyAndId> serviceAlertIds = _cache.getServiceAlertIdsByServiceAlertAgencyId().get(agencyId);
 		return getServiceAlertIdsAsObjects(serviceAlertIds);
 	}
 
 	@Override
 	public List<ServiceAlertRecord> getServiceAlertsForAgencyId(long time,
-			String agencyId) {
-	  if (_persister.cachedNeedsSync()) this.loadServiceAlerts();
+																String agencyId) {
+		if (_persister.cachedNeedsSync()) this.loadServiceAlerts();
 		Set<AgencyAndId> serviceAlertIds = new HashSet<AgencyAndId>();
 		getServiceAlertIdsForKey(_cache.getServiceAlertIdsByAgencyId(), agencyId,
 				serviceAlertIds);
@@ -209,8 +216,8 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 
 	@Override
 	public List<ServiceAlertRecord> getServiceAlertsForStopId(long time,
-			AgencyAndId stopId) {
-	  if (_persister.cachedNeedsSync()) this.loadServiceAlerts();
+															  AgencyAndId stopId) {
+		if (_persister.cachedNeedsSync()) this.loadServiceAlerts();
 		Set<AgencyAndId> serviceAlertIds = new HashSet<AgencyAndId>();
 		getServiceAlertIdsForKey(_cache.getServiceAlertIdsByAgencyId(), stopId.getAgencyId(),
 				serviceAlertIds);
@@ -279,81 +286,120 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 					affects.getRouteId(), affects.getDirectionId(), affects.getTripId(),
 					affects.getStopId());
 			switch (type) {
-			case AGENCY: {
-				/**
-				 * Note we are treating the query's agency ID as that of what the
-				 * service alert affects, not the alert's federated agency ID.
-				 */
-				getServiceAlertIdsForKey(_cache.getServiceAlertIdsByAgencyId(),
-						affects.getAgencyId(), serviceAlertIds);
-				break;
-			}
-			case ROUTE: {
+				case AGENCY: {
+					/**
+					 * Note we are treating the query's agency ID as that of what the
+					 * service alert affects, not the alert's federated agency ID.
+					 */
+					getServiceAlertIdsForKey(_cache.getServiceAlertIdsByAgencyId(),
+							affects.getAgencyId(), serviceAlertIds);
+					break;
+				}
+				case ROUTE: {
 
-				getServiceAlertIdsForKey(_cache.getServiceAlertIdsByRouteId(), routeId,
-						serviceAlertIds);
-				break;
-			}
-			case TRIP: {
-				getServiceAlertIdsForKey(_cache.getServiceAlertIdsByTripId(), tripId,
-						serviceAlertIds);
-				break;
-			}
-			case STOP: {
-				getServiceAlertIdsForKey(_cache.getServiceAlertIdsByStopId(), stopId,
-						serviceAlertIds);
-				break;
-			}
-			case ROUTE_DIRECTION: {
-				RouteAndDirectionRef routeAndDirectionRef = new RouteAndDirectionRef(
-						routeId, affects.getDirectionId());
-				getServiceAlertIdsForKey(_cache.getServiceAlertIdsByRouteAndDirectionId(),
-						routeAndDirectionRef, serviceAlertIds);
-				break;
-			}
-			case ROUTE_DIRECTION_STOP: {
-				RouteDirectionAndStopCallRef ref = new RouteDirectionAndStopCallRef(
-						routeId, affects.getDirectionId(), stopId);
-				getServiceAlertIdsForKey(_cache.getServiceAlertIdsByRouteDirectionAndStopCall(),
-						ref, serviceAlertIds);
-				break;
-			}
-			case ROUTE_STOP: {
-				RouteAndStopCallRef routeAndStopRef = new RouteAndStopCallRef(
-						routeId, stopId);
-				getServiceAlertIdsForKey(_cache.getServiceAlertIdsByRouteAndStop(),
-						routeAndStopRef, serviceAlertIds);
-				break;
-			}
-			case TRIP_STOP: {
-				TripAndStopCallRef ref = new TripAndStopCallRef(tripId, stopId);
-				getServiceAlertIdsForKey(_cache.getServiceAlertIdsByTripAndStopId(), ref,
-						serviceAlertIds);
-				break;
-			}
-			default: {
-				throw new RuntimeException("Unhandled type " + type);
-			}
+					getServiceAlertIdsForKey(_cache.getServiceAlertIdsByRouteId(), routeId,
+							serviceAlertIds);
+					break;
+				}
+				case TRIP: {
+					getServiceAlertIdsForKey(_cache.getServiceAlertIdsByTripId(), tripId,
+							serviceAlertIds);
+					break;
+				}
+				case STOP: {
+					getServiceAlertIdsForKey(_cache.getServiceAlertIdsByStopId(), stopId,
+							serviceAlertIds);
+					break;
+				}
+				case ROUTE_DIRECTION: {
+					RouteAndDirectionRef routeAndDirectionRef = new RouteAndDirectionRef(
+							routeId, affects.getDirectionId());
+					getServiceAlertIdsForKey(_cache.getServiceAlertIdsByRouteAndDirectionId(),
+							routeAndDirectionRef, serviceAlertIds);
+					break;
+				}
+				case ROUTE_DIRECTION_STOP: {
+					RouteDirectionAndStopCallRef ref = new RouteDirectionAndStopCallRef(
+							routeId, affects.getDirectionId(), stopId);
+					getServiceAlertIdsForKey(_cache.getServiceAlertIdsByRouteDirectionAndStopCall(),
+							ref, serviceAlertIds);
+					break;
+				}
+				case ROUTE_STOP: {
+					RouteAndStopCallRef routeAndStopRef = new RouteAndStopCallRef(
+							routeId, stopId);
+					getServiceAlertIdsForKey(_cache.getServiceAlertIdsByRouteAndStop(),
+							routeAndStopRef, serviceAlertIds);
+					break;
+				}
+				case TRIP_STOP: {
+					TripAndStopCallRef ref = new TripAndStopCallRef(tripId, stopId);
+					getServiceAlertIdsForKey(_cache.getServiceAlertIdsByTripAndStopId(), ref,
+							serviceAlertIds);
+					break;
+				}
+				default: {
+					throw new RuntimeException("Unhandled type " + type);
+				}
 			}
 		}
 
-		List<ServiceAlertRecord> alerts = getServiceAlertIdsAsObjects(serviceAlertIds, query.getTime());
+		List<ServiceAlertRecord> alerts = getServiceAlertIdsAsObjects(serviceAlertIds);
+
+		// SituationQueryBean no longer supports filtering by time, but it might return, so leaving this code here
+		// for future reference.
+		//    filterByTime(query, alerts);
 
 		return alerts;
 	}
 
+	public boolean deleteOrphans() {
+		return _persister.deleteOrphans();
+	}
 	/****
 	 * Private Methods
 	 ****/
 
+	// SituationQUeryBean no longer supports filtering by time, but it might return, so leaving this code here
+	// for future reference.
+	//  private void filterByTime(SituationQueryBean query, List<ServiceAlert> alerts) {
+	//    long queryTime = query.getTime();
+	//    if (queryTime != 0) {
+	//      Predicate predicate = new Predicate() {
+	//        private long queryTime;
+	//        @Override
+	//        public boolean evaluate(Object arg0) {
+	//          ServiceAlert alert = (ServiceAlert)arg0;
+	//          List<TimeRange> list = alert.getPublicationWindowList();
+	//          if (list.isEmpty()) {
+	//            return true;
+	//          }
+	//          // If we're inside *any* publication window, return true
+	//          for (TimeRange t: list) {
+	//            if ((t.getStart() <= queryTime) && (queryTime <= t.getEnd())) {
+	//              return true;
+	//            }
+	//          }
+	//          return false;
+	//        }
+	//
+	//        public Predicate init(long queryTime) {
+	//          this.queryTime = queryTime;
+	//          return this;
+	//        }
+	//      }.init(queryTime);
+	//      CollectionUtils.filter(alerts, predicate );
+	//    }
+	//  }
+	//
 	private void updateReferences(ServiceAlertRecord serviceAlert) {
 		AgencyAndId id = ServiceAlertLibrary.agencyAndId(serviceAlert.getAgencyId(), serviceAlert.getServiceAlertId());
-    	ServiceAlertRecord existingServiceAlert = _cache.putServiceAlert(id, serviceAlert);
+		ServiceAlertRecord existingServiceAlert = _cache.putServiceAlert(id, serviceAlert);
 		updateReferences(existingServiceAlert, serviceAlert);
 	}
 
 	private void updateReferences(ServiceAlertRecord existingServiceAlert,
-      ServiceAlertRecord serviceAlert) {
+								  ServiceAlertRecord serviceAlert) {
 
 		updateReferences(existingServiceAlert, serviceAlert,
 				_cache.getServiceAlertIdsByServiceAlertAgencyId(),
@@ -388,8 +434,8 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 	}
 
 	private <T> void updateReferences(ServiceAlertRecord existingServiceAlert,
-			ServiceAlertRecord serviceAlert, Map<T, Set<AgencyAndId>> map,
-			AffectsKeyFactory<T> affectsKeyFactory) {
+									  ServiceAlertRecord serviceAlert, Map<T, Set<AgencyAndId>> map,
+									  AffectsKeyFactory<T> affectsKeyFactory) {
 
 		Set<T> existingEffects = Collections.emptySet();
 		if (existingServiceAlert != null) {
@@ -409,32 +455,27 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 			ids.remove(id);
 			if (ids.isEmpty())
 				map.remove(existingEffect);
-			}
+		}
 
 		for (T newEffect : newEffects) {
 			if (existingEffects.contains(newEffect))
 				continue;
-      		AgencyAndId id = ServiceAlertLibrary.agencyAndId(serviceAlert.getAgencyId(), serviceAlert.getServiceAlertId());
+			AgencyAndId id = ServiceAlertLibrary.agencyAndId(serviceAlert.getAgencyId(), serviceAlert.getServiceAlertId());
 			Set<AgencyAndId> ids = map.get(newEffect);
 			if (ids == null) {
 				ids = new HashSet<AgencyAndId>();
 				map.put(newEffect, ids);
 			}
-				ids.add(id);
+			ids.add(id);
 		}
 	}
 
-	private synchronized <T> void getServiceAlertIdsForKey(
+	private <T> void getServiceAlertIdsForKey(
 			Map<T, Set<AgencyAndId>> serviceAlertIdsByKey, T key,
 			Collection<AgencyAndId> matches) {
-		if (serviceAlertIdsByKey != null) {
-			Set<AgencyAndId> ids = serviceAlertIdsByKey.get(key);
-			if (ids != null) {
-				// copy to guard against changes
-				Set<AgencyAndId> copyOfIds = new HashSet<>(ids);
-				matches.addAll(copyOfIds);
-			}
-		}
+		Set<AgencyAndId> ids = serviceAlertIdsByKey.get(key);
+		if (ids != null)
+			matches.addAll(ids);
 	}
 
 	private List<ServiceAlertRecord> getServiceAlertIdsAsObjects(
@@ -469,46 +510,46 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 	}
 
 	private AffectsType getAffectsType(String agencyId, String routeId,
-			String directionId, String tripId, String stopId) {
+									   String directionId, String tripId, String stopId) {
 		int count = getNonNullCount(agencyId, routeId, directionId, tripId, stopId);
 		switch (count) {
-		case 0: {
-			_log.warn("no arguments specified in affects clause");
-			break;
-		}
-		case 1: {
-			if (agencyId != null) {
-				return AffectsType.AGENCY;
+			case 0: {
+				_log.warn("no arguments specified in affects clause");
+				break;
 			}
-			if (routeId != null) {
-				return AffectsType.ROUTE;
+			case 1: {
+				if (agencyId != null) {
+					return AffectsType.AGENCY;
+				}
+				if (routeId != null) {
+					return AffectsType.ROUTE;
+				}
+				if (tripId != null) {
+					return AffectsType.TRIP;
+				}
+				if (stopId != null) {
+					return AffectsType.STOP;
+				}
+				break;
 			}
-			if (tripId != null) {
-				return AffectsType.TRIP;
+			case 2: {
+				if (routeId != null && directionId != null) {
+					return AffectsType.ROUTE_DIRECTION;
+				}
+				if (routeId != null && stopId != null) {
+					return AffectsType.ROUTE_STOP;
+				}
+				if (tripId != null && stopId != null) {
+					return AffectsType.TRIP_STOP;
+				}
+				break;
 			}
-			if (stopId != null) {
-				return AffectsType.STOP;
+			case 3: {
+				if (routeId != null && directionId != null && stopId != null) {
+					return AffectsType.ROUTE_DIRECTION_STOP;
+				}
+				break;
 			}
-			break;
-		}
-		case 2: {
-			if (routeId != null && directionId != null) {
-				return AffectsType.ROUTE_DIRECTION;
-			}
-			if (routeId != null && stopId != null) {
-				return AffectsType.ROUTE_STOP;
-			}
-			if (tripId != null && stopId != null) {
-				return AffectsType.TRIP_STOP;
-			}
-			break;
-		}
-		case 3: {
-			if (routeId != null && directionId != null && stopId != null) {
-				return AffectsType.ROUTE_DIRECTION_STOP;
-			}
-			break;
-		}
 		}
 		_log.warn("unsupported affects clause: agencyId=" + agencyId + " routeId="
 				+ routeId + " directionId=" + directionId + " tripId=" + tripId
@@ -531,16 +572,12 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 	 ****/
 
 	@Override
-	public synchronized void cleanup() {
-		_persister.deleteOrphans();
-	}
-
-	@Override
 	public synchronized void loadServiceAlerts() {
-	  _cache.clear(); //we need to clear the cache in case records were deleted
+
+		_cache.clear(); //we need to clear the cache in case records were deleted
 		List<ServiceAlertRecord> alerts = _persister.getAlerts();
-		_log.debug("Loaded " + alerts.size() + " service alerts from DB");
-		try {			
+		_log.info("Loaded " + alerts.size() + " service alerts from DB");
+		try {
 			for (ServiceAlertRecord serviceAlert : alerts) {
 				updateReferences(serviceAlert);
 			}
@@ -548,7 +585,7 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 					+ _cache.getServiceAlertIdsByAgencyId().size() + " agency alerts, "
 					+ _cache.getServiceAlertIdsByRouteAndStop().size() + " route and stop alerts, "
 					+ _cache.getServiceAlertIdsByRouteId().size() + " route alerts, and "
-					+ _cache.getServiceAlerts().size() + " distinct alerts");
+					+ _cache.getServiceAlerts().size() + " total alerts");
 
 
 		} catch (Exception ex) {
@@ -559,13 +596,13 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 	// this is admittedly slow performing, but it is only called on an update
 	// of a single service alert
 	private synchronized void saveDBServiceAlerts(ServiceAlertRecord alert, Long lastModified) {
-          if (lastModified == null) lastModified = SystemTime.currentTimeMillis();
-          alert.setModifiedTime(lastModified); // we need to assume its changed, as we don't track the affects clause
-          ServiceAlertRecord persistedServiceAlertRecord = _persister.getServiceAlertRecordByAlertId(alert.getAgencyId(), alert.getServiceAlertId());
-          if(persistedServiceAlertRecord != null)
-              alert.setId(persistedServiceAlertRecord.getId());
-          _log.debug("Saving Service Alert to DataBase:" + alert.getServiceAlertId());
-          _persister.saveOrUpdate(alert);
+		if (lastModified == null) lastModified = SystemTime.currentTimeMillis();
+		alert.setModifiedTime(lastModified); // we need to assume its changed, as we don't track the affects clause
+		ServiceAlertRecord persistedServiceAlertRecord = _persister.getServiceAlertRecordByAlertId(alert.getAgencyId(), alert.getServiceAlertId());
+		if(persistedServiceAlertRecord != null)
+			alert.setId(persistedServiceAlertRecord.getId());
+		_log.debug("Saving Service Alert to DataBase:" + alert.getServiceAlertId());
+		_persister.saveOrUpdate(alert);
 	}
 
 	private synchronized void saveDBServiceAlerts(List<ServiceAlertRecord> alerts, Long lastModified) {
@@ -585,7 +622,7 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 	 * @return
 	 */
 	private ServiceAlertRecord getServiceAlertRecordByAlertId(String agencyId, String serviceAlertId) {
-	  return _persister.getServiceAlertRecordByAlertId(agencyId, serviceAlertId);
+		return _persister.getServiceAlertRecordByAlertId(agencyId, serviceAlertId);
 	}
 
 }

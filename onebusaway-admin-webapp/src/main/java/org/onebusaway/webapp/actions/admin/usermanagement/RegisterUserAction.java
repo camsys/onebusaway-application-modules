@@ -25,7 +25,7 @@ import java.util.List;
 
 
 /**
- * Creates a user in the database. 
+ * Creates a user in the database.
  * @author abelsare
  *
  */
@@ -37,9 +37,9 @@ public class RegisterUserAction extends OneBusAwayNYCAdminActionSupport {
 	private String password;
 	private boolean admin;
 	private String role;
-	
+
 	private UserManagementService userManagementService;
-	
+
 	/**
 	 * Creates a new user in the system.
 	 * @return success message
@@ -48,7 +48,7 @@ public class RegisterUserAction extends OneBusAwayNYCAdminActionSupport {
 		boolean valid = validateFields();
 		if(valid) {
 			boolean success = userManagementService.createUser(username, password, role);
-			
+
 			if(success) {
 				addActionMessage("User '" +username + "' created successfully");
 				return SUCCESS;
@@ -56,20 +56,20 @@ public class RegisterUserAction extends OneBusAwayNYCAdminActionSupport {
 				addActionError("Error creating user : '" +username + "'");
 			}
 		}
-		
+
 		return ERROR;
 
 	}
-	
-	
+
+
 	private boolean validateFields() {
 		boolean valid = true;
-		
+
 		if(StringUtils.isBlank(username)) {
 			valid = false;
 			addFieldError("username", "User name is required");
 		}
-		
+
 		if(StringUtils.isBlank(password)) {
 			valid = false;
 			addFieldError("password", "Password is required");
@@ -80,10 +80,10 @@ public class RegisterUserAction extends OneBusAwayNYCAdminActionSupport {
 			valid = false;
 			addFieldError("role", "Role is required");
 		}
-		
+
 		return valid;
 	}
-	
+
 	public void init() {
 		createUser();
 	}

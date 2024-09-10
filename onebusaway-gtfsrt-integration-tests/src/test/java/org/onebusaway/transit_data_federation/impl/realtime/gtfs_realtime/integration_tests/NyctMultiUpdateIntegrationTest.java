@@ -15,14 +15,12 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.integration_tests;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.transit_data_federation.impl.realtime.BlockLocationServiceImpl;
 import org.onebusaway.transit_data_federation.impl.realtime.TestVehicleLocationListener;
 import org.onebusaway.transit_data_federation.impl.realtime.VehicleStatusServiceImpl;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.AbstractGtfsRealtimeIntegrationTest;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeCancelServiceImpl;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
