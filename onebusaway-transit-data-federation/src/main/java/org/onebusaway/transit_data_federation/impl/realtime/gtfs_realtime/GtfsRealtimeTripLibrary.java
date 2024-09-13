@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.collections.MappingLibrary;
@@ -73,6 +74,10 @@ public class GtfsRealtimeTripLibrary {
 
   private static final Logger _log = LoggerFactory.getLogger(GtfsRealtimeTripLibrary.class);
 
+  private static Pattern _pattern = Pattern.compile("^(-{0,1}\\d+):(\\d{2}):(\\d{2})$");
+  private GtfsRealtimeEntitySource _entitySource;
+  private GtfsRealtimeServiceSource _serviceSource;
+
   private EntityIdService _entityIdService;
 
   private BlockCalendarService _blockCalendarService;
@@ -82,6 +87,8 @@ public class GtfsRealtimeTripLibrary {
   private TransitGraphDao _dao;
 
   private String[] _agencyIds = {};
+
+  private boolean _filterUnassigned = false;
   void setAgencyIds(List<String> agencies) {
     if (agencies != null) {
       _agencyIds = agencies.toArray(_agencyIds);
@@ -93,6 +100,14 @@ public class GtfsRealtimeTripLibrary {
   private boolean _stripAgencyPrefix = true;
   public void setStripAgencyPrefix(boolean remove) {
     _stripAgencyPrefix = remove;
+  }
+
+  public void setServiceSource(GtfsRealtimeServiceSource serviceSource) {
+    _serviceSource = serviceSource;
+  }
+
+  public void setFilterUnassigned(boolean flag) {
+    _filterUnassigned = flag;
   }
 
   /**
@@ -113,8 +128,6 @@ public class GtfsRealtimeTripLibrary {
   private boolean _scheduleAdherenceFromLocation = false;
 
   private boolean _useLabelAsVehicleId = false;
-
-  private GtfsRealtimeEntitySource _entitySource;
 
   public void setEntityIdService(EntityIdService entityIdService) {
     _entityIdService = entityIdService;

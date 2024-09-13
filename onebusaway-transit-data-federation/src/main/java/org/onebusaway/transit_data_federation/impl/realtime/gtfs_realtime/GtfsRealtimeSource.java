@@ -38,6 +38,7 @@ import javax.annotation.PreDestroy;
 
 import com.google.transit.realtime.GtfsRealtime;
 import org.apache.commons.lang.StringUtils;
+import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -51,15 +52,24 @@ import org.onebusaway.alerts.impl.ServiceAlertRecord;
 import org.onebusaway.alerts.impl.ServiceAlertSituationConsequenceClause;
 import org.onebusaway.alerts.impl.ServiceAlertTimeRange;
 import org.onebusaway.alerts.impl.ServiceAlertsSituationAffectsClause;
+import org.onebusaway.transit_data_federation.impl.RefreshableResources;
+import org.onebusaway.transit_data_federation.impl.RouteReplacementServiceImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntriesFactory;
 import org.onebusaway.transit_data_federation.services.AgencyService;
 import org.onebusaway.transit_data_federation.services.ConsolidatedStopsService;
+import org.onebusaway.transit_data_federation.services.RouteReplacementService;
+import org.onebusaway.transit_data_federation.services.StopSwapService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
+import org.onebusaway.transit_data_federation.services.blocks.DynamicBlockIndexService;
+import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
 import org.onebusaway.transit_data_federation.services.realtime.BlockLocation;
 import org.onebusaway.transit_data_federation.services.realtime.BlockLocationService;
 import org.onebusaway.alerts.service.ServiceAlerts;
 import org.onebusaway.alerts.service.ServiceAlerts.ServiceAlert;
 import org.onebusaway.alerts.service.ServiceAlertsService;
+import org.onebusaway.transit_data_federation.services.shapes.ShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,6 +88,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 
@@ -143,6 +154,17 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
 
   private String filterRegexString;
 
+  private GtfsRealtimeCancelService _cancelService;
+
+  private List<AgencyAndId> _routeIdsToCancel = null;
+
+  // minimize operations while bundle is changing as state is inconsistent
+  private boolean isBundleReady = false;
+
+  private List<String> _scheduleTripIdRegexs = null;
+
+  private List<String> _realtimeTripIdRegexes = null;
+
   /**
    * We keep track of vehicle location updates, only pushing them to the
    * underling {@link VehicleLocationListener} when they've been updated, since
@@ -180,6 +202,17 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
   private boolean _useLabelAsId = false;
 
   private boolean _ignoreAlertTripId = false;
+
+  private GtfsRealtimeServiceSource _serviceSource  = new GtfsRealtimeServiceSource();
+
+  // a special case of some specific integration - drop unassigned trips
+  private boolean _filterUnassigned = false;
+
+  // allow trip_ids to match fuzzily instead of strictly
+  private boolean _enableFuzzyMatching = false;
+
+  // this is a change from the default, but is much safer
+  private boolean _validateCurrentTime = false;
 
   @Autowired
   public void setAgencyService(AgencyService agencyService) {
@@ -290,6 +323,10 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
     _headersMap = headersMap;
   }
 
+  public void setFilterUnassigned(boolean flag) {
+    _filterUnassigned = flag;
+  }
+
   public void setAlertAgencyIdMap(Map alertAgencyIdMap) {
     _alertAgencyIdMap = alertAgencyIdMap;
   }
@@ -354,6 +391,17 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
     _useLabelAsId = useLabelAsId;
   }
 
+  public void bundleSwapListener() {
+    _log.info("bundleSwapListener invoked");
+    if (_entitySource != null && _entitySource.getRealtimeFuzzyMatcher() != null) {
+      _entitySource.getRealtimeFuzzyMatcher().reset();
+    }
+    // force cache update
+    if (_serviceSource.getBlockFinder() != null) {
+      _serviceSource.getBlockFinder().reset();
+    }
+  }
+
   /**
    * if the alerts feed contains trip ids ignore them.  This helps
    * surface the alerts inside OBA.
@@ -365,6 +413,118 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
 
   public GtfsRealtimeTripLibrary getGtfsRealtimeTripLibrary() {
     return _tripsLibrary;
+  }
+
+  @Refreshable(dependsOn = RefreshableResources.MARK_STOP_BUNDLE_SWAP)
+  public void markBundleReady() {
+    isBundleReady = true;
+    bundleSwapListener();
+  }
+
+  @Autowired
+  public void setGtfsRealtimeCancelService(GtfsRealtimeCancelService service) {
+    _cancelService = service;
+  }
+
+  public void setRouteIdsToCancel(List<String> routeAgencyIds) {
+    if (routeAgencyIds != null) {
+      _routeIdsToCancel = new ArrayList<>();
+      for (String routeAgencyId : routeAgencyIds) {
+        try {
+          _routeIdsToCancel.add(AgencyAndId.convertFromString(routeAgencyId));
+        } catch (IllegalStateException ise) {
+          _log.error("invalid routeId {}", ise);
+        }
+      }
+    }
+  }
+
+  @Autowired
+  @Qualifier("dynamicBlockIndexServiceImpl")
+  public void setDynamicBlockIndexService(DynamicBlockIndexService dynamicBlockIndexService) {
+    _serviceSource.setDynamicBlockIndexService(dynamicBlockIndexService);
+  }
+
+  @Autowired
+  public void setStopTimeEntriesFactory(StopTimeEntriesFactory stopTimeEntriesFactory) {
+    _serviceSource.setStopTimeEntriesFactory(stopTimeEntriesFactory);
+  }
+
+  @Autowired
+  public void setNarrativeService(NarrativeService service) {
+    _serviceSource.setNarrativeService(service);
+  }
+
+  @Autowired
+  public void setShapePointService(ShapePointService service) {
+    _serviceSource.setShapePointService(service);
+  }
+
+  @Autowired
+  public void setStopSwapService(StopSwapService service) {
+    _serviceSource.setStopSwapServce(service);
+  }
+
+  @Autowired
+  public void setBlockIndexService(BlockIndexService service) {
+    _serviceSource.setBlockIndexService(service);
+  }
+
+  @PostConstruct
+  public void start() {
+    if (_agencyIds.isEmpty()) {
+      _log.info("no agency ids specified for GtfsRealtimeSource, so defaulting to full agency id set");
+      List<String> agencyIds = _serviceSource.getAgencyService().getAllAgencyIds();
+      _agencyIds.addAll(agencyIds);
+      if (_agencyIds.size() > 3) {
+        _log.warn("The default agency id set is quite large (n="
+                + _agencyIds.size()
+                + ").  You might consider specifying the applicable agencies for your GtfsRealtimeSource.");
+      }
+    }
+
+    _entitySource.setAgencyIds(_agencyIds);
+    _entitySource.setTripIdRegexs(_scheduleTripIdRegexs);
+    _entitySource.setConsolidatedStopService(_consolidatedStopsService);
+
+    if (_enableFuzzyMatching) {
+      RealtimeFuzzyMatcher fuzzyMatcher = new RealtimeFuzzyMatcher(_entitySource.getTransitGraphDao(),
+              _serviceSource.getCalendarService());
+      fuzzyMatcher.setRealtimeTripIdRegexes(_realtimeTripIdRegexes);
+      fuzzyMatcher.setScheduleTripIdRegexs(_scheduleTripIdRegexs);
+      fuzzyMatcher.setAgencies(new HashSet<>(_agencyIds));
+
+      _entitySource.setRealtimeFuzzyMatcher(fuzzyMatcher);
+    }
+
+
+    _tripsLibrary = new GtfsRealtimeTripLibrary();
+    _tripsLibrary.setEntitySource(_entitySource);
+    _tripsLibrary.setServiceSource(_serviceSource);
+    if (_stopModificationStrategy != null) {
+      _tripsLibrary.setStopModificationStrategy(_stopModificationStrategy);
+    }
+    _tripsLibrary.setScheduleAdherenceFromLocation(_scheduleAdherenceFromLocation);
+    _tripsLibrary.setUseLabelAsVehicleId(_useLabelAsId);
+    _tripsLibrary.setValidateCurrentTime(_validateCurrentTime);
+
+    _tripsLibrary.setFilterUnassigned(_filterUnassigned);
+    DuplicatedTripServiceImpl duplicatedTripService = new DuplicatedTripServiceImpl();
+    duplicatedTripService.setGtfsRealtimeEntitySource(_entitySource);
+    _serviceSource.setDuplicatedTripService(duplicatedTripService);
+    DynamicTripBuilder tripBuilder = new DynamicTripBuilder();
+    tripBuilder.setServiceSource(_serviceSource);
+    tripBuilder.setEntityource(_entitySource);
+    _serviceSource.setDynamicTripBuilder(tripBuilder);
+
+
+    _alertLibrary = new GtfsRealtimeAlertLibrary();
+    _alertLibrary.setEntitySource(_entitySource);
+
+    if (_refreshInterval > 0) {
+      _refreshTask = _scheduledExecutorService.scheduleAtFixedRate(
+              new RefreshTask(), 0, _refreshInterval, TimeUnit.SECONDS);
+    }
   }
 
   @EventListener
@@ -1025,6 +1185,13 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
         urlConnection.setRequestProperty(headerEntry.getKey(), headerEntry.getValue());
       }
     }
+  }
+
+
+  public void setRouteRemap(Map<String, String> remaps) {
+    RouteReplacementService routeReplacementService = new RouteReplacementServiceImpl();
+    routeReplacementService.putAll(remaps);
+    _entitySource.setRouteReplacementService(routeReplacementService);
   }
 
 
