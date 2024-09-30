@@ -176,7 +176,7 @@
    <dependency>
    		<groupId>com.google.code.gson</groupId>
    		<artifactId>gson</artifactId>
-   		<version>1.7.1</version>
+   		<version>${gson.version}</version>
    		<type>jar</type>
    		<scope>compile</scope>
    </dependency>
