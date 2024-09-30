@@ -111,7 +111,7 @@ public class ServiceAlertAffectsAction extends ActionSupport implements
 
     ServiceAlertBean alert = null;
     try {
-      alert = _alerts.getServiceAlertForId(_id);
+      alert = _transitDataService.getServiceAlertForId(_id);
     } catch (RuntimeException e) {
       _log.error("Error retrieving Service Alerts", e);
       throw e;
@@ -135,7 +135,7 @@ public class ServiceAlertAffectsAction extends ActionSupport implements
     allAffects.set(_index, _model);
     
     try {
-      _alerts.updateServiceAlert(_model.getAgencyId(), alert);
+      _transitDataService.updateServiceAlert(alert);
     } catch (RuntimeException e) {
       _log.error("Error updating Service Alert Affects clause", e);
       throw e;
@@ -153,7 +153,7 @@ public class ServiceAlertAffectsAction extends ActionSupport implements
     ServiceAlertBean alert = null;
     
     try {
-      alert = _alerts.getServiceAlertForId(_id);
+      alert = _transitDataService.getServiceAlertForId(_id);
     } catch (RuntimeException e) {
       _log.error("Error retrieving Service Alert", e);
       throw e;
@@ -171,7 +171,7 @@ public class ServiceAlertAffectsAction extends ActionSupport implements
     allAffects.remove(_index);
     
     try {
-      _alerts.updateServiceAlert(_model.getAgencyId(), alert);
+      _transitDataService.updateServiceAlert(alert);
     } catch (RuntimeException e) {
       _log.error("Error removing Service Alert Affects clause", e);
       throw e;

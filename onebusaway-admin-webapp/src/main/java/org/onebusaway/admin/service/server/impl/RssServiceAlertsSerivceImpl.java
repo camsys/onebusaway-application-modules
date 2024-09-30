@@ -357,6 +357,85 @@ public class RssServiceAlertsSerivceImpl implements RssServiceAlertsService {
                 _log.info("PollRssTask.run exit in " + (end - start) + "ms");
             }
         }
+        // this code borrowed from AlertsForAgencyAction
+        private void fillFeedMessage(FeedMessage.Builder feedEntity,
+                                     Map<String, ServiceAlertBean> wmataAlertCache) {
+
+            List<ServiceAlertBean> alerts = new ArrayList<ServiceAlertBean>();
+            for (Entry<String, ServiceAlertBean> beanEntry: wmataAlertCache.entrySet()) {
+                alerts.add(beanEntry.getValue());
+            }
+            ListBean<ServiceAlertBean> alertsBean = new ListBean<ServiceAlertBean>();
+            alertsBean.setList(alerts);
+            fillAlert(feedEntity, alertsBean);
+        }
+
+        private void fillAlert(FeedMessage.Builder feed, ListBean<ServiceAlertBean> alerts) {
+            for (ServiceAlertBean serviceAlert : alerts.getList()) {
+                FeedEntity.Builder entity = feed.addEntityBuilder();
+                entity.setId(serviceAlert.getId());
+                Alert.Builder alert = entity.getAlertBuilder();
+
+
+                fillTranslations(serviceAlert.getSummaries(),
+                        alert.getHeaderTextBuilder());
+                fillTranslations(serviceAlert.getDescriptions(),
+                        alert.getDescriptionTextBuilder());
+
+                if (serviceAlert.getActiveWindows() != null) {
+                    for (TimeRangeBean range : serviceAlert.getActiveWindows()) {
+                        TimeRange.Builder timeRange = alert.addActivePeriodBuilder();
+                        if (range.getFrom() != 0) {
+                            timeRange.setStart(range.getFrom() / 1000);
+                        }
+                        if (range.getTo() != 0) {
+                            timeRange.setEnd(range.getTo() / 1000);
+                        }
+                    }
+                }
+
+                if (serviceAlert.getAllAffects() != null) {
+                    for (SituationAffectsBean affects : serviceAlert.getAllAffects()) {
+                        EntitySelector.Builder entitySelector = alert.addInformedEntityBuilder();
+                        if (affects.getAgencyId() != null) {
+                            entitySelector.setAgencyId(affects.getAgencyId());
+                        }
+                        if (affects.getRouteId() != null) {
+                            entitySelector.setRouteId(normalizeId(affects.getRouteId()));
+                        }
+                        if (affects.getTripId() != null) {
+                            TripDescriptor.Builder trip = entitySelector.getTripBuilder();
+                            trip.setTripId(normalizeId(affects.getTripId()));
+                            entitySelector.setTrip(trip);
+                        }
+                        if (affects.getStopId() != null) {
+                            entitySelector.setStopId(normalizeId(affects.getStopId()));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void fillTranslations(List<NaturalLanguageStringBean> input,
+                                  TranslatedString.Builder output) {
+        for (NaturalLanguageStringBean nls : input) {
+            TranslatedString.Translation.Builder translation = output.addTranslationBuilder();
+            translation.setText(nls.getValue());
+            if (nls.getLang() != null) {
+                translation.setLanguage(nls.getLang());
+            }
+        }
+    }
+
+    protected String normalizeId(String id) {
+        if (_removeAgencyIds) {
+            int index = id.indexOf('_');
+            if (index != -1) {
+                id = id.substring(index + 1);
+            }
+        }
+        return id;
     }
     private class RefreshDataTask implements Runnable {
 

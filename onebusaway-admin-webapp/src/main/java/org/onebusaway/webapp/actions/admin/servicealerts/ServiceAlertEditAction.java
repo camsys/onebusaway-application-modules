@@ -161,11 +161,6 @@ public class ServiceAlertEditAction extends OneBusAwayNYCAdminActionSupport impl
     _transitDataService = transitDataService;
   }
 
-    @Autowired
-    public void setAlertsService(ConsoleServiceAlertsService service) {
-        _alerts = service;
-    }
-
   public void setSummary(String summary) {
     List<NaturalLanguageStringBean> summaries = _model.getSummaries();
     if (summaries == null) {
@@ -405,7 +400,7 @@ public class ServiceAlertEditAction extends OneBusAwayNYCAdminActionSupport impl
   public String execute() {
 	 try {
 		  if (_alertId != null && !_alertId.trim().isEmpty()){
-	    	  _model = _alerts.getServiceAlertForId(_alertId);
+	    	  _model = _transitDataService.getServiceAlertForId(_alertId);
 		      if(_agencyId == null){
 		      	_agencyId = ServiceAlertsUtil.getAgencyFromAlertId(_alertId);
 		      }
@@ -422,7 +417,7 @@ public class ServiceAlertEditAction extends OneBusAwayNYCAdminActionSupport impl
 		  for (int i=0; i<_agencies.size(); ++i) {
 	        AgencyWithCoverageBean agency = _agencies.get(i);
 	        String agencyId = agency.getAgency().getId();
-	        ListBean<ServiceAlertRecordBean> result = _alerts.getAllServiceAlertRecordsForAgencyId(agencyId);
+	        ListBean<ServiceAlertRecordBean> result = _transitDataService.getAllServiceAlertRecordsForAgencyId(agencyId);
 	        for(ServiceAlertRecordBean serviceAlertRecord : result.getList())
 	        {
 	        	if(Boolean.TRUE.equals(serviceAlertRecord.isCopy())){
@@ -461,7 +456,7 @@ public class ServiceAlertEditAction extends OneBusAwayNYCAdminActionSupport impl
   
   public String deleteAlert() {
     try {
-      _alerts.removeServiceAlert(AgencyAndId.convertFromString(_alertId));
+        _transitDataService.removeServiceAlert(_alertId);
     } catch (RuntimeException e) {
       _log.error("Error deleting service alert", e);
       throw e;
@@ -483,7 +478,7 @@ public class ServiceAlertEditAction extends OneBusAwayNYCAdminActionSupport impl
       try {
         _log.info("calling tweet....");
         response = _notificationService.tweet(
-        	    TwitterServiceImpl.toTweet(_alerts.getServiceAlertForId(_alertId),
+        	    TwitterServiceImpl.toTweet(_transitDataService.getServiceAlertForId(_alertId),
                         _notificationService.getNotificationStrategy()));
         _log.info("tweet succeeded with response=" + response);
         _twitterResult = response;

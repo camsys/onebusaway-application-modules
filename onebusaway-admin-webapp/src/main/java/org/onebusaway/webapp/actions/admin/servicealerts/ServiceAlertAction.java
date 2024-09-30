@@ -39,6 +39,7 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationConsequenceBean;
 import org.onebusaway.transit_data.model.service_alerts.TimeRangeBean;
+import org.onebusaway.transit_data.services.TransitDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +75,8 @@ public class ServiceAlertAction extends ActionSupport implements
   
   private static Logger _log = LoggerFactory.getLogger(ServiceAlertsAction.class);
 
+  private TransitDataService _transitDataService;
+
   private ConsoleServiceAlertsService _alerts;
 
   private ServiceAlertBean _model;
@@ -106,8 +109,8 @@ public class ServiceAlertAction extends ActionSupport implements
   private String link;
 
   @Autowired
-  public void setAlertsService(ConsoleServiceAlertsService service) {
-    _alerts = service;
+  public void setTransitDataService(TransitDataService transitDataService) {
+    _transitDataService = transitDataService;
   }
 
   @Override
@@ -442,7 +445,7 @@ public String getStartDate() {
   public void prepare() throws Exception {
     try {
       if (_alertId != null && !_alertId.trim().isEmpty()) {
-       	_model = _alerts.getServiceAlertForId(_alertId);
+       	_model = _transitDataService.getServiceAlertForId(_alertId);
        	_model.setAllAffects(null);
       } else {
         _model = new ServiceAlertBean();
@@ -476,7 +479,7 @@ public String getStartDate() {
   
     try {
       if (_model.getId() != null && !_model.getId().trim().isEmpty())
-        _model = _alerts.getServiceAlertForId(_model.getId());
+        _model = _transitDataService.getServiceAlertForId(_model.getId());
     } catch (RuntimeException e) {
       _log.error("Unable to retrieve Service Alerts for agency Id", e);
       throw e;
@@ -504,13 +507,13 @@ public String getStartDate() {
       if (_model.getId() == null || _model.getId().trim().isEmpty() ) {
     	 _model.setSource(EDITOR_SOURCE);
         _model.combineAffectsIds();
-    	 _model = _alerts.createServiceAlert(_agencyId, _model);
+    	 _model = _transitDataService.createServiceAlert(_agencyId, _model);
       }
       else {
         // if we've edited a service alert from some other agency, we now own it
         _model.setSource(EDITOR_SOURCE);
         _model.combineAffectsIds();
-        _alerts.updateServiceAlert(_agencyId, _model, isFavorite());
+        _transitDataService.updateServiceAlert(_model);
       }
     } catch (RuntimeException e) {
       _log.error("Error creating or updating Service Alert", e);
@@ -532,7 +535,7 @@ public String getStartDate() {
     	// Set End Date in past to make inactive
     	Date endDate = new Date(20000000L);
 	    setEndDate(endDate);
-	    _alerts.copyServiceAlert(_agencyId, _model);
+      _transitDataService.copyServiceAlert(_agencyId, _model);
     } catch (RuntimeException e) {
         _log.error("Error creating Service Alert Favorite", e);
         throw e;
@@ -546,7 +549,7 @@ public String getStartDate() {
       return INPUT;
     }
     try {
-      _model = _alerts.getServiceAlertForId(_model.getId());
+      _model = _transitDataService.getServiceAlertForId(_model.getId());
   
       List<SituationAffectsBean> allAffects = _model.getAllAffects();
       if (allAffects == null) {
@@ -554,7 +557,7 @@ public String getStartDate() {
         _model.setAllAffects(allAffects);
       }
       allAffects.add(new SituationAffectsBean());
-      _alerts.updateServiceAlert(_agencyId, _model);
+      _transitDataService.updateServiceAlert(_model);
     } catch (RuntimeException e) {
       _log.error("Error updating Service Alert Affects clause", e);
       throw e;
@@ -567,7 +570,7 @@ public String getStartDate() {
 
     try {
       if (_model.getId() != null) {
-        _alerts.removeServiceAlert(new AgencyAndId(_agencyId, _model.getId()));
+        _transitDataService.removeServiceAlert(_model.getId());
       }
     } catch (RuntimeException e) {
       _log.error("Error removing Service Alert", e);
