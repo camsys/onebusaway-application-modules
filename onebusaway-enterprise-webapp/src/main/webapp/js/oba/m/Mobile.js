@@ -24,12 +24,12 @@ OBA.Mobile = (function() {
 	var typeField = null;
 	var refreshBar = null;
 	var defaultTimeout = OBA.Config.refreshInterval;
-	
+
 	function addAutocompleteBehavior() {
-		
+
 		var searchForm = jQuery("#searchPanel form");
 		var searchInput = jQuery("#searchPanel form input[type=text]");
-		
+
 		searchInput.autocomplete({
 			source: "../" + OBA.Config.autocompleteUrl,
 			select: function(event, ui) {
@@ -39,14 +39,14 @@ OBA.Mobile = (function() {
 		        }
 		    }
 		});
-		
+
 		// Close the autocomplete list when the form is submitted
 		searchForm.on("submit", function() {
 			searchInput.autocomplete("close");
 			return true;
 		});
 	}
-	
+
 	function addRefreshBehavior() {
 		// refresh button logic
 		refreshBar = jQuery("#refresh")
@@ -80,13 +80,13 @@ OBA.Mobile = (function() {
 					});
 			});
 		}
-				
+
 		// scrolling/fixed refresh bar logic
 		var contentDiv = jQuery("#content")
 							.css("padding-top", refreshBar.height() * 0.1);
 
 		var topLimit = contentDiv.offset().top + (refreshBar.height() * 0.25) - 20;
-		
+
 		jQuery("body")
 					.css("position", "relative");
 
@@ -97,39 +97,39 @@ OBA.Mobile = (function() {
 			if(top < topLimit) {
 				top = topLimit;
 			}
-			
+
 			// refreshBar.css("top", top + 3);
 		};
 		repositionRefreshBar();
-		
+
 		theWindow.scroll(repositionRefreshBar)
 					.on("resize", repositionRefreshBar);
-		
+
 		setTimeout(refreshContent, defaultTimeout);
 	}
-	
+
 	function initLocationUI() {
 		jQuery("#submitButton").removeClass("loading");
-		
+
 		var searchPanelForm = jQuery("#searchPanel form");
-		
+
 		var splitButton = jQuery("<div></div>").attr("id", "nearby-button-bar");
-		
+
 		var nearbyStopsBtn = jQuery("<div></div>").attr("id", "nearby-stops-button")
 			.attr("aria-label", "Find nearby stops using GPS").attr("tabindex", 0)
 			.addClass("nearby-button").appendTo(splitButton);
-		
+
 		var nearbyRoutesBtn = jQuery("<div></div>").attr("id", "nearby-routes-button")
 			.attr("aria-label", "Find nearby routes using GPS").attr("tabindex", 0)
 			.addClass("nearby-button").appendTo(splitButton);
-		
+
 		nearbyStopsBtn.append(jQuery("<div></div>").attr("id", "nearby-stops-button-icon")
 				.append(jQuery("<span></span>").addClass("nearby-text").text("Nearby Stops")));
 		nearbyRoutesBtn.append(jQuery("<div></div>").attr("id", "nearby-routes-button-icon")
 				.append(jQuery("<span></span>").addClass("nearby-text").text("Nearby Routes")));
-		
+
 		searchPanelForm.before(splitButton);
-				
+
 		$( ".nearby-button" ).mousedown(function() {
 			// change other button to mouse up
 			if (jQuery(this).attr("id") === "nearby-stops-button") {
@@ -139,7 +139,7 @@ OBA.Mobile = (function() {
 			}
 			jQuery(this).addClass("down");
 		});
-		
+
 		$( ".nearby-button" ).mouseup(function() {
 			if (jQuery(this).attr("id") === "nearby-stops-button") {
 				typeField.val("stops");
@@ -149,7 +149,7 @@ OBA.Mobile = (function() {
 			queryByLocation();
 		});
 	};
-	
+
 	// event when user turns on location
 	function queryByLocation() {
 		// show "finding location" message button to user while 
@@ -158,28 +158,28 @@ OBA.Mobile = (function() {
 		jQuery(".q").attr("placeholder", "Finding your location...");
 
 		navigator.geolocation.getCurrentPosition(function(location) {
-			
+
 			jQuery(".q").attr("placeholder", "Searching...");
 
 			// update search field
 			if(locationField !== null) {
 				locationField.val(location.coords.latitude + "," + location.coords.longitude);
 			}
-			
+
 			var searchPanelForm = jQuery("#searchPanel form");
-			
+
 			searchPanelForm.find(".q").val("");
 			searchPanelForm.trigger("submit");
-			
+
 		}, function() {
 			alert("Unable to determine your location.");
 			jQuery(".nearby-button").removeClass("down");
 			jQuery("#submitButton").removeClass("loading");
 			jQuery(".q").removeAttr("placeholder");
-			
+
 		});
 	};
-	
+
 	function refreshContent() {
 		refreshBar.find("a").trigger("click");
 		setTimeout(refreshContent, defaultTimeout);
@@ -247,7 +247,9 @@ OBA.Mobile = (function() {
             var h = theWindow.height() - topBarDiv.height()  - 1;
         }
 
-        jQuery("#map").height(h * 0.5);//only use half of that space
+		jQuery("#mainbox").height(h * 0.5);//only use half of that space
+		jQuery("#mainbox").width(w * 0.92); //match refresh button width
+		jQuery("#map").height(h * 0.5);//only use half of that space
 		jQuery("#map").width(w * 0.92); //match refresh button width
     };
 
@@ -340,11 +342,11 @@ OBA.Mobile = (function() {
 				window.location.search = queryString;
 				return;
 			}
-			
+
 			if(navigator.geolocation) {
 				initLocationUI();
-			}			
-			
+			}
+
 			addRefreshBehavior();
 			addAutocompleteBehavior();
 			addMapBehaviour();
