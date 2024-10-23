@@ -7,7 +7,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>onebusaway-application-modules</artifactId>
-  <version>2.5.20-cs-SNAPSHOT</version>
+  <version>2.5.20-cs</version>
   <packaging>pom</packaging>
 
     <name>onebusaway-application-modules</name>
@@ -83,7 +83,7 @@
         <connection>scm:git:git@github.com:camsys/onebusaway-application-modules.git</connection>
         <developerConnection>scm:git:git@github.com:camsys/onebusaway-application-modules.git</developerConnection>
         <url>scm:git:git@github.com:camsys/onebusaway-application-modules</url>
-        <tag>HEAD</tag>
+        <tag>onebusaway-application-modules-2.5.20-cs</tag>
     </scm>
 
     <pluginRepositories>
@@ -458,10 +458,8 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>3.0.0-M3</version>
                     <!-- By default, we exclude anything in the org.onebusaway.integration package from regular unit test -->
-                    <configuration>
-                        <excludes>
-                            <exclude>org/onebusaway/integration/**</exclude>
-                        </excludes>
+		    <configuration>
+			    <skipTests>true</skipTests>
                     </configuration>
                     <executions>
                         <!-- Instead, we add a special integration-test execution that runs any tests in the org.onebusaway.integration
