@@ -17,8 +17,8 @@
 package org.onebusaway.transit_data_federation_webapp.controllers.gtfs_realtime;
 
 import java.io.IOException;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeService;
 import org.springframework.beans.factory.annotation.Autowired;

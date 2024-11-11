@@ -20,7 +20,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.Collection;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.opensymphony.xwork2.ActionInvocation;
 import net.sf.json.JSONArray;

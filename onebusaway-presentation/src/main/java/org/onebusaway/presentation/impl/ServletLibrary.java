@@ -15,7 +15,7 @@
  */
 package org.onebusaway.presentation.impl;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 public class ServletLibrary {
 

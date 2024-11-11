@@ -15,9 +15,9 @@
  */
 package org.onebusaway.users.impl;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 
 import org.onebusaway.everylastlogin.server.LoginManager;
 import org.onebusaway.everylastlogin.server.LoginManagerFactory;

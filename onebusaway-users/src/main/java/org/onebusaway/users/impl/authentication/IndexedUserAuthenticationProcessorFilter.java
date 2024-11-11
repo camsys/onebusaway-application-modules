@@ -15,7 +15,7 @@
  */
 package org.onebusaway.users.impl.authentication;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.onebusaway.users.client.model.UserBean;
 import org.onebusaway.users.model.UserIndex;

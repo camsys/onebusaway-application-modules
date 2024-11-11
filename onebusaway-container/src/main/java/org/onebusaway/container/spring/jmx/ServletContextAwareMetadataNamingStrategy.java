@@ -17,7 +17,7 @@ package org.onebusaway.container.spring.jmx;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.springframework.jmx.export.metadata.JmxAttributeSource;
 import org.springframework.jmx.export.naming.MetadataNamingStrategy;
@@ -68,4 +68,5 @@ public class ServletContextAwareMetadataNamingStrategy extends
     }
     return contextPath;
   }
+
 }

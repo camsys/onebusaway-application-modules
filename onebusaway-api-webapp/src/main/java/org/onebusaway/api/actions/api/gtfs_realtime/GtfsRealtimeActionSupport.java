@@ -38,7 +38,7 @@ import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
 import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 public abstract class GtfsRealtimeActionSupport extends ApiActionSupport {
 

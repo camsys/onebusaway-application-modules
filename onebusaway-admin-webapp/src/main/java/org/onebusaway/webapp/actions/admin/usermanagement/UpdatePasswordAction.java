@@ -15,7 +15,7 @@
  */
 package org.onebusaway.webapp.actions.admin.usermanagement;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.struts2.ServletActionContext;
 import org.apache.struts2.convention.annotation.AllowedMethods;

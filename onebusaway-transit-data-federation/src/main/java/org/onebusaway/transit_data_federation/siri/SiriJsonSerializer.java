@@ -57,7 +57,7 @@ public class SiriJsonSerializer {
   
   private static class CustomValueObjectSerializer extends BeanSerializerBase {
 
-    private String fieldName = null;
+    private String fieldName;
     
     protected CustomValueObjectSerializer(BeanSerializer src, String fieldName) {
       super(src);

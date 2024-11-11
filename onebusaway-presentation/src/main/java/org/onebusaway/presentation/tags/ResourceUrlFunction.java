@@ -17,7 +17,7 @@ package org.onebusaway.presentation.tags;
 
 import java.util.Locale;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.apache.struts2.dispatcher.Dispatcher;
 import org.onebusaway.presentation.services.resources.ResourceService;

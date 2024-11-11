@@ -15,7 +15,7 @@
  */
 package org.onebusaway.presentation.tags;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.apache.struts2.dispatcher.Dispatcher;
 import org.onebusaway.presentation.impl.configuration.DefaultWebappConfigurationSource;

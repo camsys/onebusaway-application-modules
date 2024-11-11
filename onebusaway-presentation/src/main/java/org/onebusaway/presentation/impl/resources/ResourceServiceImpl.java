@@ -41,7 +41,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import com.opensymphony.xwork2.StrutsTextProviderFactory;
 import org.json.JSONObject;
@@ -119,7 +119,7 @@ public class ResourceServiceImpl implements ResourceService {
     _servletContext = servletContext;
     _contextPath = ServletLibrary.getContextPath(_servletContext);
 
-    File tmpDir = (File) _servletContext.getAttribute("javax.servlet.context.tempdir");
+    File tmpDir = (File) _servletContext.getAttribute("jakarta.servlet.context.tempdir");
     if (tmpDir == null) {
       _log.warn("NO ServletContext TEMP DIR!");
       tmpDir = new File(System.getProperty("java.io.tmpdir"));

@@ -47,7 +47,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 /**
  * Implements File operations over Amazon S3.

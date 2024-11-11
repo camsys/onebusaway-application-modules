@@ -43,8 +43,8 @@ import com.google.transit.realtime.GtfsRealtime.TimeRange;
 import com.google.transit.realtime.GtfsRealtime.TranslatedString;
 import com.google.transit.realtime.GtfsRealtime.TranslatedString.Translation;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AlertsForAgencyActionTest {

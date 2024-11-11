@@ -38,7 +38,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 public class BundleRequestServiceImpl implements BundleRequestService, ServletContextAware {
 

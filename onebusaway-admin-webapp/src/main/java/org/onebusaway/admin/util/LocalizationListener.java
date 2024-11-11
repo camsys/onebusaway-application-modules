@@ -15,9 +15,9 @@
  */
 package org.onebusaway.admin.util;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 import com.opensymphony.xwork2.util.GlobalLocalizedTextProvider;
 

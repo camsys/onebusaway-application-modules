@@ -15,7 +15,7 @@
  */
 package org.onebusaway.admin.service.bundle.api;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;

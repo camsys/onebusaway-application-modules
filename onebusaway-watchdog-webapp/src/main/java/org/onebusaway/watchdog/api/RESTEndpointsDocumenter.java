@@ -118,8 +118,8 @@ public class RESTEndpointsDocumenter {
             
             // ignore parameters used to access context
             if ((parameter == Request.class) || 
-                (parameter == javax.servlet.http.HttpServletResponse.class) ||
-                (parameter == javax.servlet.http.HttpServletRequest.class)){
+                (parameter == jakarta.servlet.http.HttpServletResponse.class) ||
+                (parameter == jakarta.servlet.http.HttpServletRequest.class)){
                 continue;
             }
             

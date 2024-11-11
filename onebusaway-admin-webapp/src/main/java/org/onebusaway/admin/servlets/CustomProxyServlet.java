@@ -15,7 +15,7 @@
  */
 package org.onebusaway.admin.servlets;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import org.mitre.dsmiley.httpproxy.URITemplateProxyServlet;
 

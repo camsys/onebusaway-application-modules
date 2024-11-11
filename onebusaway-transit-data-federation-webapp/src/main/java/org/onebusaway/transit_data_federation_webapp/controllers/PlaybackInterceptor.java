@@ -18,8 +18,8 @@ package org.onebusaway.transit_data_federation_webapp.controllers;
 import org.onebusaway.util.SystemTime;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
 

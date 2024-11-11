@@ -136,8 +136,9 @@
     </dependency>
     <!-- We use HttpServletRequest in XmlResult -->
     <dependency>
-      <groupId>javax.servlet</groupId>
+      <groupId>jakarta.servlet</groupId>
       <artifactId>jsp-api</artifactId>
+        <version>3.0.0</version>
       <scope>provided</scope>
     </dependency>
 

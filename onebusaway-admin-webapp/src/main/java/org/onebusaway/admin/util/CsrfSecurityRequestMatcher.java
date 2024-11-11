@@ -22,7 +22,7 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.util.regex.Pattern;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class CsrfSecurityRequestMatcher implements RequestMatcher {
     private static Logger _log = LoggerFactory.getLogger(CsrfSecurityRequestMatcher.class);

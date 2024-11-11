@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import com.opensymphony.xwork2.ActionInvocation;
 import org.apache.struts2.ServletActionContext;

@@ -24,7 +24,7 @@ import org.apache.struts2.rest.handler.AbstractContentTypeHandler;
 import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.serializers.json.CustomSerializerProvider;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;

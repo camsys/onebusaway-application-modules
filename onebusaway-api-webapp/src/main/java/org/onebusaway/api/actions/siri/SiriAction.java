@@ -23,8 +23,8 @@ import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.util.impl.analytics.GoogleAnalyticsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Base class for Siri Actions.

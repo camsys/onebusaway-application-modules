@@ -24,12 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.servlet.Servlet;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.servlet.Context;
-import org.mortbay.jetty.servlet.ServletHolder;
 import org.onebusaway.federations.FederatedService;
 import org.onebusaway.federations.SimpleFederatedService;
 import org.onebusaway.geospatial.model.CoordinateBounds;
@@ -51,24 +53,35 @@ public class DynamicFederatedServiceCollectionImplTest {
   @Before
   public void start() throws Exception {
 
+    System.out.println("Hello world 1!");
+    try{
     _server = new Server(PORT);
-
+      System.out.println("Hello world 3!");
     addServiceServlet(_server, "A", new CoordinateBounds(0, 0, 10, 10));
     addServiceServlet(_server, "B", new CoordinateBounds(20, 20, 30, 30));
+      System.out.println("Hello world 4!");
 
     Map<String, List<CoordinateBounds>> agenciesB = new HashMap<String, List<CoordinateBounds>>();
     agenciesB.put("B", Arrays.asList(new CoordinateBounds(30, 30, 40, 40)));
+      System.out.println("Hello world 5!");
 
     _server.start();
+      System.out.println("Hello world 5.5!");
 
     _registry = new FederatedServiceRegistryImpl();
+      System.out.println("Hello world 6!");
 
     _collection = new DynamicFederatedServiceCollectionImpl();
     _collection.setRegistry(_registry);
     _collection.setUpdateFrequency(1);
     _collection.setServiceInterface(SimpleFederatedService.class);
+      System.out.println("Hello world 7!");
 
     _collection.start();
+    }catch (Exception e){
+      System.out.println("error = " + e.getMessage());
+      System.out.println("e = " + e);
+    }
   }
 
   @After
@@ -81,6 +94,7 @@ public class DynamicFederatedServiceCollectionImplTest {
   @Test
   public void test() throws Exception {
 
+    System.out.println("Hello world 2!");
     Set<FederatedService> services = _collection.getAllServices();
     assertTrue(services.isEmpty());
 
@@ -126,14 +140,18 @@ public class DynamicFederatedServiceCollectionImplTest {
 
     SimpleFederatedServiceImpl serviceA = new SimpleFederatedServiceImpl(
         agenciesA, agencyId);
-
+try{
     HessianServlet servletA = new HessianServlet();
     servletA.setHome(serviceA);
     servletA.setHomeAPI(SimpleFederatedService.class);
 
-    Context contextA = new Context(server, "/service-" + agencyId,
-        Context.SESSIONS);
-    contextA.addServlet(new ServletHolder(servletA), "/*");
+    ContextHandler.Context contextA = new ContextHandler().getServletContext();
+    contextA.addServlet(String.valueOf(new ServletHolder((Servlet) servletA)), "/*");
+
+  }catch (Exception e){
+    System.out.println("error = " + e.getMessage());
+    System.out.println("e = " + e);
+  }
 
     return serviceA;
   }
