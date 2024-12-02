@@ -41,10 +41,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gwt.json.client.JSONObject;
 import jakarta.servlet.ServletContext;
 
 import com.opensymphony.xwork2.StrutsTextProviderFactory;
-import org.json.JSONObject;
 import org.onebusaway.presentation.impl.ServletLibrary;
 import org.onebusaway.presentation.services.resources.Resource;
 import org.onebusaway.presentation.services.resources.ResourceService;
@@ -369,10 +371,10 @@ public class ResourceServiceImpl implements ResourceService {
 
       File file = getOutputFile(PREFIX_COLLECTION + collectionPrefix + ".js");
       PrintWriter out = new PrintWriter(file);
-      JSONObject obj = new JSONObject(resourceMapping);
+      ObjectMapper objectMapper = new ObjectMapper();
       out.println("var OBA = window.OBA || {};");
       out.println("if(!OBA.Resources) { OBA.Resources = {}; }");
-      out.println("OBA.Resources." + collectionPrefix + " = " + obj.toString()
+      out.println("OBA.Resources." + collectionPrefix + " = " + objectMapper.writeValueAsString(resourceMapping)
           + ";");
       out.close();
 
@@ -419,10 +421,10 @@ public class ResourceServiceImpl implements ResourceService {
 
       File file = getOutputFile(PREFIX_MESSAGES + messagesPrefix + ".js");
       PrintWriter out = new PrintWriter(file);
-      JSONObject obj = new JSONObject(resourceMapping);
+      ObjectMapper objectMapper = new ObjectMapper();
       out.println("var OBA = window.OBA || {};");
       out.println("if(!OBA.Resources) { OBA.Resources = {}; }");
-      out.println("OBA.Resources." + messagesPrefix + " = " + obj.toString()
+      out.println("OBA.Resources." + messagesPrefix + " = " + objectMapper.writeValueAsString(resourceMapping)
           + ";");
       out.close();
 
@@ -453,10 +455,10 @@ public class ResourceServiceImpl implements ResourceService {
 
       File file = getOutputFile(PREFIX_MESSAGES + messagesPrefix + ".js");
       PrintWriter out = new PrintWriter(file);
-      JSONObject obj = new JSONObject(resourceMapping);
+      ObjectMapper objectMapper = new ObjectMapper();
       out.println("var OBA = window.OBA || {};");
       out.println("if(!OBA.Resources) { OBA.Resources = {}; }");
-      out.println("OBA.Resources." + messagesPrefix + " = " + obj.toString()
+      out.println("OBA.Resources." + messagesPrefix + " = " + objectMapper.writeValueAsString(resourceMapping)
           + ";");
       out.close();
 

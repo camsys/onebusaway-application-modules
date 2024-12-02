@@ -16,15 +16,14 @@
 package org.onebusaway.transit_data_federation_webapp.controllers;
 
 import org.onebusaway.util.SystemTime;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
-
+import org.springframework.web.servlet.HandlerInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
 
  */
-public class PlaybackInterceptor extends HandlerInterceptorAdapter {
+public class PlaybackInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
                              Object handler) throws Exception {

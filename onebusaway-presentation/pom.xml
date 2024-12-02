@@ -71,6 +71,7 @@
         <dependency>
             <groupId>com.caucho</groupId>
             <artifactId>hessian</artifactId>
+            <version>4.0.66</version>
         </dependency>
 
         <dependency>
@@ -136,14 +137,15 @@
         </dependency>
 
         <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
+            <groupId>jakarta.servlet.jsp</groupId>
+            <artifactId>jakarta.servlet.jsp-api</artifactId>
+            <version>3.1.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jsp-api</artifactId>
-            <scope>provided</scope>
+            <groupId>jakarta.servlet.jsp.jstl</groupId>
+            <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+            <version>3.0.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

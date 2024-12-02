@@ -33,9 +33,8 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * 
  * @author bdferris
  */
-public class SpringLoginManagerFactory implements LoginManagerFactory {
+public abstract class SpringLoginManagerFactory implements LoginManagerFactory {
 
-  @Override
   public LoginManager createLoginManager(ServletConfig config)
       throws ServletException {
 

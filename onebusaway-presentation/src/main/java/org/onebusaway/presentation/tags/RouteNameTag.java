@@ -37,6 +37,11 @@ public class RouteNameTag extends ContextBeanTag {
     _value = value;
   }
 
+  @Override
+  public Component getBean(ValueStack stack, javax.servlet.http.HttpServletRequest req, javax.servlet.http.HttpServletResponse res) {
+    return null;
+  }
+
   protected void populateParams() {
     super.populateParams();
     RouteNameComponent tag = (RouteNameComponent) getComponent();

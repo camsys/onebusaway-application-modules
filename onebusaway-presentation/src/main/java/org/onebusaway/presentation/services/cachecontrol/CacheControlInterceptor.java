@@ -24,9 +24,8 @@ import java.util.Map;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.util.DateParseException;
-import org.apache.commons.httpclient.util.DateUtil;
 import org.apache.struts2.ServletActionContext;
+import org.geotools.feature.type.DateUtil;
 import org.onebusaway.util.SystemTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,8 +48,8 @@ public class CacheControlInterceptor extends AbstractInterceptor {
     if (cacheControl == null)
       return invocation.invoke();
 
-    HttpServletRequest request = ServletActionContext.getRequest();
-    HttpServletResponse response = ServletActionContext.getResponse();
+    HttpServletRequest request = (HttpServletRequest) ServletActionContext.getRequest();
+    HttpServletResponse response = (HttpServletResponse) ServletActionContext.getResponse();
 
     applyCacheControlHeader(invocation, cacheControl, request, response);
     applyExpiresHeader(invocation, cacheControl, request, response);
@@ -68,12 +67,12 @@ public class CacheControlInterceptor extends AbstractInterceptor {
 
       if (modifiedSinceValue != null) {
         try {
-          Date modifiedSince = DateUtil.parseDate(modifiedSinceValue);
+          Date modifiedSince = DateUtil.deserializeDate(modifiedSinceValue);
           if (!lastModifiedTime.after(modifiedSince)) {
             response.setStatus(304);
             return null;
           }
-        } catch (DateParseException ex) {
+        } catch (Exception ex) {
 
         }
       }
@@ -181,7 +180,7 @@ public class CacheControlInterceptor extends AbstractInterceptor {
     if (expiresTime == null)
       return;
 
-    String expiresTimeAsString = DateUtil.formatDate(expiresTime);
+    String expiresTimeAsString = DateUtil.serializeDate(expiresTime);
     response.setHeader("Expires", expiresTimeAsString);
   }
 
@@ -195,7 +194,7 @@ public class CacheControlInterceptor extends AbstractInterceptor {
     if (lastModifiedTime == null)
       return null;
 
-    String lastModifiedTimeAsString = DateUtil.formatDate(lastModifiedTime);
+    String lastModifiedTimeAsString = DateUtil.serializeDate(lastModifiedTime);
     response.setHeader("Last-Modified", lastModifiedTimeAsString);
 
     return lastModifiedTime;

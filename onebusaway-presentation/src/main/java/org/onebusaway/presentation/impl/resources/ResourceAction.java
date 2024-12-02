@@ -118,7 +118,7 @@ public class ResourceAction extends ActionSupport {
   protected void ensureResource() {
     if (_resource == null) {
       if( _id == null) {
-        HttpServletRequest request = ServletActionContext.getRequest();
+        HttpServletRequest request = (HttpServletRequest) ServletActionContext.getRequest();
         _id = request.getParameter("id");
       }
       _resource = _resourceService.getLocalResourceForExternalId(_id, getLocale());

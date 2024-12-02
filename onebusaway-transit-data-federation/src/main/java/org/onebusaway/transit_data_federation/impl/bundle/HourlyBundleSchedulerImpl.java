@@ -22,6 +22,7 @@ import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -52,6 +53,7 @@ public class HourlyBundleSchedulerImpl implements BundleScheduler {
     }
 
   }
+
 
   protected class BundleDiscoveryUpdateThread extends TimerTask implements
           Trigger {
@@ -86,6 +88,11 @@ public class HourlyBundleSchedulerImpl implements BundleScheduler {
       calendar.set(Calendar.MINUTE, minute + 15);
 
       return calendar.getTime();
+    }
+
+    @Override
+    public Instant nextExecution(TriggerContext triggerContext) {
+      return null;
     }
   }
 
@@ -132,6 +139,11 @@ public class HourlyBundleSchedulerImpl implements BundleScheduler {
       }
 
       return calendar.getTime();
+    }
+
+    @Override
+    public Instant nextExecution(TriggerContext triggerContext) {
+      return null;
     }
   }
 

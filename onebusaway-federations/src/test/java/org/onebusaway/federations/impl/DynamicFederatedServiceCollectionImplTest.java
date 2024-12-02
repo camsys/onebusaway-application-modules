@@ -28,7 +28,6 @@ import jakarta.servlet.Servlet;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -142,11 +141,11 @@ public class DynamicFederatedServiceCollectionImplTest {
         agenciesA, agencyId);
 try{
     HessianServlet servletA = new HessianServlet();
-    servletA.setHome(serviceA);
-    servletA.setHomeAPI(SimpleFederatedService.class);
+    //servletA.setHome(serviceA);
+    //servletA.setHomeAPI(SimpleFederatedService.class);
 
     ContextHandler.Context contextA = new ContextHandler().getServletContext();
-    contextA.addServlet(String.valueOf(new ServletHolder((Servlet) servletA)), "/*");
+    //contextA.addServlet(String.valueOf(new ServletHolder((Servlet) servletA)), "/*");
 
   }catch (Exception e){
     System.out.println("error = " + e.getMessage());

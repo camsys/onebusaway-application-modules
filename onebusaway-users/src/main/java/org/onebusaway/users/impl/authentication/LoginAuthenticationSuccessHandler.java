@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
-public class LoginAuthenticationSuccessHandler implements
+public abstract class LoginAuthenticationSuccessHandler implements
     AuthenticationSuccessHandler {
 
   private static Logger _log = LoggerFactory.getLogger(LoginAuthenticationSuccessHandler.class);
@@ -40,12 +40,7 @@ public class LoginAuthenticationSuccessHandler implements
     return targetUrl;
   }
   
-  @Override
-  public void onAuthenticationSuccess(HttpServletRequest request,
-      HttpServletResponse response, Authentication success) throws IOException,
-      ServletException {
-    response.sendRedirect(request.getContextPath() + determineTargetUrl());
-  }
+ 
   
   protected  String determineTargetUrl() {
     if (targetUrl == null) {

@@ -20,18 +20,18 @@ import javax.management.ObjectName;
 import jakarta.servlet.ServletContext;
 
 import org.springframework.jmx.export.metadata.JmxAttributeSource;
-import org.springframework.jmx.export.naming.MetadataNamingStrategy;
+import org.springframework.jmx.export.naming.IdentityNamingStrategy;
 import org.springframework.jmx.support.ObjectNameManager;
-import org.springframework.web.context.ServletContextAware;
+import jakarta.servlet.ServletContextListener;
 
 public class ServletContextAwareMetadataNamingStrategy extends
-    MetadataNamingStrategy implements ServletContextAware {
+        IdentityNamingStrategy implements ServletContextListener {
 
   private String _servletName;
 
   public ServletContextAwareMetadataNamingStrategy(
       JmxAttributeSource annotationSource) {
-    super(annotationSource);
+    super();
   }
 
   @Override
@@ -49,7 +49,6 @@ public class ServletContextAwareMetadataNamingStrategy extends
     return objName;
   }
 
-  @Override
   public void setServletContext(ServletContext servletContext) {
     _servletName = getContextPath(servletContext);
   }

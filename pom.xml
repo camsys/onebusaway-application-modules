@@ -21,7 +21,7 @@
         <asm-version>8.0.1</asm-version>
         <struts-version>2.5.31</struts-version>
         <gwt-version>2.4.0</gwt-version>
-        <spring-version>6.1.3</spring-version>
+        <spring-version>6.0.3</spring-version>
         <csv-entities-version>1.1.7</csv-entities-version>
         <collections-version>1.2.8</collections-version>
         <gtfs-version>1.4.17</gtfs-version>
@@ -42,8 +42,8 @@
         <org_onebusaway_test_port>9900</org_onebusaway_test_port>
         <org_onebusaway_test_ajp_port>9901</org_onebusaway_test_ajp_port>
         <org_onebusaway_test_rmi_port>9902</org_onebusaway_test_rmi_port>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <!-- this needs to match cloud-services -->
         <aws.version>1.11.602</aws.version>
     </properties>
@@ -351,7 +351,7 @@
             <dependency>
                 <groupId>com.caucho</groupId>
                 <artifactId>hessian</artifactId>
-                <version>4.0.38</version>
+                <version>4.0.66</version>
             </dependency>
 
             <dependency>

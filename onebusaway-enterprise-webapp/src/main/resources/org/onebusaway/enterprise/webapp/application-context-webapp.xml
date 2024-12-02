@@ -112,5 +112,7 @@
             </list>
         </property>
     </bean>
+
+    <bean class="org.onebusaway.transit_data_federation.services.WebIntervalFactory" />
     
 </beans>
