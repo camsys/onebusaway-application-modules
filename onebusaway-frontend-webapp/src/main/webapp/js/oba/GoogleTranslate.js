@@ -2,7 +2,7 @@ function googleTranslateElementInit() {
 
 	var translate_element_id = jQuery("#google_translate_element_bottom").is(
 			":visible") ? "google_translate_element_bottom"
-			: "google_translate_element_side";
+			: "google_translate_element";
 	var translate_element = jQuery("#" + translate_element_id);
 	translate_element
 			.on("click", function(e) {

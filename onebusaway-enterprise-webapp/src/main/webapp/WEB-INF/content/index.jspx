@@ -136,12 +136,19 @@
 </s:url>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/oba/GoogleTranslate.js">
+<s:url var="url" value="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit">
 	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 </s:url>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-
+	<script>
+		function googleTranslateElementInit() {
+			new google.translate.TranslateElement(
+					{pageLanguage: 'en'},
+					'google_translate_element'
+			);
+		}
+	</script>
 </head>
 <body>
 <div id="content" class="map">
@@ -269,8 +276,7 @@
 
 		</div>
 		<div class="container clear"><!-- jspx --></div>
-	  	<s:url var="url" value="/css/img/google_logo.png"></s:url>
-		<div id="google_translate_element_side">Google Translate <img id="icon" src="${url}" /></div>
+		<div id="google_translate_element"><!-- jspx --></div>
     </div>
 
 	<div id="map"><!-- //prevent jspx minimization --></div>
