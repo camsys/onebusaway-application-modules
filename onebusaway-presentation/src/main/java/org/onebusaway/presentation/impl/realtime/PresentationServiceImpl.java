@@ -17,6 +17,7 @@ package org.onebusaway.presentation.impl.realtime;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.container.ConfigurationParameter;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.presentation.services.realtime.PresentationService;
@@ -172,7 +173,10 @@ public class PresentationServiceImpl implements PresentationService {
   }
 
   @Override
-  public String getPresentableDistance(SiriDistanceExtension distances) {
+  public String getPresentableDistance(SiriDistanceExtension distances, String phase) {
+    if(isDeadHeading(phase)){
+      return " ";
+    }
     return getPresentableDistance(distances, APPROACHING_TEXT, ONE_STOP_WORD, MULTIPLE_STOPS_WORD, 
         ONE_MILE_WORD, MULTIPLE_MILES_WORD, AWAY_WORD);
   }
@@ -266,6 +270,13 @@ public class PresentationServiceImpl implements PresentationService {
     return r;
   }
 
+ private boolean isDeadHeading(String phase) {
+    if(phase != null){
+        return phase.toLowerCase().startsWith("deadhead");
+    }
+    return false;
+  }
+
   /**
    * Filter logic: these methods determine which buses are shown in different request contexts. By 
    * default, OBA reports all vehicles both scheduled and tracked, which one may or may not want.
@@ -310,7 +321,8 @@ public class PresentationServiceImpl implements PresentationService {
 	    if(phase != null 
 	        && !phase.toUpperCase().equals("IN_PROGRESS")
 	        && !phase.toUpperCase().equals("LAYOVER_BEFORE") 
-	        && !phase.toUpperCase().equals("LAYOVER_DURING")) {
+	        && !phase.toUpperCase().equals("LAYOVER_DURING")
+            && !phase.toUpperCase().equals("DEADHEAD_BEFORE")) {
 	      _log.debug("  " + statusBean.getVehicleId() + " filtered out because phase is not in progress.");      
 	      return false;
 	    }

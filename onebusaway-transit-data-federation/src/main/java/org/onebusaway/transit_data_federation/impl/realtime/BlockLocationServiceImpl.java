@@ -24,6 +24,7 @@ import org.onebusaway.collections.Min;
 import org.onebusaway.collections.Range;
 import org.onebusaway.container.ConfigurationParameter;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.EVehicleType;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
@@ -31,6 +32,7 @@ import org.onebusaway.transit_data_federation.model.TargetTime;
 import org.onebusaway.transit_data_federation.services.blocks.*;
 import org.onebusaway.transit_data_federation.services.realtime.*;
 import org.onebusaway.transit_data_federation.services.transit_graph.*;
+import org.onebusaway.util.EarthDistanceUtil;
 import org.onebusaway.util.SystemTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,6 +133,18 @@ public class BlockLocationServiceImpl extends AbstractBlockLocationServiceImpl i
    */
   private AtomicInteger _blockLocationRecordPersistentStoreAccessCount = new AtomicInteger();
 
+  /**
+   * Configuration to update the vehicle phase to "DEADHEAD_BEFORE" for vehicles
+   * traveling to the first stop on the black
+   */
+  private boolean _setPhaseToDeadBeforeAtStartOfBlock = false;
+
+  /**
+   * Configuration to set the minimum distance in feet at the start of the block
+   * to transition from "DEADHEAD_BEFORE" phase to "IN_PROGRESS"
+   */
+  private double _minBlockStopDistanceForDeadheadToInProgress = 100;
+
   @Autowired
   public void setVehicleLocationRecordCache(VehicleLocationRecordCache cache) {
     _cache = cache;
@@ -185,6 +199,16 @@ public class BlockLocationServiceImpl extends AbstractBlockLocationServiceImpl i
     _persistBlockLocationRecords = persistBlockLocationRecords;
   }
 
+  @ConfigurationParameter
+  public void setPhaseToDeadBeforeAtStartOfBlock(boolean setPhaseToDeadBeforeAtStartOfBlock) {
+    _setPhaseToDeadBeforeAtStartOfBlock = setPhaseToDeadBeforeAtStartOfBlock;
+  }
+
+  @ConfigurationParameter
+  public void setMinBlockStopDistanceForDeadheadToInProgress(double minBlockStopDistanceForDeadheadToInprogress) {
+    _minBlockStopDistanceForDeadheadToInProgress = minBlockStopDistanceForDeadheadToInprogress;
+  }
+
   /****
    * JMX Attributes
    ****/
@@ -230,14 +254,25 @@ public class BlockLocationServiceImpl extends AbstractBlockLocationServiceImpl i
     BlockInstance instance = getVehicleLocationRecordAsBlockInstance(record);
 
     if (instance != null) {
-
       ScheduledBlockLocation scheduledBlockLocation = getScheduledBlockLocationForVehicleLocationRecord(
               record, instance);
-
 
       if (!record.isScheduleDeviationSet() && scheduledBlockLocation != null ) {
         int deviation = (int) ((record.getTimeOfRecord() - record.getServiceDate()) / 1000 - scheduledBlockLocation.getScheduledTime());
         record.setScheduleDeviation(deviation);
+      }
+
+      if(_setPhaseToDeadBeforeAtStartOfBlock
+              && record.isCurrentLocationSet()
+              && scheduledBlockLocation != null
+              && scheduledBlockLocation.getStopTimeIndex() == 0){
+
+        double distance = EarthDistanceUtil.distanceInMeters(record.getCurrentLocationLat(), record.getCurrentLocationLon(),
+                scheduledBlockLocation.getLocation().getLat(), scheduledBlockLocation.getLocation().getLon());
+
+        if(distance >= _minBlockStopDistanceForDeadheadToInProgress) {
+          record.setPhase(EVehiclePhase.DEADHEAD_BEFORE);
+        }
       }
 
       ScheduleDeviationSamples samples = null;

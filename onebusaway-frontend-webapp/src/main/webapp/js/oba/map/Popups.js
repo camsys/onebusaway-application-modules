@@ -689,7 +689,12 @@ OBA.Popups = (function() {
 
                          if(typeof monitoredVehicleJourney.MonitoredCall !== 'undefined') {
 							 var loadOccupancy = getOccupancyForStop(monitoredVehicleJourney);
-                             var distance = monitoredVehicleJourney.MonitoredCall.Extensions.Distances.PresentableDistance + " " + loadOccupancy;
+							 var presentableDistance =  monitoredVehicleJourney.MonitoredCall.Extensions.Distances.PresentableDistance;
+							 if(presentableDistance !== undefined && typeof presentableDistance === 'string'){
+								 presentableDistance = presentableDistance.trim();
+							 }
+							 var hasPresentableDistance  = presentableDistance !== "";
+                             var distance = presentableDistance + " " + loadOccupancy;
 
 
                              var timePrediction = null;
@@ -750,7 +755,12 @@ OBA.Popups = (function() {
                                 timePrediction += ', ' + expectedTime;
                         	}
 							if(wrapped === false) {
-								timePrediction += ", " + distance;
+								if(hasPresentableDistance){
+									timePrediction += ", ";
+								} else {
+									timePrediction += " ";
+								}
+								 timePrediction += distance;
 							}
 							
 							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
