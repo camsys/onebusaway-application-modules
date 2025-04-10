@@ -33,7 +33,7 @@ public interface PresentationService {
       String approachingText, String oneStopWord, String multipleStopsWord,
       String oneMileWord, String multipleMilesWord, String awayWord);
 
-  public String getPresentableDistance(SiriDistanceExtension distances);
+  public String getPresentableDistance(SiriDistanceExtension distances, String phase);
 
   /* filter logic: */
 

@@ -95,21 +95,32 @@ public final class SiriSupport {
 	 */
 	@SuppressWarnings("unused")
 	public static void fillMonitoredVehicleJourney(MonitoredVehicleJourneyStructure monitoredVehicleJourney,
-																																		 TripBean framedJourneyTripBean, ArrivalAndDepartureBean adBean,
-																																		 TripStatusBean currentVehicleTripStatus,
-																																		 StopBean monitoredCallStopBean, OnwardCallsMode onwardCallsMode,
-																																		 PresentationService presentationService, TransitDataService transitDataService,
-																																		 int maximumOnwardCalls, List<TimepointPredictionRecord> stopLevelPredictionsAcrossBlock,
-																																		 boolean hasRealtimeData, long responseTimestamp, boolean showRawLocation, boolean showApc) {
+												   TripBean framedJourneyTripBean,
+												   ArrivalAndDepartureBean adBean,
+												   TripStatusBean currentVehicleTripStatus,
+												   StopBean monitoredCallStopBean,
+												   OnwardCallsMode onwardCallsMode,
+												   PresentationService presentationService,
+												   TransitDataService transitDataService,
+												   int maximumOnwardCalls,
+												   List<TimepointPredictionRecord> stopLevelPredictionsAcrossBlock,
+												   boolean hasRealtimeData,
+												   long responseTimestamp,
+												   boolean showRawLocation,
+												   boolean showApc) {
 
-		if (currentVehicleTripStatus != null && TransitDataConstants.STATUS_CANCELED.equals(currentVehicleTripStatus.getStatus())) {
+		if (currentVehicleTripStatus != null
+			&& TransitDataConstants.STATUS_CANCELED.equals(currentVehicleTripStatus.getStatus())) {
 			_log.error("aborting fillMVJ as trip is canceled");
 			return;
 		}
 
 		BlockInstanceBean blockInstance = null;
 		if (adBean == null) {
-			blockInstance = transitDataService.getBlockInstance(currentVehicleTripStatus.getActiveTrip().getBlockId(), currentVehicleTripStatus.getServiceDate());
+			blockInstance = transitDataService.getBlockInstance(
+					currentVehicleTripStatus.getActiveTrip().getBlockId(),
+					currentVehicleTripStatus.getServiceDate());
+
 			if (blockInstance == null) {
 				_log.error("illegal blockId {}",  currentVehicleTripStatus.getActiveTrip().getBlockId());
 				return;
@@ -510,6 +521,7 @@ public final class SiriSupport {
 				} else {
 					blockTripStopsAfterTheVehicle++;
 				}
+
 				OnwardCallStructure ocs = getOnwardCallStructure(stop, presentationService,
 						distanceOfCallAlongTrip,
 						distanceOfVehicleFromCall,
@@ -518,7 +530,8 @@ public final class SiriSupport {
 						hasRealtimeData, responseTimestamp,
 						getScheduledArrivalTime(currentVehicleTripStatus.getServiceDate(), -1, stopTime),
 						getScheduledDepartureTime(currentVehicleTripStatus.getServiceDate(), -1, stopTime),
-						currentVehicleTripStatus.getScheduleDeviation());
+						currentVehicleTripStatus.getScheduleDeviation(),
+						currentVehicleTripStatus.getPhase());
 
 				if (ocs != null)
 					monitoredVehicleJourney.getOnwardCalls().getOnwardCall().add(ocs);
@@ -612,7 +625,8 @@ public final class SiriSupport {
 										responseTimestamp,
 										getScheduledArrivalTime(tripStatus.getServiceDate(), scheduledArrivalTime, stopTime),
 										getScheduledDepartureTime(tripStatus.getServiceDate(), scheduledDepartureTime, stopTime),
-										tripStatus.getScheduleDeviation());
+										tripStatus.getScheduleDeviation(),
+										tripStatus.getPhase());
 						if(msc != null)
 							monitoredVehicleJourney.setMonitoredCall(msc);
 					}
@@ -656,7 +670,7 @@ public final class SiriSupport {
 			PresentationService presentationService, 
 			double distanceOfCallAlongTrip, double distanceOfVehicleFromCall, int visitNumber, int index,
 			TimepointPredictionRecord prediction, boolean hasRealtimeData, long responseTimestamp,
-		    long scheduledArrivalTime, long scheduledDepartureTime, double scheduleDeviation) {
+		    long scheduledArrivalTime, long scheduledDepartureTime, double scheduleDeviation, String phase) {
 
 		boolean hasPrediction = prediction != null;
 		Long predictedArrivalTime = null;
@@ -720,10 +734,10 @@ public final class SiriSupport {
 		distances.setStopsFromCall(index);
 		distances.setCallDistanceAlongRoute(NumberUtils.toDouble(df.format(distanceOfCallAlongTrip)));
 		distances.setDistanceFromCall(NumberUtils.toDouble(df.format(distanceOfVehicleFromCall)));
-		distances.setPresentableDistance(presentationService.getPresentableDistance(distances));
+		distances.setPresentableDistance(presentationService.getPresentableDistance(distances, phase));
 
 		wrapper.setDistances(distances);
-		distancesExtensions.setAny(wrapper);    
+		distancesExtensions.setAny(wrapper);
 		onwardCallStructure.setExtensions(distancesExtensions);
 
 		return onwardCallStructure;
@@ -733,7 +747,7 @@ public final class SiriSupport {
 			PresentationService presentationService, 
 			double distanceOfCallAlongTrip, double distanceOfVehicleFromCall, int visitNumber, int index,
 			TimepointPredictionRecord prediction, boolean hasRealtimeData, long responseTimestamp,
-			long scheduledArrivalTime, long scheduledDepartureTime, double scheduleDeviation) {
+			long scheduledArrivalTime, long scheduledDepartureTime, double scheduleDeviation, String phase) {
 
 		boolean hasPrediction = prediction != null;
 		Long predictedArrivalTime = null;
@@ -777,7 +791,7 @@ public final class SiriSupport {
         if (monitoredCallStructure.getExpectedArrivalTime()!= null) {
             monitoredCallStructure.setAimedArrivalTime(new Date(scheduledArrivalTime));
         }
-
+		
 		// siri extensions
 		SiriExtensionWrapper wrapper = new SiriExtensionWrapper();
 		ExtensionsStructure distancesExtensions = new ExtensionsStructure();
@@ -789,8 +803,10 @@ public final class SiriSupport {
 
 		distances.setStopsFromCall(index);
 		distances.setCallDistanceAlongRoute(NumberUtils.toDouble(df.format(distanceOfCallAlongTrip)));
-		distances.setDistanceFromCall(NumberUtils.toDouble(df.format(distanceOfVehicleFromCall)));		
-		distances.setPresentableDistance(presentationService.getPresentableDistance(distances));
+		distances.setDistanceFromCall(NumberUtils.toDouble(df.format(distanceOfVehicleFromCall)));
+		distances.setPresentableDistance(presentationService.getPresentableDistance(distances, phase));
+
+		wrapper.setDistances(distances);
 
 		long deviation = 0L;
 		if (monitoredCallStructure.getExpectedArrivalTime() != null &&
@@ -802,7 +818,6 @@ public final class SiriSupport {
 		}
 
 		wrapper.setDeviation(String.valueOf(deviation));
-		wrapper.setDistances(distances);
 		distancesExtensions.setAny(wrapper);
 		monitoredCallStructure.setExtensions(distancesExtensions);
 
@@ -856,7 +871,6 @@ public final class SiriSupport {
 		}
 
 		if (phase.toLowerCase().startsWith("layover")
-				|| phase.toLowerCase().startsWith("deadhead")
 				|| phase.toLowerCase().equals("at_base")) {
 			return ProgressRateEnumeration.NO_PROGRESS;
 		}
@@ -865,7 +879,8 @@ public final class SiriSupport {
 			return ProgressRateEnumeration.NO_PROGRESS;
 		}
 
-		if (phase.toLowerCase().equals("in_progress")) {
+		if (phase.toLowerCase().equals("in_progress")
+			|| phase.toLowerCase().startsWith("deadhead")) {
 			return ProgressRateEnumeration.NORMAL_PROGRESS;
 		}
 
