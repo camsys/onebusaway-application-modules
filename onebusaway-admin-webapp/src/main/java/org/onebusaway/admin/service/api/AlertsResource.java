@@ -24,7 +24,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import com.google.transit.realtime.GtfsRealtime;
-import org.onebusaway.admin.service.server.ConsoleServiceAlertsService;
+import org.onebusaway.admin.service.alerts.ConsoleServiceAlertsService;
 import org.onebusaway.alerts.service.ServiceAlerts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

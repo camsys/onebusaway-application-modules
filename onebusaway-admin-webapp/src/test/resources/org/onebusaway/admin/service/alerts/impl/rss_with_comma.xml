@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss xmlns:eAlertMessage="http://metroalerts.info/rssModule" version="2.0">
+    <channel>
+        <title>Washington Metropolitan Area Transit Authority Alerts</title>
+        <link>https://www.wmata.com</link>
+        <description>Washington Metropolitan Area Transit Authority Alerts</description>
+        <language>en-us</language>
+        <ttl>15</ttl>
+        <item>
+            <title>K6</title>
+            <description>K6 Service Alert: Northbound buses are on detour until 11pm on Wednesday, April 23 at New Hampshire Ave &amp; University Blvd because of the Purple Line construction. For detailed routing information visit: https://wmata.com/service/status/details/temporary-detour-construction-on-new-hampshire-ave.cfm</description>
+            <link>https://www.wmata.com</link>
+            <source>Alert</source>
+            <eAlertMessage:priority>3</eAlertMessage:priority>
+            <eAlertMessage:cause>CONSTRUCTION</eAlertMessage:cause>
+            <eAlertMessage:effect>DETOUR</eAlertMessage:effect>
+            <eAlertMessage:sourceUrl>https://www.wmata.com/alerts</eAlertMessage:sourceUrl>
+            <pubDate>Tue, 08 Apr 2025 19:47:00 GMT</pubDate>
+            <guid isPermaLink="false">b4412c7a-cc0b-f011-bae2-002248279643</guid>
+        </item>
+    </channel>
+</rss>

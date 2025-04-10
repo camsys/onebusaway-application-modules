@@ -25,7 +25,7 @@ import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.admin.service.NotificationService;
 import org.onebusaway.admin.service.impl.TwitterServiceImpl;
-import org.onebusaway.admin.service.server.ConsoleServiceAlertsService;
+import org.onebusaway.admin.service.alerts.ConsoleServiceAlertsService;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.presentation.bundles.ResourceBundleSupport;
 import org.onebusaway.presentation.bundles.service_alerts.Reasons;
@@ -36,7 +36,6 @@ import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertRecordBean;
-import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.model.service_alerts.TimeRangeBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.webapp.actions.OneBusAwayNYCAdminActionSupport;
@@ -44,9 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.ActionSupport;
 import com.opensymphony.xwork2.ModelDriven;
-import com.opensymphony.xwork2.Preparable;
 
 @ParentPackage("onebusaway-admin-webapp-default")
 @Results({

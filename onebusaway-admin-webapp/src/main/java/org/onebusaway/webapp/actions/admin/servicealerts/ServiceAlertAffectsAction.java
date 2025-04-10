@@ -26,7 +26,7 @@ import org.apache.struts2.convention.annotation.InterceptorRefs;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
 import org.json.JSONException;
-import org.onebusaway.admin.service.server.ConsoleServiceAlertsService;
+import org.onebusaway.admin.service.alerts.ConsoleServiceAlertsService;
 import org.onebusaway.exceptions.NoSuchStopServiceException;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.RouteBean;

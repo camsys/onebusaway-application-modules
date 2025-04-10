@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.admin.service.server.impl;
+package org.onebusaway.admin.service.alerts.impl;
 
 import com.google.transit.realtime.GtfsRealtime;
-import org.onebusaway.admin.service.server.ConsoleServiceAlertsService;
+import org.onebusaway.admin.service.alerts.ConsoleServiceAlertsService;
 import org.onebusaway.alerts.impl.ServiceAlertBeanHelper;
 import org.onebusaway.alerts.impl.ServiceAlertBuilderHelper;
 import org.onebusaway.alerts.impl.ServiceAlertRecord;

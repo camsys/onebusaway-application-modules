@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.admin.service.server.impl;
+package org.onebusaway.admin.service.alerts.impl;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -25,8 +25,8 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
-import org.onebusaway.admin.service.server.ConsoleServiceAlertsService;
-import org.onebusaway.admin.service.server.IntegratingServiceAlertsService;
+import org.onebusaway.admin.service.alerts.ConsoleServiceAlertsService;
+import org.onebusaway.admin.service.alerts.IntegratingServiceAlertsService;
 import org.onebusaway.alerts.impl.ServiceAlertLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data.model.ListBean;

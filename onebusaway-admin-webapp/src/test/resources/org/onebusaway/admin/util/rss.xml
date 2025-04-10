@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss xmlns:eAlertMessage="http://metroalerts.info/rssModule" version="2.0">
+    <channel>
+        <title>Washington Metropolitan Area Transit Authority Alerts</title>
+        <link>https://www.wmata.com</link>
+        <description>Washington Metropolitan Area Transit Authority Alerts</description>
+        <language>en-us</language>
+        <ttl>15</ttl>
+
+        <item>
+            <title>54</title>
+            <description>54 Service Alert: Expect delays in both directions on Route 54 at 14th St NW &amp; Harvard St because of a route blockage. Check your bus location by visiting https://buseta.wmata.com/#54</description>
+            <link>https://www.wmata.com</link>
+            <source>Alert</source>
+            <eAlertMessage:priority>1</eAlertMessage:priority>
+            <eAlertMessage:cause>POLICE_ACTIVITY</eAlertMessage:cause>
+            <eAlertMessage:effect>SIGNIFICANT_DELAYS</eAlertMessage:effect>
+            <eAlertMessage:sourceUrl>https://www.wmata.com/alerts</eAlertMessage:sourceUrl>
+            <pubDate>Wed, 09 Apr 2025 12:50:05 GMT</pubDate>
+            <guid isPermaLink="false">48d801b6-4015-f011-998a-000d3a4e64cd</guid>
+        </item>
+
+        <item>
+            <title>P12</title>
+            <description>P12 Service Alert: Expect delays in both directions on Route P12 because of operator availability. Check your bus location by visiting https://buseta.wmata.com/#P12</description>
+            <link>https://www.wmata.com</link>
+            <source>Alert</source>
+            <eAlertMessage:priority>1</eAlertMessage:priority>
+            <eAlertMessage:cause>OTHER_CAUSE</eAlertMessage:cause>
+            <eAlertMessage:effect>SIGNIFICANT_DELAYS</eAlertMessage:effect>
+            <eAlertMessage:sourceUrl>https://www.wmata.com/alerts</eAlertMessage:sourceUrl>
+            <pubDate>Thu, 10 Apr 2025 11:08:18 GMT</pubDate>
+            <guid isPermaLink="false">543fd310-fc15-f011-998a-000d3a4e64cd</guid>
+        </item>
+
+        <item>
+            <title>W1</title>
+            <description>W1 Service Alert: Expect delays in both directions on Route W1 because of operator availability. Check your bus location by visiting https://buseta.wmata.com/#W1</description>
+            <link>https://www.wmata.com</link>
+            <source>Alert</source>
+            <eAlertMessage:priority>1</eAlertMessage:priority>
+            <eAlertMessage:cause>OTHER_CAUSE</eAlertMessage:cause>
+            <eAlertMessage:effect>SIGNIFICANT_DELAYS</eAlertMessage:effect>
+            <eAlertMessage:sourceUrl>https://www.wmata.com/alerts</eAlertMessage:sourceUrl>
+            <pubDate>Thu, 10 Apr 2025 14:22:24 GMT</pubDate>
+            <guid isPermaLink="false">e71fc32d-1716-f011-998a-000d3a4e64cd</guid>
+        </item>
+
+        <item>
+            <title>7M</title>
+            <description>7M Service Alert: Expect delays in both directions on Route 7M because of operator availability. Check your bus location by visiting https://buseta.wmata.com/#7M</description>
+            <link>https://www.wmata.com</link>
+            <source>Alert</source>
+            <eAlertMessage:priority>1</eAlertMessage:priority>
+            <eAlertMessage:cause>OTHER_CAUSE</eAlertMessage:cause>
+            <eAlertMessage:effect>SIGNIFICANT_DELAYS</eAlertMessage:effect>
+            <eAlertMessage:sourceUrl>https://www.wmata.com/alerts</eAlertMessage:sourceUrl>
+            <pubDate>Thu, 10 Apr 2025 15:06:24 GMT</pubDate>
+            <guid isPermaLink="false">aca66653-1d16-f011-998a-000d3a4e64cd</guid>
+        </item>
+
+        <item>
+            <title>83</title>
+            <description>83 Service Alert: Expect northbound delays on Route 83 at Rhode Island Station because of an incident. Check your bus location by visiting https://buseta.wmata.com/#83</description>
+            <link>https://www.wmata.com</link>
+            <source>Alert</source>
+            <eAlertMessage:priority>3</eAlertMessage:priority>
+            <eAlertMessage:cause>OTHER_CAUSE</eAlertMessage:cause>
+            <eAlertMessage:effect>SIGNIFICANT_DELAYS</eAlertMessage:effect>
+            <eAlertMessage:sourceUrl>https://www.wmata.com/alerts</eAlertMessage:sourceUrl>
+            <pubDate>Thu, 10 Apr 2025 15:53:42 GMT</pubDate>
+            <guid isPermaLink="false">216293ef-2316-f011-998a-000d3a4e64cd</guid>
+        </item>
+
+        <item>
+            <title>90</title>
+            <description>90 Service Alert: Expect northbound delays on Route 90 at 18th St NW &amp; Belmont Rd because of a route blockage. Check your bus location by visiting https://buseta.wmata.com/#90</description>
+            <link>https://www.wmata.com</link>
+            <source>Alert</source>
+            <eAlertMessage:priority>3</eAlertMessage:priority>
+            <eAlertMessage:cause>OTHER_CAUSE</eAlertMessage:cause>
+            <eAlertMessage:effect>SIGNIFICANT_DELAYS</eAlertMessage:effect>
+            <eAlertMessage:sourceUrl>https://www.wmata.com/alerts</eAlertMessage:sourceUrl>
+            <pubDate>Thu, 10 Apr 2025 17:06:03 GMT</pubDate>
+            <guid isPermaLink="false">adb1be02-2e16-f011-998a-000d3a9d23ef</guid>
+        </item>
+
+        <item>
+            <title>C2</title>
+            <description>C2 Service Alert: Eastbound buses are on detour until 11pm on Wednesday April 23 at Takoma Langley Transit Center &amp; Bus Bay D because of the Purple Line construction. For detailed routing information visit: https://wmata.com/service/status/details/temporary-detour-construction-on-new-hampshire-ave.cfm</description>
+            <link>https://www.wmata.com</link>
+            <source>Alert</source>
+            <eAlertMessage:priority>3</eAlertMessage:priority>
+            <eAlertMessage:cause>CONSTRUCTION</eAlertMessage:cause>
+            <eAlertMessage:effect>DETOUR</eAlertMessage:effect>
+            <eAlertMessage:sourceUrl>https://www.wmata.com/alerts</eAlertMessage:sourceUrl>
+            <pubDate>Tue, 08 Apr 2025 19:45:28 GMT</pubDate>
+            <guid isPermaLink="false">e57c3738-cc0b-f011-bae2-002248279643</guid>
+        </item>
+
+        <item>
+            <title>C4</title>
+            <description>C4 Service Alert: Eastbound buses are on detour until 11pm on Wednesday April 23 at Takoma Langley Transit Center &amp; Bus Bay D because of the Purple Line construction. For detailed routing information visit: https://wmata.com/service/status/details/temporary-detour-construction-on-new-hampshire-ave.cfm</description>
+            <link>https://www.wmata.com</link>
+            <source>Alert</source>
+            <eAlertMessage:priority>3</eAlertMessage:priority>
+            <eAlertMessage:cause>CONSTRUCTION</eAlertMessage:cause>
+            <eAlertMessage:effect>DETOUR</eAlertMessage:effect>
+            <eAlertMessage:sourceUrl>https://www.wmata.com/alerts</eAlertMessage:sourceUrl>
+            <pubDate>Tue, 08 Apr 2025 19:45:40 GMT</pubDate>
+            <guid isPermaLink="false">76bf4852-cc0b-f011-bae2-002248279643</guid>
+        </item>
+
+        <item>
+            <title>F8</title>
+            <description>F8 Service Alert: Southbound buses are on detour until 11pm on Wednesday April 23 at Takoma Langley Transit Center &amp; Bus Bay C because of the Purple Line construction. For detailed routing information visit: https://wmata.com/service/status/details/temporary-detour-construction-on-new-hampshire-ave.cfm</description>
+            <link>https://www.wmata.com</link>
+            <source>Alert</source>
+            <eAlertMessage:priority>3</eAlertMessage:priority>
+            <eAlertMessage:cause>CONSTRUCTION</eAlertMessage:cause>
+            <eAlertMessage:effect>DETOUR</eAlertMessage:effect>
+            <eAlertMessage:sourceUrl>https://www.wmata.com/alerts</eAlertMessage:sourceUrl>
+            <pubDate>Tue, 08 Apr 2025 19:46:45 GMT</pubDate>
+            <guid isPermaLink="false">75683d64-cc0b-f011-bae2-002248279643</guid>
+        </item>
+
+        <item>
+            <title>K6</title>
+            <description>K6 Service Alert: Northbound buses are on detour until 11pm on Wednesday April 23 at New Hampshire Ave &amp; University Blvd because of the Purple Line construction. For detailed routing information visit: https://wmata.com/service/status/details/temporary-detour-construction-on-new-hampshire-ave.cfm</description>
+            <link>https://www.wmata.com</link>
+            <source>Alert</source>
+            <eAlertMessage:priority>3</eAlertMessage:priority>
+            <eAlertMessage:cause>CONSTRUCTION</eAlertMessage:cause>
+            <eAlertMessage:effect>DETOUR</eAlertMessage:effect>
+            <eAlertMessage:sourceUrl>https://www.wmata.com/alerts</eAlertMessage:sourceUrl>
+            <pubDate>Tue, 08 Apr 2025 19:47:00 GMT</pubDate>
+            <guid isPermaLink="false">b4412c7a-cc0b-f011-bae2-002248279643</guid>
+        </item>
+
+        <item>
+            <title>K6</title>
+            <description>K6 Service Alert: Southbound buses are on detour until 11pm on Wednesday April 23 at Takoma Langley Transit Center &amp; Bus Bay G because of the Purple Line construction. For detailed routing information visit: https://wmata.com/service/status/details/temporary-detour-construction-on-new-hampshire-ave.cfm</description>
+            <link>https://www.wmata.com</link>
+            <source>Alert</source>
+            <eAlertMessage:priority>3</eAlertMessage:priority>
+            <eAlertMessage:cause>CONSTRUCTION</eAlertMessage:cause>
+            <eAlertMessage:effect>DETOUR</eAlertMessage:effect>
+            <eAlertMessage:sourceUrl>https://www.wmata.com/alerts</eAlertMessage:sourceUrl>
+            <pubDate>Tue, 08 Apr 2025 19:47:16 GMT</pubDate>
+            <guid isPermaLink="false">58986f8c-cc0b-f011-bae2-002248279643</guid>
+        </item>
+
+        <item>
+            <title>K9</title>
+            <description>K9 Service Alert: Northbound buses are on detour until 11pm on Wednesday April 23 at New Hampshire Ave &amp; University Blvd because of the Purple Line construction. For detailed routing information visit: https://wmata.com/service/status/details/temporary-detour-construction-on-new-hampshire-ave.cfm</description>
+            <link>https://www.wmata.com</link>
+            <source>Alert</source>
+            <eAlertMessage:priority>3</eAlertMessage:priority>
+            <eAlertMessage:cause>CONSTRUCTION</eAlertMessage:cause>
+            <eAlertMessage:effect>DETOUR</eAlertMessage:effect>
+            <eAlertMessage:sourceUrl>https://www.wmata.com/alerts</eAlertMessage:sourceUrl>
+            <pubDate>Tue, 08 Apr 2025 19:47:33 GMT</pubDate>
+            <guid isPermaLink="false">78ab4aa1-cc0b-f011-bae2-002248279643</guid>
+        </item>
+    </channel>
+</rss>
