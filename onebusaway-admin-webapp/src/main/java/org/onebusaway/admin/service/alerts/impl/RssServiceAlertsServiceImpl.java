@@ -13,26 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.admin.service.server.impl;
+package org.onebusaway.admin.service.alerts.impl;
 
 
 import com.google.transit.realtime.GtfsRealtime.*;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.lang.StringUtils;
-import org.apache.http.HttpStatus;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
-import org.onebusaway.admin.service.server.ConsoleServiceAlertsService;
-import org.onebusaway.admin.service.server.IntegratingServiceAlertsService;
-import org.onebusaway.alerts.service.ServiceAlerts;
+import org.onebusaway.admin.service.alerts.*;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data.model.ListBean;
-import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.service_alerts.*;
-import org.onebusaway.transit_data.services.TransitDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,28 +33,28 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import static org.onebusaway.admin.util.RssDocumentBuilderUtil.*;
 
 @Component
 public class RssServiceAlertsServiceImpl implements IntegratingServiceAlertsService {
 
     private static Logger _log = LoggerFactory.getLogger(RssServiceAlertsServiceImpl.class);
 
-    private String _defaultAgencyId = null;
     private String _serviceStatusUrlString = null;
     private String _serviceAdvisoryUrlString = null;
     private String _alertSource = "default";
-    private HttpClient _httpClient = new HttpClient();
-    private SAXBuilder _builder = new SAXBuilder();
-    private SimpleDateFormat _sdf = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss zzz");
+    private FeedRetrievalService _feedRetrievalService;
     private ScheduledExecutorService _executor;
-    private TransitDataService _transitDataService;
     private ConsoleServiceAlertsService _serviceAlertsService;
-    private Map<String, String> _routeShortNameToRouteIdMap;
+    private GtfsSupportService _gtfsSupportService;
+    private RssServiceAlertsMapper _rssServiceAlertsMapper;
+
     // NOTE!  because we cache alerts here, we may hold on to alerts that have been manually deleted from db
     private Map<String, ServiceAlertBean> _alertCache;
     private boolean _removeAgencyIds = true;
@@ -72,19 +63,27 @@ public class RssServiceAlertsServiceImpl implements IntegratingServiceAlertsServ
 
     private int _refreshRate = 2; // minutes
 
-    @Autowired
-    public void setTransitDataService(TransitDataService tds) {
-      _transitDataService = tds;
-    }
 
     @Autowired
     public void setConsoleServiceAlertsService(ConsoleServiceAlertsService service) {
         _serviceAlertsService = service;
     }
-    public void setDefaultAgencyId(String agencyId) {
-      this._defaultAgencyId = agencyId;
+
+    @Autowired
+    public void setRssServiceAlertsMapper(RssServiceAlertsMapper rssServiceAlertsMapper){
+        _rssServiceAlertsMapper = rssServiceAlertsMapper;
     }
-    
+
+    @Autowired
+    public void setGtfsSupportService(GtfsSupportService gtfsSupportService){
+        _gtfsSupportService = gtfsSupportService;
+    }
+
+    @Autowired
+    public void setFeedRetrievalService(FeedRetrievalService feedRetrievalService){
+        _feedRetrievalService = feedRetrievalService;
+    }
+
     public void setServiceStatusUrlString(String url) {
       _serviceStatusUrlString = url;
     }
@@ -112,12 +111,7 @@ public class RssServiceAlertsServiceImpl implements IntegratingServiceAlertsServ
       return _serviceStatusUrlString != null && _serviceAdvisoryUrlString != null;
     }
 
-    public String getAgencyId() {
-      if (_defaultAgencyId != null) return _defaultAgencyId;
-      // not configured, default to the first agency
-      return _transitDataService.getAgenciesWithCoverage().get(0).getAgency().getId();
-    }
-    
+
     @PostConstruct
     public void start() throws Exception {
         if (_locale == null)
@@ -141,131 +135,47 @@ public class RssServiceAlertsServiceImpl implements IntegratingServiceAlertsServ
       return _feed;
     }
     
-    protected List<ServiceAlertBean> pollServiceAdvisoryRssFeed() throws Exception {
+    public List<ServiceAlertBean> pollServiceAdvisoryRssFeed() throws Exception {
 
         List<ServiceAlertBean> alerts = new ArrayList<ServiceAlertBean>();
         if (_serviceAdvisoryUrlString == null) return alerts;
-        
-        HttpMethod httpget = new GetMethod(_serviceAdvisoryUrlString);
-        int response = _httpClient.executeMethod(httpget);
-        if (response != HttpStatus.SC_OK) {
-            throw new Exception("service status poll failed, returned status code: " + response);
-        }
 
-        Document doc = _builder.build(httpget.getResponseBodyAsStream());
+        InputStream input = _feedRetrievalService.getFeed("advisory", _serviceAdvisoryUrlString);
+        Document doc = buildDocumentFromRssFeed(input);
+        List<Element> elements = getDocumentElements(doc);
+        String language = getDocumentLanguage(doc, _locale);
 
-        List<Element> elements = doc.getRootElement().getChild("channel").getChildren("item");
-        String language = doc.getRootElement().getChild("channel").getChildText("language");
-        if(language == null)
-            language = _locale.getLanguage();  //they don't send language for this feed currently, perhaps they'll start?
-        if(language.equals("en-us")) {
-          // java prefers en
-          language = _locale.getLanguage();
-        }
         for(Element itemElement : elements){
-            String title = itemElement.getChild("title").getValue();
-            String link = "";
-            if ( itemElement.getChild("link") != null)
-                link = itemElement.getChild("link").getValue();
-            String description = itemElement.getChild("description").getValue();
-            String pubDateString = itemElement.getChild("pubDate").getValue();
-            // guid may spread across multiple routes, differentiate based on title
-            String guid = itemElement.getChild("guid").getValue() + "_" + title;
-            Date pubDate = _sdf.parse(pubDateString);
-            List<SituationAffectsBean> affectedRouteIds = getRouteIds(title);
-            ServiceAlertBean serviceAlertBean = new ServiceAlertBean();
-            serviceAlertBean.setSource(_alertSource+"_advisory");
-            serviceAlertBean.setAllAffects(affectedRouteIds);
-            serviceAlertBean.setSeverity(ESeverity.UNKNOWN);
-            serviceAlertBean.setSummaries(Arrays.asList(new NaturalLanguageStringBean[]{new NaturalLanguageStringBean(description, language)}));
-            serviceAlertBean.setReason(ServiceAlerts.ServiceAlert.Cause.UNKNOWN_CAUSE.name());
-            SituationConsequenceBean situationConsequenceBean = new SituationConsequenceBean();
-            situationConsequenceBean.setEffect(EEffect.SIGNIFICANT_DELAYS);
-            serviceAlertBean.setConsequences(Arrays.asList(new SituationConsequenceBean[]{situationConsequenceBean}));
-            serviceAlertBean.setCreationTime(pubDate.getTime());
-            // don't set description if duplicate of summary
-            //serviceAlertBean.setDescriptions(Arrays.asList(new NaturalLanguageStringBean[]{new NaturalLanguageStringBean(description, language)}));
-            serviceAlertBean.setId(new AgencyAndId(getAgencyId(), guid).toString());
-            if (StringUtils.isNotBlank(link))
-                serviceAlertBean.setUrls(Arrays.asList(new NaturalLanguageStringBean[]{new NaturalLanguageStringBean(link, language)}));
+            ServiceAlertBean serviceAlertBean = _rssServiceAlertsMapper
+                    .rssAlertToServiceAlertBean(itemElement, language, _alertSource, RssServiceAlertType.ADVISORY);
             alerts.add(serviceAlertBean);
         }
         return alerts;
     }
 
-    protected List<ServiceAlertBean>  pollServiceStatusRssFeed() throws Exception {
+
+
+    public List<ServiceAlertBean>  pollServiceStatusRssFeed() throws Exception {
         List<ServiceAlertBean> alerts = new ArrayList<ServiceAlertBean>();  
         if (_serviceStatusUrlString == null) return alerts;
-        
-        HttpMethod httpget = new GetMethod(_serviceStatusUrlString);
-        int response = _httpClient.executeMethod(httpget);
-        if (response != HttpStatus.SC_OK) {
-            throw new Exception("service status poll failed, returned status code: " + response);
-        }
 
-        Document doc = _builder.build(httpget.getResponseBodyAsStream());
+        InputStream input = _feedRetrievalService.getFeed("status", _serviceStatusUrlString);
+        Document doc = buildDocumentFromRssFeed(input);
+        List<Element> elements = getDocumentElements(doc);
+        String language = getDocumentLanguage(doc, _locale);
 
-
-        List<Element> elements = doc.getRootElement().getChild("channel").getChildren("item");
-        String language = doc.getRootElement().getChild("channel").getChildText("language");
-        if (language == null) {
-          language = _locale.getLanguage();
-        }
-        if (language.equals("en-us")) {
-          language = _locale.getLanguage();
-        }
         for(Element itemElement : elements){
-            String title = itemElement.getChild("title").getValue();
-            String link = "";
-            if (itemElement.getChild("link") != null)
-                link = itemElement.getChild("link").getValue();
-            String description = itemElement.getChild("description").getValue();
-            String pubDateString = itemElement.getChild("pubDate").getValue();
-            String guid = itemElement.getChild("guid").getValue();
-            Date pubDate = _sdf.parse(pubDateString);
-            List<SituationAffectsBean> affectedRouteIds = getRouteIds(title);
-            ServiceAlertBean serviceAlertBean = new ServiceAlertBean();
-            serviceAlertBean.setSource(_alertSource+"_alert");
-            serviceAlertBean.setAllAffects(affectedRouteIds);
-            serviceAlertBean.setSeverity(ESeverity.UNKNOWN);
-            serviceAlertBean.setSummaries(Arrays.asList(new NaturalLanguageStringBean[]{new NaturalLanguageStringBean(description, language)}));
-            serviceAlertBean.setReason(ServiceAlerts.ServiceAlert.Cause.UNKNOWN_CAUSE.name());
-            SituationConsequenceBean situationConsequenceBean = new SituationConsequenceBean();
-            situationConsequenceBean.setEffect(EEffect.SIGNIFICANT_DELAYS);
-            serviceAlertBean.setConsequences(Arrays.asList(new SituationConsequenceBean[]{situationConsequenceBean}));
-            serviceAlertBean.setCreationTime(pubDate.getTime());
-            // don't set description if duplicate of summary
-            // serviceAlertBean.setDescriptions(Arrays.asList(new NaturalLanguageStringBean[]{new NaturalLanguageStringBean(description, language)}));
-            serviceAlertBean.setId(new AgencyAndId(getAgencyId(), guid).toString());
-            if (StringUtils.isNotBlank(link))
-                serviceAlertBean.setUrls(Arrays.asList(new NaturalLanguageStringBean[]{new NaturalLanguageStringBean(link, language)}));
+            ServiceAlertBean serviceAlertBean = _rssServiceAlertsMapper
+                    .rssAlertToServiceAlertBean(itemElement, language, _alertSource, RssServiceAlertType.ALERT);
             alerts.add(serviceAlertBean);
         }
         return alerts;
     }
 
-    private List<SituationAffectsBean> getRouteIds(String description){
-        String[] routeShortNames = description.split("\\:")[0].split("\\,");
-        List<SituationAffectsBean> affectedRoutes = new ArrayList<SituationAffectsBean>();
-        for(int i = 0; i < routeShortNames.length; i++) {
-            String routeShortName = routeShortNames[i];
-            routeShortName = routeShortName.toUpperCase().trim();
-            String routeId = _routeShortNameToRouteIdMap.get(routeShortName);
-            if(routeId != null){
-                SituationAffectsBean situationAffectsBean = new SituationAffectsBean();
-                situationAffectsBean.setAgencyId(getAgencyId());
-                situationAffectsBean.setRouteId(routeId);
-                affectedRoutes.add(situationAffectsBean);
-            }else{
-                _log.warn("No route found for route short name " + routeShortName);
-            }
-        }
-        return affectedRoutes;
-    }
+
+
 
     private class PollRssTask implements Runnable {
-
-
         @Override
         public void run() {
             long start = System.currentTimeMillis();
@@ -279,12 +189,12 @@ public class RssServiceAlertsServiceImpl implements IntegratingServiceAlertsServ
                     return;
                 }
 
-                if (_routeShortNameToRouteIdMap == null) {
+                if (!_gtfsSupportService.hasRouteShortNameMappings()) {
                     _log.info("empty route map, exiting");
                     return;
                 }
 
-                ListBean<ServiceAlertBean> currentObaAlerts = _serviceAlertsService.getAllServiceAlertsForAgencyId(getAgencyId());
+                ListBean<ServiceAlertBean> currentObaAlerts = _serviceAlertsService.getAllServiceAlertsForAgencyId(_gtfsSupportService.getAgencyId());
                 for (ServiceAlertBean serviceAlertBean : currentObaAlerts.getList()) {
                     String linkText = "NuLl";
                     if (serviceAlertBean.getUrls() != null
@@ -360,8 +270,8 @@ public class RssServiceAlertsServiceImpl implements IntegratingServiceAlertsServ
                 }
 
                 _serviceAlertsService.removeServiceAlerts(toRemove);
-                _serviceAlertsService.updateServiceAlerts(getAgencyId(), toUpdate);
-                _serviceAlertsService.createServiceAlerts(getAgencyId(), toAdd);
+                _serviceAlertsService.updateServiceAlerts(_gtfsSupportService.getAgencyId(), toUpdate);
+                _serviceAlertsService.createServiceAlerts(_gtfsSupportService.getAgencyId(), toAdd);
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -383,14 +293,8 @@ public class RssServiceAlertsServiceImpl implements IntegratingServiceAlertsServ
 
             while(true){
                 try {
-                    ListBean<RouteBean> routes =  _transitDataService.getRoutesForAgencyId(getAgencyId());
-                    Map<String, String> mutableRouteMap = new HashMap<String, String>();
-                    for(RouteBean route : routes.getList()){
-                      AgencyAndId routeId = AgencyAndId.convertFromString(route.getId());
-                        mutableRouteMap.put(route.getShortName().toUpperCase(), routeId.toString());
-                    }
-                    _routeShortNameToRouteIdMap = Collections.unmodifiableMap(mutableRouteMap);
-                    _alertCache = new HashMap<String, ServiceAlertBean>();
+                    _gtfsSupportService.refreshRouteShortNameToRouteIdMap();
+                    _alertCache = new HashMap<>();
                     break;
                 } catch (RemoteConnectFailureException rcfe) {
                     _log.warn("TDS hasn't started yet, will re-attempt to load routes in 30 seconds");

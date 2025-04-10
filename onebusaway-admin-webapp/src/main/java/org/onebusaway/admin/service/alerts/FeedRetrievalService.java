@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011 Brian Ferris <bdferris@onebusaway.org>
+ * Copyright (C) 2025 Cambridge Systematics, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.admin.service.server;
+package org.onebusaway.admin.service.alerts;
 
-import com.google.transit.realtime.GtfsRealtime.FeedMessage;
+import java.io.InputStream;
 
-public interface IntegratingServiceAlertsService {
-
-  public FeedMessage getServiceAlertFeed();
-
+public interface FeedRetrievalService {
+    InputStream getFeed(String name, String url) throws Exception;
 }

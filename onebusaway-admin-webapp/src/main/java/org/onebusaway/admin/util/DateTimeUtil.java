@@ -15,6 +15,9 @@
  */
 package org.onebusaway.admin.util;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -76,5 +79,10 @@ public class DateTimeUtil {
             cal.set(Calendar.MILLISECOND, 999);
         }
         return cal.getTime();
+    }
+
+    public static Date parseRFC1123ToDate(String dateString) {
+        LocalDate localDate = LocalDate.parse(dateString, DateTimeFormatter.ofPattern("E, dd MMM yyyy HH:mm:ss zzz"));
+        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 }

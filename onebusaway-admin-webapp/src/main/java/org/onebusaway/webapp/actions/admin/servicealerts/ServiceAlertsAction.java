@@ -22,7 +22,7 @@ import org.apache.struts2.convention.annotation.AllowedMethods;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
 import org.apache.struts2.interceptor.validation.SkipValidation;
-import org.onebusaway.admin.service.server.ConsoleServiceAlertsService;
+import org.onebusaway.admin.service.alerts.ConsoleServiceAlertsService;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.util.SystemTime;
 import org.onebusaway.webapp.actions.OneBusAwayNYCAdminActionSupport;

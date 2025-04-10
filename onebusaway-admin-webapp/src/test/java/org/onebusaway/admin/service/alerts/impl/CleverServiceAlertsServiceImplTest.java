@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.admin.service.server.impl;
+package org.onebusaway.admin.service.alerts.impl;
 
 import org.junit.Test;
+import org.onebusaway.admin.service.alerts.impl.CleverServiceAlertsServiceImpl;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.model.service_alerts.TimeRangeBean;

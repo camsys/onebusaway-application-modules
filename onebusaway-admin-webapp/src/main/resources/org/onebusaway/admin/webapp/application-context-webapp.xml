@@ -40,6 +40,7 @@
     <context:component-scan base-package="org.onebusaway.admin.service.impl" />
     <context:component-scan base-package="org.onebusaway.admin.service.assignments.impl" />
     <context:component-scan base-package="org.onebusaway.admin.service.bundle.impl" />
+    <context:component-scan base-package="org.onebusaway.admin.service.alerts.impl" />
     <context:component-scan base-package="org.onebusaway.alerts.impl" />
 
     
@@ -79,7 +80,6 @@
         </property>
     </bean>
 
-    <bean id="serviceAlerts" class="org.onebusaway.admin.service.server.impl.ConsoleServiceAlertsServiceImpl" />
 
     <bean id="createAdmin" class="org.onebusaway.webapp.actions.admin.usermanagement.RegisterUserAction"
         init-method="init">
@@ -212,7 +212,5 @@
 	  <bean id="configurationServiceClient" class="org.onebusaway.util.impl.configuration.ConfigurationServiceClientFileImpl" >
 	  </bean>
 
-    <bean id="rssServiceAlertsService" class="org.onebusaway.admin.service.server.impl.RssServiceAlertsServiceImpl" />
-    <bean id="cleverServiceAlertsService" class="org.onebusaway.admin.service.server.impl.CleverServiceAlertsServiceImpl" />
 
 </beans>

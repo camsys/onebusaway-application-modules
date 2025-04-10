@@ -29,7 +29,7 @@ import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
 import org.json.JSONException;
-import org.onebusaway.admin.service.server.ConsoleServiceAlertsService;
+import org.onebusaway.admin.service.alerts.ConsoleServiceAlertsService;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.presentation.bundles.ResourceBundleSupport;
 import org.onebusaway.presentation.bundles.service_alerts.Reasons;
