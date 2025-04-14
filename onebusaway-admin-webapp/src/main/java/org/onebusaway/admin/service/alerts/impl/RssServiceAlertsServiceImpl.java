@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.onebusaway.admin.util.RssDocumentBuilderUtil.*;
 
-@Component
+@Component("rssServiceAlertsService")
 public class RssServiceAlertsServiceImpl implements IntegratingServiceAlertsService {
 
     private static Logger _log = LoggerFactory.getLogger(RssServiceAlertsServiceImpl.class);
