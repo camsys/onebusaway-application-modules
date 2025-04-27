@@ -107,6 +107,7 @@ public class User extends IdentityBean<Integer> {
   private boolean temporary;
 
   @Lob
+  @Column(columnDefinition = "BLOB")
   private UserProperties properties;
 
   @ManyToMany(fetch = FetchType.EAGER)

@@ -128,7 +128,7 @@ public class GtfsRealtimeTripLibrary {
   public void setScheduleAdherenceFromLocation(boolean scheduleAdherenceFromLocation) {
     _scheduleAdherenceFromLocation = scheduleAdherenceFromLocation;
   }
-  
+
   /**
    * use the vehicle label as the id.
    * @param useLabelAsVehicleId
