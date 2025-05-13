@@ -1344,36 +1344,40 @@ public class GtfsRealtimeTripLibrary {
       // called once per block -- we do not validate if the trip is active
       if (update == null) return null;
       if (update.vehiclePosition == null) return null;
+
+      // do we have no occupancy status and no crowding_descriptor?
+      if (!update.vehiclePosition.hasOccupancyStatus() && !update.vehiclePosition.hasExtension(GtfsRealtimeCrowding.crowdingDescriptor)) {
+        return null;
+      }
+
+      VehicleOccupancyRecord vor = initalizeVehicleOccupancyRecord(update);
+
+      // do we have an occupancy status?
       if (update.vehiclePosition.hasOccupancyStatus()) {
-        VehicleOccupancyRecord vor = initalizeVehicleOccupancyRecord(update);
         try {
           vor.setOccupancyStatus(OccupancyStatus.valueOf(update.vehiclePosition.getOccupancyStatus().name()));
         } catch (IllegalArgumentException iae) {
           _log.debug("unknown occupancy value: " + iae);
         }
-
         if (vor.getOccupancyStatus() == null) {
           // the valueOf failed to match, the spec may have added new fields...
           _log.warn("unmatched occupancy status " + update.vehiclePosition.getOccupancyStatus().name());
           return null;
         }
-        return vor;
       }
 
       // do we have crowding_descriptor?
       if (update.vehiclePosition.hasExtension(GtfsRealtimeCrowding.crowdingDescriptor)) {
         GtfsRealtimeCrowding.CrowdingDescriptor crowdingDescriptor = update.vehiclePosition.getExtension(GtfsRealtimeCrowding.crowdingDescriptor);
-        VehicleOccupancyRecord vor = initalizeVehicleOccupancyRecord(update);
         if (crowdingDescriptor.hasEstimatedCount()) {
           vor.setRawCount(crowdingDescriptor.getEstimatedCount());
         }
         if (crowdingDescriptor.hasEstimatedCapacity()) {
           vor.setCapacity(crowdingDescriptor.getEstimatedCapacity());
         }
-        return vor;
       }
 
-      return null;
+      return vor;
     }
 
   private VehicleOccupancyRecord initalizeVehicleOccupancyRecord(CombinedTripUpdatesAndVehiclePosition update) {
