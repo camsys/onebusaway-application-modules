@@ -1362,7 +1362,6 @@ public class GtfsRealtimeTripLibrary {
         if (vor.getOccupancyStatus() == null) {
           // the valueOf failed to match, the spec may have added new fields...
           _log.warn("unmatched occupancy status " + update.vehiclePosition.getOccupancyStatus().name());
-          return null;
         }
       }
 
