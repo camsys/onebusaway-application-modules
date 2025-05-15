@@ -399,8 +399,9 @@ public class GtfsRealtimeTripLibrary {
           // we are filtering on unassigned and this trip is marked as unassigned
           return null;
         }
+        long isAssignedThreshold = 300000; //5 minutes
         if (!nyctTripDescriptor.getIsAssigned()
-                && tripStartTimeMillis < _currentTime) {
+                && (tripStartTimeMillis + isAssignedThreshold) < _currentTime) {
           // don't let unassigned trips in the past show up
           return null;
         }
