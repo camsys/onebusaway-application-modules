@@ -25,6 +25,7 @@ import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.model.SearchQueryBean.EQueryType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 public class StopByNumberAction extends AbstractTextmarksAction {
 
@@ -40,7 +41,7 @@ public class StopByNumberAction extends AbstractTextmarksAction {
 
   private String _stopId;
 
-  private String[] _args;
+  @Qualifier("BasicServiceAreaService")
 
   @Autowired
   public void setServiceAreaService(ServiceAreaService serviceAreaService) {
