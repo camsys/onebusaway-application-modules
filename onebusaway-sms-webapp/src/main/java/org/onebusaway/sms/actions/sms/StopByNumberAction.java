@@ -39,10 +39,11 @@ public class StopByNumberAction extends AbstractTextmarksAction {
 
   private int _selectedIndex = -1;
 
+  private String[] _args;
+
   private String _stopId;
 
   @Qualifier("BasicServiceAreaService")
-
   @Autowired
   public void setServiceAreaService(ServiceAreaService serviceAreaService) {
     _serviceAreaService = serviceAreaService;
@@ -64,33 +65,32 @@ public class StopByNumberAction extends AbstractTextmarksAction {
     return _stopId;
   }
 
+
   public String[] getArgs() {
     return _args;
   }
 
   @Override
   public String execute() throws ServiceException {
+    String input = cleanUpInput(_text);
+    boolean invalidInput = isInputInvalid(input);
 
-    if (_text != null)
-      _text.trim();
-
-    if (_text == null || _text.length() == 0)
+    if (invalidInput) {
       return INPUT;
+    }
 
-    String[] tokens = _text.trim().split("\\s+");
-
-    if (tokens.length == 0)
-      return INPUT;
-
+    // Check Service Area
     CoordinateBounds serviceArea = _serviceAreaService.getServiceArea();
-
     if (serviceArea == null) {
       pushNextAction("stop-by-number", "text", _text);
       return "query-default-search-location";
     }
 
-    _stopQuery = tokens[0];
+    String[] inputs = getAllInputs(input);
 
+    String stopId = processStopId(inputs);
+
+    _stopQuery = stopId;
     SearchQueryBean searchQuery = new SearchQueryBean();
     searchQuery.setBounds(serviceArea);
     searchQuery.setMaxCount(5);
@@ -111,6 +111,7 @@ public class StopByNumberAction extends AbstractTextmarksAction {
       } else {
         pushNextAction("stop-by-number", "text", _text);
         pushNextAction("handle-multi-selection");
+        _session.put("stopId", stopId);
         return "multipleStopsFound";
       }
     }
@@ -118,9 +119,34 @@ public class StopByNumberAction extends AbstractTextmarksAction {
     StopBean stop = _stops.get(stopIndex);
     _stopId = stop.getId();
 
-    _args = new String[tokens.length - 1];
-    System.arraycopy(tokens, 1, _args, 0, _args.length);
+    _args = new String[inputs.length - 1];
+    System.arraycopy(inputs, 1, _args, 0, _args.length);
+
+    _session.clear();
 
     return "arrivals-and-departures";
+  }
+
+  private String processStopId(String[] inputs) {
+    String sessionStopId = (String) _session.get("stopId");
+    if(sessionStopId != null) {
+      _selectedIndex = Math.max(Integer.parseInt(inputs[0]) - 1, 0);
+      return sessionStopId;
+    }
+    return inputs[0];
+  }
+
+  private String[] getAllInputs(String input) {
+    return input.trim().split("\\s+");
+  }
+
+  private boolean isInputInvalid(String input) {
+    return _text == null || _text.length() == 0 || input.isEmpty();
+  }
+
+  private String cleanUpInput(String text) {
+    if (text != null)
+      return text.trim();
+    return text;
   }
 }
