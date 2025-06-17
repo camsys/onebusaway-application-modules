@@ -115,7 +115,14 @@ public class VehicleMonitoringAction extends MonitoringActionV1Base {
         if (isValidRoute(routeId)) {
           routeIds.add(routeId);
         } else {
-          routeIdErrorString += "No such route: " + routeId.toString() + ".";
+          for (String agency : agencyIds) {
+            routeId = new AgencyAndId(agency, _servletRequest.getParameter(LINE_REF));
+            if (isValidRoute(routeId)) {
+              routeIds.add(routeId);
+            } else {
+              routeIdErrorString += "No such route: " + routeId.toString() + ". ";
+            }
+          }
         }
       } catch (Exception e) {
         // Same as above for vehicle id
