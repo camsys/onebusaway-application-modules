@@ -126,7 +126,7 @@
         </snapshotRepository>
         <site>
             <id>${site_id}</id>
-            <url>${site_url}</url>
+            <url>file:///dev/null</url>
         </site>
     </distributionManagement>
 
