@@ -1,18 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <parent>
-    <artifactId>onebusaway</artifactId>
-    <groupId>org.onebusaway</groupId>
-    <version>1.2.10.1</version>
-  </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>onebusaway-application-modules</artifactId>
-  <version>2.5.25-cs-SNAPSHOT</version>
+  <groupId>org.onebusaway</groupId>
+  <version>2.5.26-cs-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-    <name>onebusaway-application-modules</name>
-    <description>The core OneBusAway application suite.</description>
-    <url>https://github.com/camsys/onebusaway-application-modules/wiki/</url>
+ <name>onebusaway-application-modules</name>
+ <description>The core OneBusAway application suite.</description>
+ <url>https://github.com/camsys/onebusaway-application-modules/wiki/</url>
 
 
   <!-- Common Software Dependency Versions -->
@@ -83,7 +79,8 @@
         <connection>scm:git:git@github.com:camsys/onebusaway-application-modules.git</connection>
         <developerConnection>scm:git:git@github.com:camsys/onebusaway-application-modules.git</developerConnection>
         <url>scm:git:git@github.com:camsys/onebusaway-application-modules</url>
-    </scm>
+      <tag>HEAD</tag>
+  </scm>
 
     <pluginRepositories>
         <pluginRepository>
@@ -529,90 +526,21 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.3</version>
-<!--                <configuration>-->
-<!--                    <reportPlugins>-->
-<!--                        <plugin>-->
-<!--                            <groupId>org.apache.maven.plugins</groupId>-->
-<!--                            <artifactId>maven-project-info-reports-plugin</artifactId>-->
-<!--                            <version>2.3.1</version>-->
-<!--                            <reportSets>-->
-<!--                                <reportSet>-->
-<!--                                    <reports>-->
-<!--                                        <report>project-team</report>-->
-<!--                                        <report>mailing-list</report>-->
-<!--                                        <report>cim</report>-->
-<!--                                        <report>issue-tracking</report>-->
-<!--                                        <report>license</report>-->
-<!--                                        <report>scm</report>-->
-<!--                                        <report>summary</report>-->
-<!--                                    </reports>-->
-<!--                                </reportSet>-->
-<!--                            </reportSets>-->
-<!--                        </plugin>-->
-<!--                        <plugin>-->
-<!--                            <groupId>org.apache.maven.plugins</groupId>-->
-<!--                            <artifactId>maven-javadoc-plugin</artifactId>-->
-<!--                            <version>2.10.3</version>-->
-
-<!--                            <configuration>-->
-<!--                                &lt;!&ndash;-->
-<!--                                  bdferris: I ran into an issue where the javadoc process crashed with the following exception:-->
-<!--                                  java.lang.ClassCastException:-->
-<!--                                    com.sun.tools.javadoc.ClassDocImpl cannot be cast to com.sun.javadoc.AnnotationTypeDoc-->
-<!--                                  After some debugging, this turned out to be because we had class defined in the com.google.gwt.user.client.ui-->
-<!--                                  package, which in turn caused that package to be included in the javadoc build, which in turn caused-->
-<!--                                  a GWT annotation class to be examined in the Javadoc process, which in turn caused javadoc to crash-->
-<!--                                  because of a bug in the javadoc application:-->
-<!--                                    http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6442982-->
-<!--                                  Thus, we exclude this package to avoid the bug.-->
-<!--                                   &ndash;&gt;-->
-<!--                                <excludePackageNames>com.google.gwt.user.client.ui</excludePackageNames>-->
-<!--                                &lt;!&ndash; Turn off Java 8 strict Javadoc checking &ndash;&gt;-->
-<!--                                <additionalparam>-Xdoclint:none</additionalparam>-->
-
-<!--                            </configuration>-->
-<!--                            <reportSets>-->
-<!--                                <reportSet>-->
-<!--                                    <id>main</id>-->
-<!--                                    <reports>-->
-<!--                                        <report>aggregate</report>-->
-<!--                                        <report>javadoc</report>-->
-<!--                                    </reports>-->
-<!--                                </reportSet>-->
-<!--                                <reportSet>-->
-<!--                                    <id>configuration-doclet</id>-->
-<!--                                    <configuration>-->
-<!--                                        <doclet>org.onebusaway.configuration_doclet.ConfigurationDoclet</doclet>-->
-<!--                                        <docletArtifact>-->
-<!--                                            <groupId>org.onebusaway</groupId>-->
-<!--                                            <artifactId>onebusaway-configuration-doclet</artifactId>-->
-<!--                                            <version>1.0.1</version>-->
-<!--                                        </docletArtifact>-->
-<!--                                        <useStandardDocletOptions>false</useStandardDocletOptions>-->
-<!--                                        <additionalparam>-d ${project.build.directory}/site/oba-configs -annotationType-->
-<!--                                            org.onebusaway.container.ConfigurationParameter-->
-<!--                                        </additionalparam>-->
-<!--                                        <destDir>oba-configs</destDir>-->
-<!--                                        <name>OBA Configs</name>-->
-<!--                                        <description>OBA Configuration documentation.</description>-->
-<!--                                    </configuration>-->
-<!--                                    <reports>-->
-<!--                                        <report>aggregate</report>-->
-<!--                                    </reports>-->
-<!--                                </reportSet>-->
-<!--                            </reportSets>-->
-<!--                        </plugin>-->
-<!--                    </reportPlugins>-->
-<!--                </configuration>-->
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.3.2</version>
                 <configuration>
-                    <!--
-                      See discusson above.  We need this here as well for calls to javadoc:javadoc.
-                    -->
-                    <excludePackageNames>com.google.gwt.user.client.ui</excludePackageNames>
+                    <archive>
+                        <manifestEntries>
+                            <Implementation-Build>${gitDescribe}</Implementation-Build>
+                        </manifestEntries>
+                    </archive>
                 </configuration>
             </plugin>
             <plugin>
