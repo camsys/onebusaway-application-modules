@@ -10,7 +10,7 @@ pom.xml.releaseBackup
 *.class
 git.properties
 .DS_Store
-
+.vscode
 onebusaway-admin-webapp/overlays/
 
 onebusaway-enterprise-acta-webapp/overlays/
