@@ -132,7 +132,13 @@ public class TripUpdatesForAgencyAction extends GtfsRealtimeActionSupport {
     if (TransitDataConstants.STATUS_ADDED.equals(tripStatus.getStatus())) {
       tripDesc.setScheduleRelationship(TripDescriptor.ScheduleRelationship.ADDED);
       tripDesc.setStartDate(formatStartDate(tripStatus.getServiceDate()));
-    } else {
+    }
+    else if(TransitDataConstants.STATUS_DUPLICATED.equals(tripStatus.getStatus()))
+    {
+      tripDesc.setScheduleRelationship(TripDescriptor.ScheduleRelationship.DUPLICATED);
+      tripDesc.setStartDate(formatStartDate(tripStatus.getServiceDate()));
+    }
+    else {
       tripDesc.setScheduleRelationship(TripDescriptor.ScheduleRelationship.SCHEDULED);
     }
     StopBean nextStop = tripStatus.getNextStop();
@@ -171,7 +177,14 @@ public class TripUpdatesForAgencyAction extends GtfsRealtimeActionSupport {
         tripDesc.setScheduleRelationship(TripDescriptor.ScheduleRelationship.ADDED);
         tripDesc.setStartDate(formatStartDate(tripStatus.getServiceDate()));
         tripDesc.setStartTime(formatStartTime(tripStatus.getServiceDate() + (tripStatus.getTripStartTime() * 1000)));
-      } else {
+      }
+      else if(TransitDataConstants.STATUS_DUPLICATED.equals(tripStatus.getStatus()))
+      {
+        tripDesc.setScheduleRelationship(TripDescriptor.ScheduleRelationship.DUPLICATED);
+        tripDesc.setStartDate(formatStartDate(tripStatus.getServiceDate()));
+        tripDesc.setStartTime(formatStartTime(tripStatus.getServiceDate() + (tripStatus.getTripStartTime() * 1000)));
+      }
+      else {
         tripDesc.setScheduleRelationship(TripDescriptor.ScheduleRelationship.SCHEDULED);
       }
 

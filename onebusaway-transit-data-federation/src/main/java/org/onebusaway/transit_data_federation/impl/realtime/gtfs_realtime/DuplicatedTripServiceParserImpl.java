@@ -92,7 +92,7 @@ public class DuplicatedTripServiceParserImpl implements DuplicatedTripServicePar
         int originalTripStartTime = getTripStartTime(tripEntry);
         int offset = (duplicatedTrip.getTripStartTime() / 1000) - originalTripStartTime;
 
-        duplicatedTrip.setTripId(tripId + "_Dup");
+        duplicatedTrip.setTripId(tu.getTripProperties().getTripId());
         duplicatedTrip.setRouteId(tripEntry.getRoute().getId().getId());
         duplicatedTrip.setDirectionId(tripEntry.getDirectionId());
         duplicatedTrip.setShapeId(tripEntry.getShapeId());
