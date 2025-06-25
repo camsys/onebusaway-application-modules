@@ -98,6 +98,11 @@ public class TripEntryImpl implements TripEntry, Serializable {
   }
 
   @Override
+  public AgencyAndId getBaseTripId() {
+    return null;
+  }
+
+  @Override
   public RouteEntry getRoute() {
     return _route;
   }

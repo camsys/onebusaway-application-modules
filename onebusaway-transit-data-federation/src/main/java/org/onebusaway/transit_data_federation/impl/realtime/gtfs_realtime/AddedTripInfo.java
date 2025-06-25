@@ -33,6 +33,7 @@ public class AddedTripInfo {
   private String routeId = null;
   private String directionId = null;
   private String vehicleId = null;
+  private String baseTripId = null;
   private List<AddedStopInfo> stops = new ArrayList<>();
 
   private BlockDescriptor.ScheduleRelationship scheduleRelationship;
@@ -43,6 +44,14 @@ public class AddedTripInfo {
 
   public void setScheduleRelationshipValue(String value) {
     this.scheduleRelationship = BlockDescriptor.ScheduleRelationship.valueOf(value);
+  }
+
+  public void setBaseTripId(String baseTripId) {
+    this.baseTripId = baseTripId;
+  }
+
+  public String getBaseTripId() {
+    return baseTripId;
   }
 
   public AgencyAndId getShapeId() {

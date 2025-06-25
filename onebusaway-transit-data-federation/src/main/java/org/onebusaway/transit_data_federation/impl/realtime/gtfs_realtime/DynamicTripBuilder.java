@@ -227,6 +227,7 @@ public class DynamicTripBuilder {
     trip.setServiceId(createLocalizedServiceId(addedTripInfo));
     trip.setStopTimes(createStopTimes(addedTripInfo, trip));
     trip.setTotalTripDistance(calculateTripDistance(trip));
+    trip.setBaseTripId(new AgencyAndId(addedTripInfo.getAgencyId(),addedTripInfo.getBaseTripId()));
     if (trip.getStopTimes() == null || trip.getStopTimes().isEmpty()) {
       _log.debug("aborting trip creation {} with no stops", addedTripInfo.getTripId());
       return null;

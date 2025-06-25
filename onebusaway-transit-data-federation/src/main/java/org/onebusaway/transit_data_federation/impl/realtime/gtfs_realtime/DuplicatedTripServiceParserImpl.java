@@ -43,6 +43,7 @@ public class DuplicatedTripServiceParserImpl implements DuplicatedTripServicePar
         duplicatedTrip.setScheduleRelationshipValue(TransitDataConstants.STATUS_DUPLICATED);
         List<AddedStopInfo> stopInfos = new ArrayList<>();
         String tripId = tu.getTrip().getTripId();
+        duplicatedTrip.setBaseTripId(tripId);
         // this is an existing trip that we will change the start time of
         // therefor the tripId must be known!!!
         TripEntry tripEntry = _entitySource.getTrip(tripId);

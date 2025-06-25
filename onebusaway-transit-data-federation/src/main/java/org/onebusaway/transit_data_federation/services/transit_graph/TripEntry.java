@@ -26,6 +26,11 @@ public interface TripEntry {
 
   public AgencyAndId getId();
 
+  /**
+   * @return id of original trip, or null if this trip is not a duplicate
+   */
+  public AgencyAndId getBaseTripId();
+
   public RouteEntry getRoute();
 
   public RouteCollectionEntry getRouteCollection();

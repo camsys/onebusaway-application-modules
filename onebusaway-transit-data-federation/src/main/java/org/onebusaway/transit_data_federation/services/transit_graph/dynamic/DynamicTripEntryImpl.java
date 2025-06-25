@@ -27,6 +27,8 @@ public class DynamicTripEntryImpl implements TripEntry, Serializable {
     private static final long serialVersionUID = 7L;
 
     private AgencyAndId _id;
+    
+    private AgencyAndId _baseTripId;
 
     private DynamicRouteEntry _route;
 
@@ -43,6 +45,14 @@ public class DynamicTripEntryImpl implements TripEntry, Serializable {
     private double _totalTripDistance;
 
     private FrequencyEntry _frequencyLabel;
+
+    public AgencyAndId getBaseTripId() {
+        return _baseTripId;
+    }
+
+    public void setBaseTripId(AgencyAndId baseTripId) {
+        this._baseTripId = baseTripId;
+    }
 
     public DynamicTripEntryImpl setId(AgencyAndId id) {
         _id = id;

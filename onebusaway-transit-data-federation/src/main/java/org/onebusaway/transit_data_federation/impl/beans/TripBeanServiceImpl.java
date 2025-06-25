@@ -81,6 +81,9 @@ public class TripBeanServiceImpl implements TripBeanService {
     TripBean tripBean = new TripBean();
 
     tripBean.setId(ApplicationBeanLibrary.getId(tripId));
+    if(tripEntry.getBaseTripId()!=null){
+      tripBean.setBaseTripId(ApplicationBeanLibrary.getId(tripEntry.getBaseTripId()));
+    }
 
     tripBean.setTripShortName(tripNarrative.getTripShortName());
     tripBean.setTripHeadsign(tripNarrative.getTripHeadsign());
