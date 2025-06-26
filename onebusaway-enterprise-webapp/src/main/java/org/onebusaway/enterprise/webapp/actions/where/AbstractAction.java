@@ -25,7 +25,7 @@ import org.onebusaway.users.client.model.UserBean;
 import org.onebusaway.users.services.CurrentUserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.beans.factory.annotation.Qualifier;
 
 
 public abstract class AbstractAction extends NextActionSupport {
@@ -42,6 +42,7 @@ public abstract class AbstractAction extends NextActionSupport {
     _session = session;
   }
 
+  @Qualifier("ServiceAreaService")
   @Autowired
   public void setServiceAreaService(ServiceAreaService serviceAreaService) {
     _serviceAreaService = serviceAreaService;
