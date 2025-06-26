@@ -185,6 +185,12 @@ public class TripUpdatesForAgencyAction extends GtfsRealtimeActionSupport {
         tripDesc.setScheduleRelationship(TripDescriptor.ScheduleRelationship.DUPLICATED);
         tripDesc.setStartDate(formatStartDate(tripStatus.getServiceDate()));
         tripDesc.setStartTime(formatStartTime(tripStatus.getServiceDate() + (tripStatus.getTripStartTime() * 1000)));
+        TripUpdate.TripProperties.Builder tripProperties = tripUpdate.getTripPropertiesBuilder();
+        tripProperties.setTripId(normalizeId(activeTripId));
+        tripProperties.setStartDate(formatStartDate(tripStatus.getServiceDate()));
+        tripProperties.setStartTime(formatStartTime(tripStatus.getServiceDate() + (tripStatus.getTripStartTime() * 1000)));
+        tripUpdate.setTripProperties(tripProperties.build());
+
       }
       else {
         tripDesc.setScheduleRelationship(TripDescriptor.ScheduleRelationship.SCHEDULED);
