@@ -15,6 +15,7 @@
  */
 package org.onebusaway.sms.impl;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,11 +33,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-@Component
 public class SessionManagerImpl implements SessionManager {
 
   private static Logger _log = LoggerFactory.getLogger(SessionManagerImpl.class);
-  
+
   private ConcurrentHashMap<String, ContextEntry> _contextEntriesByKey = new ConcurrentHashMap<String, ContextEntry>();
 
   private ScheduledExecutorService _executor;
@@ -47,7 +47,7 @@ public class SessionManagerImpl implements SessionManager {
 
   /**
    * The frequency with which we'll check for stale sessions
-   * 
+   *
    * @param sessionReaperFrequency time, in seconds
    */
   public void setSessionReapearFrequency(int sessionReaperFrequency) {
@@ -56,7 +56,7 @@ public class SessionManagerImpl implements SessionManager {
 
   /**
    * Timeout, in seconds, at which point a session will be considered stale
-   * 
+   *
    * @param sessionTimeout time, in seconds
    */
   public void setSessionTimeout(int sessionTimeout) {
@@ -67,7 +67,7 @@ public class SessionManagerImpl implements SessionManager {
   public void start() {
     _executor = Executors.newSingleThreadScheduledExecutor();
     _executor.scheduleAtFixedRate(new SessionCleanup(),
-        _sessionReaperFrequency, _sessionReaperFrequency, TimeUnit.SECONDS);
+            _sessionReaperFrequency, _sessionReaperFrequency, TimeUnit.SECONDS);
   }
 
   @PreDestroy
@@ -85,11 +85,31 @@ public class SessionManagerImpl implements SessionManager {
     return entry.getContext();
   }
 
+  @Override
+  public boolean contextExistsFor(String sessionId) {
+    return _contextEntriesByKey.containsKey(sessionId);
+  }
+
+  @Override
+  public void saveContext(String sessionId) {
+    // Noop in this implementation
+  }
+
+
+  protected void updateContext(String key, Map<String, Object> context) {
+    _contextEntriesByKey.put(key, new ContextEntry(context));
+  }
+
+  @Override
+  public int getSessionTimeout(){
+    return _sessionTimeout;
+  }
+
   /****
-   * Private Method
+   * Protected Methods
    ****/
 
-  private ContextEntry getOrCreateContextEntry(String key) {
+  protected ContextEntry getOrCreateContextEntry(String key) {
     while (true) {
       ContextEntry entry = new ContextEntry();
       ContextEntry existingEntry = _contextEntriesByKey.putIfAbsent(key, entry);
@@ -99,13 +119,24 @@ public class SessionManagerImpl implements SessionManager {
     }
   }
 
-  private static class ContextEntry {
+  protected static class ContextEntry implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private long _lastAccess;
 
     private Map<String, Object> _context = new HashMap<String, Object>();
 
     private boolean _valid = true;
+
+    public ContextEntry() {
+    }
+
+    public ContextEntry(Map<String, Object> context) {
+      this();
+      _context = context;
+      isValidAfterTouch();
+    }
 
     public synchronized boolean isValidAfterTouch() {
       if (!_valid)
@@ -129,7 +160,7 @@ public class SessionManagerImpl implements SessionManager {
   private class SessionCleanup implements Runnable {
 
     public void run() {
-      long minTime = SystemTime.currentTimeMillis() - _sessionTimeout * 1000;
+      long minTime = SystemTime.currentTimeMillis() - getSessionTimeout() * 1000;
 
       Iterator<ContextEntry> it = _contextEntriesByKey.values().iterator();
 
@@ -140,4 +171,10 @@ public class SessionManagerImpl implements SessionManager {
       }
     }
   }
+
+  @Override
+  public void close() {
+    // no-op in this implementation
+  }
+
 }

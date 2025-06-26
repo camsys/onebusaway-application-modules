@@ -21,4 +21,11 @@ public interface SessionManager {
 
   public Map<String, Object> getContext(String sessionId);
 
+  boolean contextExistsFor(String sessionId);
+
+  void saveContext(String sessionId);
+
+  int getSessionTimeout();
+
+  void close();
 }
