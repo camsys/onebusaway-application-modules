@@ -66,11 +66,11 @@ public class DuplicatedTripServiceParserImpl implements DuplicatedTripServicePar
             // start_date: "YYYYmmDD"
             try {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-                Date startDate = dateFormat.parse(tu.getTrip().getStartDate());
+                Date startDate = dateFormat.parse(tu.getTripProperties().getStartDate());
                 SimpleDateFormat timeSdf = new SimpleDateFormat("HH:mm:ss");
 
                 Calendar timeCalendar = Calendar.getInstance();
-                timeCalendar.setTime(timeSdf.parse(tu.getTrip().getStartTime()));
+                timeCalendar.setTime(timeSdf.parse(tu.getTripProperties().getStartTime()));
 
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(startDate);
@@ -91,7 +91,7 @@ public class DuplicatedTripServiceParserImpl implements DuplicatedTripServicePar
             throw new UnsupportedOperationException("service date / trip start time format not supported");
         }
         int originalTripStartTime = getTripStartTime(tripEntry);
-        int offset = (duplicatedTrip.getTripStartTime() / 1000) - originalTripStartTime;
+        int offset = (duplicatedTrip.getTripStartTime()) - originalTripStartTime;
 
         duplicatedTrip.setTripId(tu.getTripProperties().getTripId());
         duplicatedTrip.setRouteId(tripEntry.getRoute().getId().getId());
