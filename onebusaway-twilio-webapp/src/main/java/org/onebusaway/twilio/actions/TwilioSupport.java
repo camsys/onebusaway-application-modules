@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.util.ValueStack;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 public class TwilioSupport extends ActionSupport implements ParameterAware, CurrentUserAware, SessionAware {
 
@@ -96,8 +95,7 @@ public class TwilioSupport extends ActionSupport implements ParameterAware, Curr
   public void setTransitDataService(TransitDataService transitDataService) {
     _transitDataService = transitDataService;
   }
-
-  @Qualifier("ServiceAreaService")
+  
   @Autowired
   public void setServiceAreaService(ServiceAreaService serviceAreaService) {
     _serviceAreaService = serviceAreaService;

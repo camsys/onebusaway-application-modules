@@ -26,7 +26,6 @@ import org.onebusaway.users.services.CurrentUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.ActionSupport;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 public class AbstractAction extends ActionSupport implements CurrentUserAware {
 
@@ -52,7 +51,6 @@ public class AbstractAction extends ActionSupport implements CurrentUserAware {
     _currentUserService = userDataService;
   }
 
-  @Qualifier("ServiceAreaService")
   @Autowired
   public void setServiceAreaService(ServiceAreaService serviceAreaService) {
     _serviceAreaService = serviceAreaService;
