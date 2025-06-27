@@ -28,6 +28,7 @@ public class AddedTripInfo {
   private String agencyId;
   private int tripStartTime = 0;
   private long serviceDate = -1;
+  private long baseServiceDate = -1;
   private String tripId = null;
   private AgencyAndId shapeId;
   private String routeId = null;
@@ -64,6 +65,10 @@ public class AddedTripInfo {
 
   public boolean hasServiceDate() {
     return serviceDate > 0;
+  }
+
+  public boolean hasBaseServiceDate() {
+    return baseServiceDate > 0;
   }
   public int getTripStartTime() {
     return tripStartTime;
@@ -124,10 +129,18 @@ public class AddedTripInfo {
   public long getServiceDate() {
     return serviceDate;
   }
+
+  public long getBaseServiceDate() {
+    return baseServiceDate;
+  }
+
   public void setServiceDate(long time) {
     this.serviceDate = time;
   }
 
+  public void setBaseServiceDate(long time) {
+    this.baseServiceDate = time;
+  }
   public String getAgencyId() {
     return agencyId;
   }

@@ -36,6 +36,8 @@ public class DynamicStopTimeEntryImpl implements StopTimeEntry, Serializable {
     private double _shapeDistTraveled = Double.NaN;
     private int _accumulatedSlackTime = 0;
     private int _totalStopsInTrip;
+    private int _baseDepartureTime;
+    private int _baseArrivalTime;
 
     private DynamicStopEntryImpl _stop;
 
@@ -53,11 +55,35 @@ public class DynamicStopTimeEntryImpl implements StopTimeEntry, Serializable {
         _departureTime = departureTime;
     }
 
+    @Override
+    public void setBaseDepartureTime(int _baseDepartureTime) {
+        this._baseDepartureTime = _baseDepartureTime;
+    }
+
+    @Override
+    public void setBaseArrivalTime(int baseArrivalTime) {
+        this._baseArrivalTime = baseArrivalTime;
+    }
+
+    @Override
+    public int getBaseArrivalTime() {
+        return _baseArrivalTime;
+    }
+    @Override
+    public int getBaseDepartureTime() {
+        return _baseDepartureTime;
+    }
     public void setHistoricalOccupancy(OccupancyStatus historicalOccupancy) {_historicalOccupancy = historicalOccupancy; }
 
     public DynamicStopTimeEntryImpl setTime(int time) {
         _arrivalTime = time;
         _departureTime = time;
+        return this;
+    }
+
+    public DynamicStopTimeEntryImpl setBaseTime(int baseTime) {
+        _baseArrivalTime = baseTime;
+        _baseDepartureTime = baseTime;
         return this;
     }
 

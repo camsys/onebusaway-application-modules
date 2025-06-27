@@ -60,6 +60,7 @@ public class DuplicatedTripServiceParserImpl implements DuplicatedTripServicePar
             ServiceDate serviceDate = new ServiceDate(new Date(parseDate(tu.getTrip().getStartTime())));
             duplicatedTrip.setTripStartTime(getTimeOfFirstStop(tu.getStopTimeUpdateList(), serviceDate));
             duplicatedTrip.setServiceDate(serviceDate.getAsDate().getTime());
+
         } else if(tu.getTrip().getStartTime().contains(":")){
             // CASE II:
             // start_time: "HH:MM:SS"
@@ -103,7 +104,9 @@ public class DuplicatedTripServiceParserImpl implements DuplicatedTripServicePar
             stopInfo.setStopId(stopTimeEntry.getStop().getId().getId());
             // offset the original times by the different in trip start times
             stopInfo.setArrivalTime(stopTimeEntry.getArrivalTime() + offset);
+            stopInfo.setBaseArrivalTime(stopTimeEntry.getArrivalTime());
             stopInfo.setDepartureTime(stopTimeEntry.getDepartureTime() + offset);
+            stopInfo.setBaseDepartureTime(stopTimeEntry.getDepartureTime());
             stopInfos.add(stopInfo);
         }
         duplicatedTrip.setStops(stopInfos);

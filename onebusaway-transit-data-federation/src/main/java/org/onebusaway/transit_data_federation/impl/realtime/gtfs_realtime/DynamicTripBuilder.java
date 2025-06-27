@@ -286,9 +286,11 @@ public class DynamicTripBuilder {
       stopTime.setStop(copyFromStop(stop));
       if (stopInfo.getArrivalTime() > 0) {
         stopTime.setArrivalTime(toSecondsInDay(stopInfo.getArrivalTime(), addedTripInfo.getServiceDate()));
+        stopTime.setBaseArrivalTime(toSecondsInDay(stopInfo.getBaseArrivalTime(), addedTripInfo.getServiceDate()));
       }
       if (stopInfo.getDepartureTime() > 0) {
         stopTime.setDepartureTime(toSecondsInDay(stopInfo.getDepartureTime(), addedTripInfo.getServiceDate()));
+        stopTime.setBaseDepartureTime(toSecondsInDay(stopInfo.getBaseDepartureTime(), addedTripInfo.getServiceDate()));
       }
       stopTime.setSequence(sequence);
       stopTime.setTrip(trip);

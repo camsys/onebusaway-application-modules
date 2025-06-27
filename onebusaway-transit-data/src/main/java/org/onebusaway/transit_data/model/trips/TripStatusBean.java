@@ -38,6 +38,8 @@ public final class TripStatusBean implements Serializable {
 
   private long serviceDate;
 
+  private long baseServiceDate;
+
   private int tripStartTime;
 
   private String occupancyStatus;
@@ -84,6 +86,8 @@ public final class TripStatusBean implements Serializable {
   private int previousStopTimeOffset;
   
   private double previousStopDistanceFromVehicle;
+
+  private int baseTripStartTime;
   
 
   /****
@@ -132,6 +136,14 @@ public final class TripStatusBean implements Serializable {
     return serviceDate;
   }
 
+  public long getBaseServiceDate() {
+    return baseServiceDate;
+  }
+
+  public void setBaseServiceDate(long baseServiceDate) {
+    this.baseServiceDate = baseServiceDate;
+  }
+
   public void setServiceDate(long serviceDate) {
     this.serviceDate = serviceDate;
   }
@@ -140,9 +152,19 @@ public final class TripStatusBean implements Serializable {
     return tripStartTime;
   }
 
+  public int getBaseTripStartTime() {
+    return baseTripStartTime;
+  }
+
+  public void setBaseTripStartTime(int baseTripStartTime) {
+    this.baseTripStartTime = baseTripStartTime;
+  }
+
   public void setTripStartTime(int tripStartTime) {
     this.tripStartTime = tripStartTime;
   }
+
+
 
   public String getOccupancyStatus() { return occupancyStatus; }
   public void setOccupancyStatus(OccupancyStatus occupancyStatus) {

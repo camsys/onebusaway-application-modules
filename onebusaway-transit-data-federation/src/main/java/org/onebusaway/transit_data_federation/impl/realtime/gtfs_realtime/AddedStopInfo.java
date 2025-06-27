@@ -23,6 +23,8 @@ public class AddedStopInfo {
   private String stopId;
   private long arrivalTime = -1;
   private long departureTime = -1;
+  private long baseArrivalTime = -1;
+  private long baseDepartureTime = -1;
   private String scheduledTrack = null;
   private String actualTrack = null;
 
@@ -52,6 +54,24 @@ public class AddedStopInfo {
   // in millis as long implies
   public void setDepartureTime(long departureTime) {
     this.departureTime = departureTime;
+  }
+
+  // in millis as long implies
+  public void setBaseArrivalTime(long baseArrivalTime) {
+    this.baseArrivalTime = baseArrivalTime;
+  }
+
+  // in millis as long implies
+  public long getBaseArrivalTime() {
+    return baseArrivalTime;
+  }
+  // in millis as long implies
+  public void setBaseDepartureTime(long baseDepartureTime) {
+    this.baseDepartureTime = baseDepartureTime;
+  }
+  // in millis as long implies
+  public long getBaseDepartureTime() {
+    return baseDepartureTime;
   }
 
   public String getScheduledTrack() {
