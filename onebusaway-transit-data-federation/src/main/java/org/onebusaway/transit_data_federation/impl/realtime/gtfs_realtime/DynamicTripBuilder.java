@@ -258,6 +258,7 @@ public class DynamicTripBuilder {
     shapePoints.setShapeId(shapeId);
     shapePoints.setLats(lats.stream().mapToDouble(Double::doubleValue).toArray());
     shapePoints.setLons(lons.stream().mapToDouble(Double::doubleValue).toArray());
+    shapePoints.setDistTraveled(new double[lats.size()]);
     shapePoints.ensureDistTraveled();
     _serviceSource.getNarrativeService().addShapePoints(shapePoints);
   }
@@ -294,6 +295,7 @@ public class DynamicTripBuilder {
       }
       stopTime.setSequence(sequence);
       stopTime.setTrip(trip);
+      stopTime.setShapePointIndex(sequence);
       if (stopTime.getArrivalTime() < 1 && stopTime.getDepartureTime() < 1) {
         _log.error("invalid stoptime -- no data for stop {} on trip {} with arrival {}/departure {} ",
                 stopTime.getId(), trip.getId(), stopTime.getArrivalTime(), stopTime.getDepartureTime());
@@ -313,6 +315,9 @@ public class DynamicTripBuilder {
     result.setShapeId(trip.getShapeId());
     List<Double> lats = new ArrayList<>();
     List<Double> lons = new ArrayList<>();
+
+
+    // if changing this you need to may need to modify stop_times for siri support
     if (stops != null) {
       for (StopTimeEntry stopTime : stops) {
         if (stopTime != null && stopTime.getStop() != null) {
@@ -320,9 +325,10 @@ public class DynamicTripBuilder {
           lons.add(stopTime.getStop().getStopLon());
         }
       }
-
       result.setLats(toArray(lats));
       result.setLons(toArray(lons));
+      result.setDistTraveled(new double[result.getLats().length]);
+      result.ensureDistTraveled();
       return result;
     }
     return null;
