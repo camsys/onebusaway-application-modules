@@ -20,6 +20,7 @@ import com.google.transit.realtime.GtfsRealtime;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.RouteBean;
+import org.onebusaway.transit_data.model.TransitDataConstants;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
@@ -74,6 +75,9 @@ public class VehiclePositionsForAgencyAction extends GtfsRealtimeActionSupport {
         tripDesc.setRouteId(normalizeId(route.getId()));
         if (FILTER_TYPE.ROUTE_ID == filterType && filterValue.equals(AgencyAndIdLibrary.convertFromString(route.getId()).getId())) {
           foundMatch = true;
+        }
+        if(vehicle.getStatus().equals(TransitDataConstants.STATUS_DUPLICATED)){
+          tripDesc.setScheduleRelationship(TripDescriptor.ScheduleRelationship.DUPLICATED);
         }
       }
 

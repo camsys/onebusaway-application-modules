@@ -181,6 +181,7 @@ public class GtfsRealtimeTripLibrary {
     Map<BlockDescriptor, VehiclePosition> anonymousVehiclePositionsByBlock = new HashMap<BlockDescriptor, VehiclePosition>();
 
     Set<BlockDescriptor> badAnonymousVehiclePositions = new HashSet<BlockDescriptor>();
+    Map<String,BlockDescriptor> blocksForDuplicatedTripsWithVehicle = new HashMap<String,BlockDescriptor>();
 
     for (FeedEntity fe : tripUpdateMessage.getEntityList()) {
       if (!fe.hasTripUpdate()) {
@@ -193,8 +194,22 @@ public class GtfsRealtimeTripLibrary {
         AddedTripInfo addedTripInfo = _serviceSource.getDuplicatedTripService().handleDuplicatedDescriptor(tu);
         bd = _serviceSource.getDynamicTripBuilder().createBlockDescriptor(addedTripInfo, getCurrentTime());
         if (bd == null) continue; // we failed
-        anonymousTripUpdatesByBlock.put(bd, tu);
-        continue; // don't let this trip update be processed
+        if (getVehicleId(tu) != null) {
+          // Trip update has a vehicle ID - index by vehicle ID
+          String vehicleId = getVehicleId(tu);
+          if(vehicleId != null || !vehicleId.isEmpty()) {
+            tripUpdatesByVehicleId.put(vehicleId, addStartDateTime(tu));
+            blocksForDuplicatedTripsWithVehicle.put(vehicleId,bd);
+          }
+          else {
+            anonymousTripUpdatesByBlock.put(bd, tu);
+            continue; // don't let this trip update be processed
+          }
+        }
+        else {
+          anonymousTripUpdatesByBlock.put(bd, tu);
+          continue; // don't let this trip update be processed
+        }
       }
 
       if (getVehicleId(tu) != null) {
@@ -249,6 +264,8 @@ public class GtfsRealtimeTripLibrary {
       if (!fe.hasVehicle()) {
         continue;
       }
+
+
 
       VehiclePosition vp = fe.getVehicle();
 
@@ -326,6 +343,9 @@ public class GtfsRealtimeTripLibrary {
       update.block = getTripDescriptorAsBlockDescriptor(result, firstTrip.getTrip(), time, vehicleId);
       if (isNycDynamicTrip(firstTrip)) {
         update.block = handleDynamicTripUpdate(firstTrip);
+      }
+      if (update.block == null) {
+        update.block = blocksForDuplicatedTripsWithVehicle.get(vehicleId);
       }
       // pass through multiple trip updates per block
       update.setTripUpdates(new ArrayList<>(tripUpdates));
@@ -683,7 +703,11 @@ public class GtfsRealtimeTripLibrary {
         if (record.getTripId() == null) {
           // if duplicated alter tripId so its unique
           if (isDuplicated) {
-            record.setTripId(new AgencyAndId(agencyId, markDuplicated(tripUpdate.getTrip().getTripId())));
+            String newTripId = tripUpdate.getTripProperties().getTripId();
+            if (newTripId == null || newTripId.isEmpty()) {
+              newTripId = markDuplicated(tripUpdate.getTrip().getTripId());
+            }
+            record.setTripId(new AgencyAndId(agencyId, newTripId));
           } else {
             record.setTripId(new AgencyAndId(agencyId, tripUpdate.getTrip().getTripId()));
           }
@@ -704,7 +728,11 @@ public class GtfsRealtimeTripLibrary {
 
           // if duplicated alter tripId so its unique
           if (isDuplicated) {
-            tpr.setTripId(new AgencyAndId(agencyId, markDuplicated(tripUpdate.getTrip().getTripId())));
+            String newTripId = tripUpdate.getTripProperties().getTripId();
+            if (newTripId == null || newTripId.isEmpty()) {
+              newTripId = markDuplicated(tripUpdate.getTrip().getTripId());
+            }
+            tpr.setTripId(new AgencyAndId(agencyId, newTripId));
           } else {
             tpr.setTripId(new AgencyAndId(agencyId, tripUpdate.getTrip().getTripId()));
           }

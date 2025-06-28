@@ -122,4 +122,27 @@ public interface StopTimeEntry {
    * Setter for dynamic instances, for static instances only use during initial building.
    */
   void setAccumulatedSlackTime(int accumulatedSlackTime);
+
+  /**
+   * Setter for dynamic instances, returns values for the original static times.
+   * @param _baseDepartureTime
+   */
+  void setBaseDepartureTime(int _baseDepartureTime);
+    /**
+     * Setter for dynamic instances, returns values for the original static times.
+     * @param baseArrivalTime
+     */
+  void setBaseArrivalTime(int baseArrivalTime);
+
+    /**
+     * Getter for dynamic instances, returns values for the original static times.
+     * @return base departure time
+     */
+    int getBaseDepartureTime();
+
+    /**
+     * Getter for dynamic instances, returns values for the original static times.
+     * @return base arrival time
+     */
+    int getBaseArrivalTime();
 }

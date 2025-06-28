@@ -28,11 +28,14 @@ public class AddedTripInfo {
   private String agencyId;
   private int tripStartTime = 0;
   private long serviceDate = -1;
+  private long baseServiceDate = -1;
   private String tripId = null;
   private AgencyAndId shapeId;
   private String routeId = null;
   private String directionId = null;
   private String vehicleId = null;
+  private String baseTripId = null;
+  private AgencyAndId baseShapeId = null;
   private List<AddedStopInfo> stops = new ArrayList<>();
 
   private BlockDescriptor.ScheduleRelationship scheduleRelationship;
@@ -45,6 +48,22 @@ public class AddedTripInfo {
     this.scheduleRelationship = BlockDescriptor.ScheduleRelationship.valueOf(value);
   }
 
+  public void setBaseTripId(String baseTripId) {
+    this.baseTripId = baseTripId;
+  }
+
+  public String getBaseTripId() {
+    return baseTripId;
+  }
+
+  public void setBaseShapeId(AgencyAndId baseShapeId) {
+    this.baseShapeId = baseShapeId;
+  }
+
+    public AgencyAndId getBaseShapeId() {
+        return baseShapeId;
+    }
+
   public AgencyAndId getShapeId() {
     return shapeId;
   }
@@ -55,6 +74,10 @@ public class AddedTripInfo {
 
   public boolean hasServiceDate() {
     return serviceDate > 0;
+  }
+
+  public boolean hasBaseServiceDate() {
+    return baseServiceDate > 0;
   }
   public int getTripStartTime() {
     return tripStartTime;
@@ -115,10 +138,18 @@ public class AddedTripInfo {
   public long getServiceDate() {
     return serviceDate;
   }
+
+  public long getBaseServiceDate() {
+    return baseServiceDate;
+  }
+
   public void setServiceDate(long time) {
     this.serviceDate = time;
   }
 
+  public void setBaseServiceDate(long time) {
+    this.baseServiceDate = time;
+  }
   public String getAgencyId() {
     return agencyId;
   }

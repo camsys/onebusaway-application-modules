@@ -43,6 +43,7 @@ public class DuplicatedTripServiceParserImpl implements DuplicatedTripServicePar
         duplicatedTrip.setScheduleRelationshipValue(TransitDataConstants.STATUS_DUPLICATED);
         List<AddedStopInfo> stopInfos = new ArrayList<>();
         String tripId = tu.getTrip().getTripId();
+        duplicatedTrip.setBaseTripId(tripId);
         // this is an existing trip that we will change the start time of
         // therefor the tripId must be known!!!
         TripEntry tripEntry = _entitySource.getTrip(tripId);
@@ -51,6 +52,8 @@ public class DuplicatedTripServiceParserImpl implements DuplicatedTripServicePar
             return null;
         }
         duplicatedTrip.setAgencyId(tripEntry.getId().getAgencyId());
+        duplicatedTrip.setBaseShapeId(tripEntry.getShapeId());
+
         // producers interpret the spec different ways
         // CASE I:
         // start_time: "20230510"
@@ -59,17 +62,18 @@ public class DuplicatedTripServiceParserImpl implements DuplicatedTripServicePar
             ServiceDate serviceDate = new ServiceDate(new Date(parseDate(tu.getTrip().getStartTime())));
             duplicatedTrip.setTripStartTime(getTimeOfFirstStop(tu.getStopTimeUpdateList(), serviceDate));
             duplicatedTrip.setServiceDate(serviceDate.getAsDate().getTime());
+
         } else if(tu.getTrip().getStartTime().contains(":")){
             // CASE II:
             // start_time: "HH:MM:SS"
             // start_date: "YYYYmmDD"
             try {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-                Date startDate = dateFormat.parse(tu.getTrip().getStartDate());
+                Date startDate = dateFormat.parse(tu.getTripProperties().getStartDate());
                 SimpleDateFormat timeSdf = new SimpleDateFormat("HH:mm:ss");
 
                 Calendar timeCalendar = Calendar.getInstance();
-                timeCalendar.setTime(timeSdf.parse(tu.getTrip().getStartTime()));
+                timeCalendar.setTime(timeSdf.parse(tu.getTripProperties().getStartTime()));
 
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(startDate);
@@ -90,9 +94,9 @@ public class DuplicatedTripServiceParserImpl implements DuplicatedTripServicePar
             throw new UnsupportedOperationException("service date / trip start time format not supported");
         }
         int originalTripStartTime = getTripStartTime(tripEntry);
-        int offset = (duplicatedTrip.getTripStartTime() / 1000) - originalTripStartTime;
+        int offset = (duplicatedTrip.getTripStartTime()) - originalTripStartTime;
 
-        duplicatedTrip.setTripId(tripId + "_Dup");
+        duplicatedTrip.setTripId(tu.getTripProperties().getTripId());
         duplicatedTrip.setRouteId(tripEntry.getRoute().getId().getId());
         duplicatedTrip.setDirectionId(tripEntry.getDirectionId());
         duplicatedTrip.setShapeId(tripEntry.getShapeId());
@@ -102,7 +106,9 @@ public class DuplicatedTripServiceParserImpl implements DuplicatedTripServicePar
             stopInfo.setStopId(stopTimeEntry.getStop().getId().getId());
             // offset the original times by the different in trip start times
             stopInfo.setArrivalTime(stopTimeEntry.getArrivalTime() + offset);
+            stopInfo.setBaseArrivalTime(stopTimeEntry.getArrivalTime());
             stopInfo.setDepartureTime(stopTimeEntry.getDepartureTime() + offset);
+            stopInfo.setBaseDepartureTime(stopTimeEntry.getDepartureTime());
             stopInfos.add(stopInfo);
         }
         duplicatedTrip.setStops(stopInfos);

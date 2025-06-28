@@ -297,8 +297,10 @@ public class TripStatusBeanServiceImpl implements TripDetailsBeanService {
       StopTimeEntry firstStop = activeBlockTrip.getTrip().getStopTimes().get(0);
       if (firstStop.getArrivalTime() > 0) {
         bean.setTripStartTime(firstStop.getArrivalTime());
+        bean.setBaseTripStartTime(firstStop.getBaseArrivalTime());
       } else if (firstStop.getDepartureTime() > 0) {
         bean.setTripStartTime(firstStop.getDepartureTime());
+        bean.setBaseTripStartTime(firstStop.getBaseDepartureTime());
       }
       if (blockLocation.isLastKnownDistanceAlongBlockSet()) {
         bean.setLastKnownDistanceAlongTrip(blockLocation.getLastKnownDistanceAlongBlock()

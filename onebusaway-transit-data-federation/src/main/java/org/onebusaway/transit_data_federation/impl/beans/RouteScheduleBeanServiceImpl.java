@@ -318,6 +318,9 @@ public class RouteScheduleBeanServiceImpl implements RouteScheduleBeanService {
     if (references.hasTrip(tripEntry.getId())) return;
     TripBean bean = new TripBean();
     bean.setId(AgencyAndIdLibrary.convertToString(tripEntry.getId()));
+    if(tripEntry.getBaseTripId()!=null){
+      bean.setBaseTripId(AgencyAndIdLibrary.convertToString(tripEntry.getBaseTripId()));
+    }
     bean.setDirectionId(tripEntry.getDirectionId());
     bean.setServiceId(AgencyAndIdLibrary.convertToString(tripEntry.getServiceId().getId()));
     bean.setBlockId(AgencyAndIdLibrary.convertToString(tripEntry.getBlock().getId()));

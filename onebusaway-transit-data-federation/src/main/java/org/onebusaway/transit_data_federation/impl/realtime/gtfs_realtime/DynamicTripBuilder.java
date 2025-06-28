@@ -225,26 +225,52 @@ public class DynamicTripBuilder {
     trip.setDirectionId(getGtfsDirectionId(addedTripInfo.getDirectionId()));
     trip.setBlock(block);
     trip.setServiceId(createLocalizedServiceId(addedTripInfo));
+    // here we set the shapeId to the tripId
+    trip.setShapeId(getOrCreateShape(addedTripInfo, trip).getShapeId());
     trip.setStopTimes(createStopTimes(addedTripInfo, trip));
     trip.setTotalTripDistance(calculateTripDistance(trip));
+    trip.setBaseTripId(new AgencyAndId(addedTripInfo.getAgencyId(),addedTripInfo.getBaseTripId()));
     if (trip.getStopTimes() == null || trip.getStopTimes().isEmpty()) {
       _log.debug("aborting trip creation {} with no stops", addedTripInfo.getTripId());
       return null;
     }
-    // here we set the shapeId to the tripId
-    trip.setShapeId(createShape(trip, new AgencyAndId(trip.getId().getAgencyId(), trip.getId().getId())));
     return trip;
   }
 
-  private AgencyAndId createShape(DynamicTripEntryImpl trip, AgencyAndId shapeId) {
-    ShapePoints shapePointsForShapeId = _serviceSource.getShapePointService().getShapePointsForShapeId(shapeId);
-    if (shapePointsForShapeId == null) {
-      createShapePoints(trip, shapeId);
-    }
-    return shapeId;
+
+
+  private AgencyAndId getShapeId(DynamicTripEntryImpl trip) {
+    return new AgencyAndId(trip.getId().getAgencyId(), trip.getId().getId());
   }
 
-  private void createShapePoints(DynamicTripEntryImpl trip, AgencyAndId shapeId) {
+  private ShapePoints getOrCreateShape(AddedTripInfo addedTripInfo, DynamicTripEntryImpl trip) {
+    AgencyAndId shapeId = getShapeId(trip);
+    ShapePoints shapePointsForShapeId = _serviceSource.getShapePointService().getShapePointsForShapeId(shapeId);
+    if (shapePointsForShapeId == null) {
+      if(addedTripInfo.getBaseShapeId()!=null){
+        shapePointsForShapeId = cloneShapePoints(_serviceSource.getShapePointService().getShapePointsForShapeId(addedTripInfo.getBaseShapeId()));
+        shapePointsForShapeId.setShapeId(getShapeId(trip));
+      }
+      else{
+        shapePointsForShapeId = createShapePoints(trip, shapeId);
+      }
+      _serviceSource.getNarrativeService().addShapePoints(shapePointsForShapeId);
+    }
+    return shapePointsForShapeId;
+  }
+
+  private ShapePoints cloneShapePoints(ShapePoints original) {
+    if (original == null) return null;
+    ShapePoints shapePoints = new ShapePoints();
+    shapePoints.setShapeId(original.getShapeId());
+    shapePoints.setLats(original.getLats());
+    shapePoints.setLons(original.getLons());
+    shapePoints.setDistTraveled(original.getDistTraveled());
+    shapePoints.ensureDistTraveled();
+    return shapePoints;
+  }
+
+  private ShapePoints createShapePoints(DynamicTripEntryImpl trip, AgencyAndId shapeId) {
     List<Double> lats = new ArrayList<>();
     List<Double> lons = new ArrayList<>();
 
@@ -257,8 +283,9 @@ public class DynamicTripBuilder {
     shapePoints.setShapeId(shapeId);
     shapePoints.setLats(lats.stream().mapToDouble(Double::doubleValue).toArray());
     shapePoints.setLons(lons.stream().mapToDouble(Double::doubleValue).toArray());
+    shapePoints.setDistTraveled(new double[lats.size()]);
     shapePoints.ensureDistTraveled();
-    _serviceSource.getNarrativeService().addShapePoints(shapePoints);
+    return shapePoints;
   }
 
   private String getGtfsDirectionId(String directionFlag) {
@@ -285,12 +312,15 @@ public class DynamicTripBuilder {
       stopTime.setStop(copyFromStop(stop));
       if (stopInfo.getArrivalTime() > 0) {
         stopTime.setArrivalTime(toSecondsInDay(stopInfo.getArrivalTime(), addedTripInfo.getServiceDate()));
+        stopTime.setBaseArrivalTime(toSecondsInDay(stopInfo.getBaseArrivalTime(), addedTripInfo.getServiceDate()));
       }
       if (stopInfo.getDepartureTime() > 0) {
         stopTime.setDepartureTime(toSecondsInDay(stopInfo.getDepartureTime(), addedTripInfo.getServiceDate()));
+        stopTime.setBaseDepartureTime(toSecondsInDay(stopInfo.getBaseDepartureTime(), addedTripInfo.getServiceDate()));
       }
       stopTime.setSequence(sequence);
       stopTime.setTrip(trip);
+      stopTime.setShapePointIndex(sequence);
       if (stopTime.getArrivalTime() < 1 && stopTime.getDepartureTime() < 1) {
         _log.error("invalid stoptime -- no data for stop {} on trip {} with arrival {}/departure {} ",
                 stopTime.getId(), trip.getId(), stopTime.getArrivalTime(), stopTime.getDepartureTime());
@@ -299,8 +329,7 @@ public class DynamicTripBuilder {
       sequence++;
       stops.add(stopTime);
     }
-    ShapePoints shapePoints = null;
-    shapePoints = loadShapePoints(trip, stops);
+    ShapePoints shapePoints = getOrCreateShape(addedTripInfo,trip);
     _serviceSource.getStopTimeEntriesFactory().ensureStopTimesHaveShapeDistanceTraveledSet(stops, shapePoints);
     return stops;
   }
@@ -310,6 +339,9 @@ public class DynamicTripBuilder {
     result.setShapeId(trip.getShapeId());
     List<Double> lats = new ArrayList<>();
     List<Double> lons = new ArrayList<>();
+
+
+    // if changing this you need to may need to modify stop_times for siri support
     if (stops != null) {
       for (StopTimeEntry stopTime : stops) {
         if (stopTime != null && stopTime.getStop() != null) {
@@ -317,9 +349,10 @@ public class DynamicTripBuilder {
           lons.add(stopTime.getStop().getStopLon());
         }
       }
-
       result.setLats(toArray(lats));
       result.setLons(toArray(lons));
+      result.setDistTraveled(new double[result.getLats().length]);
+      result.ensureDistTraveled();
       return result;
     }
     return null;

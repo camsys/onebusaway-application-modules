@@ -39,6 +39,8 @@ public class StopTimeEntryImpl implements StopTimeEntry, Serializable {
   private double _shapeDistTraveled = Double.NaN;
   private int _accumulatedSlackTime = 0;
   private int _totalStopsInTrip;
+  private int _baseDepartureTime;
+  private int _baseArrivalTime;
 
   private StopEntryImpl _stop;
 
@@ -104,7 +106,27 @@ public class StopTimeEntryImpl implements StopTimeEntry, Serializable {
   public void setAccumulatedSlackTime(int accumulatedSlackTime) {
     _accumulatedSlackTime = accumulatedSlackTime;
   }
-  
+
+  @Override
+  public void setBaseDepartureTime(int _baseDepartureTime) {
+    this._baseDepartureTime = _baseDepartureTime;
+  }
+
+  @Override
+  public void setBaseArrivalTime(int baseArrivalTime) {
+    this._baseArrivalTime = baseArrivalTime;
+  }
+
+  @Override
+  public int getBaseArrivalTime() {
+    return _baseArrivalTime;
+  }
+
+  @Override
+  public int getBaseDepartureTime() {
+    return _baseDepartureTime;
+  }
+
   public void setTotalStopsInTrip(int totalStopsInTrip) {
     _totalStopsInTrip = totalStopsInTrip;
   }

@@ -132,7 +132,14 @@ public class TripUpdatesForAgencyAction extends GtfsRealtimeActionSupport {
     if (TransitDataConstants.STATUS_ADDED.equals(tripStatus.getStatus())) {
       tripDesc.setScheduleRelationship(TripDescriptor.ScheduleRelationship.ADDED);
       tripDesc.setStartDate(formatStartDate(tripStatus.getServiceDate()));
-    } else {
+    }
+    else if(TransitDataConstants.STATUS_DUPLICATED.equals(tripStatus.getStatus()))
+    {
+      tripDesc.setTripId(normalizeId(activeTrip.getBaseTripId()));
+      tripDesc.setScheduleRelationship(TripDescriptor.ScheduleRelationship.DUPLICATED);
+      tripDesc.setStartDate(formatStartDate(tripStatus.getServiceDate()));
+    }
+    else {
       tripDesc.setScheduleRelationship(TripDescriptor.ScheduleRelationship.SCHEDULED);
     }
     StopBean nextStop = tripStatus.getNextStop();
@@ -171,7 +178,21 @@ public class TripUpdatesForAgencyAction extends GtfsRealtimeActionSupport {
         tripDesc.setScheduleRelationship(TripDescriptor.ScheduleRelationship.ADDED);
         tripDesc.setStartDate(formatStartDate(tripStatus.getServiceDate()));
         tripDesc.setStartTime(formatStartTime(tripStatus.getServiceDate() + (tripStatus.getTripStartTime() * 1000)));
-      } else {
+      }
+      else if(TransitDataConstants.STATUS_DUPLICATED.equals(tripStatus.getStatus()))
+      {
+        tripDesc.setTripId(normalizeId(activeTrip.getBaseTripId()));
+        tripDesc.setScheduleRelationship(TripDescriptor.ScheduleRelationship.DUPLICATED);
+        tripDesc.setStartDate(formatStartDate(tripStatus.getServiceDate()));
+        tripDesc.setStartTime(formatStartTime(tripStatus.getServiceDate() + (tripStatus.getBaseTripStartTime() * 1000)));
+        TripUpdate.TripProperties.Builder tripProperties = tripUpdate.getTripPropertiesBuilder();
+        tripProperties.setTripId(normalizeId(activeTripId));
+        tripProperties.setStartDate(formatStartDate(tripStatus.getServiceDate()));
+        tripProperties.setStartTime(formatStartTime(tripStatus.getServiceDate() + (tripStatus.getTripStartTime() * 1000)));
+        tripUpdate.setTripProperties(tripProperties.build());
+
+      }
+      else {
         tripDesc.setScheduleRelationship(TripDescriptor.ScheduleRelationship.SCHEDULED);
       }
 

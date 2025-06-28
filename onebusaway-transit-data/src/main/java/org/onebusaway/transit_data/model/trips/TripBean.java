@@ -25,6 +25,8 @@ public final class TripBean implements Serializable {
 
   private String id;
 
+  private String baseTripId;
+
   private RouteBean route;
   
   private String routeShortName;
@@ -61,10 +63,19 @@ public final class TripBean implements Serializable {
     this.directionId = trip.directionId;
     this.totalTripDistance = trip.totalTripDistance;
     this.peakOffpeak = trip.peakOffpeak;
+    this.baseTripId = trip.baseTripId;
   }
 
   public String getId() {
     return id;
+  }
+
+  public String getBaseTripId() {
+    return baseTripId;
+  }
+
+  public void setBaseTripId(String baseTripId) {
+    this.baseTripId = baseTripId;
   }
 
   public void setId(String id) {
