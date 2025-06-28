@@ -225,6 +225,8 @@ public class DynamicTripBuilder {
     trip.setDirectionId(getGtfsDirectionId(addedTripInfo.getDirectionId()));
     trip.setBlock(block);
     trip.setServiceId(createLocalizedServiceId(addedTripInfo));
+    // here we set the shapeId to the tripId
+    trip.setShapeId(getOrCreateShape(addedTripInfo, trip).getShapeId());
     trip.setStopTimes(createStopTimes(addedTripInfo, trip));
     trip.setTotalTripDistance(calculateTripDistance(trip));
     trip.setBaseTripId(new AgencyAndId(addedTripInfo.getAgencyId(),addedTripInfo.getBaseTripId()));
@@ -232,20 +234,43 @@ public class DynamicTripBuilder {
       _log.debug("aborting trip creation {} with no stops", addedTripInfo.getTripId());
       return null;
     }
-    // here we set the shapeId to the tripId
-    trip.setShapeId(createShape(trip, new AgencyAndId(trip.getId().getAgencyId(), trip.getId().getId())));
     return trip;
   }
 
-  private AgencyAndId createShape(DynamicTripEntryImpl trip, AgencyAndId shapeId) {
-    ShapePoints shapePointsForShapeId = _serviceSource.getShapePointService().getShapePointsForShapeId(shapeId);
-    if (shapePointsForShapeId == null) {
-      createShapePoints(trip, shapeId);
-    }
-    return shapeId;
+
+
+  private AgencyAndId getShapeId(DynamicTripEntryImpl trip) {
+    return new AgencyAndId(trip.getId().getAgencyId(), trip.getId().getId());
   }
 
-  private void createShapePoints(DynamicTripEntryImpl trip, AgencyAndId shapeId) {
+  private ShapePoints getOrCreateShape(AddedTripInfo addedTripInfo, DynamicTripEntryImpl trip) {
+    AgencyAndId shapeId = getShapeId(trip);
+    ShapePoints shapePointsForShapeId = _serviceSource.getShapePointService().getShapePointsForShapeId(shapeId);
+    if (shapePointsForShapeId == null) {
+      if(addedTripInfo.getBaseShapeId()!=null){
+        shapePointsForShapeId = cloneShapePoints(_serviceSource.getShapePointService().getShapePointsForShapeId(addedTripInfo.getBaseShapeId()));
+        shapePointsForShapeId.setShapeId(getShapeId(trip));
+      }
+      else{
+        shapePointsForShapeId = createShapePoints(trip, shapeId);
+      }
+      _serviceSource.getNarrativeService().addShapePoints(shapePointsForShapeId);
+    }
+    return shapePointsForShapeId;
+  }
+
+  private ShapePoints cloneShapePoints(ShapePoints original) {
+    if (original == null) return null;
+    ShapePoints shapePoints = new ShapePoints();
+    shapePoints.setShapeId(original.getShapeId());
+    shapePoints.setLats(original.getLats());
+    shapePoints.setLons(original.getLons());
+    shapePoints.setDistTraveled(original.getDistTraveled());
+    shapePoints.ensureDistTraveled();
+    return shapePoints;
+  }
+
+  private ShapePoints createShapePoints(DynamicTripEntryImpl trip, AgencyAndId shapeId) {
     List<Double> lats = new ArrayList<>();
     List<Double> lons = new ArrayList<>();
 
@@ -260,7 +285,7 @@ public class DynamicTripBuilder {
     shapePoints.setLons(lons.stream().mapToDouble(Double::doubleValue).toArray());
     shapePoints.setDistTraveled(new double[lats.size()]);
     shapePoints.ensureDistTraveled();
-    _serviceSource.getNarrativeService().addShapePoints(shapePoints);
+    return shapePoints;
   }
 
   private String getGtfsDirectionId(String directionFlag) {
@@ -304,8 +329,7 @@ public class DynamicTripBuilder {
       sequence++;
       stops.add(stopTime);
     }
-    ShapePoints shapePoints = null;
-    shapePoints = loadShapePoints(trip, stops);
+    ShapePoints shapePoints = getOrCreateShape(addedTripInfo,trip);
     _serviceSource.getStopTimeEntriesFactory().ensureStopTimesHaveShapeDistanceTraveledSet(stops, shapePoints);
     return stops;
   }

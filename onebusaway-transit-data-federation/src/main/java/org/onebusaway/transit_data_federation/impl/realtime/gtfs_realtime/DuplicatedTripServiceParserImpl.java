@@ -52,6 +52,8 @@ public class DuplicatedTripServiceParserImpl implements DuplicatedTripServicePar
             return null;
         }
         duplicatedTrip.setAgencyId(tripEntry.getId().getAgencyId());
+        duplicatedTrip.setBaseShapeId(tripEntry.getShapeId());
+
         // producers interpret the spec different ways
         // CASE I:
         // start_time: "20230510"
