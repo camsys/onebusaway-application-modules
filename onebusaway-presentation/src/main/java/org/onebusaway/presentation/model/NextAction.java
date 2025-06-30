@@ -18,10 +18,12 @@
  */
 package org.onebusaway.presentation.model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class NextAction {
+public class NextAction implements Serializable {
+  private static final long serialVersionUID = 1L;
 
   private final String _action;
 

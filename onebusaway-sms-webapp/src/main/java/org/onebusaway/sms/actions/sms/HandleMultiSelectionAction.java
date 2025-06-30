@@ -15,6 +15,9 @@
  */
 package org.onebusaway.sms.actions.sms;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class HandleMultiSelectionAction extends AbstractTextmarksAction {
 
   private static final long serialVersionUID = 1L;
@@ -45,6 +48,16 @@ public class HandleMultiSelectionAction extends AbstractTextmarksAction {
     if (_selectedIndex == -1)
       return "cancel";
 
+    if(_session.get("stopId") != null) {
+      String stopId = (String) _session.get("stopId");
+      Map<String, String[]> params = new HashMap<>();
+      params.put("stopId", new String[]{stopId});
+      params.put("selectedIndex", new String[]{String.valueOf(_selectedIndex)});
+      pushNextAction("stop-by-number",params);
+      _session.remove("stopId");
+    }
+
     return getNextActionOrSuccess();
   }
+
 }

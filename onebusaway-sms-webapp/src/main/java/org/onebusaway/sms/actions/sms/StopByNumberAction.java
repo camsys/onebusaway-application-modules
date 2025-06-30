@@ -109,7 +109,6 @@ public class StopByNumberAction extends AbstractTextmarksAction {
       if (0 <= _selectedIndex && _selectedIndex < _stops.size()) {
         stopIndex = _selectedIndex;
       } else {
-        pushNextAction("stop-by-number", "text", _text);
         pushNextAction("handle-multi-selection");
         _session.put("stopId", stopId);
         return "multipleStopsFound";

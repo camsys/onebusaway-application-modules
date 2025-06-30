@@ -13,6 +13,10 @@
 
     <name>onebusaway-sms-webapp</name>
 
+    <properties>
+        <log4j.appender>ROLL</log4j.appender>
+    </properties>
+
     <dependencies>
 
         <!--       Log4j 2 -->

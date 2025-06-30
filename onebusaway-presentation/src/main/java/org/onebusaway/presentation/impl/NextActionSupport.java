@@ -58,6 +58,7 @@ public abstract class NextActionSupport extends ActionSupport implements
       return SUCCESS;
 
     NextAction next = stack.remove(stack.size() - 1);
+    _session.put(NEXT_ACTION_STACK_SESSION_KEY, stack);
 
     Map<String, String[]> params = next.getParameters();
     if (params != null && !params.isEmpty()) {
@@ -80,6 +81,11 @@ public abstract class NextActionSupport extends ActionSupport implements
   protected void pushNextAction(String action, String key, String value) {
     List<NextAction> stack = getNextActionStack(true);
     stack.add(new NextAction(action, key, value));
+  }
+
+  protected void pushNextAction(String action, Map<String, String[]> parameters) {
+    List<NextAction> stack = getNextActionStack(true);
+    stack.add(new NextAction(action, parameters));
   }
 
   /****
