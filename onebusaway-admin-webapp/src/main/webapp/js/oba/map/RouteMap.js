@@ -253,6 +253,10 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 
 				for (i = 0; i < response.length; i++) {
 					var activity = response[i];
+					let mvj = activity.MonitoredVehicleJourney;
+					if(mvj === undefined ||  (mvj != undefined && Object.keys(mvj).length === 0)){
+						continue;
+					}
 					if (activity.MonitoredVehicleJourney.DirectionRef == "0") {
 						activityByDirection[0].push(activity)
 					} else if (activity.MonitoredVehicleJourney.DirectionRef == "1") {

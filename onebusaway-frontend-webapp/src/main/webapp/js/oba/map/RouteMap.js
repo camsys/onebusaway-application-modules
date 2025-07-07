@@ -247,8 +247,14 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 			// service delivery
 			var vehiclesByIdInResponse = {};
 			if (json.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity != undefined) {
-                jQuery.each(json.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity, function (_, activity) {
-                    var latitude = activity.MonitoredVehicleJourney.VehicleLocation.Latitude;
+				jQuery.each(json.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity, function (_, activity) {
+					// skip empty or undefined MonitoredVehicleJourney
+					let mvj = activity.MonitoredVehicleJourney;
+					if(mvj === undefined || (mvj != undefined && Object.keys(mvj).length === 0)){
+						return true;
+					}
+
+					var latitude = activity.MonitoredVehicleJourney.VehicleLocation.Latitude;
                     var longitude = activity.MonitoredVehicleJourney.VehicleLocation.Longitude;
                     var orientation = activity.MonitoredVehicleJourney.Bearing;
                     var headsign = activity.MonitoredVehicleJourney.DestinationName;
