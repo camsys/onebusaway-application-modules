@@ -86,6 +86,10 @@ public abstract class NextActionSupport extends ActionSupport implements
     stack.add(new NextAction(action, key, value));
   }
 
+  protected void clearSession(){
+    _session.clear();
+  }
+
   protected void pushNextAction(String action, Map<String, String[]> parameters) {
     List<NextAction> stack = getNextActionStack(true);
     stack.add(new NextAction(action, parameters));

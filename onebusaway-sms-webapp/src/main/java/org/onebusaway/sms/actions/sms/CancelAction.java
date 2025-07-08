@@ -28,6 +28,7 @@ public class CancelAction extends AbstractTextmarksAction {
   @Override
   public String execute() {
     clearNextActions();
+    clearSession();
     return SUCCESS;
   }
 }
