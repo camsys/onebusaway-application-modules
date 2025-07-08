@@ -30,16 +30,19 @@ import com.opensymphony.xwork2.ActionSupport;
 public abstract class NextActionSupport extends ActionSupport implements
     SessionAware {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 2L;
+
 
   private static final String NEXT_ACTION_STACK_SESSION_KEY = NextActionSupport.class.getName()
       + ".nextActionStack";
+
 
   protected Map<String, Object> _session;
 
   public void setSession(Map<String, Object> session) {
     _session = session;
   }
+
 
   /****
    * Protected Methods
@@ -52,10 +55,10 @@ public abstract class NextActionSupport extends ActionSupport implements
     stack = getNextActionStack(false);
   }
 
-  protected String getNextActionOrSuccess() {
+  protected NextAction getNextActionOrSuccess() {
     List<NextAction> stack = getNextActionStack(false);
     if (stack == null || stack.isEmpty())
-      return SUCCESS;
+      return new NextAction(SUCCESS);
 
     NextAction next = stack.remove(stack.size() - 1);
     _session.put(NEXT_ACTION_STACK_SESSION_KEY, stack);
@@ -70,7 +73,7 @@ public abstract class NextActionSupport extends ActionSupport implements
       }
     }
 
-    return next.getAction();
+    return next;
   }
 
   protected void pushNextAction(String action) {
@@ -101,4 +104,6 @@ public abstract class NextActionSupport extends ActionSupport implements
     }
     return stack;
   }
+
+
 }

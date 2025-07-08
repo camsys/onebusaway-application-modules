@@ -15,7 +15,9 @@
  */
 package org.onebusaway.sms.actions.sms;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
@@ -65,6 +67,10 @@ public class StopByNumberAction extends AbstractTextmarksAction {
     return _stopId;
   }
 
+  public void setStopId(String stopId) {
+    _stopId = stopId;
+  }
+
 
   public String[] getArgs() {
     return _args;
@@ -109,28 +115,35 @@ public class StopByNumberAction extends AbstractTextmarksAction {
       if (0 <= _selectedIndex && _selectedIndex < _stops.size()) {
         stopIndex = _selectedIndex;
       } else {
-        pushNextAction("handle-multi-selection");
+        Map<String, String[]> params = new HashMap<>();
+        _session.put("numberOfStops",_stops.size());
         _session.put("stopId", stopId);
+        pushNextAction("handle-multi-selection");
         return "multipleStopsFound";
       }
     }
 
+    _session.remove("numberOfStops");
+    _session.remove("stopId");
+
+
     StopBean stop = _stops.get(stopIndex);
     _stopId = stop.getId();
+
 
     _args = new String[inputs.length - 1];
     System.arraycopy(inputs, 1, _args, 0, _args.length);
 
-    _session.clear();
 
     return "arrivals-and-departures";
   }
 
   private String processStopId(String[] inputs) {
-    String sessionStopId = (String) _session.get("stopId");
+    Object sessionStopId = _session.get("stopId");
     if(sessionStopId != null) {
+      String stopId = (String) sessionStopId;
       _selectedIndex = Math.max(Integer.parseInt(inputs[0]) - 1, 0);
-      return sessionStopId;
+      return stopId;
     }
     return inputs[0];
   }

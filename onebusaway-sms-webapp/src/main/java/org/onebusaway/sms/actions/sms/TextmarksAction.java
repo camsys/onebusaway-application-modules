@@ -16,6 +16,7 @@
 package org.onebusaway.sms.actions.sms;
 
 import org.onebusaway.exceptions.ServiceException;
+import org.onebusaway.presentation.model.NextAction;
 
 public class TextmarksAction extends AbstractTextmarksAction {
 
@@ -28,14 +29,14 @@ public class TextmarksAction extends AbstractTextmarksAction {
     if( _text != null && _text.startsWith("#reset"))
       return "command";
 
-    String nextAction = getNextActionOrSuccess();
+    NextAction nextAction = getNextActionOrSuccess();
 
-    if (nextAction.equals(SUCCESS)) {
+    if (nextAction.getAction().equals(SUCCESS)) {
       if( _text != null && _text.startsWith("#"))
         return "command";
       return "stop-by-number";
     }
 
-    return nextAction;
+    return nextAction.getAction();
   }
 }

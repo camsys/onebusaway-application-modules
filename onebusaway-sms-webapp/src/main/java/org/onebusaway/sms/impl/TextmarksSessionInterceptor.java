@@ -18,7 +18,6 @@ package org.onebusaway.sms.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.interceptor.SessionAware;
 import org.onebusaway.presentation.impl.users.XWorkRequestAttributes;
 import org.onebusaway.sms.services.SessionManager;
@@ -27,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import com.brsanthu.googleanalytics.EventHit;
 import com.brsanthu.googleanalytics.PageViewHit;
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
@@ -35,7 +33,7 @@ import com.opensymphony.xwork2.interceptor.AbstractInterceptor;
 
 public class TextmarksSessionInterceptor extends AbstractInterceptor {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 2L;
 
   private SessionManager _sessionManager;
 
@@ -92,15 +90,21 @@ public class TextmarksSessionInterceptor extends AbstractInterceptor {
       ((SessionAware) action).setSession(persistentSession);
 
     try {
+      invocation.addPreResultListener((inv, resultCode) -> _sessionManager.saveContext(sessionId));
       return invocation.invoke();
-    } finally {
+    }
+    catch (Exception e) {
+      _sessionManager.clearSession(sessionId);
+      throw e;
+    }
+    finally {
       _sessionManager.saveContext(sessionId);
       RequestContextHolder.setRequestAttributes(originalAttributes);
       context.setSession(originalSession);
       _sessionManager.close();
     }
   }
-  
+
   private void processGoogleAnalytics(){
 	  processGoogleAnalyticsPageView();
   }

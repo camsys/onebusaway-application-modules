@@ -15,7 +15,10 @@
  */
 package org.onebusaway.sms.actions.sms;
 
+import org.onebusaway.transit_data.model.StopBean;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class HandleMultiSelectionAction extends AbstractTextmarksAction {
@@ -24,9 +27,15 @@ public class HandleMultiSelectionAction extends AbstractTextmarksAction {
 
   private int _selectedIndex;
 
+  private String _stopId;
+
+  private int _numberOfStops = Integer.MAX_VALUE;
+
   public int getSelectedIndex() {
     return _selectedIndex;
   }
+
+  private List<StopBean> _stops;
 
   @Override
   public String execute() {
@@ -39,6 +48,10 @@ public class HandleMultiSelectionAction extends AbstractTextmarksAction {
       return "command";
     }
 
+    if(_session.get("numberOfStops") != null) {
+      _numberOfStops = (Integer) _session.get("numberOfStops");
+    }
+
     try {
       _selectedIndex = Integer.parseInt(_text) - 1;
     } catch (NumberFormatException ex) {
@@ -48,16 +61,33 @@ public class HandleMultiSelectionAction extends AbstractTextmarksAction {
     if (_selectedIndex == -1)
       return "cancel";
 
-    if(_session.get("stopId") != null) {
-      String stopId = (String) _session.get("stopId");
-      Map<String, String[]> params = new HashMap<>();
-      params.put("stopId", new String[]{stopId});
-      params.put("selectedIndex", new String[]{String.valueOf(_selectedIndex)});
-      pushNextAction("stop-by-number",params);
-      _session.remove("stopId");
+    if(_selectedIndex >= getNumberOfStops()){
+      return "cancel";
     }
 
-    return getNextActionOrSuccess();
+
+    Map<String, String[]> params = new HashMap<>();
+    _session.put("selectedIndex", new String[]{String.valueOf(_selectedIndex)});
+    pushNextAction("stop-by-number");
+
+
+    return getNextActionOrSuccess().getAction();
+  }
+
+  public int getNumberOfStops() {
+    return _numberOfStops;
+  }
+
+  public void setNumberOfStops(int numberOfStops) {
+    _numberOfStops = numberOfStops;
+  }
+
+  public void setStopId(String stopId) {
+    _stopId = stopId;
+  }
+
+  private String getStopId() {
+    return _stopId;
   }
 
 }

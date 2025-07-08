@@ -15,6 +15,7 @@
  */
 package org.onebusaway.sms.actions.sms;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.onebusaway.geocoder.model.GeocoderResult;
@@ -24,7 +25,7 @@ import org.onebusaway.presentation.services.GeocoderResultPresentationService;
 import org.onebusaway.presentation.services.SetUserDefaultSearchFromGeocoderService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class SetDefaultSearchLocationAction extends AbstractTextmarksAction {
+public class SetDefaultSearchLocationAction extends AbstractTextmarksAction implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -59,8 +60,7 @@ public class SetDefaultSearchLocationAction extends AbstractTextmarksAction {
           _records);
       return "multipleRecords";
     }
-
-    return getNextActionOrSuccess();
+    return getNextActionOrSuccess().getAction();
   }
 
   public String getGeocoderResultAsString(GeocoderResult result) {

@@ -25,6 +25,8 @@ public interface SessionManager {
 
   void saveContext(String sessionId);
 
+  void clearSession(String sessionId);
+
   int getSessionTimeout();
 
   void close();

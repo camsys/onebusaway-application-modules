@@ -21,7 +21,6 @@ public class CommandSetSearchLocationAction extends AbstractTextmarksAction {
 
   @Override
   public String execute() {
-    pushNextAction("default-search-location-set");
     return "query-default-search-location";
   }
 }

@@ -31,7 +31,6 @@ import org.onebusaway.sms.services.SessionManager;
 import org.onebusaway.util.SystemTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 public class SessionManagerImpl implements SessionManager {
 
@@ -95,6 +94,10 @@ public class SessionManagerImpl implements SessionManager {
     // Noop in this implementation
   }
 
+  @Override
+  public void clearSession(String sessionId) {
+    _contextEntriesByKey.remove(sessionId);
+  }
 
   protected void updateContext(String key, Map<String, Object> context) {
     _contextEntriesByKey.put(key, new ContextEntry(context));

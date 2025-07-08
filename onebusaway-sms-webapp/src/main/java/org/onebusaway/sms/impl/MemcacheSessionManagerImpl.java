@@ -63,7 +63,8 @@ public class MemcacheSessionManagerImpl extends SessionManagerImpl {
     public void saveContext(String sessionId) {
         _log.debug("Saving context for sessionId " + sessionId);
         try {
-            Future<Boolean> cas = getClient().set(sessionId, getSessionTimeout(), super.getOrCreateContextEntry(sessionId));
+            ContextEntry contextEntry = super.getOrCreateContextEntry(sessionId);
+            Future<Boolean> cas = getClient().set(sessionId, getSessionTimeout(), contextEntry);
             _log.debug("saveContext: response: " + cas.get());
         } catch (Exception e) {
             _log.error("Failed to save context: ", e);
