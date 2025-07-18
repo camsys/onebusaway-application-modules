@@ -700,6 +700,9 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
           continue;
         }
         BlockDescriptor.ScheduleRelationship scheduleRelationship = update.block.getScheduleRelationship();
+        if(TransitDataConstants.STATUS_DUPLICATED.equals(scheduleRelationship.name())){
+          metricTripId= update.getTripUpdates().get(0).getTripProperties().getTripId();
+        }
         if (scheduleRelationship == null) {
           _log.error("no schedule relationship for update {}", update);
           result.addUnmatchedTripId(metricTripId);
