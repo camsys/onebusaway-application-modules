@@ -213,9 +213,14 @@ public class GtfsRealtimeTripLibrary {
       }
 
       if (getVehicleId(tu) != null) {
-        // Trip update has a vehicle ID - index by vehicle ID
-        String vehicleId = getVehicleId(tu);
-        tripUpdatesByVehicleId.put(vehicleId, addStartDateTime(tu));
+        try {
+          // Trip update has a vehicle ID - index by vehicle ID
+          String vehicleId = getVehicleId(tu);
+          tripUpdatesByVehicleId.put(vehicleId, addStartDateTime(tu));
+        } catch (IllegalStateException t) {
+          _log.error("unable to add StartDateTime ignoring trip update {}", t, t);
+          continue;
+        }
       } else {
         /*
          * Trip update does not have a vehicle ID - index by TripDescriptor
