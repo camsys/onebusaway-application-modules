@@ -19,7 +19,7 @@
         <gwt-version>2.4.0</gwt-version>
         <csv-entities-version>1.1.7</csv-entities-version>
         <collections-version>1.2.8</collections-version>
-        <gtfs-version>1.4.22</gtfs-version>
+        <gtfs-version>1.4.23-SNAPSHOT</gtfs-version>
         <gtfs-api-version>1.2.32</gtfs-api-version>
         <guava-version>16.0.1</guava-version>
         <jackson-version>2.12.0</jackson-version>
@@ -48,17 +48,17 @@
         <struts-version>2.5.31</struts-version>
         <wiki_integration_version>1.0.0</wiki_integration_version>
 
-        <!-- Distribution Properties -->
-        <distribution_id>releases-camsys-public-repo</distribution_id>
-        <distribution_name>Camsys Public Release Repo</distribution_name>
-        <distribution_url>s3://repo.camsys-apps.com/releases/</distribution_url>
-        <snapshot_distribution_id>snapshots-camsys-public-repo</snapshot_distribution_id>
-        <snapshot_distribution_name>Camsys Public Snapshot Repo</snapshot_distribution_name>
-        <snapshot_distribution_url>s3://repo.camsys-apps.com/snapshots/</snapshot_distribution_url>
-        <site_id>developer.onebusaway.org</site_id>
-        <site_deployment_base>scp://developer.onebusaway.org/var/www/sites/developer/modules</site_deployment_base>
-        <site_url>${site_deployment_base}/${project.name}/${project.version}</site_url>
-        <site_base_url>http://developer.onebusaway.org/modules</site_base_url>
+<!--        &lt;!&ndash; Distribution Properties &ndash;&gt;-->
+<!--        <distribution_id>releases-camsys-public-repo</distribution_id>-->
+<!--        <distribution_name>Camsys Public Release Repo</distribution_name>-->
+<!--        <distribution_url>s3://repo.camsys-apps.com/releases/</distribution_url>-->
+<!--        <snapshot_distribution_id>snapshots-camsys-public-repo</snapshot_distribution_id>-->
+<!--        <snapshot_distribution_name>Camsys Public Snapshot Repo</snapshot_distribution_name>-->
+<!--        <snapshot_distribution_url>s3://repo.camsys-apps.com/snapshots/</snapshot_distribution_url>-->
+<!--        <site_id>developer.onebusaway.org</site_id>-->
+<!--        <site_deployment_base>scp://developer.onebusaway.org/var/www/sites/developer/modules</site_deployment_base>-->
+<!--        <site_url>${site_deployment_base}/${project.name}/${project.version}</site_url>-->
+<!--        <site_base_url>http://developer.onebusaway.org/modules</site_base_url>-->
     </properties>
 
 
