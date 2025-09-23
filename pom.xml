@@ -48,17 +48,17 @@
         <struts-version>2.5.31</struts-version>
         <wiki_integration_version>1.0.0</wiki_integration_version>
 
-<!--        &lt;!&ndash; Distribution Properties &ndash;&gt;-->
-<!--        <distribution_id>releases-camsys-public-repo</distribution_id>-->
-<!--        <distribution_name>Camsys Public Release Repo</distribution_name>-->
-<!--        <distribution_url>s3://repo.camsys-apps.com/releases/</distribution_url>-->
-<!--        <snapshot_distribution_id>snapshots-camsys-public-repo</snapshot_distribution_id>-->
-<!--        <snapshot_distribution_name>Camsys Public Snapshot Repo</snapshot_distribution_name>-->
-<!--        <snapshot_distribution_url>s3://repo.camsys-apps.com/snapshots/</snapshot_distribution_url>-->
-<!--        <site_id>developer.onebusaway.org</site_id>-->
-<!--        <site_deployment_base>scp://developer.onebusaway.org/var/www/sites/developer/modules</site_deployment_base>-->
-<!--        <site_url>${site_deployment_base}/${project.name}/${project.version}</site_url>-->
-<!--        <site_base_url>http://developer.onebusaway.org/modules</site_base_url>-->
+        <!-- Distribution Properties -->
+        <distribution_id>releases-camsys-public-repo</distribution_id>
+        <distribution_name>Camsys Public Release Repo</distribution_name>
+        <distribution_url>s3://repo.camsys-apps.com/releases/</distribution_url>
+        <snapshot_distribution_id>snapshots-camsys-public-repo</snapshot_distribution_id>
+        <snapshot_distribution_name>Camsys Public Snapshot Repo</snapshot_distribution_name>
+        <snapshot_distribution_url>s3://repo.camsys-apps.com/snapshots/</snapshot_distribution_url>
+        <site_id>developer.onebusaway.org</site_id>
+        <site_deployment_base>scp://developer.onebusaway.org/var/www/sites/developer/modules</site_deployment_base>
+        <site_url>${site_deployment_base}/${project.name}/${project.version}</site_url>
+        <site_base_url>http://developer.onebusaway.org/modules</site_base_url>
     </properties>
 
 
