@@ -144,7 +144,7 @@
         </property>
     </bean>
     
-	<bean id="serviceAreaServiceImpl" class="org.onebusaway.presentation.impl.ServiceAreaServiceImpl">
+	<bean id="serviceAreaServiceImpl" class="org.onebusaway.presentation.impl.ServiceAreaServiceImpl" primary="true">
         <property name="defaultBounds">
             <bean class="org.onebusaway.geospatial.model.CoordinateBounds">
                 <property name="minLat" value="38.792627" />
