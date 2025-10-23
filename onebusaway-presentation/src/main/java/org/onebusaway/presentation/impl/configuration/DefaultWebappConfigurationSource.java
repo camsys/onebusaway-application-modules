@@ -26,6 +26,7 @@ import org.onebusaway.presentation.services.configuration.ConfigurationSource;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -46,6 +47,7 @@ public class DefaultWebappConfigurationSource implements ConfigurationSource {
   }
 
   @Autowired
+  @Qualifier("ServiceAreaServiceImpl")
   public void setServiceAreaService(ServiceAreaService serviceAreaService) {
     _serviceAreaService = serviceAreaService;
   }
