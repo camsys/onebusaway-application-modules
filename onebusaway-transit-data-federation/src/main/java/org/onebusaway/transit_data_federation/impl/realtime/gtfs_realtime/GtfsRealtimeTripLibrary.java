@@ -67,6 +67,7 @@ public class GtfsRealtimeTripLibrary {
   private static Pattern _pattern = Pattern.compile("^(-{0,1}\\d+):(\\d{2}):(\\d{2})$");
   private GtfsRealtimeEntitySource _entitySource;
   private GtfsRealtimeServiceSource _serviceSource;
+  private boolean _ignoreMissingStopUpdates = true;
 
   /**
    * This is primarily here to assist with unit testing.
@@ -88,6 +89,9 @@ public class GtfsRealtimeTripLibrary {
   private boolean _useLabelAsVehicleId = false;
 
   private boolean _filterUnassigned = false;
+
+  public void setIgnoreMissingStopUpdates(boolean ignoreMissingStopUpdates){
+    _ignoreMissingStopUpdates= ignoreMissingStopUpdates;}
 
   public void setEntitySource(GtfsRealtimeEntitySource entitySource) {
     _entitySource = entitySource;
@@ -1004,10 +1008,15 @@ public class GtfsRealtimeTripLibrary {
       record.setTimeOfRecord(instantaneousScheduleDeviation.timestamp);
     }
 
-    if(!hasNonSkippedStops.get()){
-      record.setStatus(TripDescriptor.ScheduleRelationship.CANCELED.name());
-      instantaneousScheduleDeviation.isCanceled = true;
-    } else if (blockDescriptor.getScheduleRelationship() != null) {
+    if(!_ignoreMissingStopUpdates){
+      if(!hasNonSkippedStops.get()){
+        record.setStatus(TripDescriptor.ScheduleRelationship.CANCELED.name());
+        instantaneousScheduleDeviation.isCanceled = true;
+      } else if (blockDescriptor.getScheduleRelationship() != null) {
+        record.setStatus(blockDescriptor.getScheduleRelationship().name());
+      }
+    }
+    else{
       record.setStatus(blockDescriptor.getScheduleRelationship().name());
     }
 
