@@ -150,6 +150,23 @@
   <dependencyManagement>
 
     <dependencies>
+      <dependency>
+        <groupId>com.camsys</groupId>
+        <artifactId>gtfs-realtime-bindings</artifactId>
+        <version>0.0.9-cs-SNAPSHOT</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.onebusaway</groupId>
+        <artifactId>onebusaway-gtfs-realtime-api</artifactId>
+        <version>${gtfs-api-version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.mobilitydata.transit</groupId>
+            <artifactId>gtfs-realtime-bindings</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
 
       <dependency>
         <groupId>org.onebusaway</groupId>
@@ -404,6 +421,14 @@
       </dependency>
  	</dependencies>
   </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.camsys</groupId>
+      <artifactId>gtfs-realtime-bindings</artifactId>
+      <version>0.0.9-cs-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
 
   <build>
     <!-- This is where we control the master plugin version used by all modules -->
