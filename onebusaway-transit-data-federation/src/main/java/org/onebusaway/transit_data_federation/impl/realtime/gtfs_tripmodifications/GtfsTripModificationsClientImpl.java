@@ -1,0 +1,160 @@
+package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.transit.realtime.GtfsRealtime.Shape;
+import com.google.transit.realtime.GtfsRealtime.Stop;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.PostConstruct;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import com.google.transit.realtime.GtfsRealtime.FeedEntity;
+import com.google.transit.realtime.GtfsRealtime.FeedMessage;
+import com.google.transit.realtime.GtfsRealtime.TripModifications;
+
+public class GtfsTripModificationsClientImpl implements GtfsTripModificationsClient {
+
+    private static final Logger _log = LoggerFactory.getLogger(GtfsTripModificationsClientImpl.class);
+
+    private String _gtfsTripModificationsUrl;
+
+    private ScheduledExecutorService _scheduledExecutorService;
+
+    private int _refreshInterval;
+
+    private ObjectMapper _mapper = new ObjectMapper();
+
+    @Autowired
+    public void setRefreshInterval(int refreshInterval) {
+        _refreshInterval = refreshInterval;
+    }
+    
+    @Autowired
+    public void setGtfsTripModificationsUrl(String gtfsTripModificationsUrl) {
+        _gtfsTripModificationsUrl = gtfsTripModificationsUrl;
+    }
+
+    @Autowired
+    public void setScheduledExecutorService(ScheduledExecutorService scheduledExecutorService) {
+        _scheduledExecutorService = scheduledExecutorService;
+    }
+
+    @PostConstruct
+    public void init() {
+        _scheduledExecutorService.scheduleAtFixedRate(this::update, 0, _refreshInterval, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public void update() {
+        try {
+            _log.info("Fetching GTFS Trip Modifications from {}", this._gtfsTripModificationsUrl);
+            URL url = new URL(this._gtfsTripModificationsUrl);
+            FeedMessage feedMessage;
+
+            if (url.getProtocol().equals("file")) {
+                try (InputStream inputStream = new FileInputStream(url.getPath())) {
+                    feedMessage = FeedMessage.parseFrom(inputStream);
+                }
+            } else {
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setConnectTimeout(30000);
+                connection.setReadTimeout(30000);
+
+                try (InputStream inputStream = connection.getInputStream()) {
+                    _log.info("Connected, downloading feed...");
+                    byte[] data = inputStream.readAllBytes();
+                    _log.info("Downloaded {} bytes, parsing...", data.length);
+                    feedMessage = FeedMessage.parseFrom(data);
+                    _log.info("Parsing complete, entity count: {}", feedMessage.getEntityCount());
+                } finally {
+                    connection.disconnect();
+                }
+            }
+
+            _log.info("Successfully fetched and parsed GTFS Trip Modifications feed");
+            this.processFeed(feedMessage);
+        } catch (IOException e) {
+            _log.error("Error fetching or parsing feed: {}", e.getMessage(), e);
+        } catch (Exception e) {
+            _log.error("Unexpected error: {}", e.getMessage(), e);
+        } catch (Throwable t) {
+            _log.error("Error ({}): {}", t.getClass().getName(), t.getMessage(), t);
+        }
+
+    }
+
+    private void processFeed(FeedMessage feedMessage) {
+        if (!feedMessage.hasHeader() || feedMessage.getEntityList().isEmpty()) {
+            _log.warn("Feed is empty or invalid.");
+            return;
+        }
+        if (!feedMessage.getHeader().hasIncrementality()) {
+            _log.error("Feed incrementality not supported.");
+            return;
+        }
+
+        //TODO verify feed is for the correct bundle??
+//        String feedName = feedMessage.getHeader().getDescriptorForType().getName();
+//        if (feedName != null) {
+//            if (!_transitDataService.getActiveBundleId().equals(feedName)) {
+//                _log.error("Feed is for a different bundle");
+//                return;
+//            }
+//        }
+        handleNewFeed(feedMessage);
+    }
+
+    private void handleNewFeed(FeedMessage feedMessage) {
+        List<TripModifications> tripModificationsList = new ArrayList<>();
+        _log.info("Processing feed with {} entities.", feedMessage.getEntityList().size());
+
+        List<Shape> shapesList = new ArrayList<>();
+
+        for (FeedEntity entity : feedMessage.getEntityList()) {
+            if (entity.hasTripUpdate()) {
+                //TODO Are we just ignoring trip updates?
+                _log.info("Processing trip update for entity ID: {}", entity.getId());
+                // Add logic to handle trip updates here
+            }
+            if (entity.hasShape()) {
+                // Collect new Shapes to apply to the system
+                shapesList.add(entity.getShape());
+            }
+            if (entity.hasStop()) {
+                Stop stop = entity.getStop();
+                _log.info("Reading new stop ID: {}, name: {}, Latlon: {},{}",
+                        stop.getStopId(),
+                        stop.getStopName(),
+                        stop.getStopLat(),
+                        stop.getStopLon());
+            }
+            if (entity.hasTripModifications()) {
+                _log.info("Reading trip modifications for entity ID: {}", entity.getId());
+                tripModificationsList.add(entity.getTripModifications());
+                TripModifications tm = entity.getTripModifications();
+                _log.info("TripModification: {}", tm.toString());
+            }
+        }
+        int totalMods = tripModificationsList.size();
+        int totalShapes = shapesList.size();
+        int success = 0;
+//        _shapeHandler.handleShapes(shapesList);
+        _log.info("Shapes: processed {} shapes, corresponding to {} successful internal changes", totalShapes, success);
+        success = 0;
+//        success = _gtfsTripModificationsHandler.handleTripModifications(feedMessage.getHeader().getTimestamp(), tripModificationsList);
+        _log.info("Service changes: processed {} service changes, corresponding to {} successful internal changes", totalMods, success);
+    }
+
+
+}
