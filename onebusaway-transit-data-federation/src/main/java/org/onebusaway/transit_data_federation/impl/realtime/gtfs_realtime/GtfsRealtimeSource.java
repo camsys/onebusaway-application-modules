@@ -20,15 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -879,6 +871,8 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
 
     _serviceAlertService.removeServiceAlerts(new ArrayList<AgencyAndId>(toBeDeleted));
     _serviceAlertService.cleanup();
+    removeAlertsFromCache(toBeDeleted);
+
     _log.info("[" + getFeedId() + "] handleAlertCollection complete with "
             + currentAlerts.size()
             + " active alerts and "
@@ -886,6 +880,12 @@ public class GtfsRealtimeSource implements MonitoredDataSource {
             + " deleted in "
             + (System.currentTimeMillis() - start) + " ms");
 
+  }
+
+  private void removeAlertsFromCache(Collection<AgencyAndId> serviceAlertIds) {
+    for (AgencyAndId alertId : serviceAlertIds) {
+      _alertsById.remove(alertId);
+    }
   }
 
   private void handleSingleAlert(AgencyAndId id,
