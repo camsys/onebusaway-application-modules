@@ -155,7 +155,7 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 	public synchronized void removeServiceAlerts(List<AgencyAndId> serviceAlertIds) {
 	  if (_persister.needsSync()) this.loadServiceAlerts();
 		for (AgencyAndId serviceAlertId : serviceAlertIds) {
-      ServiceAlertRecord existingServiceAlert = _cache.removeServiceAlert(serviceAlertId);
+      		ServiceAlertRecord existingServiceAlert = _cache.removeServiceAlert(serviceAlertId);
 
 			if (existingServiceAlert != null) {
 				updateReferences(existingServiceAlert, null);
