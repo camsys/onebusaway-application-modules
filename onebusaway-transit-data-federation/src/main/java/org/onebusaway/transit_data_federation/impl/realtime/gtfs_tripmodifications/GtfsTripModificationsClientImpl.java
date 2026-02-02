@@ -159,8 +159,8 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         int totalMods = tripModificationsList.size();
         int totalShapes = shapesList.size();
         int totalStops = stopsList.size();
-        int stopSuccess = _stopHandler.addStops(stopsList);
-        _log.info("Stops: processed {} stops, corresponding to {} successful new stop additions", totalStops, stopSuccess);
+        int numberOfSuccessfullyAddedStops = _stopHandler.addStops(stopsList).size();
+        _log.info("Stops: processed {} stops, corresponding to {} successful new stop additions", totalStops, numberOfSuccessfullyAddedStops);
         int success = 0;
 //        _shapeHandler.handleShapes(shapesList);
         _log.info("Shapes: processed {} shapes, corresponding to {} successful internal changes", totalShapes, success);
