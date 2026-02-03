@@ -1,15 +1,16 @@
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service;
 
 import com.google.transit.realtime.GtfsRealtime.Stop;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 
 import java.util.List;
 
 public interface StopHandler {
     /**
-     * Apply a set of stop changes, returning a set that will revert the changes.
+     * Add new stops, returning the list of successfully added stops
      *
-     * @param Stops to add
-     * @return number of successfully added stops
+     * @param stops to add
+     * @return list of successfully added stops
      */
-    int addStops(List<Stop> changeset);
+    List<StopEntry> addStops(List<Stop> stops);
 }

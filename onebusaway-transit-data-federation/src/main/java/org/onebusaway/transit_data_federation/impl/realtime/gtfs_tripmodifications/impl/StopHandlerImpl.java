@@ -5,15 +5,18 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data.model.EAccessibility;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.StopHandler;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
+import org.onebusaway.transit_data_federation.impl.transit_graph.TransitGraphImpl;
 import org.onebusaway.transit_data_federation.model.narrative.StopNarrative;
 import org.onebusaway.transit_data_federation.services.EntityIdService;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 @Component
 public class StopHandlerImpl implements StopHandler {
@@ -43,9 +46,9 @@ public class StopHandlerImpl implements StopHandler {
 
 
     @Override
-    public int addStops(List<Stop> changeset) {
+    public List<StopEntry> addStops(List<Stop> changeset) {
 
-        int success = 0;
+        List<StopEntry> stopEntryList = new ArrayList<>();
 
         for (Stop stop : changeset) {
             if (stop.getStopId() == null || stop.getStopId().isEmpty()) {
@@ -64,7 +67,7 @@ public class StopHandlerImpl implements StopHandler {
             }
 
             //TODO figure out agencyID
-            AgencyAndId stopId = new AgencyAndId("", stop.getStopId());
+            AgencyAndId stopId = new AgencyAndId("MTA", stop.getStopId());
 
             if (_dao.getStopEntryForId(stopId) != null) {
                 _log.info("Stop with id {} already exists, skipping addition.", stop.getStopId());
@@ -72,15 +75,19 @@ public class StopHandlerImpl implements StopHandler {
             }
 
             StopEntryImpl stopEntry = new StopEntryImpl(stopId, stop.getStopLat(), stop.getStopLon());
-            stopEntry.setIndex(0); // TODO: determine proper index
+            stopEntry.setIndex(getLatestStopIndex());
             stopEntry.setWheelchairBoarding(getWheelchairBoardingAccessibilityForStop(stop));
 
             _narrativeService.addStop(stopId, newStopNarrative(stop));
             _dao.addStopEntry(stopEntry);
-            success++;
+            stopEntryList.add(stopEntry);
         }
 
-        return success;
+        return stopEntryList;
+    }
+
+    private int getLatestStopIndex() {
+        return _dao.getAllStops().size();
     }
 
     private StopNarrative newStopNarrative(Stop stop) {
