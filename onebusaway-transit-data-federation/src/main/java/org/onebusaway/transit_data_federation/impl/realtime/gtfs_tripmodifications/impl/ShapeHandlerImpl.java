@@ -52,7 +52,8 @@ public class ShapeHandlerImpl implements ShapeHandler {
                 continue;
             }
 
-            if (_entityIdService.getShapeId(shape.getShapeId()) != null) {
+            AgencyAndId shapeId = _entityIdService.getShapeId(shape.getShapeId());
+            if (shapeId != null) {
                 _log.info("Shape with id {} already exists, skipping addition.", shape.getShapeId());
                 continue;
             }
