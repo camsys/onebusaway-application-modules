@@ -69,14 +69,11 @@ public class ShapeHandlerImpl implements ShapeHandler {
                 lon[i] = cp.getLon();
             }
 
-
-            //TODO find agency ID
-            AgencyAndId shapeAgencyAndId = new AgencyAndId("MTA", shape.getShapeId());
             ShapePoints sp = new ShapePoints();
             sp.setLats(lat);
             sp.setLons(lon);
             sp.ensureDistTraveled();
-            sp.setShapeId(shapeAgencyAndId);
+            sp.setShapeId(shapeId);
             _dao.addShape(sp);
 
             successfullyAddedShapes.add(sp);
