@@ -1,8 +1,11 @@
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service;
 
+import com.camsys.transit.servicechange.ServiceChange;
 import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtime.TripModifications;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChangeSet;
+
+import java.util.Collection;
 
 public interface TripModsTripChangeHandler {
 
@@ -14,5 +17,11 @@ public interface TripModsTripChangeHandler {
      */
     TripChangeSet getAllTripChanges(TripModifications tripModifications);
 
-    TripChangeSet handleTripChanges(TripChangeSet tripChangeSet);
+    /**
+     * Apply trip changes to the graph
+     *
+     * @param tripChangeSet to apply
+     * @return the applied tripChangeSet
+     */
+    TripChangeSet applyChanges(TripChangeSet tripChangeSet);
 }
