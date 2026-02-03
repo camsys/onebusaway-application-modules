@@ -53,7 +53,8 @@ public class ShapeHandlerImpl implements ShapeHandler {
             }
 
             AgencyAndId shapeId = _entityIdService.getShapeId(shape.getShapeId());
-            if (shapeId != null) {
+            ShapePoints shapePoints = _dao.getShape(shapeId);
+            if (shapePoints != null) {
                 _log.info("Shape with id {} already exists, skipping addition.", shape.getShapeId());
                 continue;
             }
