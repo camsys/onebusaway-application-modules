@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.onebusaway.geospatial.services.PolylineEncoder;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -36,9 +37,9 @@ public class ShapeHandlerImpl implements ShapeHandler {
     }
 
     @Override
-    public int addShapes(List<Shape> shapes) {
+    public List<ShapePoints> addShapes(List<Shape> shapes) {
 
-        int success = 0;
+        List<ShapePoints> successfullyAddedShapes = new ArrayList<>();
 
         for (Shape shape : shapes) {
             if (shape.getShapeId() == null || shape.getShapeId().isEmpty()) {
@@ -68,7 +69,7 @@ public class ShapeHandlerImpl implements ShapeHandler {
 
 
             //TODO find agency ID
-            AgencyAndId shapeAgencyAndId = new AgencyAndId("", shape.getShapeId());
+            AgencyAndId shapeAgencyAndId = new AgencyAndId("MTA", shape.getShapeId());
             ShapePoints sp = new ShapePoints();
             sp.setLats(lat);
             sp.setLons(lon);
@@ -76,9 +77,9 @@ public class ShapeHandlerImpl implements ShapeHandler {
             sp.setShapeId(shapeAgencyAndId);
             _dao.addShape(sp);
 
-            success++;
+            successfullyAddedShapes.add(sp);
         }
 
-        return success;
+        return successfullyAddedShapes;
     }
 }

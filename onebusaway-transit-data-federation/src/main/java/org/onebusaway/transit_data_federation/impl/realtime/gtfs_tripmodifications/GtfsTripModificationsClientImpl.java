@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.transit.realtime.GtfsRealtime.Shape;
 import com.google.transit.realtime.GtfsRealtime.Stop;
 
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.ShapeHandler;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.StopHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,8 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
 
     private StopHandler _stopHandler;
 
+    private ShapeHandler _shapeHandler;
+
     private int _refreshInterval;
 
     private ObjectMapper _mapper = new ObjectMapper();
@@ -51,6 +54,11 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
     @Autowired
     public void setStopHandler(StopHandler stopHandler) {
         _stopHandler = stopHandler;
+    }
+
+    @Autowired
+    public void setShapeHandler(ShapeHandler shapeHandler) {
+        _shapeHandler = shapeHandler;
     }
 
     @Autowired
@@ -161,10 +169,9 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         int totalStops = stopsList.size();
         int numberOfSuccessfullyAddedStops = _stopHandler.addStops(stopsList).size();
         _log.info("Stops: processed {} stops, corresponding to {} successful new stop additions", totalStops, numberOfSuccessfullyAddedStops);
+        int numberOfSuccessfullyAddedShapes = _shapeHandler.addShapes(shapesList).size();
+        _log.info("Shapes: processed {} shapes, corresponding to {} successful internal changes", totalShapes, numberOfSuccessfullyAddedShapes);
         int success = 0;
-//        _shapeHandler.handleShapes(shapesList);
-        _log.info("Shapes: processed {} shapes, corresponding to {} successful internal changes", totalShapes, success);
-        success = 0;
 //        success = _gtfsTripModificationsHandler.handleTripModifications(feedMessage.getHeader().getTimestamp(), tripModificationsList);
         _log.info("Service changes: processed {} service changes, corresponding to {} successful internal changes", totalMods, success);
     }
