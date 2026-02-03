@@ -66,8 +66,7 @@ public class StopHandlerImpl implements StopHandler {
                 continue;
             }
 
-            //TODO figure out agencyID
-            AgencyAndId stopId = new AgencyAndId("MTA", stop.getStopId());
+            AgencyAndId stopId = _entityIdService.getStopId(stop.getStopId());
 
             if (_dao.getStopEntryForId(stopId) != null) {
                 _log.info("Stop with id {} already exists, skipping addition.", stop.getStopId());
