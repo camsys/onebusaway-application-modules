@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.transit.realtime.GtfsRealtime.Shape;
 import com.google.transit.realtime.GtfsRealtime.Stop;
 
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.StopHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,8 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
 
     private ScheduledExecutorService _scheduledExecutorService;
 
+    private StopHandler _stopHandler;
+
     private int _refreshInterval;
 
     private ObjectMapper _mapper = new ObjectMapper();
@@ -43,6 +46,11 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
     @Autowired
     public void setGtfsTripModificationsUrl(String gtfsTripModificationsUrl) {
         _gtfsTripModificationsUrl = gtfsTripModificationsUrl;
+    }
+
+    @Autowired
+    public void setStopHandler(StopHandler stopHandler) {
+        _stopHandler = stopHandler;
     }
 
     @Autowired
@@ -120,6 +128,7 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         _log.info("Processing feed with {} entities.", feedMessage.getEntityList().size());
 
         List<Shape> shapesList = new ArrayList<>();
+        List<Stop> stopsList = new ArrayList<>();
 
         for (FeedEntity entity : feedMessage.getEntityList()) {
             if (entity.hasTripUpdate()) {
@@ -133,6 +142,7 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
             }
             if (entity.hasStop()) {
                 Stop stop = entity.getStop();
+                stopsList.add(stop);
                 _log.info("Reading new stop ID: {}, name: {}, Latlon: {},{}",
                         stop.getStopId(),
                         stop.getStopName(),
@@ -148,6 +158,9 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         }
         int totalMods = tripModificationsList.size();
         int totalShapes = shapesList.size();
+        int totalStops = stopsList.size();
+        int numberOfSuccessfullyAddedStops = _stopHandler.addStops(stopsList).size();
+        _log.info("Stops: processed {} stops, corresponding to {} successful new stop additions", totalStops, numberOfSuccessfullyAddedStops);
         int success = 0;
 //        _shapeHandler.handleShapes(shapesList);
         _log.info("Shapes: processed {} shapes, corresponding to {} successful internal changes", totalShapes, success);
