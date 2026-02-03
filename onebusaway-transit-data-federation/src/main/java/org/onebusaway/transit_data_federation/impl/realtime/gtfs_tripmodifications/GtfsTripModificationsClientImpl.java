@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.transit.realtime.GtfsRealtime.Shape;
 import com.google.transit.realtime.GtfsRealtime.Stop;
 
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.GtfsTripModificationsHandler;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.ShapeHandler;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.StopHandler;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModsTripChangeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,8 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
 
     private ShapeHandler _shapeHandler;
 
+    private GtfsTripModificationsHandler _gtfsTripModificationsHandler;
+
     private int _refreshInterval;
 
     private ObjectMapper _mapper = new ObjectMapper();
@@ -59,6 +63,11 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
     @Autowired
     public void setShapeHandler(ShapeHandler shapeHandler) {
         _shapeHandler = shapeHandler;
+    }
+
+    @Autowired
+    public void setGtfsTripModificationsHandler(GtfsTripModificationsHandler gtfsTripModificationsHandler) {
+        _gtfsTripModificationsHandler = gtfsTripModificationsHandler;
     }
 
     @Autowired
@@ -170,10 +179,9 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         int numberOfSuccessfullyAddedStops = _stopHandler.addStops(stopsList).size();
         _log.info("Stops: processed {} stops, corresponding to {} successful new stop additions", totalStops, numberOfSuccessfullyAddedStops);
         int numberOfSuccessfullyAddedShapes = _shapeHandler.addShapes(shapesList).size();
-        _log.info("Shapes: processed {} shapes, corresponding to {} successful internal changes", totalShapes, numberOfSuccessfullyAddedShapes);
-        int success = 0;
-//        success = _gtfsTripModificationsHandler.handleTripModifications(feedMessage.getHeader().getTimestamp(), tripModificationsList);
-        _log.info("Service changes: processed {} service changes, corresponding to {} successful internal changes", totalMods, success);
+        _log.info("Shapes: processed {} shapes, corresponding to {} successful new shape additions", totalShapes, numberOfSuccessfullyAddedShapes);
+        int successfulTripChanges = _gtfsTripModificationsHandler.handleTripModifications(feedMessage.getHeader().getTimestamp(), tripModificationsList);
+        _log.info("Trip changes: processed {} trip changes, corresponding to {} successful internal changes", totalMods, successfulTripChanges);
     }
 
 
