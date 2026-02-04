@@ -246,24 +246,21 @@ public class TripModsTripChangeHandlerImpl implements TripModsTripChangeHandler 
     private StopTimeEntry createStopTimeEntry(ReplacementStop replacementStop,
                                               int referenceTime,
                                               int stopSequence) {
-        String stopId = replacementStop.getStopId();
+        AgencyAndId stopId = _entityIdService.getStopId(replacementStop.getStopId());
 
-        Double lat = null;
-        Double lon = null;
-        String stopName = null; //TODO not needed?
 
-        StopEntry se = _dao.getStopEntryForId(AgencyAndId.convertFromString(stopId));
+        StopEntry se = _dao.getStopEntryForId(stopId);
         if (se == null) {
-            throw new IllegalArgumentException("Stop entry not found for id: " + stopId);
+            throw new IllegalArgumentException("Stop entry not found for id: " + stopId.toString());
         }
         StopNarrative sn = _narrativeService.getStopForId(se.getId());
         if (sn == null) {
-            throw new IllegalArgumentException("Stop narrative not found for id: " + stopId);
+            throw new IllegalArgumentException("Stop narrative not found for id: " + stopId.toString());
         }
 
-        lat = se.getStopLat();
-        lon = se.getStopLon();
-        stopName = _narrativeService.getStopForId(se.getId()).getName();
+        Double lat = se.getStopLat();
+        Double lon = se.getStopLon();
+        String stopName = _narrativeService.getStopForId(se.getId()).getName();
 
         // Calculate arrival time
         int arrivalTime = referenceTime;
@@ -276,7 +273,7 @@ public class TripModsTripChangeHandlerImpl implements TripModsTripChangeHandler 
         entry.setSequence(stopSequence);
         entry.setArrivalTime(arrivalTime);
         entry.setDepartureTime(arrivalTime);  // departure = arrival per spec
-        StopEntryImpl stopEntry = new StopEntryImpl(_entityIdService.getStopId(stopId),lat,lon);
+        StopEntryImpl stopEntry = new StopEntryImpl(stopId,lat,lon);
         entry.setStop(stopEntry);
 
         return entry;
