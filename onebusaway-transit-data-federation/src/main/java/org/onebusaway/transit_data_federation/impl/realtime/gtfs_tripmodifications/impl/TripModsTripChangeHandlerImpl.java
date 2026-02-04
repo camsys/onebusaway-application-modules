@@ -167,14 +167,20 @@ public class TripModsTripChangeHandlerImpl implements TripModsTripChangeHandler 
                 AgencyAndId agencyShapeId = shapeId != null ? new AgencyAndId(agencyId, shapeId) : null;
 
                 for (LocalDate serviceDate : serviceDates) {
-                    TripChange change = createModifyTrip(
-                            agencyTripId,
-                            agencyShapeId,
-                            serviceDate,
-                            modifications
-                    );
+                    try {
+                        TripChange change = createModifyTrip(
+                                agencyTripId,
+                                agencyShapeId,
+                                serviceDate,
+                                modifications
+                        );
 
-                    changeSet.addModifiedTrip((ModifyTrip) change);
+                        changeSet.addModifiedTrip((ModifyTrip) change);
+                    } catch (IllegalArgumentException e) {
+                        _log.warn("Unable to create ModifyTrip for tripId {} on serviceDate {}: {}",
+                                agencyTripId, serviceDate, e.getMessage());
+                    }
+
                 }
             }
         }
@@ -192,6 +198,9 @@ public class TripModsTripChangeHandlerImpl implements TripModsTripChangeHandler 
         modifyTrip.setServiceDate(serviceDate);
 
         TripEntryImpl tripEntry = (TripEntryImpl) _dao.getTripEntryForId(tripId);
+        if (tripEntry == null) {
+            throw new IllegalArgumentException("Trip entry not found for id: " + tripId);
+        }
         modifyTrip.setTripEntry(tripEntry);
 
         List<StopTimeEntry> modifiedStopTimes = buildModifiedStopTimes(tripEntry, modifications);
@@ -218,7 +227,8 @@ public class TripModsTripChangeHandlerImpl implements TripModsTripChangeHandler 
                 StopTimeEntry newStopTime = createStopTimeEntry(
                         replacementStop,
                         referenceTime,
-                        result.size() + 1
+                        result.size() + 1,
+                        originalTrip
                 );
                 result.add(newStopTime);
             }
@@ -245,7 +255,8 @@ public class TripModsTripChangeHandlerImpl implements TripModsTripChangeHandler 
 
     private StopTimeEntry createStopTimeEntry(ReplacementStop replacementStop,
                                               int referenceTime,
-                                              int stopSequence) {
+                                              int stopSequence,
+                                              TripEntryImpl tripEntry) {
         AgencyAndId stopId = _entityIdService.getStopId(replacementStop.getStopId());
 
 
@@ -268,15 +279,15 @@ public class TripModsTripChangeHandlerImpl implements TripModsTripChangeHandler 
             arrivalTime = referenceTime + replacementStop.getTravelTimeToStop();
         }
 
-        // Build your StopTimeEntry - adjust to match your actual class
-        StopTimeEntryImpl entry = new StopTimeEntryImpl();
-        entry.setSequence(stopSequence);
-        entry.setArrivalTime(arrivalTime);
-        entry.setDepartureTime(arrivalTime);  // departure = arrival per spec
-        StopEntryImpl stopEntry = new StopEntryImpl(stopId,lat,lon);
-        entry.setStop(stopEntry);
+        StopTimeEntryImpl stopTimeEntry = new StopTimeEntryImpl();
+        stopTimeEntry.setSequence(stopSequence);
+        stopTimeEntry.setArrivalTime(arrivalTime);
+        stopTimeEntry.setDepartureTime(arrivalTime);  // departure = arrival per spec
+        StopEntryImpl stopEntry = new StopEntryImpl(_entityIdService.getStopId(stopId),lat,lon);
+        stopTimeEntry.setStop(stopEntry);
+        stopTimeEntry.setTrip(tripEntry);
 
-        return entry;
+        return stopTimeEntry;
     }
 
     private int findStopIndex(List<StopTimeEntry> stopTimes, StopSelector selector) {
