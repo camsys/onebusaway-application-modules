@@ -283,7 +283,7 @@ public class TripModsTripChangeHandlerImpl implements TripModsTripChangeHandler 
         stopTimeEntry.setSequence(stopSequence);
         stopTimeEntry.setArrivalTime(arrivalTime);
         stopTimeEntry.setDepartureTime(arrivalTime);  // departure = arrival per spec
-        StopEntryImpl stopEntry = new StopEntryImpl(_entityIdService.getStopId(stopId),lat,lon);
+        StopEntryImpl stopEntry = new StopEntryImpl(stopId,lat,lon);
         stopTimeEntry.setStop(stopEntry);
         stopTimeEntry.setTrip(tripEntry);
 
