@@ -212,7 +212,13 @@ public class TripModsTripChangeHandlerImpl implements TripModsTripChangeHandler 
     private List<StopTimeEntry> buildModifiedStopTimes(TripEntryImpl originalTrip,
                                                        List<Modification> modifications) {
         List<StopTimeEntry> result = new ArrayList<>();
-        List<StopTimeEntry> originalStopTimes = originalTrip.getStopTimes();
+        List<StopTimeEntry> originalStopTimes = new ArrayList<>(originalTrip.getStopTimes());
+
+        // Ensure stops are fresh
+        for (StopTimeEntry stopTimeEntry : originalStopTimes) {
+            StopEntryImpl stopEntry = (StopEntryImpl) _dao.getStopEntryForId(stopTimeEntry.getStop().getId());
+            ((StopTimeEntryImpl) stopTimeEntry).setStop(stopEntry);
+        }
 
         for (Modification mod : modifications) {
             int startIndex = findStopIndex(originalStopTimes, mod.getStartStopSelector());
@@ -233,7 +239,8 @@ public class TripModsTripChangeHandlerImpl implements TripModsTripChangeHandler 
                 result.add(newStopTime);
             }
 
-            for (int i = endIndex + 1; i < originalStopTimes.size(); i++) {
+            //end index is inclusive, so we need to add 1 to it to get the correct stop sequence for the next stop time
+            for (int i = endIndex + 1 + 1; i < originalStopTimes.size(); i++) {
                 StopTimeEntry adjusted = adjustStopTime(
                         originalStopTimes.get(i),
                         result.size() + 1,
@@ -280,6 +287,7 @@ public class TripModsTripChangeHandlerImpl implements TripModsTripChangeHandler 
         }
 
         StopTimeEntryImpl stopTimeEntry = new StopTimeEntryImpl();
+        stopTimeEntry.setGtfsSequence(stopSequence + 1); // GTFS stop sequence is 1-based
         stopTimeEntry.setSequence(stopSequence);
         stopTimeEntry.setArrivalTime(arrivalTime);
         stopTimeEntry.setDepartureTime(arrivalTime);  // departure = arrival per spec
