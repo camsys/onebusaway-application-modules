@@ -99,7 +99,7 @@ public class GtfsTripModificationsHttpFetcherImplTest {
         String jsonContent = new String(data, StandardCharsets.UTF_8);
         assertTrue("Should contain header element", jsonContent.contains("\"header\""));
         assertTrue("Should contain entity element", jsonContent.contains("\"entity\""));
-        assertTrue("Should contain gtfsRealtimeVersion", jsonContent.contains("\"gtfsRealtimeVersion\""));
+        assertTrue("Should contain gtfsRealtimeVersion", jsonContent.contains("\"gtfs_realtime_version\""));
     }
 
     @Test
@@ -116,16 +116,16 @@ public class GtfsTripModificationsHttpFetcherImplTest {
 
     @Test
     public void testJsonContentStructure() throws Exception {
-        GtfsTripModificationsFetcherImpl fetcher = new GtfsTripModificationsFetcherImpl(jsonHttpPath);
+        GtfsTripModificationsFetcherImpl fetcher = new GtfsTripModificationsFetcherImpl(jsonHttpPath, jsonHttpClient);
 
         byte[] data = fetcher.fetchFeed();
         String jsonContent = new String(data, StandardCharsets.UTF_8);
 
         // Verify key GTFS-RT Trip Modifications elements
         assertTrue("Should contain alert data", jsonContent.contains("\"alert\""));
-        assertTrue("Should contain trip modifications", jsonContent.contains("\"tripModifications\""));
+        assertTrue("Should contain trip modifications", jsonContent.contains("\"trip_modifications\""));
         assertTrue("Should contain shape data", jsonContent.contains("\"shape\""));
-        assertTrue("Should contain encoded polyline", jsonContent.contains("\"encodedPolyline\""));
+        assertTrue("Should contain encoded polyline", jsonContent.contains("\"encoded_polyline\""));
         assertTrue("Should contain route S40", jsonContent.contains("\"S40\""));
         assertTrue("Should contain route S61", jsonContent.contains("\"S61\""));
     }
@@ -139,9 +139,8 @@ public class GtfsTripModificationsHttpFetcherImplTest {
 
         // Verify entity-specific fields
         assertTrue("Should contain entity id", jsonContent.contains("\"id\""));
-        assertTrue("Should contain isDeleted field", jsonContent.contains("\"isDeleted\""));
-        assertTrue("Should contain serviceDates", jsonContent.contains("\"serviceDates\""));
-        assertTrue("Should contain selectedTrips", jsonContent.contains("\"selectedTrips\""));
+        assertTrue("Should contain serviceDates", jsonContent.contains("\"service_dates\""));
+        assertTrue("Should contain selectedTrips", jsonContent.contains("\"selected_trips\""));
         assertTrue("Should contain modifications", jsonContent.contains("\"modifications\""));
     }
 

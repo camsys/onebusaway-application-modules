@@ -15,7 +15,6 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.impl;
 
-import com.google.protobuf.util.JsonFormat;
 import com.google.transit.realtime.GtfsRealtime;
 import org.junit.Before;
 import org.junit.Test;
