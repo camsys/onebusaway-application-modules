@@ -15,24 +15,18 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.transit.realtime.GtfsRealtime.Shape;
 import com.google.transit.realtime.GtfsRealtime.Stop;
 
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.GtfsTripModificationsHandler;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.ShapeHandler;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.StopHandler;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModsTripChangeHandler;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.impl.GtfsTripModificationsFetcherImpl;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
@@ -56,9 +50,12 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
 
     private GtfsTripModificationsHandler _gtfsTripModificationsHandler;
 
+    private GtfsTripModificationsFetcher _gtfsTripModificationsFetcher;
+
+    private GtfsTripModificationsDeserializer _gtfsTripModificationsDeserializer;
+
     private int _refreshInterval;
 
-    private ObjectMapper _mapper = new ObjectMapper();
 
     @Autowired
     public void setRefreshInterval(int refreshInterval) {
@@ -90,38 +87,35 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         _scheduledExecutorService = scheduledExecutorService;
     }
 
+    @Autowired
+    public void setGtfsTripModificationsDeserializer(GtfsTripModificationsDeserializer gtfsTripModificationsDeserializer) {
+        _gtfsTripModificationsDeserializer = gtfsTripModificationsDeserializer;
+    }
+
     @PostConstruct
     public void init() {
-        _scheduledExecutorService.scheduleAtFixedRate(this::update, 0, _refreshInterval, TimeUnit.SECONDS);
+        try {
+            _gtfsTripModificationsFetcher = new GtfsTripModificationsFetcherImpl(_gtfsTripModificationsUrl);
+            _scheduledExecutorService.scheduleAtFixedRate(this::update, 0, _refreshInterval, TimeUnit.SECONDS);
+        } catch (URISyntaxException ex) {
+            _log.error("init failed", ex);
+        }
     }
 
     @Override
     public void update() {
         try {
-            _log.info("Fetching GTFS Trip Modifications from {}", this._gtfsTripModificationsUrl);
-            URL url = new URL(this._gtfsTripModificationsUrl);
+            _log.info("Fetching GTFS Trip Modifications from {}", _gtfsTripModificationsUrl);
+
             FeedMessage feedMessage;
+            byte[] rawFeedMessage = _gtfsTripModificationsFetcher.fetchFeed();
 
-            if (url.getProtocol().equals("file")) {
-                try (InputStream inputStream = new FileInputStream(url.getPath())) {
-                    feedMessage = FeedMessage.parseFrom(inputStream);
-                }
-            } else {
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setConnectTimeout(30000);
-                connection.setReadTimeout(30000);
-
-                try (InputStream inputStream = connection.getInputStream()) {
-                    _log.info("Connected, downloading feed...");
-                    byte[] data = inputStream.readAllBytes();
-                    _log.info("Downloaded {} bytes, parsing...", data.length);
-                    feedMessage = FeedMessage.parseFrom(data);
-                    _log.info("Parsing complete, entity count: {}", feedMessage.getEntityCount());
-                } finally {
-                    connection.disconnect();
-                }
+            if(_gtfsTripModificationsFetcher.getTripModificationsFormat().equals(TripModificationsFormat.JSON)) {
+                feedMessage = _gtfsTripModificationsDeserializer.getFeedMessageFromJson(rawFeedMessage);
             }
-
+            else {
+                feedMessage = _gtfsTripModificationsDeserializer.getFeedMessageFromProtobuf(rawFeedMessage);
+            }
             _log.info("Successfully fetched and parsed GTFS Trip Modifications feed");
             this.processFeed(feedMessage);
         } catch (IOException e) {
@@ -144,14 +138,6 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
             return;
         }
 
-        //TODO verify feed is for the correct bundle??
-//        String feedName = feedMessage.getHeader().getDescriptorForType().getName();
-//        if (feedName != null) {
-//            if (!_transitDataService.getActiveBundleId().equals(feedName)) {
-//                _log.error("Feed is for a different bundle");
-//                return;
-//            }
-//        }
         handleNewFeed(feedMessage);
     }
 
@@ -163,13 +149,7 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         List<Stop> stopsList = new ArrayList<>();
 
         for (FeedEntity entity : feedMessage.getEntityList()) {
-            if (entity.hasTripUpdate()) {
-                //TODO Are we just ignoring trip updates?
-                _log.info("Processing trip update for entity ID: {}", entity.getId());
-                // Add logic to handle trip updates here
-            }
             if (entity.hasShape()) {
-                // Collect new Shapes to apply to the system
                 shapesList.add(entity.getShape());
             }
             if (entity.hasStop()) {
@@ -198,6 +178,5 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         int successfulTripChanges = _gtfsTripModificationsHandler.handleTripModifications(feedMessage.getHeader().getTimestamp(), tripModificationsList);
         _log.info("Trip changes: processed {} trip changes, corresponding to {} successful internal changes", totalMods, successfulTripChanges);
     }
-
 
 }
