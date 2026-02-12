@@ -16,11 +16,8 @@
  */
 package org.onebusaway.transit_data_federation.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.onebusaway.container.cache.Cacheable;
 import org.onebusaway.exceptions.NoSuchAgencyServiceException;
@@ -63,15 +60,13 @@ public class AgencyServiceImpl implements AgencyService {
   @Cacheable
   @Override
   public List<String> getAllAgencyIds() {
-
-    List<String> agencyIds = new ArrayList<String>();
-    if(_graph != null){
-      for (AgencyEntry agency : _graph.getAllAgencies()) {
-        agencyIds.add(agency.getId());
-      }
+    if (_graph == null) {
+      return Collections.emptyList();
     }
-
-    return new ArrayList<String>(agencyIds);
+    return _graph.getAllAgencies().stream()
+            .sorted(Comparator.comparingInt((AgencyEntry ae) -> ae.getStops().size()).reversed())
+            .map(AgencyEntry::getId)
+            .collect(Collectors.toList());
   }
 
   @Cacheable
