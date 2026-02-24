@@ -162,9 +162,8 @@ public class TripModsTripChangeHandlerImpl implements TripModsTripChangeHandler 
             String shapeId = selectedTrips.hasShapeId() ? selectedTrips.getShapeId() : null;
 
             for (String tripId : selectedTrips.getTripIdsList()) {
-                String agencyId = _entityIdService.getTripId(tripId).getAgencyId();
-                AgencyAndId agencyTripId = new AgencyAndId(agencyId, tripId);
-                AgencyAndId agencyShapeId = shapeId != null ? new AgencyAndId(agencyId, shapeId) : null;
+                AgencyAndId agencyTripId = _entityIdService.getTripId(tripId);
+                AgencyAndId agencyShapeId = _entityIdService.getShapeId(shapeId);
 
                 for (LocalDate serviceDate : serviceDates) {
                     try {
