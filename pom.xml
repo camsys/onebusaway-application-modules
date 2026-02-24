@@ -22,7 +22,7 @@
     <spring-version>5.2.20.RELEASE</spring-version>
     <csv-entities-version>1.1.6</csv-entities-version>
     <gtfs-version>1.3.112</gtfs-version>
-    <gtfs-api-version>1.2.30</gtfs-api-version>
+    <gtfs-api-version>1.3-cs-SNAPSHOT</gtfs-api-version>
     <onebusaway-siri-version>1.0.6</onebusaway-siri-version>
     <onebusaway-siri-1-api-version>1.0.1</onebusaway-siri-1-api-version>
     <onebusaway-siri-2-api-version>1.0.3</onebusaway-siri-2-api-version>
@@ -151,23 +151,6 @@
   <dependencyManagement>
 
     <dependencies>
-      <dependency>
-        <groupId>com.camsys</groupId>
-        <artifactId>gtfs-realtime-bindings</artifactId>
-        <version>0.0.9-cs-SNAPSHOT</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.onebusaway</groupId>
-        <artifactId>onebusaway-gtfs-realtime-api</artifactId>
-        <version>${gtfs-api-version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>io.mobilitydata.transit</groupId>
-            <artifactId>gtfs-realtime-bindings</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
 
       <dependency>
         <groupId>org.onebusaway</groupId>
@@ -421,9 +404,9 @@
         <version>5.1.48</version>
       </dependency>
       <dependency>
-        <groupId>com.camsys</groupId>
-        <artifactId>gtfs-realtime-bindings</artifactId>
-        <version>0.0.9-cs-SNAPSHOT</version>
+        <groupId>org.onebusaway</groupId>
+        <artifactId>onebusaway-gtfs-realtime-api</artifactId>
+        <version>${gtfs-api-version}</version>
       </dependency>
       <dependency>
         <groupId>com.google.protobuf</groupId>
@@ -437,17 +420,6 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-
-  <dependencies>
-    <dependency>
-      <groupId>com.camsys</groupId>
-      <artifactId>gtfs-realtime-bindings</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java</artifactId>
-    </dependency>
-  </dependencies>
 
   <build>
     <!-- This is where we control the master plugin version used by all modules -->
