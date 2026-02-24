@@ -18,6 +18,7 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificati
 import com.google.transit.realtime.GtfsRealtime.Shape;
 import com.google.transit.realtime.GtfsRealtime.Stop;
 
+import org.onebusaway.realtime.gtfsrt.util.GtfsRealtimeDeserializer;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.impl.GtfsTripModificationsFetcherImpl;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.*;
 import org.slf4j.Logger;
@@ -52,8 +53,6 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
 
     private GtfsTripModificationsFetcher _gtfsTripModificationsFetcher;
 
-    private GtfsTripModificationsDeserializer _gtfsTripModificationsDeserializer;
-
     private int _refreshInterval;
 
 
@@ -87,11 +86,6 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         _scheduledExecutorService = scheduledExecutorService;
     }
 
-    @Autowired
-    public void setGtfsTripModificationsDeserializer(GtfsTripModificationsDeserializer gtfsTripModificationsDeserializer) {
-        _gtfsTripModificationsDeserializer = gtfsTripModificationsDeserializer;
-    }
-
     @PostConstruct
     public void init() {
         try {
@@ -107,15 +101,10 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         try {
             _log.info("Fetching GTFS Trip Modifications from {}", _gtfsTripModificationsUrl);
 
-            FeedMessage feedMessage;
             byte[] rawFeedMessage = _gtfsTripModificationsFetcher.fetchFeed();
 
-            if(_gtfsTripModificationsFetcher.getTripModificationsFormat().equals(TripModificationsFormat.JSON)) {
-                feedMessage = _gtfsTripModificationsDeserializer.getFeedMessageFromJson(rawFeedMessage);
-            }
-            else {
-                feedMessage = _gtfsTripModificationsDeserializer.getFeedMessageFromProtobuf(rawFeedMessage);
-            }
+            FeedMessage feedMessage =  GtfsRealtimeDeserializer.parseFeedMessage(rawFeedMessage);
+
             _log.info("Successfully fetched and parsed GTFS Trip Modifications feed");
             this.processFeed(feedMessage);
         } catch (IOException e) {

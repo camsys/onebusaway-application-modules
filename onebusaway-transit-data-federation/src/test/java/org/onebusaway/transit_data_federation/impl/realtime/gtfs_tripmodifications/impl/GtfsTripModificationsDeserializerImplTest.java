@@ -15,10 +15,12 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.impl;
 
+import com.google.protobuf.util.JsonFormat;
 import com.google.transit.realtime.GtfsRealtime;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.GtfsTripModificationsDeserializer;
+import org.onebusaway.realtime.gtfsrt.util.GtfsRealtimeDeserializer;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,7 +30,6 @@ import static org.junit.Assert.*;
 public class GtfsTripModificationsDeserializerImplTest {
     private String jsonFilePath;
     private String protobufFilePath;
-    private GtfsTripModificationsDeserializer deserializer;
 
     @Before
     public void setUp() throws Exception {
@@ -36,7 +37,6 @@ public class GtfsTripModificationsDeserializerImplTest {
         Path pbPath = Paths.get(getClass().getResource("trip-modifications.pb").toURI());
         jsonFilePath = jsonPath.toUri().toString();
         protobufFilePath = pbPath.toUri().toString();
-        deserializer = new GtfsTripModificationsDeserializerImpl();
     }
 
     @Test
@@ -48,7 +48,7 @@ public class GtfsTripModificationsDeserializerImplTest {
         assertNotNull("Fetched data should not be null", data);
         assertTrue("Fetched data should not be empty", data.length > 0);
 
-        GtfsRealtime.FeedMessage feedMessage = deserializer.getFeedMessageFromJson(data);
+        GtfsRealtime.FeedMessage feedMessage = GtfsRealtimeDeserializer.parseFeedMessage(data);
 
         assertNotNull("FeedMessage should not be null", feedMessage);
     }
@@ -62,7 +62,7 @@ public class GtfsTripModificationsDeserializerImplTest {
         assertNotNull("Fetched data should not be null", data);
         assertTrue("Fetched data should not be empty", data.length > 0);
 
-        GtfsRealtime.FeedMessage feedMessage = deserializer.getFeedMessageFromProtobuf(data);
+        GtfsRealtime.FeedMessage feedMessage = GtfsRealtimeDeserializer.parseFeedMessage(data);
 
         assertNotNull("FeedMessage should not be null", feedMessage);
     }
@@ -71,13 +71,27 @@ public class GtfsTripModificationsDeserializerImplTest {
     public void testJsonProtobufDeserializationEqual() throws Exception {
         GtfsTripModificationsFetcherImpl jsonFetcher = new GtfsTripModificationsFetcherImpl(jsonFilePath);
         byte[] jsonData = jsonFetcher.fetchFeed();
-        GtfsRealtime.FeedMessage jsonFeedMessage = deserializer.getFeedMessageFromJson(jsonData);
+        GtfsRealtime.FeedMessage jsonFeedMessage = GtfsRealtimeDeserializer.parseFeedMessage(jsonData);
 
         GtfsTripModificationsFetcherImpl protobufFetcher = new GtfsTripModificationsFetcherImpl(protobufFilePath);
         byte[] protobufData = protobufFetcher.fetchFeed();
-        GtfsRealtime.FeedMessage protobufFeedMessage = deserializer.getFeedMessageFromProtobuf(protobufData);
+        GtfsRealtime.FeedMessage protobufFeedMessage = GtfsRealtimeDeserializer.parseFeedMessage(protobufData);
 
         assertEquals(jsonFeedMessage, protobufFeedMessage);
+    }
+
+    @Ignore
+    @Test
+    public void testProtoBufProtobufDeserializationEqual() throws Exception {
+        GtfsTripModificationsFetcherImpl protobufFetcher = new GtfsTripModificationsFetcherImpl(protobufFilePath);
+        byte[] protobufData = protobufFetcher.fetchFeed();
+        GtfsRealtime.FeedMessage protobufFeedMessage = GtfsRealtimeDeserializer.parseFeedMessageFromProtobuf(protobufData);
+
+        String jsonString = JsonFormat.printer()
+                .preservingProtoFieldNames()
+                .print(protobufFeedMessage);
+
+        System.out.println(jsonString);
     }
 
 
