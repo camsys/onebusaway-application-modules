@@ -136,7 +136,7 @@ class RouteBeanServiceImpl implements RouteBeanService {
   @Autowired
   public void setExtCalendarService(ExtendedCalendarService extCalendarService) { _extCalendarService = extCalendarService; }
 
-  @Cacheable
+
   public RouteBean getRouteForId(AgencyAndId id) {
     RouteCollectionNarrative rc = _narrativeService.getRouteCollectionForId(id);
     if (rc == null)
@@ -144,7 +144,7 @@ class RouteBeanServiceImpl implements RouteBeanService {
     return getRouteBeanForRouteCollection(id, rc);
   }
 
-  @Cacheable
+
   public StopsForRouteBean getStopsForRoute(AgencyAndId routeId) {
     RouteCollectionEntry routeCollectionEntry = _transitGraphDao.getRouteCollectionForId(routeId);
     RouteCollectionNarrative narrative = _narrativeService.getRouteCollectionForId(routeId);
@@ -154,7 +154,7 @@ class RouteBeanServiceImpl implements RouteBeanService {
         narrative, null);
   }
 
-  @Cacheable
+
   public StopsForRouteBean getStopsForRouteForServiceDate(AgencyAndId routeId, ServiceDate serviceDate) {
     RouteCollectionEntry routeCollectionEntry = _transitGraphDao.getRouteCollectionForId(routeId);
     RouteCollectionNarrative narrative = _narrativeService.getRouteCollectionForId(routeId);

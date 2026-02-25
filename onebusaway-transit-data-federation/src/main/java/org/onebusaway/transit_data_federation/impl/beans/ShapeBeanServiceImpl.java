@@ -58,7 +58,7 @@ class ShapeBeanServiceImpl implements ShapeBeanService {
     _transitGraphDao = transitGraphDao;
   }
 
-  @Cacheable
+
   public EncodedPolylineBean getPolylineForShapeId(AgencyAndId id) {
     ShapePoints shapePoints = _shapePointService.getShapePointsForShapeId(id);
     if (shapePoints == null)
@@ -67,7 +67,7 @@ class ShapeBeanServiceImpl implements ShapeBeanService {
         shapePoints.getLons(), -1);
   }
 
-  @Cacheable
+
   public List<EncodedPolylineBean> getMergedPolylinesForShapeIds(
       Collection<AgencyAndId> shapeIds) {
 
