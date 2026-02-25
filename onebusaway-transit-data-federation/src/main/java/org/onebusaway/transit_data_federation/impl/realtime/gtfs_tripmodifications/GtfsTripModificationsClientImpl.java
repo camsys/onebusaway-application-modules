@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -90,10 +91,6 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         _gtfsTripModificationsHandler = gtfsTripModificationsHandler;
     }
 
-    @Autowired
-    public void setScheduledExecutorService(ScheduledExecutorService scheduledExecutorService) {
-        _scheduledExecutorService = scheduledExecutorService;
-    }
 
     public void setEnabled(boolean enabled) {
         _enabled = enabled;
@@ -107,6 +104,7 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         if(_gtfsTripModificationsFetcher == null){
             _log.warn("Gtfs Trip Modifications Fetcher is undefined. Likely cause is invalid Trip Modifications URL {}", _gtfsTripModificationsUrl);
         }
+        _scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         _scheduledExecutorService.scheduleAtFixedRate(this::update, 0, _refreshInterval, TimeUnit.SECONDS);
     }
 
