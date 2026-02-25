@@ -192,6 +192,10 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
         return true;
     }
 
+    public boolean isApplying() {
+        return _isApplying;
+    }
+
     private boolean validateModifications(TripModifications tripModifications) {
         if (tripModifications.getServiceDatesList().isEmpty()) {
             _log.info("affected dates is empty");

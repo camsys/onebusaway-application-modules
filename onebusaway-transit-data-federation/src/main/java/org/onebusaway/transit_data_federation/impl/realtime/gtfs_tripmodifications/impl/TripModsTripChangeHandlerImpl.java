@@ -79,42 +79,13 @@ public class TripModsTripChangeHandlerImpl implements TripModsTripChangeHandler 
 
     private NarrativeService _narrativeService;
 
-    private StopTimeService _stopTimeService;
-
     private TimeService _timeService;
 
     private BlockCalendarService _blockCalendarService;
 
-    private CalendarService _calendarService;
-
-    private TripChangeSet revertTripChanges;
-
-    private RefreshService _refreshService;
-
-    private CacheableMethodManager _cacheableMethodManager;
-
-    private CacheableMethodManager _cacheableAnnotationInterceptor;
-
-    private boolean _isApplying = false;
-
     private DateTimeFormatter SERVICE_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
     //TODO what is the service date format
 
-    @Autowired
-    public void setRefreshService(RefreshService refreshService) {
-        _refreshService = refreshService;
-    }
-    @Autowired
-    @Qualifier("cacheableMethodManager")
-    public void setCacheableMethodManager(CacheableMethodManager cacheableMethodManager) {
-        _cacheableMethodManager = cacheableMethodManager;
-    }
-
-    @Autowired
-    @Qualifier("cacheableAnnotationInterceptor")
-    public void setCacheableAnnotationInterceptor(CacheableMethodManager cacheableAnnotationInterceptor) {
-        _cacheableAnnotationInterceptor = cacheableAnnotationInterceptor;
-    }
 
     @Autowired
     public void setTransitGraphDao(TransitGraphDao dao) {
@@ -132,11 +103,6 @@ public class TripModsTripChangeHandlerImpl implements TripModsTripChangeHandler 
     }
 
     @Autowired
-    public void setStopTimeService(StopTimeService stopTimeService) {
-        _stopTimeService = stopTimeService;
-    }
-
-    @Autowired
     public void setTimeService(TimeService timeService) {
         _timeService = timeService;
     }
@@ -144,11 +110,6 @@ public class TripModsTripChangeHandlerImpl implements TripModsTripChangeHandler 
     @Autowired
     public void setBlockCalendarService(BlockCalendarService blockCalendarService) {
         _blockCalendarService = blockCalendarService;
-    }
-
-    @Autowired
-    public void setCalendarService(CalendarService calendarService) {
-        _calendarService = calendarService;
     }
 
     @Override
