@@ -45,6 +45,8 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
 
     private ScheduledExecutorService _scheduledExecutorService;
 
+    private boolean _enabled = false;
+
     private StopHandler _stopHandler;
 
     private ShapeHandler _shapeHandler;
@@ -53,17 +55,24 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
 
     private GtfsTripModificationsFetcher _gtfsTripModificationsFetcher;
 
-    private int _refreshInterval;
+    private int _refreshInterval = 60;
 
 
-    @Autowired
     public void setRefreshInterval(int refreshInterval) {
         _refreshInterval = refreshInterval;
     }
     
-    @Autowired
     public void setGtfsTripModificationsUrl(String gtfsTripModificationsUrl) {
         _gtfsTripModificationsUrl = gtfsTripModificationsUrl;
+        try{
+            _gtfsTripModificationsFetcher = new GtfsTripModificationsFetcherImpl(_gtfsTripModificationsUrl);
+        } catch (URISyntaxException e) {
+            _gtfsTripModificationsFetcher = null;
+        }
+    }
+
+    public void setTripModificationsEnabled(boolean enabled) {
+        _enabled = enabled;
     }
 
     @Autowired
@@ -86,19 +95,33 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         _scheduledExecutorService = scheduledExecutorService;
     }
 
+    public void setEnabled(boolean enabled) {
+        _enabled = enabled;
+    }
+
     @PostConstruct
     public void init() {
-        try {
-            _gtfsTripModificationsFetcher = new GtfsTripModificationsFetcherImpl(_gtfsTripModificationsUrl);
-            _scheduledExecutorService.scheduleAtFixedRate(this::update, 0, _refreshInterval, TimeUnit.SECONDS);
-        } catch (URISyntaxException ex) {
-            _log.error("init failed", ex);
+        if(!_enabled){
+            _log.warn("GtfsTripModificationsClientImpl is disabled");
         }
+        if(_gtfsTripModificationsFetcher == null){
+            _log.warn("Gtfs Trip Modifications Fetcher is undefined. Likely cause is invalid Trip Modifications URL {}", _gtfsTripModificationsUrl);
+        }
+        _scheduledExecutorService.scheduleAtFixedRate(this::update, 0, _refreshInterval, TimeUnit.SECONDS);
     }
 
     @Override
     public void update() {
         try {
+            if(!_enabled){
+                _log.debug("GtfsTripModificationsClientImpl is not enabled");
+                return;
+            }
+            if(_gtfsTripModificationsFetcher == null){
+                _log.debug("Gtfs Trip Modifications Fetcher is undefined. Likely cause is invalid Trip Modifications URL {}", _gtfsTripModificationsUrl);
+                return;
+            }
+
             _log.info("Fetching GTFS Trip Modifications from {}", _gtfsTripModificationsUrl);
 
             byte[] rawFeedMessage = _gtfsTripModificationsFetcher.fetchFeed();
@@ -144,17 +167,17 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
             if (entity.hasStop()) {
                 Stop stop = entity.getStop();
                 stopsList.add(stop);
-                _log.info("Reading new stop ID: {}, name: {}, Latlon: {},{}",
+                _log.debug("Reading new stop ID: {}, name: {}, Latlon: {},{}",
                         stop.getStopId(),
                         stop.getStopName(),
                         stop.getStopLat(),
                         stop.getStopLon());
             }
             if (entity.hasTripModifications()) {
-                _log.info("Reading trip modifications for entity ID: {}", entity.getId());
+                _log.debug("Reading trip modifications for entity ID: {}", entity.getId());
                 tripModificationsList.add(entity.getTripModifications());
                 TripModifications tm = entity.getTripModifications();
-                _log.info("TripModification: {}", tm.toString());
+                _log.debug("TripModification: {}", tm.toString());
             }
         }
         int totalMods = tripModificationsList.size();
