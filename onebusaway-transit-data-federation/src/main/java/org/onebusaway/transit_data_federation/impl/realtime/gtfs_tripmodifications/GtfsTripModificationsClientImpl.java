@@ -66,7 +66,7 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         _gtfsTripModificationsUrl = gtfsTripModificationsUrl;
         try{
             _gtfsTripModificationsFetcher = new GtfsTripModificationsFetcherImpl(_gtfsTripModificationsUrl);
-        } catch (URISyntaxException e) {
+        } catch (URISyntaxException | IllegalArgumentException e) {
             _gtfsTripModificationsFetcher = null;
         }
     }
