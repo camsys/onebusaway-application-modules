@@ -87,8 +87,9 @@ public class ShapeHandlerImpl implements ShapeHandler {
             ShapePoints sp = new ShapePoints();
             sp.setLats(lat);
             sp.setLons(lon);
-            sp.ensureDistTraveled();
             sp.setShapeId(shapeId);
+            sp.setDistTraveled(new double[coordinatePointsList.size()]);
+            sp.ensureDistTraveled();
             _dao.addShape(sp);
 
             successfullyAddedShapes.add(sp);
