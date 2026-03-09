@@ -35,12 +35,15 @@ import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.*;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.TimeService;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.TripModificationDiff;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModificationDiffComputer;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModsTripChangeHandler;
 import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.RouteEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.model.StopTimeInstance;
 import org.onebusaway.transit_data_federation.model.narrative.RouteCollectionNarrative;
 import org.onebusaway.transit_data_federation.model.narrative.StopNarrative;
@@ -83,9 +86,22 @@ public class TripModsTripChangeHandlerImpl implements TripModsTripChangeHandler 
 
     private BlockCalendarService _blockCalendarService;
 
+    private TripModificationDiffComputer _tripModificationDiffComputer;
+
+    private TripModificationDiffCacheImpl _diffCache;
+
     private DateTimeFormatter SERVICE_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
     //TODO what is the service date format
 
+    @Autowired
+    public void setDiffCache(TripModificationDiffCacheImpl diffCache) {
+        _diffCache = diffCache;
+    }
+
+    @Autowired
+    public void setTripModificationDiffComputer(TripModificationDiffComputer tripModificationDiffComputer) {
+        _tripModificationDiffComputer = tripModificationDiffComputer;
+    }
 
     @Autowired
     public void setTransitGraphDao(TransitGraphDao dao) {
@@ -165,6 +181,31 @@ public class TripModsTripChangeHandlerImpl implements TripModsTripChangeHandler 
 
         List<StopTimeEntry> modifiedStopTimes = buildModifiedStopTimes(tripEntry, modifications);
         modifyTrip.setStopTimes(modifiedStopTimes);
+
+        if (tripEntry.getStopTimes() == null || tripEntry.getStopTimes().isEmpty()) {
+            _log.warn("No original stop times found for trip {}, skipping diff", tripId);
+            return modifyTrip;
+        }
+
+        if (shapeId != null) {
+            ShapePoints newShape = _dao.getShape(shapeId);
+            if (newShape == null) {
+                throw new IllegalArgumentException("Shape entry not found for id: " + shapeId);
+            }
+        }
+
+        ShapePoints oldShape = _dao.getShape(tripEntry.getShapeId());
+
+        TripModificationDiff diff = _tripModificationDiffComputer.computeDiff(
+                tripEntry.getId(),
+                tripEntry.getStopTimes(),
+                modifiedStopTimes,
+                oldShape,
+                shapeId,
+                Collections.singletonList(serviceDate)
+        );
+        _diffCache.invalidateAndReplace(tripId, diff);
+
 
         return modifyTrip;
     }

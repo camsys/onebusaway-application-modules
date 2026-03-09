@@ -1,12 +1,14 @@
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
+
+import java.time.LocalDate;
 import java.util.List;
 
 public class TripModificationDiff {
-    private String tripId;
+    private AgencyAndId tripId;
     private String routeId;
-    private long effectiveStartTime;
-    private long effectiveEndTime;
+    private List<LocalDate> effectiveServiceDates;
     private long lastUpdated;
 
     private List<StopTimeSnapshot> originalStopTimes;
@@ -16,11 +18,11 @@ public class TripModificationDiff {
 
     private ShapeModificationDiff shapeDiff;
 
-    public String getTripId() {
+    public AgencyAndId getTripId() {
         return tripId;
     }
 
-    public void setTripId(String tripId) {
+    public void setTripId(AgencyAndId tripId) {
         this.tripId = tripId;
     }
 
@@ -32,20 +34,12 @@ public class TripModificationDiff {
         this.routeId = routeId;
     }
 
-    public long getEffectiveStartTime() {
-        return effectiveStartTime;
+    public List<LocalDate> getEffectiveServiceDates() {
+        return effectiveServiceDates;
     }
 
-    public void setEffectiveStartTime(long effectiveStartTime) {
-        this.effectiveStartTime = effectiveStartTime;
-    }
-
-    public long getEffectiveEndTime() {
-        return effectiveEndTime;
-    }
-
-    public void setEffectiveEndTime(long effectiveEndTime) {
-        this.effectiveEndTime = effectiveEndTime;
+    public void setEffectiveServiceDates(List<LocalDate> effectiveServiceDates) {
+        this.effectiveServiceDates = effectiveServiceDates;
     }
 
     public long getLastUpdated() {
