@@ -15,28 +15,15 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service;
 
-import com.camsys.transit.servicechange.ServiceChange;
 import com.google.transit.realtime.GtfsRealtime;
-import com.google.transit.realtime.GtfsRealtime.TripModifications;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChangeSet;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrip;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrips;
 
-import java.util.Collection;
+import java.util.List;
 
-public interface TripModsTripChangeHandler {
+public interface TripModsTripModificationCreationService {
+    ModifiedTrips createModifiedTrips(List<GtfsRealtime.TripModifications> tripModificationsList);
 
-    /**
-     * Get all trip changes from a TripModifications message
-     *
-     * @param tripModifications to process
-     * @return all trip changes
-     */
-    TripChangeSet getAllTripChanges(TripModifications tripModifications);
-
-    /**
-     * Apply trip changes to the graph
-     *
-     * @param tripChangeSet to apply
-     * @return the applied tripChangeSet
-     */
-    TripChangeSet applyChanges(TripChangeSet tripChangeSet);
+    ModifiedTrip createModifiedTripForExistingTrip(AgencyAndId tripId);
 }

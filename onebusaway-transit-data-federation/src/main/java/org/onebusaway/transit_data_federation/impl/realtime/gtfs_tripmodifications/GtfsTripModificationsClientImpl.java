@@ -15,11 +15,9 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications;
 
-import com.google.transit.realtime.GtfsRealtime.Shape;
-import com.google.transit.realtime.GtfsRealtime.Stop;
-
 import org.onebusaway.realtime.gtfsrt.util.GtfsRealtimeDeserializer;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.impl.GtfsTripModificationsFetcherImpl;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.TripModificationsChanges;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,15 +26,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
-import com.google.transit.realtime.GtfsRealtime.TripModifications;
 
 public class GtfsTripModificationsClientImpl implements GtfsTripModificationsClient {
 
@@ -47,10 +42,6 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
     private ScheduledExecutorService _scheduledExecutorService;
 
     private boolean _enabled = false;
-
-    private StopHandler _stopHandler;
-
-    private ShapeHandler _shapeHandler;
 
     private GtfsTripModificationsHandler _gtfsTripModificationsHandler;
 
@@ -77,16 +68,6 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
     }
 
     @Autowired
-    public void setStopHandler(StopHandler stopHandler) {
-        _stopHandler = stopHandler;
-    }
-
-    @Autowired
-    public void setShapeHandler(ShapeHandler shapeHandler) {
-        _shapeHandler = shapeHandler;
-    }
-
-    @Autowired
     public void setGtfsTripModificationsHandler(GtfsTripModificationsHandler gtfsTripModificationsHandler) {
         _gtfsTripModificationsHandler = gtfsTripModificationsHandler;
     }
@@ -105,11 +86,11 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
             _log.warn("Gtfs Trip Modifications Fetcher is undefined. Likely cause is invalid Trip Modifications URL {}", _gtfsTripModificationsUrl);
         }
         _scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        _scheduledExecutorService.scheduleAtFixedRate(this::update, 0, _refreshInterval, TimeUnit.SECONDS);
+        _scheduledExecutorService.scheduleWithFixedDelay(this::update, 0, _refreshInterval, TimeUnit.SECONDS);
     }
 
     @Override
-    public void update() {
+    public synchronized void update() {
         try {
             if(!_enabled){
                 _log.debug("GtfsTripModificationsClientImpl is not enabled");
@@ -127,6 +108,7 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
             FeedMessage feedMessage =  GtfsRealtimeDeserializer.parseFeedMessage(rawFeedMessage);
 
             _log.info("Successfully fetched and parsed GTFS Trip Modifications feed");
+
             this.processFeed(feedMessage);
         } catch (IOException e) {
             _log.error("Error fetching or parsing feed: {}", e.getMessage(), e);
@@ -139,45 +121,47 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
     }
 
     private void processFeed(FeedMessage feedMessage) {
+        if(isValidFeed(feedMessage)){
+            handleNewFeed(feedMessage);
+        } else{
+            _log.warn("Unable to process GTFS Trip Modifications feed");
+        }
+    }
+
+    private boolean isValidFeed(FeedMessage feedMessage) {
         if (!feedMessage.hasHeader() || feedMessage.getEntityList().isEmpty()) {
             _log.warn("Feed is empty or invalid.");
-            return;
+            return false;
         }
         if (!feedMessage.getHeader().hasIncrementality()) {
             _log.error("Feed incrementality not supported.");
-            return;
+            return false;
         }
-
-        handleNewFeed(feedMessage);
+        return true;
     }
 
     private void handleNewFeed(FeedMessage feedMessage) {
-        List<TripModifications> tripModificationsList = new ArrayList<>();
         _log.info("Processing feed with {} entities.", feedMessage.getEntityList().size());
+        TripModificationsChanges tripModificationsChanges = new TripModificationsChanges();
 
-        List<Shape> shapesList = new ArrayList<>();
-        List<Stop> stopsList = new ArrayList<>();
+        tripModificationsChanges.setFeedTimestamp(feedMessage.getHeader().getTimestamp());
 
         for (FeedEntity entity : feedMessage.getEntityList()) {
             if (entity.hasShape()) {
-                shapesList.add(entity.getShape());
+                tripModificationsChanges.addShape(entity.getShape());
             }
-            if (entity.hasStop()) {
-                Stop stop = entity.getStop();
-                stopsList.add(stop);
-                _log.debug("Reading new stop ID: {}, name: {}, Latlon: {},{}",
-                        stop.getStopId(),
-                        stop.getStopName(),
-                        stop.getStopLat(),
-                        stop.getStopLon());
+            else if (entity.hasStop()) {
+                tripModificationsChanges.addStop(entity.getStop());
             }
-            if (entity.hasTripModifications()) {
-                _log.debug("Reading trip modifications for entity ID: {}", entity.getId());
-                tripModificationsList.add(entity.getTripModifications());
-                TripModifications tm = entity.getTripModifications();
-                _log.debug("TripModification: {}", tm.toString());
+            else if (entity.hasTripModifications()) {
+                tripModificationsChanges.addTripModification(entity.getTripModifications());
             }
         }
+
+        _gtfsTripModificationsHandler.handleTripModifications(tripModificationsChanges);
+
+
+/*
         int totalMods = tripModificationsList.size();
         int totalShapes = shapesList.size();
         int totalStops = stopsList.size();
@@ -186,7 +170,7 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         int numberOfSuccessfullyAddedShapes = _shapeHandler.addShapes(shapesList).size();
         _log.info("Shapes: processed {} shapes, corresponding to {} successful new shape additions", totalShapes, numberOfSuccessfullyAddedShapes);
         int successfulTripChanges = _gtfsTripModificationsHandler.handleTripModifications(feedMessage.getHeader().getTimestamp(), tripModificationsList);
-        _log.info("Trip changes: processed {} trip changes, corresponding to {} successful internal changes", totalMods, successfulTripChanges);
+        _log.info("Trip changes: processed {} trip changes, corresponding to {} successful internal changes", totalMods, successfulTripChanges);*/
     }
 
 }
