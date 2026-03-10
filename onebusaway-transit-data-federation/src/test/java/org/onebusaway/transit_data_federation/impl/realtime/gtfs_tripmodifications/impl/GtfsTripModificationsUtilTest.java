@@ -313,7 +313,6 @@ public class GtfsTripModificationsUtilTest {
     public void findStopTimeIndexForSelector_findsByStopSequence() {
         when(stopTimeEntry0.getGtfsSequence()).thenReturn(10);
         when(stopTimeEntry1.getGtfsSequence()).thenReturn(20);
-        when(stopTimeEntry2.getGtfsSequence()).thenReturn(30);
         List<StopTimeEntry> stopTimes = Arrays.asList(stopTimeEntry0, stopTimeEntry1, stopTimeEntry2);
 
         GtfsRealtime.StopSelector selector = GtfsRealtime.StopSelector.newBuilder()
@@ -389,7 +388,6 @@ public class GtfsTripModificationsUtilTest {
     public void findStopTimeIndexForSelector_stopSequenceTakesPriorityOverStopId() {
         // Both sequence and ID are set — sequence match is attempted first
         when(stopTimeEntry0.getGtfsSequence()).thenReturn(10);
-        when(stopTimeEntry1.getGtfsSequence()).thenReturn(20);
         List<StopTimeEntry> stopTimes = Arrays.asList(stopTimeEntry0, stopTimeEntry1);
 
         GtfsRealtime.StopSelector selector = GtfsRealtime.StopSelector.newBuilder()
