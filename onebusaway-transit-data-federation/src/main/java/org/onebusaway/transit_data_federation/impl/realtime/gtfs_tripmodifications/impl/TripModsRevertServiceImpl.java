@@ -95,7 +95,7 @@ public class TripModsRevertServiceImpl implements TripModsRevertService {
                     result.getSuccessfullyUpdatedTripIds());
 
             if(result.getFailedUpdatedTripsCount() > 0){
-                _log.warn("Failed to revert {} previously added shapes: {}.",
+                _log.warn("Failed to revert {} previously added trips: {}.",
                         result.getFailedUpdatedTripsCount(),
                         result.getFailedUpdatedTripIdsAsString());
             }
@@ -114,7 +114,7 @@ public class TripModsRevertServiceImpl implements TripModsRevertService {
 
     void revertAddedStops() {
         _log.info("Reverting added stops not yet implemented.");
-        if (_lastKnownShapeResults != null) {
+        if (_lastKnownStopResults != null) {
         }
     }
 }
