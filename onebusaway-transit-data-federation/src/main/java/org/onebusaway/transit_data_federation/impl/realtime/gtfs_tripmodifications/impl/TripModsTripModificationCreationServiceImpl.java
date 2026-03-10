@@ -117,6 +117,9 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
         AgencyAndId shapeId = getSelectedTripsShapeId(selectedTrips);
         for(String tripId: selectedTrips.getTripIdsList()){
             TripEntryImpl tripEntry = convertSelectedTripToTripEntry(tripId);
+            if(tripEntry == null) {
+                continue;
+            }
             ModifiedTrip modifiedTrip = createModifiedTrip(tripEntry, shapeId, modifications);
             if(isValidTripModifiedTrip(modifiedTrip, selectedTripServiceDates)){
                 modifiedTrips.add(modifiedTrip);
