@@ -144,33 +144,28 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         _log.info("Processing feed with {} entities.", feedMessage.getEntityList().size());
         TripModificationsChanges tripModificationsChanges = new TripModificationsChanges();
 
-        tripModificationsChanges.setFeedTimestamp(feedMessage.getHeader().getTimestamp());
+        tripModificationsChanges.setFeedTimestamp(extractFeedTimeStamp(feedMessage));
 
         for (FeedEntity entity : feedMessage.getEntityList()) {
             if (entity.hasShape()) {
                 tripModificationsChanges.addShape(entity.getShape());
-            }
-            else if (entity.hasStop()) {
+            } else if (entity.hasStop()) {
                 tripModificationsChanges.addStop(entity.getStop());
-            }
-            else if (entity.hasTripModifications()) {
+            } else if (entity.hasTripModifications()) {
                 tripModificationsChanges.addTripModification(entity.getTripModifications());
             }
         }
 
         _gtfsTripModificationsHandler.handleTripModifications(tripModificationsChanges);
 
+    }
 
-/*
-        int totalMods = tripModificationsList.size();
-        int totalShapes = shapesList.size();
-        int totalStops = stopsList.size();
-        int numberOfSuccessfullyAddedStops = _stopHandler.addStops(stopsList).size();
-        _log.info("Stops: processed {} stops, corresponding to {} successful new stop additions", totalStops, numberOfSuccessfullyAddedStops);
-        int numberOfSuccessfullyAddedShapes = _shapeHandler.addShapes(shapesList).size();
-        _log.info("Shapes: processed {} shapes, corresponding to {} successful new shape additions", totalShapes, numberOfSuccessfullyAddedShapes);
-        int successfulTripChanges = _gtfsTripModificationsHandler.handleTripModifications(feedMessage.getHeader().getTimestamp(), tripModificationsList);
-        _log.info("Trip changes: processed {} trip changes, corresponding to {} successful internal changes", totalMods, successfulTripChanges);*/
+    private long extractFeedTimeStamp(FeedMessage feedMessage) {
+        long feedTimeStamp = 0;
+        if(feedMessage.getHeader().hasTimestamp()){
+            feedTimeStamp = TimeUnit.SECONDS.toMillis(feedMessage.getHeader().getTimestamp());
+        }
+        return feedTimeStamp;
     }
 
 }
