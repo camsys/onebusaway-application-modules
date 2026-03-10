@@ -27,7 +27,7 @@ public class AddedShapesResult {
     private final List<AgencyAndId> failedUpdatedShapeIds = new ArrayList<>();
     private final List<AgencyAndId> successfullyUpdatedShapeIds = new ArrayList<>();
 
-    public int getFailedUpdateddShapeCount() {
+    public int getFailedUpdatedShapeCount() {
         return failedUpdatedShapeIds.size();
     }
 
