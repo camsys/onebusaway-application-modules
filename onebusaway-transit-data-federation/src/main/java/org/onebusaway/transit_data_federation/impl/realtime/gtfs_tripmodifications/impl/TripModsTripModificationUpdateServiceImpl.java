@@ -50,7 +50,7 @@ public class TripModsTripModificationUpdateServiceImpl implements TripModsTripMo
         for (ModifiedTrip modifiedTrip : modifiedTripList) {
             _log.info("Handling changes for trip {}", modifiedTrip.getTripId());
             ModifiedTrip originalTrip = _tripModsCreationService.createModifiedTripForExistingTrip(modifiedTrip.getTripId());
-            if (_dao.updateStopTimesForTrip(modifiedTrip.getTripEntry(), modifiedTrip.getStopTimes(),
+            if (originalTrip != null && _dao.updateStopTimesForTrip(modifiedTrip.getTripEntry(), modifiedTrip.getStopTimes(),
                     modifiedTrip.getShapeId())) {
                 result.addOriginalTrip(originalTrip);
             } else {

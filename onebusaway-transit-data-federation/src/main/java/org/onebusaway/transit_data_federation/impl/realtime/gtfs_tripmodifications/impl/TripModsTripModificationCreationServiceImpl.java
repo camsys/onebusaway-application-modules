@@ -358,15 +358,24 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
 
     @Override
     public ModifiedTrip createModifiedTripForExistingTrip(AgencyAndId tripId) {
-        TripEntryImpl tripEntry = (TripEntryImpl) _dao.getTripEntryForId(tripId);
-        List<GtfsRealtime.TripModifications.Modification> modifications = Collections.EMPTY_LIST;
+        TripEntry transitGraphTripEntry = _dao.getTripEntryForId(tripId);
 
-        return new ModifiedTrip(tripId,
-                tripEntry.getShapeId(),
-                tripEntry.getStopTimes(),
-                tripEntry,
-                modifications,
-                _util.getActiveServiceDateForTrip(tripEntry));
+        if(transitGraphTripEntry != null){
+            TripEntryImpl tripEntry = (TripEntryImpl) transitGraphTripEntry;
+
+            List<GtfsRealtime.TripModifications.Modification> modifications = Collections.emptyList();
+
+            return new ModifiedTrip(tripId,
+                    tripEntry.getShapeId(),
+                    tripEntry.getStopTimes(),
+                    tripEntry,
+                    modifications,
+                    _util.getActiveServiceDateForTrip(tripEntry));
+        } else {
+            return null;
+        }
+
+
 
     }
 
