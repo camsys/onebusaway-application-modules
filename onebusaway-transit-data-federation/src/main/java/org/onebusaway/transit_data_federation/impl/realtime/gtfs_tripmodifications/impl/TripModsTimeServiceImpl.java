@@ -62,7 +62,7 @@ public class TripModsTimeServiceImpl implements TripModsTimeService {
     public void setTime(String timeString) {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         LocalDateTime ldt = LocalDateTime.parse(timeString, fmt);
-        ZonedDateTime zdt = ZonedDateTime.ofLocal(ldt, _timeZone, null);
+        ZonedDateTime zdt = ZonedDateTime.ofLocal(ldt, getTimeZone(), null);
         setTime(zdt.toEpochSecond() * 1000);
     }
 
