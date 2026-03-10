@@ -84,7 +84,7 @@ public class TripModsShapeCreationServiceImpl implements TripModsShapeCreationSe
         }
 
         if (!shape.hasEncodedPolyline()) {
-            _log.warn("Stop with id {} missing polyline, skipping addition.", shape.getShapeId());
+            _log.warn("Shape with id {} missing polyline, skipping addition.", shape.getShapeId());
             return false;
         }
 
