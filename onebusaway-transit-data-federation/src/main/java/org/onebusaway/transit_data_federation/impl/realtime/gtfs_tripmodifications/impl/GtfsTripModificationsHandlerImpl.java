@@ -127,27 +127,31 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
             return;
         }
 
-        _isApplying = true;
+        try {
+            _isApplying = true;
 
-        _tripModsRevertService.revertPreviousChanges();
+            _tripModsRevertService.revertPreviousChanges();
 
-        //AddedStops addedStops = _tripModsStopCreationService.createAddedStops(tripModificationsChanges.getStops());
-        AddedShapes addedShapes = _tripModsShapeCreationService.createAddedShapes(tripModificationsChanges.getShapes());
-        ModifiedTrips modifiedTrips = _tripModificationCreationService.createModifiedTrips(tripModificationsChanges.getTripModifications());
+            //AddedStops addedStops = _tripModsStopCreationService.createAddedStops(tripModificationsChanges.getStops());
+            AddedShapes addedShapes = _tripModsShapeCreationService.createAddedShapes(tripModificationsChanges.getShapes());
+            ModifiedTrips modifiedTrips = _tripModificationCreationService.createModifiedTrips(tripModificationsChanges.getTripModifications());
 
-        AddedShapesResult addedShapesResult =  _tripModsShapeUpdateService.addShapes(addedShapes.getAddedShapes());
-        _tripModsRevertService.setLastKnownShapeResults(addedShapesResult);
+            AddedShapesResult addedShapesResult = _tripModsShapeUpdateService.addShapes(addedShapes.getAddedShapes());
+            _tripModsRevertService.setLastKnownShapeResults(addedShapesResult);
 
-        ModifiedTripsResult modifiedTripsResult = _tripModificationUpdateService.updateTrips(modifiedTrips.getModifiedTrips());
-        _tripModsRevertService.setLastKnownTripModificationResults(modifiedTripsResult);
+            ModifiedTripsResult modifiedTripsResult = _tripModificationUpdateService.updateTrips(modifiedTrips.getModifiedTrips());
+            _tripModsRevertService.setLastKnownTripModificationResults(modifiedTripsResult);
 
-        if(hasSuccessfulUpdates(addedShapesResult, modifiedTripsResult)){
-            forceFlush();
+            if (hasSuccessfulUpdates(addedShapesResult, modifiedTripsResult)) {
+                forceFlush();
+            }
+
+            _lastUpdatedTimestamp = tripModificationsChanges.getFeedTimestamp();
+
+            _reapplyTime = getReapplyTime(modifiedTrips);
+        } finally {
+            _isApplying = false;
         }
-
-        _lastUpdatedTimestamp = tripModificationsChanges.getFeedTimestamp();
-
-        _reapplyTime = getReapplyTime(modifiedTrips);
 
     }
 
