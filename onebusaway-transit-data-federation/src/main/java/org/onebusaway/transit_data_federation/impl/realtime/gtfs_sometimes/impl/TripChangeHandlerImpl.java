@@ -380,7 +380,6 @@ public class TripChangeHandlerImpl implements TripChangeHandler {
         }
 
         // Inserted stops
-
         for (StopTimesFields stopTimesFields : change.getInsertedStops()) {
             AgencyAndId stopId = _entityIdService.getStopId(stopTimesFields.getStopId());
             StopEntryImpl stopEntry = (StopEntryImpl) _dao.getStopEntryForId(stopId);

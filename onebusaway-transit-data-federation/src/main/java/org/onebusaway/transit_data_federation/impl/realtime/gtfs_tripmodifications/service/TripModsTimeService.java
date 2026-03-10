@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2026 Metropolitan Transportation Authority
+ * Copyright (C) 2018 Cambridge Systematics, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,16 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service;
 
-import com.google.transit.realtime.GtfsRealtime.TripModifications;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.TripModificationsChanges;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
-import java.util.Collection;
+public interface TripModsTimeService {
+    LocalDateTime getCurrentTime();
 
-public interface GtfsTripModificationsHandler {
+    LocalDate getCurrentDate();
 
-    /**
-     * Process TripModificationsChanges; make the appropriate changes in the graph.
-     *
-     * @param tripModificationsChanges to process
-     */
-    void handleTripModifications(TripModificationsChanges tripModificationsChanges);
+    long getCurrentTimeAsEpochMs();
+
+    ZoneId getTimeZone();
 }

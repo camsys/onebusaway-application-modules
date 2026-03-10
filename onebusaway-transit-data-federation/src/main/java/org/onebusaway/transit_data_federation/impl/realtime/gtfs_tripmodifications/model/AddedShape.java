@@ -13,19 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service;
+package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model;
 
-import com.google.transit.realtime.GtfsRealtime.Shape;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 
-import java.util.List;
 
-public interface ShapeHandler {
-    /**
-     * Add a set of shapes, returning the number of successfully added shapes.
-     *
-     * @param shapes to add
-     * @return list of successfully added shapepoints
-     */
-     List<ShapePoints> addShapes(List<Shape> shapes);
+public class AddedShape {
+    private final ShapePoints shapePoints;
+    private final AgencyAndId shapeId;
+
+    public AddedShape(ShapePoints shapePoints, AgencyAndId shapeId) {
+        this.shapePoints = shapePoints;
+        this.shapeId = shapeId;
+    }
+
+    public ShapePoints getShapePoints() {
+        return shapePoints;
+    }
+
+    public AgencyAndId getShapeId() {
+        return shapeId;
+    }
 }

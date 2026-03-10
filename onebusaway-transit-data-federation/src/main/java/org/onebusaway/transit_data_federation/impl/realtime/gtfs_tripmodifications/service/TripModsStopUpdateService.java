@@ -15,17 +15,7 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service;
 
-import com.google.transit.realtime.GtfsRealtime.TripModifications;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.TripModificationsChanges;
+public interface TripModsStopUpdateService {
 
-import java.util.Collection;
-
-public interface GtfsTripModificationsHandler {
-
-    /**
-     * Process TripModificationsChanges; make the appropriate changes in the graph.
-     *
-     * @param tripModificationsChanges to process
-     */
-    void handleTripModifications(TripModificationsChanges tripModificationsChanges);
+    boolean removeStop();
 }

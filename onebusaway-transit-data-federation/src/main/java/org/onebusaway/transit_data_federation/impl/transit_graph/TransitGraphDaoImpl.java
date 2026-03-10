@@ -362,7 +362,9 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
   }
 
   @Override
-  public boolean updateStopTimesForTrip(TripEntryImpl trip, List<StopTimeEntry> stopTimeEntries, AgencyAndId shapeId) {
+  public boolean updateStopTimesForTrip(TripEntryImpl trip,
+                                        List<StopTimeEntry> stopTimeEntries,
+                                        AgencyAndId shapeId) {
     if (_graph.getTripEntryForId(trip.getId()) != null) {
       AgencyAndId originalShapeId = trip.getShapeId();
       TripNarrative narrative = _narrativeService.removeTrip(trip);
@@ -376,13 +378,13 @@ public class TransitGraphDaoImpl implements TransitGraphDao {
         trip.setShapeId(shapeId);
         shape = getShape(shapeId);
       }
+
       List<StopTimeEntry> oldStopTimeEntries = trip.getStopTimes();
       List<StopTimeEntryImpl> processedStopTimeEntries;
       try {
         processedStopTimeEntries = _stopTimesFactory.processStopTimeEntries(_graph, stopTimeEntries, trip, shape);
       } catch (Exception ex) {
-        // reset...
-        ex.printStackTrace();
+        _log.error("Failed to process stop time entries", ex);
         trip.setShapeId(originalShapeId);
         _narrativeService.addTrip(trip, narrative);
         return false;

@@ -18,14 +18,12 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificati
 import com.google.transit.realtime.GtfsRealtime.TripModifications;
 import org.onebusaway.container.cache.CacheableMethodManager;
 import org.onebusaway.container.refresh.RefreshService;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.ShapeChangeSet;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.StopChangeSet;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChange;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.TripChangeSet;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.*;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.TimeService;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModsTripChangeHandler;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.GtfsTripModificationsHandler;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.*;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,12 +32,11 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHandler {
+
     private static final Logger _log = LoggerFactory.getLogger(GtfsTripModificationsHandlerImpl.class);
 
     private long _lastUpdatedTimestamp = -1;
@@ -54,11 +51,20 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
 
     private CacheableMethodManager _cacheableAnnotationInterceptor;
 
-    private TripModsTripChangeHandler _tripChangeHandler;
+    private TripModsStopCreationService _tripModsStopCreationService;
 
-    private TripChangeSet revertTripChanges;
+    private TripModsShapeCreationService _tripModsShapeCreationService;
+
+    private TripModsShapeUpdateService _tripModsShapeUpdateService;
+
+    private TripModsTripModificationCreationService _tripModificationCreationService;
+
+    private TripModsTripModificationUpdateService _tripModificationUpdateService;
+
+    private TripModsRevertService _tripModsRevertService;
 
     private boolean _isApplying = false;
+
 
     @Autowired
     public void setRefreshService(RefreshService refreshService) {
@@ -78,8 +84,33 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
     }
 
     @Autowired
-    public void setTripModsTripChangeHandler(TripModsTripChangeHandler tripChangeHandler) {
-        _tripChangeHandler = tripChangeHandler;
+    public void setAddedStopCreationService(TripModsStopCreationService tripModsStopCreationService) {
+        _tripModsStopCreationService = tripModsStopCreationService;
+    }
+
+    @Autowired
+    public void setAddedShapeCreationService(TripModsShapeCreationService tripModsShapeCreationService) {
+        _tripModsShapeCreationService = tripModsShapeCreationService;
+    }
+
+    @Autowired
+    public void setAddedShapeUpdateService(TripModsShapeUpdateService tripModsShapeUpdateService) {
+        _tripModsShapeUpdateService = tripModsShapeUpdateService;
+    }
+
+    @Autowired
+    public void setTripModificationCreationService(TripModsTripModificationCreationService tripModificationCreationService) {
+        _tripModificationCreationService = tripModificationCreationService;
+    }
+
+    @Autowired
+    public void setTripModificationUpdateService(TripModsTripModificationUpdateService tripModificationUpdateService) {
+        _tripModificationUpdateService = tripModificationUpdateService;
+    }
+
+    @Autowired
+    public void setTripModsRevertService(TripModsRevertService tripModsRevertService) {
+        _tripModsRevertService = tripModsRevertService;
     }
 
     @Autowired
@@ -88,146 +119,99 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
     }
 
     @Override
-    public int handleTripModifications(long timestamp, Collection<TripModifications> tripModificationsList) {
+    public void handleTripModifications(TripModificationsChanges tripModificationsChanges) {
 
         // Check whether changes should be re-applied
-        if (!shouldApplyChanges(timestamp, tripModificationsList)) {
-            _log.info("Not applying changes.");
-            return 0;
+        if (!shouldApplyChanges(tripModificationsChanges)) {
+            _log.info("Not applying Trip Modification changes.");
+            return;
         }
 
         _isApplying = true;
 
-        //TODO implement revert changes
-        int nReverted = 0; //revertPreviousChanges();
+        _tripModsRevertService.revertPreviousChanges();
 
-        List<TripModifications> activeChanges = filterModifications(tripModificationsList);
+        //AddedStops addedStops = _tripModsStopCreationService.createAddedStops(tripModificationsChanges.getStops());
+        AddedShapes addedShapes = _tripModsShapeCreationService.createAddedShapes(tripModificationsChanges.getShapes());
+        ModifiedTrips modifiedTrips = _tripModificationCreationService.createModifiedTrips(tripModificationsChanges.getTripModifications());
 
-        int nSuccess = 0;
+        AddedShapesResult addedShapesResult =  _tripModsShapeUpdateService.addShapes(addedShapes.getAddedShapes());
+        _tripModsRevertService.setLastKnownShapeResults(addedShapesResult);
 
-        for (TripModifications tm : activeChanges) {
-            _log.info("Active TripModification: {}", tm);
+        ModifiedTripsResult modifiedTripsResult = _tripModificationUpdateService.updateTrips(modifiedTrips.getModifiedTrips());
+        _tripModsRevertService.setLastKnownTripModificationResults(modifiedTripsResult);
 
-
-            TripChangeSet tripChanges = _tripChangeHandler.getAllTripChanges(tm);
-
-            revertTripChanges = _tripChangeHandler.applyChanges(tripChanges);
-
-            nSuccess += revertTripChanges.size();
-            if (nSuccess > 0 || nReverted > 0) {
-                forceFlush();
-            }
-            _isApplying = false;
-
-            _lastUpdatedTimestamp = timestamp;
-            _reapplyTime = getReapplyTime(tripChanges.getAllChanges());
-
-            _log.info("Done with changes. Total internal changes: {}. Total reverted changes: {}. " +
-                    "Reapply time is {}, last updated is {}", nSuccess, nReverted, _reapplyTime, _lastUpdatedTimestamp);
-
-
+        if(hasSuccessfulUpdates(addedShapesResult, modifiedTripsResult)){
+            forceFlush();
         }
 
-        return nSuccess;
+        _lastUpdatedTimestamp = tripModificationsChanges.getFeedTimestamp();
+
+        _reapplyTime = getReapplyTime(modifiedTrips);
 
     }
 
-//    int revertPreviousChanges() {
-//        int nTotal = 0;
-//        //TODO fix shapes
-////        if (revertShapeChanges != null) {
-////            int success = _shapeChangeHandler.handleShapeChanges(revertShapeChanges).size();
-////            if (success != revertShapeChanges.size()) {
-////                _log.error("Error reverting some shapes!");
-////            }
-////            nTotal += success;
-////        }
-//        if (revertStopChanges != null) {
-//            int success = _stopChangeHandler.handleStopChanges(revertStopChanges).size();
-//            if (success != revertStopChanges.size()) {
-//                _log.error("Error reverting some stops!");
-//            }
-//            nTotal += success;
-//        }
-//        if (revertTripChanges != null) {
-//            int success = _tripChangeHandler.handleTripChanges(revertTripChanges).size();
-//            if (success != revertTripChanges.size()) {
-//                _log.error("Error reverting some trips!");
-//            }
-//            nTotal += success;
-//        }
-//        return nTotal;
-//    }
+    private boolean hasSuccessfulUpdates(AddedShapesResult addedShapesResult,
+                                         ModifiedTripsResult modifiedTripsResult) {
+        if(addedShapesResult.getSuccessfullyUpdatedShapeCount() > 0){
+            return true;
+        }
+        if(modifiedTripsResult.getSuccessfullyUpdatedTripsCount() > 0){
+            return true;
+        }
+        return false;
+    }
 
-    boolean shouldApplyChanges(long timestamp, Collection<TripModifications> tripModifications) {
+    boolean shouldApplyChanges(TripModificationsChanges tripModificationsChanges) {
         if (_lastUpdatedTimestamp == -1) {
             _log.info("First update for feed.");
-            if (tripModifications.isEmpty()) {
+            if (tripModificationsChanges.hasChanges()) {
+                return true;
+            } else {
                 _log.info("Feed is empty, ignoring.");
                 return false;
             }
-            return true;
-        } else if (_lastUpdatedTimestamp < timestamp) {
+        } else if (_lastUpdatedTimestamp < tripModificationsChanges.getFeedTimestamp()) {
             _log.info("Update feed.");
             return true;
-        } else if (_lastUpdatedTimestamp == timestamp) {
+        } else if (_lastUpdatedTimestamp == tripModificationsChanges.getFeedTimestamp()) {
             _log.info("Feed is the same as previously processed, check reapply time ({}), current time = {}",
                     _reapplyTime, _timeService.getCurrentTime());
             return _timeService.getCurrentTime().isAfter(_reapplyTime);
-        } else {
-            _log.error("Non-increasing timestamps in feed!");
-            return false;
         }
+
+        _log.error("Non-increasing timestamps in feed!");
+        return false;
     }
 
-    List<TripModifications> filterModifications(Collection<TripModifications>  tripModificationsList) {
-        return tripModificationsList.stream().filter(this::isTripModificationOk).collect(Collectors.toList());
-    }
 
-    boolean isTripModificationOk(TripModifications tripModifications) {
-        if (!validateModifications(tripModifications)) {
-            _log.debug("service change is invalid");
-            return false;
-        }
-        return true;
-    }
 
     public boolean isApplying() {
         return _isApplying;
     }
 
-    private boolean validateModifications(TripModifications tripModifications) {
-        if (tripModifications.getServiceDatesList().isEmpty()) {
-            _log.info("affected dates is empty");
-            //TODO change this to false- keeping it as true for now to allow testing with existing data
-            return true;
-        }
-        //TODO - not sure if this is applicable for TripModifications
-//        switch(change.getServiceChangeType()) {
-//            case ADD:
-//                return change.getAffectedEntity().isEmpty() && !change.getAffectedField().isEmpty();
-//            case ALTER:
-//                return !change.getAffectedEntity().isEmpty() && change.getAffectedField().size() == 1;
-//            case DELETE:
-//                return !change.getAffectedEntity().isEmpty() && change.getAffectedField().isEmpty();
-//        }
-//        return false;
-        return true;
-    }
 
-    // Re-apply time is earliest of: midnight tonight, or (future) end time of a trip that begins on the previous service day.
-    LocalDateTime getReapplyTime(List<TripChange> tripChanges) {
+
+    // Re-apply time is earliest of:
+    // 1) 3:00AM Local time tonight
+    // 2) (Future) End time of a trip that begins on the previous service day
+    LocalDateTime getReapplyTime(ModifiedTrips modifiedTrips) {
         LocalDate today = _timeService.getCurrentDate();
+        LocalDateTime reapplyTime = today.atStartOfDay().plusDays(1).plusHours(3); // 3am tonight
+
+        // Not sure if we need Option 2
+        /*
         LocalDateTime now = _timeService.getCurrentTime();
-        LocalDateTime reapplyTime = today.atStartOfDay().plusDays(1); // midnight tonight
-        for (TripChange tripChange : tripChanges) {
-            if (tripChange.getServiceDate().isBefore(today)) {
-                LocalDateTime endTime = tripChange.getEndTime();
+        for (ModifiedTrip modifiedTrip : modifiedTrips.getModifiedTrips()) {
+            if (modifiedTrip.getServiceDate().isBefore(today)) {
+                LocalDateTime endTime = modifiedTrip.getEndTime();
                 if (endTime.isAfter(now) && endTime.isBefore(reapplyTime)) {
                     reapplyTime = endTime;
                 }
             }
         }
+        */
+
         return reapplyTime;
     }
 
