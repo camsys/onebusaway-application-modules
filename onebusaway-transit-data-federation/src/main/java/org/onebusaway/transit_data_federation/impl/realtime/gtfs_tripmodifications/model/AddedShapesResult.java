@@ -61,7 +61,7 @@ public class AddedShapesResult {
     }
 
     public String getFailedUpdatedShapeIdsAsString() {
-        return successfullyUpdatedShapeIds.stream()
+        return failedUpdatedShapeIds.stream()
                 .filter(Objects::nonNull)
                 .map(AgencyAndId::convertToString)
                 .collect(Collectors.joining(", ", "[", "]"));
