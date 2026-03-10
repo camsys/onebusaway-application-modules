@@ -71,6 +71,7 @@ public class TripModsShapeCreationServiceImpl implements TripModsShapeCreationSe
             ShapePoints shapePoints = createShapePoints(shape, shapeId);
             AddedShape addedShape = new AddedShape(shapePoints, shapeId);
             addedShapes.addShape(addedShape);
+            addedShapes.addSuccessfullyAddedShapeId(shape.getShapeId());
         }
 
         return addedShapes;
