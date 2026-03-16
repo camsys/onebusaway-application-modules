@@ -1,7 +1,7 @@
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.TripModificationDiff;
+import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -22,7 +22,7 @@ public interface TripModificationDiffCache {
     void clear();
 
     default boolean isActiveToday(TripModificationDiff diff) {
-        List<LocalDate> dates = diff.getEffectiveServiceDates();
+        List<String> dates = diff.getEffectiveServiceDates();
         if (dates == null || dates.isEmpty()) return false;
         return dates.contains(LocalDate.now());
     }

@@ -1,10 +1,9 @@
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.TripModificationDiff;
+import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
-import com.google.transit.realtime.GtfsRealtime.TripModifications.Modification;
 
 import java.time.LocalDate;
 import java.util.List;

@@ -1,17 +1,16 @@
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.impl;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.TripModificationDiff;
+import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Component
+@Component("diffCache")
 public class TripModificationDiffCacheImpl implements org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModificationDiffCache {
 
     private final ConcurrentHashMap<AgencyAndId, TripModificationDiff> cache = new ConcurrentHashMap<>();
@@ -46,9 +45,9 @@ public class TripModificationDiffCacheImpl implements org.onebusaway.transit_dat
 
     @Override
     public Collection<TripModificationDiff> getAll() {
-        LocalDate today = LocalDate.now();
-        // Evict entries lazily... better solution?
-        cache.entrySet().removeIf(e -> !isActiveToday(e.getValue()));
+//        LocalDate today = LocalDate.now();
+//        // Evict entries lazily... better solution?
+//        cache.entrySet().removeIf(e -> !isActiveToday(e.getValue()));
         return Collections.unmodifiableCollection(cache.values());
     }
 

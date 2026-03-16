@@ -2,13 +2,8 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificati
 
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.model.ShapePoint;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ShapeModificationDiff;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.StopChangeDiff;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.StopTimeSnapshot;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.TripModificationDiff;
+import org.onebusaway.transit_data.model.trip_mods.*;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModificationDiffComputer;
-import com.google.transit.realtime.GtfsRealtime.TripModifications.Modification;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
@@ -19,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,12 +41,16 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         List<StopChangeDiff> changes = diffStopLists(originalStopTimes, modifiedStopTimes);
 
         TripModificationDiff diff = new TripModificationDiff();
-        diff.setTripId(tripId);
+        diff.setTripId(tripId.toString());
         diff.setOriginalStopTimes(toSnapshots(originalStopTimes));
         diff.setModifiedStopTimes(toSnapshots(modifiedStopTimes));
         diff.setChanges(changes);
         diff.setLastUpdated(System.currentTimeMillis());
-        diff.setEffectiveServiceDates(effectiveServiceDates);
+        diff.setEffectiveServiceDates(
+                effectiveServiceDates.stream()
+                        .map(d -> d.format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+                        .collect(Collectors.toList())
+        );
 
         // Shape diff — only if a replacement shape was provided
         if (replacementShapeId != null && originalShape != null && !originalShape.isEmpty()) {
@@ -88,7 +88,7 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
             if (!modifiedStopIds.contains(orig.getStop().getId())) {
                 StopChangeDiff change = new StopChangeDiff();
                 change.setChangeType(StopChangeDiff.ChangeType.REMOVED);
-                change.setStopId(orig.getStop().getId());
+                change.setStopId(orig.getStop().getId().toString());
                 change.setOriginalStopTime(toSnapshot(orig));
                 change.setOriginalIndex(i);
                 stopChangeDiffList.add(change);
@@ -98,7 +98,7 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         for (int i = 0; i < modified.size(); i++) {
             StopTimeEntry mod = modified.get(i);
             StopChangeDiff change = new StopChangeDiff();
-            change.setStopId(mod.getStop().getId());
+            change.setStopId(mod.getStop().getId().toString());
             change.setModifiedStopTime(toSnapshot(mod));
             change.setModifiedIndex(i);
 
@@ -157,12 +157,12 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         ShapePoints modifiedShape = stitchShapePoints(prefix, replacement, suffix);
 
         ShapeModificationDiff diff = new ShapeModificationDiff();
-        diff.setOriginalShape(originalShape);
-        diff.setModifiedShape(modifiedShape);
-        diff.setOriginalSegment(originalSegment);
-        diff.setReplacementSegment(replacement);
-        diff.setStartStopId(startStop.getStop().getId());
-        diff.setEndStopId(endStop.getStop().getId());
+        diff.setOriginalShape(toShapeSnapshots(originalShape));
+        diff.setModifiedShape(toShapeSnapshots(modifiedShape));
+        diff.setOriginalSegment(toShapeSnapshots(originalSegment));
+        diff.setReplacementSegment(toShapeSnapshots(replacement));
+        diff.setStartStopId(startStop.getStop().getId().toString());
+        diff.setEndStopId(endStop.getStop().getId().toString());
 
         return diff;
     }
@@ -179,6 +179,18 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
                 stop.getStop().getId());
 
         return findIndexByNearestPoint(shape, stop);
+    }
+
+    private List<ShapePointSnapshot> toShapeSnapshots(ShapePoints points) {
+        List<ShapePointSnapshot> snapshots = new ArrayList<>();
+        for (int i = 0; i < points.getSize(); i++) {
+            ShapePointSnapshot snap = new ShapePointSnapshot();
+            snap.setLat(points.getLatForIndex(i));
+            snap.setLon(points.getLonForIndex(i));
+            snap.setDistTraveled(points.getDistTraveledForIndex(i));
+            snapshots.add(snap);
+        }
+        return snapshots;
     }
 
     private int findIndexByDistTraveled(ShapePoints shape, double targetDist) {
@@ -282,7 +294,7 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         StopTimeSnapshot snapshot = new StopTimeSnapshot();
 
         StopEntry stop = stopTime.getStop();
-        snapshot.setStopId(stop.getId());
+        snapshot.setStopId(stop.getId().toString());
         snapshot.setLat(stop.getStopLat());
         snapshot.setLon(stop.getStopLon());
         snapshot.setStopSequence(stopTime.getSequence());
