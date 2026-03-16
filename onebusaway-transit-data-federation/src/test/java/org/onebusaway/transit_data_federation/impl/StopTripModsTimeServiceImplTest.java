@@ -56,7 +56,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEn
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.model.StopTimeInstance;
 
-public class StopTimeServiceImplTest {
+public class StopTripModsTimeServiceImplTest {
 
   private BlockIndexFactoryServiceImpl _factory;
 

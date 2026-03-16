@@ -15,17 +15,17 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service;
 
-import com.google.transit.realtime.GtfsRealtime.TripModifications;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.TripModificationsChanges;
+import com.google.transit.realtime.GtfsRealtime.Shape;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.AddedShapes;
 
-import java.util.Collection;
+import java.util.List;
 
-public interface GtfsTripModificationsHandler {
-
+public interface TripModsShapeCreationService {
     /**
-     * Process TripModificationsChanges; make the appropriate changes in the graph.
+     * Add a set of shapes, returning the number of successfully added shapes.
      *
-     * @param tripModificationsChanges to process
+     * @param shapes to add
+     * @return modified shapes object with list of successfully added shapepoints
      */
-    void handleTripModifications(TripModificationsChanges tripModificationsChanges);
+     AddedShapes createAddedShapes(List<Shape> shapes);
 }
