@@ -4,6 +4,7 @@ import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificatio
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrips;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModificationDiffComputer;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModificationDiffService;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModificationDiffCache;
 import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
@@ -21,7 +22,7 @@ public class TripModificationDiffServiceImpl implements TripModificationDiffServ
     private static final Logger _log = LoggerFactory.getLogger(TripModificationDiffServiceImpl.class);
 
     @Autowired
-    private TripModificationDiffCacheImpl _diffCache;
+    private TripModificationDiffCache _diffCache;
 
     private final TransitGraphDao _dao;
 

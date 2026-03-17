@@ -132,7 +132,7 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         int startIdx = findSpliceIndex(originalShape, startStop);
         int endIdx   = findSpliceIndex(originalShape, endStop);
 
-        // f they're equal or inverted, bail
+        // If they're equal or inverted, bail
         if (startIdx >= endIdx) {
             _log.warn("Invalid splice indices [{}, {}] for shape {}, skipping shape diff",
                     startIdx, endIdx, originalShape.getShapeId());

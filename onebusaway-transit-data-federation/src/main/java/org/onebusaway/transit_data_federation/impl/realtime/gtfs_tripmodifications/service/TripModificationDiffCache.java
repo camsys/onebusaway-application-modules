@@ -4,6 +4,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -22,8 +23,9 @@ public interface TripModificationDiffCache {
     void clear();
 
     default boolean isActiveToday(TripModificationDiff diff) {
-        List<String> dates = diff.getEffectiveServiceDates();
-        if (dates == null || dates.isEmpty()) return false;
-        return dates.contains(LocalDate.now());
+        String effectiveDate = diff.getEffectiveServiceDate();
+        if (effectiveDate == null || effectiveDate.isEmpty()) return false;
+        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        return effectiveDate.equals(today);
     }
 }
