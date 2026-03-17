@@ -18,9 +18,8 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificati
 import com.google.transit.realtime.GtfsRealtime.TripModifications;
 import org.onebusaway.container.cache.CacheableMethodManager;
 import org.onebusaway.container.refresh.RefreshService;
-import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.model.*;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.TimeService;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.*;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.*;
@@ -32,7 +31,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Collection;
 
 @Component
 public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHandler {
@@ -62,6 +61,8 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
     private TripModsTripModificationUpdateService _tripModificationUpdateService;
 
     private TripModsRevertService _tripModsRevertService;
+
+    private TripModificationDiffService _tripModificationDiffService;
 
     private boolean _isApplying = false;
 
@@ -114,6 +115,11 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
     }
 
     @Autowired
+    public void setTripModificationDiffService(TripModificationDiffService tripModificationDiffService) {
+        _tripModificationDiffService = tripModificationDiffService;
+    }
+
+    @Autowired
     public void setTimeService(TimeService timeService) {
         _timeService = timeService;
     }
@@ -134,9 +140,12 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
 
             //AddedStops addedStops = _tripModsStopCreationService.createAddedStops(tripModificationsChanges.getStops());
             AddedShapes addedShapes = _tripModsShapeCreationService.createAddedShapes(tripModificationsChanges.getShapes());
-            ModifiedTrips modifiedTrips = _tripModificationCreationService.createModifiedTrips(tripModificationsChanges.getTripModifications());
-
+            //Process added shapes before trips
             AddedShapesResult addedShapesResult = _tripModsShapeUpdateService.addShapes(addedShapes.getAddedShapes());
+
+            ModifiedTrips modifiedTrips = _tripModificationCreationService.createModifiedTrips(tripModificationsChanges.getTripModifications());
+            Collection<TripModificationDiff> diffs = _tripModificationDiffService.createDiffsFromModifications(modifiedTrips);
+
             _tripModsRevertService.setLastKnownShapeResults(addedShapesResult);
 
             ModifiedTripsResult modifiedTripsResult = _tripModificationUpdateService.updateTrips(modifiedTrips.getModifiedTrips());

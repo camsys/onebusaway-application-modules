@@ -36,7 +36,7 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
                                             List<StopTimeEntry> modifiedStopTimes,
                                             ShapePoints originalShape,
                                             AgencyAndId replacementShapeId,
-                                            List<LocalDate> effectiveServiceDates) {
+                                            LocalDate effectiveServiceDate) {
 
         List<StopChangeDiff> changes = diffStopLists(originalStopTimes, modifiedStopTimes);
 
@@ -46,13 +46,11 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         diff.setModifiedStopTimes(toSnapshots(modifiedStopTimes));
         diff.setChanges(changes);
         diff.setLastUpdated(System.currentTimeMillis());
-        diff.setEffectiveServiceDates(
-                effectiveServiceDates.stream()
-                        .map(d -> d.format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-                        .collect(Collectors.toList())
+        diff.setEffectiveServiceDate(
+                effectiveServiceDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"))
         );
 
-        // Shape diff — only if a replacement shape was provided
+        // Shape diff only if a replacement shape was provided
         if (replacementShapeId != null && originalShape != null && !originalShape.isEmpty()) {
             StopTimeEntry startStop = originalStopTimes.get(0);
             StopTimeEntry endStop   = originalStopTimes.get(originalStopTimes.size() - 1);
@@ -157,6 +155,8 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         ShapePoints modifiedShape = stitchShapePoints(prefix, replacement, suffix);
 
         ShapeModificationDiff diff = new ShapeModificationDiff();
+        diff.setPrefixSegment(toShapeSnapshots(prefix));
+        diff.setSuffixSegment(toShapeSnapshots(suffix));
         diff.setOriginalShape(toShapeSnapshots(originalShape));
         diff.setModifiedShape(toShapeSnapshots(modifiedShape));
         diff.setOriginalSegment(toShapeSnapshots(originalSegment));

@@ -17,7 +17,7 @@ public interface TripModificationDiffComputer {
      * @param modifiedStopTimes modified stop times for the trip
      * @param originalShape the original shape for the trip
      * @param replacementShapeId the shape id for the replacement shape, if the shape is modified; null otherwise
-     * @param effectiveServiceDates the service dates on which the trip modification is effective
+     * @param effectiveServiceDate the service date for the trip
      * @return
      */
     TripModificationDiff computeDiff(
@@ -26,5 +26,5 @@ public interface TripModificationDiffComputer {
             List<StopTimeEntry> modifiedStopTimes,
             ShapePoints originalShape,
             AgencyAndId replacementShapeId,
-            List<LocalDate> effectiveServiceDates);
+            LocalDate effectiveServiceDate);
 }

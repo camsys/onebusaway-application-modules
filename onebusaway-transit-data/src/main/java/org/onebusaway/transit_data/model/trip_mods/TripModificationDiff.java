@@ -8,7 +8,7 @@ public class TripModificationDiff implements Serializable {
 
     private String tripId;
     private String routeId;
-    private List<String> effectiveServiceDates;
+    private String effectiveServiceDate;
     private long lastUpdated;
     private List<StopTimeSnapshot> originalStopTimes;
     private List<StopTimeSnapshot> modifiedStopTimes;
@@ -21,8 +21,13 @@ public class TripModificationDiff implements Serializable {
     public String getRouteId() { return routeId; }
     public void setRouteId(String routeId) { this.routeId = routeId; }
 
-    public List<String> getEffectiveServiceDates() { return effectiveServiceDates; }
-    public void setEffectiveServiceDates(List<String> effectiveServiceDates) { this.effectiveServiceDates = effectiveServiceDates; }
+    public String getEffectiveServiceDate() {
+        return effectiveServiceDate;
+    }
+
+    public void setEffectiveServiceDate(String effectiveServiceDate) {
+        this.effectiveServiceDate = effectiveServiceDate;
+    }
 
     public long getLastUpdated() { return lastUpdated; }
     public void setLastUpdated(long lastUpdated) { this.lastUpdated = lastUpdated; }

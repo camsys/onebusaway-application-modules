@@ -11,9 +11,28 @@ public class ShapeModificationDiff implements Serializable {
     private List<ShapePointSnapshot> originalSegment;
     private List<ShapePointSnapshot> replacementSegment;
 
-    // AgencyAndId -> String
+    private List<ShapePointSnapshot> prefixSegment; // segment from start of shape to start stop
+
+    private List<ShapePointSnapshot> suffixSegment; // segment from end stop to end of shape
+
     private String startStopId;
     private String endStopId;
+
+    public List<ShapePointSnapshot> getPrefixSegment() {
+        return prefixSegment;
+    }
+
+    public void setPrefixSegment(List<ShapePointSnapshot> prefixSegment) {
+        this.prefixSegment = prefixSegment;
+    }
+
+    public List<ShapePointSnapshot> getSuffixSegment() {
+        return suffixSegment;
+    }
+
+    public void setSuffixSegment(List<ShapePointSnapshot> suffixSegment) {
+        this.suffixSegment = suffixSegment;
+    }
 
     public List<ShapePointSnapshot> getOriginalShape() { return originalShape; }
     public void setOriginalShape(List<ShapePointSnapshot> originalShape) { this.originalShape = originalShape; }
