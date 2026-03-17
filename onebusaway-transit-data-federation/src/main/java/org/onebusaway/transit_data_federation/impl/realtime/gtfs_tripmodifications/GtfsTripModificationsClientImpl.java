@@ -168,4 +168,9 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         return feedTimeStamp;
     }
 
+    @Override
+    public void reapplyTripModifications() {
+        _gtfsTripModificationsHandler.resetLastUpdatedTime();
+    }
+
 }

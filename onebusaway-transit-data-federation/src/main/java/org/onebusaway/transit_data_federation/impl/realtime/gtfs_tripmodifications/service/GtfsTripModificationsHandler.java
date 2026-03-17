@@ -28,4 +28,9 @@ public interface GtfsTripModificationsHandler {
      * @param tripModificationsChanges to process
      */
     void handleTripModifications(TripModificationsChanges tripModificationsChanges);
+
+    boolean isApplying();
+
+
+    void resetLastUpdatedTime();
 }
