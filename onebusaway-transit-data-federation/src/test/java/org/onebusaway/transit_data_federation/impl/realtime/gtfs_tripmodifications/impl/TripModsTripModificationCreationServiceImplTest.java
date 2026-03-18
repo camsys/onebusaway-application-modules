@@ -25,9 +25,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrip;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrips;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.StopEntryData;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModsStopTimeEntryFactory;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModsStopTimeFetcher;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModsTimeService;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.*;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
@@ -71,6 +69,12 @@ public class TripModsTripModificationCreationServiceImplTest {
     @Mock
     private TripEntryImpl tripEntry;
 
+    @Mock
+    private TripModificationDiffComputer tripModificationDiffComputer;
+
+    @Mock
+    private TripModificationDiffCache tripModificationDiffCache;
+
     private TripModsTripModificationCreationServiceImpl service;
 
     @Before
@@ -82,7 +86,9 @@ public class TripModsTripModificationCreationServiceImplTest {
                 stopTimeFetcher,
                 stopTimeEntryFactory,
                 util,
-                timeService
+                timeService,
+                tripModificationDiffComputer,
+                tripModificationDiffCache
         );
     }
 
