@@ -19,6 +19,9 @@ import com.google.transit.realtime.GtfsRealtime;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModificationDiffCache;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModificationDiffComputer;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.StopEntryData;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModsStopTimeEntryFactory;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModsStopTimeFetcher;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModsTimeService;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrip;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrips;
@@ -28,6 +31,7 @@ import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryIm
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.model.narrative.StopNarrative;
 import org.onebusaway.transit_data_federation.services.EntityIdService;
+import org.onebusaway.transit_data_federation.services.StopTimeService;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
@@ -58,6 +62,9 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
 
     private final NarrativeService _narrativeService;
 
+    private final TripModsStopTimeFetcher _stopTimeFetcher;
+
+    private final TripModsStopTimeEntryFactory  _stopTimeEntryFactory;
 
     private final GtfsTripModificationsUtil _util;
 
@@ -72,6 +79,8 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
     public TripModsTripModificationCreationServiceImpl(TransitGraphDao dao,
                                                        EntityIdService entityIdService,
                                                        NarrativeService narrativeService,
+                                                       TripModsStopTimeFetcher stopTimeFetcher,
+                                                       TripModsStopTimeEntryFactory  stopTimeEntryFactory,
                                                        GtfsTripModificationsUtil gtfsTripModificationsUtil,
                                                        TripModsTimeService timeService,
                                                        TripModificationDiffComputer tripModificationDiffComputer,
@@ -79,6 +88,8 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
         _dao = dao;
         _entityIdService = entityIdService;
         _narrativeService = narrativeService;
+        _stopTimeFetcher = stopTimeFetcher;
+        _stopTimeEntryFactory = stopTimeEntryFactory;
         _util = gtfsTripModificationsUtil;
         _timeService = timeService;
         _tripModificationDiffComputer = tripModificationDiffComputer;
@@ -319,40 +330,12 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
                                       int referenceTime,
                                       int gtfsStopSequence,
                                       double shapeDistanceTraveled,
-                                      TripEntryImpl tripEntry) {
+                                      TripEntryImpl tripEntry) throws IllegalStateException {
 
-        AgencyAndId stopId = _entityIdService.getStopId(replacementStop.getStopId());
+        StopEntryData stopEntryData = _stopTimeFetcher.getStopEntry(replacementStop.getStopId());
+        return _stopTimeEntryFactory.create(stopEntryData, tripEntry, referenceTime,
+                                            gtfsStopSequence, shapeDistanceTraveled);
 
-        StopEntry originalStopEntry = _dao.getStopEntryForId(stopId);
-        if (originalStopEntry == null) {
-            throw new IllegalArgumentException("Stop entry not found for id: " + stopId.toString());
-        }
-
-        StopNarrative stopNarrative = _narrativeService.getStopForId(originalStopEntry.getId());
-        if (stopNarrative == null) {
-            throw new IllegalArgumentException("Stop narrative not found for id: " + stopId.toString());
-        }
-
-        double lat = originalStopEntry.getStopLat();
-        double lon = originalStopEntry.getStopLon();
-        String stopName = _narrativeService.getStopForId(originalStopEntry.getId()).getName();
-        StopEntryImpl stopEntry = new StopEntryImpl(stopId, lat, lon);
-
-        int arrivalTime = _util.calculateReplacementStopArrivalTime(replacementStop, referenceTime);
-
-        StopTimeEntryImpl stopTimeEntry = new StopTimeEntryImpl();
-        stopTimeEntry.setTrip(tripEntry);
-        stopTimeEntry.setStop(stopEntry);
-        stopTimeEntry.setArrivalTime(arrivalTime);
-        stopTimeEntry.setDepartureTime(arrivalTime); // departure = arrival per spec
-        stopTimeEntry.setShapeDistTraveled(shapeDistanceTraveled);
-        stopTimeEntry.setGtfsSequence(gtfsStopSequence);
-
-        // Might not want to set this here.
-        // This might be cumulative (sequence of ALL stops)
-        //stopTimeEntry.setSequence(stopSequence);
-
-        return stopTimeEntry;
     }
 
 
