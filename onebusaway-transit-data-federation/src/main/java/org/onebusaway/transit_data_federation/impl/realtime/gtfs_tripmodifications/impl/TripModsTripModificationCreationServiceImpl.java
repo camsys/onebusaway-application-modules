@@ -17,6 +17,8 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificati
 
 import com.google.transit.realtime.GtfsRealtime;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModificationDiffCache;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModificationDiffComputer;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModsTimeService;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrip;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrips;
@@ -61,18 +63,26 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
 
     private final TripModsTimeService _timeService;
 
+    private final TripModificationDiffComputer _tripModificationDiffComputer;
+
+    private final TripModificationDiffCache _diffCache;
+
 
     @Autowired
     public TripModsTripModificationCreationServiceImpl(TransitGraphDao dao,
                                                        EntityIdService entityIdService,
                                                        NarrativeService narrativeService,
                                                        GtfsTripModificationsUtil gtfsTripModificationsUtil,
-                                                       TripModsTimeService timeService) {
+                                                       TripModsTimeService timeService,
+                                                       TripModificationDiffComputer tripModificationDiffComputer,
+                                                       TripModificationDiffCache tripModificationDiffCache) {
         _dao = dao;
         _entityIdService = entityIdService;
         _narrativeService = narrativeService;
         _util = gtfsTripModificationsUtil;
         _timeService = timeService;
+        _tripModificationDiffComputer = tripModificationDiffComputer;
+        _diffCache = tripModificationDiffCache;
 
     }
 
