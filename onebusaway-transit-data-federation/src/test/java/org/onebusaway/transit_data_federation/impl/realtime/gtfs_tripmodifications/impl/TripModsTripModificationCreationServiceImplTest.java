@@ -308,7 +308,7 @@ public class TripModsTripModificationCreationServiceImplTest {
         StopTimeEntryImpl expected = new StopTimeEntryImpl();
 
         when(stopTimeFetcher.getStopEntry("905019")).thenReturn(stopEntryData);
-        when(stopTimeEntryFactory.create(stopEntryData, tripEntry, 1000, -999, -999.0))
+        when(stopTimeEntryFactory.create(stopEntryData, tripEntry, 1061, -999, -999.0))
                 .thenReturn(expected);
 
         StopTimeEntry result = service.createStopTimeEntry(
@@ -321,7 +321,7 @@ public class TripModsTripModificationCreationServiceImplTest {
 
         assertSame(expected, result);
         verify(stopTimeFetcher).getStopEntry("905019");
-        verify(stopTimeEntryFactory).create(stopEntryData, tripEntry, 1000, -999, -999.0);
+        verify(stopTimeEntryFactory).create(stopEntryData, tripEntry, 1061, -999, -999.0);
     }
 
     @Test
