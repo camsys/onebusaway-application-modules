@@ -330,7 +330,8 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
                                       TripEntryImpl tripEntry) throws IllegalStateException {
 
         StopEntryData stopEntryData = _stopTimeFetcher.getStopEntry(replacementStop.getStopId());
-        return _stopTimeEntryFactory.create(stopEntryData, tripEntry, referenceTime,
+        int arrivalTime = _util.calculateReplacementStopArrivalTime(replacementStop, referenceTime);
+        return _stopTimeEntryFactory.create(stopEntryData, tripEntry, arrivalTime,
                                             gtfsStopSequence, shapeDistanceTraveled);
 
     }
