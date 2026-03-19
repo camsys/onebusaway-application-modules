@@ -42,7 +42,7 @@ public class TripModsStopTimeFetcherImpl implements TripModsStopTimeFetcher {
     }
 
     @Override
-    public StopEntryData getStopEntry(String rawStopId) throws IllegalStateException {
+    public StopEntryData getStopEntry(String rawStopId) {
         AgencyAndId stopId = entityIdService.getStopId(rawStopId);
         StopEntry stopEntry = dao.getStopEntryForId(stopId);
         if (stopEntry == null) {
