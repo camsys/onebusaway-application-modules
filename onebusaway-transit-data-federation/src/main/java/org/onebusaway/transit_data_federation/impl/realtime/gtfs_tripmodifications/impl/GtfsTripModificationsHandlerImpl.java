@@ -128,13 +128,12 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
     @Override
     public void handleTripModifications(TripModificationsChanges tripModificationsChanges) {
 
-        // Check whether changes should be re-applied
-        if (!shouldApplyChanges(tripModificationsChanges)) {
-            _log.info("Not applying Trip Modification changes.");
-            return;
-        }
-
         synchronized (_applyingLock) {
+            // Check whether changes should be re-applied
+            if (!shouldApplyChanges(tripModificationsChanges)) {
+                _log.info("Not applying Trip Modification changes.");
+                return;
+            }
             try {
                 _isApplying = true;
                 _tripModsRevertService.revertPreviousChanges();
