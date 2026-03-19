@@ -20,8 +20,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.TimeService;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrip;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrips;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.StopEntryData;
@@ -30,6 +32,7 @@ import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.services.EntityIdService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
@@ -60,11 +63,16 @@ public class TripModsTripModificationCreationServiceImplTest {
     @Mock
     private TripModsStopTimeEntryFactory stopTimeEntryFactory;
 
-    @Mock
     private GtfsTripModificationsUtil util;
 
     @Mock
-    private TripModsTimeService timeService;
+    private BlockCalendarService blockCalendarService;
+
+    @Mock
+    private TimeService timeService;
+
+    @Mock
+    private TripModsTimeService tripModsTimeService;
 
     @Mock
     private TripEntryImpl tripEntry;
@@ -79,6 +87,7 @@ public class TripModsTripModificationCreationServiceImplTest {
 
     @Before
     public void setUp() {
+        util = Mockito.spy(new GtfsTripModificationsUtil(timeService, blockCalendarService));
         service = new TripModsTripModificationCreationServiceImpl(
                 dao,
                 entityIdService,
@@ -86,7 +95,7 @@ public class TripModsTripModificationCreationServiceImplTest {
                 stopTimeFetcher,
                 stopTimeEntryFactory,
                 util,
-                timeService,
+                tripModsTimeService,
                 tripModificationDiffComputer,
                 tripModificationDiffCache
         );
@@ -304,8 +313,9 @@ public class TripModsTripModificationCreationServiceImplTest {
                         .setTravelTimeToStop(61)
                         .build();
 
-        StopEntryData stopEntryData = new StopEntryData(null, 0, 0, null);
+        StopEntryData stopEntryData = new StopEntryData(AgencyAndId.convertFromString("MTA_905019"), 0, 0, null);
         StopTimeEntryImpl expected = new StopTimeEntryImpl();
+
 
         when(stopTimeFetcher.getStopEntry("905019")).thenReturn(stopEntryData);
         when(stopTimeEntryFactory.create(stopEntryData, tripEntry, 1061, -999, -999.0))
@@ -336,7 +346,8 @@ public class TripModsTripModificationCreationServiceImplTest {
         when(dao.getTripEntryForId(tripId)).thenReturn(tripEntry);
         when(tripEntry.getShapeId()).thenReturn(shapeId);
         when(tripEntry.getStopTimes()).thenReturn(stopTimes);
-        when(util.getActiveServiceDateForTrip(tripEntry)).thenReturn(serviceDate);
+        doReturn(serviceDate).when(util).getActiveServiceDateForTrip(tripEntry);
+
 
         ModifiedTrip result = service.createModifiedTripForExistingTrip(tripId);
 

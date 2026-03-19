@@ -22,7 +22,7 @@ import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 public interface TripModsStopTimeEntryFactory {
     StopTimeEntryImpl create(StopEntryData stopData,
                              TripEntryImpl tripEntry,
-                             int arrivalTime,
+                             int referenceTime,
                              int gtfsStopSequence,
                              double shapeDistanceTraveled);
 }

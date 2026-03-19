@@ -140,7 +140,6 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
 
                 //AddedStops addedStops = _tripModsStopCreationService.createAddedStops(tripModificationsChanges.getStops());
                 AddedShapes addedShapes = _tripModsShapeCreationService.createAddedShapes(tripModificationsChanges.getShapes());
-                ModifiedTrips modifiedTrips = _tripModificationCreationService.createModifiedTrips(tripModificationsChanges.getTripModifications());
 
                 //Process added shapes before trips
                 AddedShapesResult addedShapesResult = _tripModsShapeUpdateService.addShapes(addedShapes.getAddedShapes());
@@ -149,6 +148,8 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
                 Collection<TripModificationDiff> diffs = _tripModificationDiffService.createDiffsFromModifications(modifiedTrips);
 
                 _tripModsRevertService.setLastKnownShapeResults(addedShapesResult);
+
+                ModifiedTripsResult modifiedTripsResult = _tripModificationUpdateService.updateTrips(modifiedTrips.getModifiedTrips());
 
                 if (hasSuccessfulUpdates(addedShapesResult, modifiedTripsResult)) {
                     forceFlush();
