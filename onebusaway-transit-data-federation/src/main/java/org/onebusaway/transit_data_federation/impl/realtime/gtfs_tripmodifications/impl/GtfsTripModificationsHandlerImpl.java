@@ -15,7 +15,6 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.impl;
 
-import com.google.transit.realtime.GtfsRealtime.TripModifications;
 import org.onebusaway.container.cache.CacheableMethodManager;
 import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
@@ -65,6 +64,8 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
     private TripModificationDiffService _tripModificationDiffService;
 
     private boolean _isApplying = false;
+
+    private final Object _applyingLock = new Object();
 
 
     @Autowired
@@ -127,41 +128,38 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
     @Override
     public void handleTripModifications(TripModificationsChanges tripModificationsChanges) {
 
-        // Check whether changes should be re-applied
-        if (!shouldApplyChanges(tripModificationsChanges)) {
-            _log.info("Not applying Trip Modification changes.");
-            return;
-        }
-
-        try {
-            _isApplying = true;
-
-            _tripModsRevertService.revertPreviousChanges();
-
-            //AddedStops addedStops = _tripModsStopCreationService.createAddedStops(tripModificationsChanges.getStops());
-            AddedShapes addedShapes = _tripModsShapeCreationService.createAddedShapes(tripModificationsChanges.getShapes());
-            //Process added shapes before trips
-            AddedShapesResult addedShapesResult = _tripModsShapeUpdateService.addShapes(addedShapes.getAddedShapes());
-
-            ModifiedTrips modifiedTrips = _tripModificationCreationService.createModifiedTrips(tripModificationsChanges.getTripModifications());
-            Collection<TripModificationDiff> diffs = _tripModificationDiffService.createDiffsFromModifications(modifiedTrips);
-
-            _tripModsRevertService.setLastKnownShapeResults(addedShapesResult);
-
-            ModifiedTripsResult modifiedTripsResult = _tripModificationUpdateService.updateTrips(modifiedTrips.getModifiedTrips());
-            _tripModsRevertService.setLastKnownTripModificationResults(modifiedTripsResult);
-
-            if (hasSuccessfulUpdates(addedShapesResult, modifiedTripsResult)) {
-                forceFlush();
+        synchronized (_applyingLock) {
+            // Check whether changes should be re-applied
+            if (!shouldApplyChanges(tripModificationsChanges)) {
+                _log.info("Not applying Trip Modification changes.");
+                return;
             }
+            try {
+                _isApplying = true;
+                _tripModsRevertService.revertPreviousChanges();
 
-            _lastUpdatedTimestamp = tripModificationsChanges.getFeedTimestamp();
+                //AddedStops addedStops = _tripModsStopCreationService.createAddedStops(tripModificationsChanges.getStops());
+                AddedShapes addedShapes = _tripModsShapeCreationService.createAddedShapes(tripModificationsChanges.getShapes());
+                ModifiedTrips modifiedTrips = _tripModificationCreationService.createModifiedTrips(tripModificationsChanges.getTripModifications());
 
-            _reapplyTime = getReapplyTime(modifiedTrips);
-        } finally {
-            _isApplying = false;
+                //Process added shapes before trips
+                AddedShapesResult addedShapesResult = _tripModsShapeUpdateService.addShapes(addedShapes.getAddedShapes());
+
+                ModifiedTrips modifiedTrips = _tripModificationCreationService.createModifiedTrips(tripModificationsChanges.getTripModifications());
+                Collection<TripModificationDiff> diffs = _tripModificationDiffService.createDiffsFromModifications(modifiedTrips);
+
+                _tripModsRevertService.setLastKnownShapeResults(addedShapesResult);
+
+                if (hasSuccessfulUpdates(addedShapesResult, modifiedTripsResult)) {
+                    forceFlush();
+                }
+
+                _lastUpdatedTimestamp = tripModificationsChanges.getFeedTimestamp();
+                _reapplyTime = getReapplyTime(modifiedTrips);
+            } finally {
+                _isApplying = false;
+            }
         }
-
     }
 
     private boolean hasSuccessfulUpdates(AddedShapesResult addedShapesResult,
@@ -197,13 +195,10 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
         return false;
     }
 
-
-
+    @Override
     public boolean isApplying() {
         return _isApplying;
     }
-
-
 
     // Re-apply time is earliest of:
     // 1) 3:00AM Local time tonight
@@ -239,6 +234,14 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
             }
         } catch (Throwable t) {
             _log.error("issue flushing cache:", t);
+        }
+    }
+
+    @Override
+    public void resetLastUpdatedTime() {
+        synchronized (_applyingLock) {
+            _lastUpdatedTimestamp = -1;
+            _reapplyTime = null;
         }
     }
 

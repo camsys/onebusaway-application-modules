@@ -29,11 +29,8 @@ import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificatio
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopTimeEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
-import org.onebusaway.transit_data_federation.model.narrative.StopNarrative;
 import org.onebusaway.transit_data_federation.services.EntityIdService;
-import org.onebusaway.transit_data_federation.services.StopTimeService;
 import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
-import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -333,7 +330,8 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
                                       TripEntryImpl tripEntry) throws IllegalStateException {
 
         StopEntryData stopEntryData = _stopTimeFetcher.getStopEntry(replacementStop.getStopId());
-        return _stopTimeEntryFactory.create(stopEntryData, tripEntry, referenceTime,
+        int arrivalTime = _util.calculateReplacementStopArrivalTime(replacementStop, referenceTime);
+        return _stopTimeEntryFactory.create(stopEntryData, tripEntry, arrivalTime,
                                             gtfsStopSequence, shapeDistanceTraveled);
 
     }

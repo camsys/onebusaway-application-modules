@@ -17,4 +17,6 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificati
 
 public interface GtfsTripModificationsClient {
     void update();
+
+    void reapplyTripModifications();
 }
