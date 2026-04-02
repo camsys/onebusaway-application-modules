@@ -16,6 +16,7 @@
 package org.onebusaway.transit_data_federation.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
@@ -38,8 +39,8 @@ import org.springframework.stereotype.Component;
 public class TrivialPredictionHelperService implements PredictionHelperService {
 
 	@Override
-	public List<TimepointPredictionRecord> getPredictionRecordsForTrip(String agencyId,
-			TripStatusBean tripStatus) {
+	public Collection<TimepointPredictionRecord> getPredictionRecordsForTrip(String agencyId,
+																			 TripStatusBean tripStatus) {
 		List<TimepointPredictionRecord> records = null;
 		
 		if (agencyId == null)

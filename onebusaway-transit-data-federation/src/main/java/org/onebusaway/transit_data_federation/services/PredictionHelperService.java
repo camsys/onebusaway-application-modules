@@ -15,6 +15,7 @@
  */
 package org.onebusaway.transit_data_federation.services;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
@@ -29,7 +30,7 @@ public interface PredictionHelperService {
 	 * @param tripStatus query parameters
 	 * @return a list of time predictions
 	 */
-	List<TimepointPredictionRecord> getPredictionRecordsForTrip(String agencyId,
-			TripStatusBean tripStatus);
+	Collection<TimepointPredictionRecord> getPredictionRecordsForTrip(String agencyId,
+																	  TripStatusBean tripStatus);
 
 }

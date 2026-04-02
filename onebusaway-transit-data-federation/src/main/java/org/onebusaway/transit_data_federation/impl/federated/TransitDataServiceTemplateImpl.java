@@ -689,7 +689,7 @@ public class TransitDataServiceTemplateImpl implements TransitDataServiceTemplat
   }
 
   //@Override
-  public List<TimepointPredictionRecord> getPredictionRecordsForTrip(
+  public Collection<TimepointPredictionRecord> getPredictionRecordsForTrip(
 		  String agencyId,
 		  TripStatusBean tripStatus) {
     
