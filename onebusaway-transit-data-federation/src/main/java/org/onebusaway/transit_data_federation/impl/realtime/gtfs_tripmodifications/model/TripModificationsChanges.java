@@ -78,10 +78,10 @@ public class TripModificationsChanges {
     }
 
     public byte[] getHash() {
-        return hash;
+        return hash == null ? null : hash.clone();
     }
 
     public void setHash(byte[] hash) {
-        this.hash = hash;
+        this.hash = hash == null ? null : hash.clone();
     }
 }
