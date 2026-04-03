@@ -193,15 +193,14 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
             return true;
         }
 
-        LocalDateTime currentTime = _timeService.getCurrentTime();
-        if(_reapplyTime != null && currentTime.isAfter(_reapplyTime)){
-            _log.debug("Trip Modifications Feed is the same as previously processed, check reapply time ({}), current time = {}",
-                    _reapplyTime, currentTime);
-            boolean shouldReapplyChanges = currentTime.isAfter(_reapplyTime);
-            if(shouldReapplyChanges){
+        if(_reapplyTime != null){
+            LocalDateTime currentTime = _timeService.getCurrentTime();
+            if(currentTime.isAfter(_reapplyTime)){
+                _log.debug("Trip Modifications Feed is the same as previously processed, check reapply time ({}), current time = {}",
+                        _reapplyTime, currentTime);
                 _log.info("The current time = {} is after reapply time {}", currentTime, _reapplyTime);
+                return true;
             }
-            return shouldReapplyChanges;
         }
 
         _log.debug("No changes detected in Trip Modifications feed.");
