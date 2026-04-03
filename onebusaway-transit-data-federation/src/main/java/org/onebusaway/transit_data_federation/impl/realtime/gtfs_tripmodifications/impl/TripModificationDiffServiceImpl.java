@@ -116,7 +116,7 @@ public class TripModificationDiffServiceImpl implements TripModificationDiffServ
             Set<Integer> modifiedTripAddedStopIndices = modifiedStopTimes.getModifiedAddedStopTimeIndices();
 
 
-            TripModificationDiff diff = _tripModificationDiffComputer.computeDiff(
+            Optional<TripModificationDiff> diff = _tripModificationDiffComputer.computeDiff(
                     entityId,
                     tripId,
                     originalTripStopTimes,
@@ -128,11 +128,11 @@ public class TripModificationDiffServiceImpl implements TripModificationDiffServ
                     effectiveServiceDate
             );
 
-            if (diff == null) {
+            if (diff.isEmpty()) {
                 _log.warn("Unable to compute TripModificationDiff for tripId {}. Skipping caching of diff.", tripEntry.getId());
                 continue;
             }
-            newCache.put(tripEntry.getId(), diff);
+            newCache.put(tripEntry.getId(), diff.get());
         }
 
         _diffCache.replaceAll(newCache);

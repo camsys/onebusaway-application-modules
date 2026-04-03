@@ -46,7 +46,7 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
     }
 
     @Override
-    public TripModificationDiff computeDiff(String entityId,
+    public Optional<TripModificationDiff> computeDiff(String entityId,
                                             AgencyAndId tripAgencyAndId,
                                             List<StopTimeEntry> originalStopTimes,
                                             ShapePoints originalShape,
@@ -57,26 +57,31 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
                                             LocalDate effectiveServiceDate) {
 
         String tripId = AgencyAndId.convertToString(tripAgencyAndId);
-        StopChangeDiffs stopChangeDiffs = getStopTimeDiffs(originalStopTimes, modifiedStopTimes,
+        Optional<StopChangeDiffs> scDiff = getStopTimeDiffs(originalStopTimes, modifiedStopTimes,
                 originalRemovedStopTimeIndices, modifiedAddedStopTimeIndices);
-        List<StopChangeDiff> stopChangeDiffList = stopChangeDiffs.getStopChangeDiffs();
-        Map<Integer, StopTimeSnapshot> removedBySequence = stopChangeDiffs.getRemovedStopTimes();
-        Map<Integer, StopTimeSnapshot> addedBySequence = stopChangeDiffs.getAddedStopTimes();
-        Map<AgencyAndId, StopTimeSnapshot> originalStopTimesSnapShot = stopChangeDiffs.getOriginalStopTimeSnapshots();
-        Map<AgencyAndId, StopTimeSnapshot> modifiedStopTimesSnapShot = stopChangeDiffs.getModifiedStopTimeSnapshots();
-        long lastUpdated = System.currentTimeMillis();
-        ShapeModificationDiff shapeDiff = getShapeDiff(tripId, replacementShapeId, originalShape, originalStopTimes);
 
-        return new TripModificationDiff(entityId,
-                                        tripId,
-                                        effectiveServiceDate,
-                                        lastUpdated,
-                                        originalStopTimesSnapShot,
-                                        modifiedStopTimesSnapShot,
-                                        stopChangeDiffList,
-                                        shapeDiff,
-                                        removedBySequence,
-                                        addedBySequence);
+        if(scDiff.isPresent()) {
+            StopChangeDiffs stopChangeDiffs = scDiff.get();
+            List<StopChangeDiff> stopChangeDiffList = stopChangeDiffs.getStopChangeDiffs();
+            Map<Integer, StopTimeSnapshot> removedBySequence = stopChangeDiffs.getRemovedStopTimes();
+            Map<Integer, StopTimeSnapshot> addedBySequence = stopChangeDiffs.getAddedStopTimes();
+            Map<AgencyAndId, StopTimeSnapshot> originalStopTimesSnapShot = stopChangeDiffs.getOriginalStopTimeSnapshots();
+            Map<AgencyAndId, StopTimeSnapshot> modifiedStopTimesSnapShot = stopChangeDiffs.getModifiedStopTimeSnapshots();
+            long lastUpdated = System.currentTimeMillis();
+            ShapeModificationDiff shapeDiff = getShapeDiff(tripId, replacementShapeId, originalShape, originalStopTimes);
+
+            return Optional.of(new TripModificationDiff(entityId,
+                    tripId,
+                    effectiveServiceDate,
+                    lastUpdated,
+                    originalStopTimesSnapShot,
+                    modifiedStopTimesSnapShot,
+                    stopChangeDiffList,
+                    shapeDiff,
+                    removedBySequence,
+                    addedBySequence));
+        }
+        return Optional.empty();
     }
 
     private ShapeModificationDiff getShapeDiff(String tripId,
@@ -106,7 +111,7 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
      * @param modifiedAddedStopTimeIndices
      * @return
      */
-    private StopChangeDiffs getStopTimeDiffs(
+    private Optional<StopChangeDiffs> getStopTimeDiffs(
             List<StopTimeEntry> original,
             List<StopTimeEntry> modified,
             Set<Integer> originalRemovedStopTimeIndices,
@@ -165,11 +170,11 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
 
             stopChangeDiffs.addAllStopChangeDiffs(stopChangeDiffList);
 
-            return stopChangeDiffs;
+            return Optional.of(stopChangeDiffs);
         }
         catch (Exception e) {
             _log.error("Error processing stop change diffs", e);
-            return null;
+            return Optional.empty();
         }
     }
 

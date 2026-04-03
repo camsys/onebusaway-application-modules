@@ -27,7 +27,7 @@ public class StopChangeDiffs {
     private final Map<Integer, StopTimeSnapshot> removedStopTimes = new LinkedHashMap<>();
 
     public List<StopChangeDiff> getStopChangeDiffs() {
-        return stopChangeDiffs;
+        return Collections.unmodifiableList(stopChangeDiffs);
     }
 
     public Map<Integer, StopTimeSnapshot> getAddedStopTimes() {

@@ -22,6 +22,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEnt
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface TripModificationDiffComputer {
@@ -37,7 +38,7 @@ public interface TripModificationDiffComputer {
      * @param effectiveServiceDate the service date for the trip
      * @return
      */
-    TripModificationDiff computeDiff(
+    Optional<TripModificationDiff> computeDiff(
             String entityId,
             AgencyAndId tripId,
             List<StopTimeEntry> originalStopTimes,
