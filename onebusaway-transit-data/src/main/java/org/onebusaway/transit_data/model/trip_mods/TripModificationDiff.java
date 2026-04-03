@@ -15,47 +15,72 @@
  */
 package org.onebusaway.transit_data.model.trip_mods;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
+
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class TripModificationDiff implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
-    private String tripId;
-    private String routeId;
-    private String effectiveServiceDate;
-    private long lastUpdated;
-    private List<StopTimeSnapshot> originalStopTimes;
-    private List<StopTimeSnapshot> modifiedStopTimes;
-    private List<StopChangeDiff> changes;
-    private ShapeModificationDiff shapeDiff;
+    private final String entityId;
+    private final String tripId;
+    private final LocalDate effectiveServiceDate;
+    private final long lastUpdated;
+    private final Map<AgencyAndId, StopTimeSnapshot>  originalStopTimes;
+    private final Map<AgencyAndId, StopTimeSnapshot>  modifiedStopTimes;
+    private final List<StopChangeDiff> changes;
+    private final ShapeModificationDiff shapeDiff;
+    private final Map<Integer, StopTimeSnapshot> removedBySequence;
+    private final Map<Integer, StopTimeSnapshot> addedBySequence;
+
+    public TripModificationDiff(String entityId,
+                                String tripId,
+                                LocalDate effectiveServiceDate,
+                                long lastUpdated,
+                                Map<AgencyAndId, StopTimeSnapshot> originalStopTimes,
+                                Map<AgencyAndId, StopTimeSnapshot> modifiedStopTimes,
+                                List<StopChangeDiff> changes,
+                                ShapeModificationDiff shapeDiff,
+                                Map<Integer, StopTimeSnapshot> removedBySequence,
+                                Map<Integer, StopTimeSnapshot> addedBySequence) {
+        this.entityId = entityId;
+        this.tripId = tripId;
+        this.effectiveServiceDate = effectiveServiceDate;
+        this.lastUpdated = lastUpdated;
+        this.originalStopTimes = originalStopTimes;
+        this.modifiedStopTimes = modifiedStopTimes;
+        this.changes = changes;
+        this.shapeDiff = shapeDiff;
+        this.removedBySequence = removedBySequence;
+        this.addedBySequence = addedBySequence;
+    }
+
+    public String getEntityId() {
+        return entityId;
+    }
 
     public String getTripId() { return tripId; }
-    public void setTripId(String tripId) { this.tripId = tripId; }
 
-    public String getRouteId() { return routeId; }
-    public void setRouteId(String routeId) { this.routeId = routeId; }
-
-    public String getEffectiveServiceDate() {
+    public LocalDate getEffectiveServiceDate() {
         return effectiveServiceDate;
     }
 
-    public void setEffectiveServiceDate(String effectiveServiceDate) {
-        this.effectiveServiceDate = effectiveServiceDate;
-    }
-
     public long getLastUpdated() { return lastUpdated; }
-    public void setLastUpdated(long lastUpdated) { this.lastUpdated = lastUpdated; }
 
-    public List<StopTimeSnapshot> getOriginalStopTimes() { return originalStopTimes; }
-    public void setOriginalStopTimes(List<StopTimeSnapshot> originalStopTimes) { this.originalStopTimes = originalStopTimes; }
+    public Map<AgencyAndId, StopTimeSnapshot> getOriginalStopTimes() { return originalStopTimes; }
 
-    public List<StopTimeSnapshot> getModifiedStopTimes() { return modifiedStopTimes; }
-    public void setModifiedStopTimes(List<StopTimeSnapshot> modifiedStopTimes) { this.modifiedStopTimes = modifiedStopTimes; }
+    public Map<AgencyAndId, StopTimeSnapshot> getModifiedStopTimes() { return modifiedStopTimes; }
 
     public List<StopChangeDiff> getChanges() { return changes; }
-    public void setChanges(List<StopChangeDiff> changes) { this.changes = changes; }
 
     public ShapeModificationDiff getShapeDiff() { return shapeDiff; }
-    public void setShapeDiff(ShapeModificationDiff shapeDiff) { this.shapeDiff = shapeDiff; }
+
+    public Map<Integer, StopTimeSnapshot> getRemovedBySequence() { return removedBySequence; }
+
+    public Map<Integer, StopTimeSnapshot> getAddedBySequence() { return addedBySequence; }
+
 }

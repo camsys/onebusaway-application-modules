@@ -15,6 +15,9 @@
  */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.impl;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.calendar.ServiceDate;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedStopTimes;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrip;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrips;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModificationDiffComputer;
@@ -22,6 +25,7 @@ import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificatio
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModificationDiffCache;
 import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.Logger;
@@ -29,7 +33,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class TripModificationDiffServiceImpl implements TripModificationDiffService {
@@ -50,34 +57,93 @@ public class TripModificationDiffServiceImpl implements TripModificationDiffServ
     }
 
     @Override
-    public Collection<TripModificationDiff> getAllActiveDiffs() {
+    public Collection<TripModificationDiff> getAllTripModificationDiffs() {
         return _diffCache.getAll();
+    }
+
+    @Override
+    public Collection<TripModificationDiff> getAllTripModificationDiffs(LocalDate serviceDate) {
+        return _diffCache.getAll().stream()
+                .filter(tripDiff -> matchesServiceDate(tripDiff, serviceDate))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<TripModificationDiff> getTripModificationDiffs(AgencyAndId tripId) {
+        return Optional.ofNullable(_diffCache.get(tripId));
+    }
+
+    @Override
+    public Optional<TripModificationDiff> getTripModificationDiffs(AgencyAndId tripId, LocalDate serviceDate) {
+        Optional<TripModificationDiff> tripModificationDiff = Optional.ofNullable(_diffCache.get(tripId));
+        return tripModificationDiff.filter(tripDiff -> matchesServiceDate(tripDiff, serviceDate));
+    }
+
+    @Override
+    public Map<AgencyAndId, TripModificationDiff> getAllTripModificationDiffsById() {
+        return _diffCache.getAllById();
+    }
+
+    @Override
+    public Map<AgencyAndId, TripModificationDiff> getAllTripModificationDiffsById(LocalDate serviceDate) {
+        return _diffCache.getAllById().entrySet().stream()
+                .filter(entry -> matchesServiceDate(entry.getValue(), serviceDate))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     @Override
     public Collection<TripModificationDiff> createDiffsFromModifications(ModifiedTrips modifiedTrips) {
 
+        Map<AgencyAndId, TripModificationDiff> newCache = new HashMap<>();
+
         for (ModifiedTrip modifiedTrip : modifiedTrips.getModifiedTrips()) {
             TripEntry tripEntry = modifiedTrip.getTripEntry();
-            ShapePoints originalShape = _dao.getShape(tripEntry.getShapeId());
+
+            String entityId = modifiedTrip.getEntityId();
+            AgencyAndId tripId = modifiedTrip.getTripEntry().getId();
+            LocalDate effectiveServiceDate = modifiedTrip.getServiceDate();
+            ModifiedStopTimes modifiedStopTimes = modifiedTrip.getModifiedStopTimes();
+
+            // Original StopTimes
+            AgencyAndId originalShapeId = tripEntry.getShapeId();
+            List<StopTimeEntry> originalTripStopTimes = tripEntry.getStopTimes();
+            ShapePoints originalTripShape = _dao.getShape(originalShapeId);
+            Set<Integer> originalTripRemovedStopIndices = modifiedStopTimes.getOriginalRemovedStopTimeIndices();
+
+            // Updated StopTimes
+            List<StopTimeEntry> modifiedTripStopTimesList = modifiedStopTimes.getUpdatedStopTimes();
+            AgencyAndId modifiedTripShapeId = modifiedTrip.getShapeId();
+            Set<Integer> modifiedTripAddedStopIndices = modifiedStopTimes.getModifiedAddedStopTimeIndices();
+
 
             TripModificationDiff diff = _tripModificationDiffComputer.computeDiff(
-                    tripEntry.getId(),
-                    tripEntry.getStopTimes(),
-                    modifiedTrip.getStopTimes(),
-                    originalShape,
-                    modifiedTrip.getShapeId(),
-                    modifiedTrip.getServiceDate()
+                    entityId,
+                    tripId,
+                    originalTripStopTimes,
+                    originalTripShape,
+                    originalTripRemovedStopIndices,
+                    modifiedTripStopTimesList,
+                    modifiedTripShapeId,
+                    modifiedTripAddedStopIndices,
+                    effectiveServiceDate
             );
 
             if (diff == null) {
                 _log.warn("Unable to compute TripModificationDiff for tripId {}. Skipping caching of diff.", tripEntry.getId());
                 continue;
             }
-
-            _diffCache.invalidateAndReplace(tripEntry.getId(), diff);
+            newCache.put(tripEntry.getId(), diff);
         }
 
+        _diffCache.replaceAll(newCache);
+
         return _diffCache.getAll();
+    }
+
+
+    private boolean matchesServiceDate(TripModificationDiff tripDiff,
+                                       LocalDate serviceDate) {
+        return serviceDate == null || (tripDiff.getEffectiveServiceDate() != null &&
+                serviceDate.equals(tripDiff.getEffectiveServiceDate()));
     }
 }

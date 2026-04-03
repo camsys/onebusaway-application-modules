@@ -17,6 +17,7 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificati
 
 import com.google.transit.realtime.GtfsRealtime;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedStopTimes;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModificationDiffCache;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModificationDiffComputer;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.StopEntryData;
@@ -42,6 +43,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 
 @Component
@@ -52,6 +54,8 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
     private static final int DEFAULT_UPDATED_GTFS_STOP_SEQUENCE = -999;
 
     private static final double DEFAULT_UPDATED_SHAPE_DIST_TRAVELED = -999;
+
+    private static final String NULL_ENTITY_ID = null;
 
     private final TransitGraphDao _dao;
 
@@ -95,20 +99,23 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
     }
 
     @Override
-    public ModifiedTrips createModifiedTrips(List<GtfsRealtime.TripModifications> tripModificationsList) {
+    public ModifiedTrips createModifiedTrips(Map<String, GtfsRealtime.TripModifications> tripModificationsMap) {
         ModifiedTrips modifiedTrips = new ModifiedTrips();
 
-        List<GtfsRealtime.TripModifications> filteredTripModifications = filterTripModifications(tripModificationsList);
+        Map<String, GtfsRealtime.TripModifications> filteredTripModifications = filterTripModifications(tripModificationsMap);
 
-        for (GtfsRealtime.TripModifications tripModifications : filteredTripModifications) {
+        for (Map.Entry<String,GtfsRealtime.TripModifications> tripModificationEntry : filteredTripModifications.entrySet()) {
+            String entityId = tripModificationEntry.getKey();
+            GtfsRealtime.TripModifications tripModifications = tripModificationEntry.getValue();
 
             List<GtfsRealtime.TripModifications.Modification> modifications = tripModifications.getModificationsList();
             List<GtfsRealtime.TripModifications.SelectedTrips> selectedTripsList = tripModifications.getSelectedTripsList();
             Set<LocalDate> selectedTripServiceDates = _util.parseServiceDates(tripModifications.getServiceDatesList());
 
+
             for (GtfsRealtime.TripModifications.SelectedTrips selectedTrips : selectedTripsList) {
                 List<ModifiedTrip> modifiedTripList = createModifiedTripsForSelectedTrips(selectedTrips,
-                        selectedTripServiceDates, modifications);
+                        selectedTripServiceDates, modifications, entityId);
 
                 modifiedTrips.addAllModifiedTrip(modifiedTripList);
                 Set<String> failedModifiedTripIds = getFailedModifiedTripIds(selectedTrips, modifiedTrips);
@@ -130,7 +137,8 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
 
     private List<ModifiedTrip> createModifiedTripsForSelectedTrips(GtfsRealtime.TripModifications.SelectedTrips selectedTrips,
                                                                    Set<LocalDate> selectedTripServiceDates,
-                                                                   List<GtfsRealtime.TripModifications.Modification> modifications) {
+                                                                   List<GtfsRealtime.TripModifications.Modification> modifications,
+                                                                   String entityId) {
         List<ModifiedTrip> modifiedTrips = new ArrayList<>();
         AgencyAndId shapeId = getSelectedTripsShapeId(selectedTrips);
         for(String tripId: selectedTrips.getTripIdsList()){
@@ -138,7 +146,7 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
             if(tripEntry == null) {
                 continue;
             }
-            ModifiedTrip modifiedTrip = createModifiedTrip(tripEntry, shapeId, modifications);
+            ModifiedTrip modifiedTrip = createModifiedTrip(tripEntry, shapeId, modifications, entityId);
             if(isValidTripModifiedTrip(modifiedTrip, selectedTripServiceDates)){
                 modifiedTrips.add(modifiedTrip);
             }
@@ -155,7 +163,7 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
             _log.warn("Unable to create ModifiedTrip. No service date for tripId {}.", modifiedTrip.getTripId());
             return false;
         }
-        if(modifiedTrip.getStopTimes().isEmpty()) {
+        if(modifiedTrip.getModifiedStopTimes() == null || modifiedTrip.getModifiedStopTimes().getUpdatedStopTimes().isEmpty()) {
             _log.warn("Unable to create ModifiedTrip. No stop times for tripId {}.", modifiedTrip.getTripId());
             return false;
         }
@@ -172,8 +180,10 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
     }
 
 
-    List<GtfsRealtime.TripModifications> filterTripModifications(Collection<GtfsRealtime.TripModifications> tripModificationsList) {
-        return tripModificationsList.stream().filter(this::isValidTripModification).collect(Collectors.toList());
+    Map<String, GtfsRealtime.TripModifications> filterTripModifications(Map<String, GtfsRealtime.TripModifications> tripModificationsMap) {
+        return tripModificationsMap.entrySet().stream()
+                .filter(entry -> isValidTripModification(entry.getValue()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     boolean isValidTripModification(GtfsRealtime.TripModifications tripModifications) {
@@ -207,16 +217,18 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
      */
     ModifiedTrip createModifiedTrip(TripEntryImpl tripEntry,
                                     AgencyAndId agencyAndShapeId,
-                                    List<GtfsRealtime.TripModifications.Modification> modifications) {
+                                    List<GtfsRealtime.TripModifications.Modification> modifications,
+                                    String entityId) {
 
-        List<StopTimeEntry> stopTimeEntries = getModifiedStopTimeEntries(tripEntry, modifications);
+        ModifiedStopTimes modifiedStopTimes = getModifiedStopTimeEntries(tripEntry, modifications);
         agencyAndShapeId = getModifiedShapeId(tripEntry, agencyAndShapeId);
         LocalDate serviceDate = _util.getActiveServiceDateForTrip(tripEntry);
 
         return new ModifiedTrip(
+                entityId,
                 tripEntry.getId(),
                 agencyAndShapeId,
-                stopTimeEntries,
+                modifiedStopTimes,
                 tripEntry,
                 modifications,
                 serviceDate);
@@ -238,9 +250,9 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
         return (TripEntryImpl) tripEntry;
     }
 
-    List<StopTimeEntry> getModifiedStopTimeEntries(TripEntryImpl originalTrip,
-                                                   List<GtfsRealtime.TripModifications.Modification> modifications) {
-        List<StopTimeEntry> modifiedStopTimes = new ArrayList<>();
+    ModifiedStopTimes getModifiedStopTimeEntries(TripEntryImpl originalTrip,
+                                                 List<GtfsRealtime.TripModifications.Modification> modifications) {
+        ModifiedStopTimes modifiedStopTimes = new ModifiedStopTimes();
         List<StopTimeEntry> originalStopTimes = originalTrip.getStopTimes();
 
         refreshStopTimes(originalStopTimes);
@@ -250,23 +262,57 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
             int endSelectorStopTimesIndex = _util.findStopTimeIndexForSelector(originalStopTimes, mod.getEndStopSelector());
             int postModificationStopTimesIndex = endSelectorStopTimesIndex + 1;
 
+
             List<GtfsRealtime.ReplacementStop> replacementStops = mod.getReplacementStopsList();
             int propagatedModificationDelay =  mod.getPropagatedModificationDelay();
 
+            // Stop Times to be replaced
+            List<Integer> oldReplacedStopTimeIndices =  getAllStopTimeIndicesToBeReplaced(startSelectorStopTimesIndex,
+                    endSelectorStopTimesIndex);
+            modifiedStopTimes.addOriginalRemovedStopTimeIndices(oldReplacedStopTimeIndices);
 
-            modifiedStopTimes.addAll(getAllStopTimesBeforeSelection(startSelectorStopTimesIndex, originalStopTimes));
+            // New Stop Times
+            List<StopTimeEntry> preReplacementStopTimes = getAllStopTimesBeforeSelection(startSelectorStopTimesIndex, originalStopTimes);
+            modifiedStopTimes.addUpdatedStopTimes(preReplacementStopTimes);
 
-            modifiedStopTimes.addAll(getAllReplacedStopTimes(startSelectorStopTimesIndex, originalStopTimes,
-                    replacementStops, originalTrip));
+            int lastKnownStopSequence = getLastKnownStopSequence(modifiedStopTimes.getUpdatedStopTimes());
+            Map<Integer, StopTimeEntry> newReplacementStopTimes =  getAllNewReplacementStopTimes(
+                    startSelectorStopTimesIndex, lastKnownStopSequence, originalStopTimes, replacementStops, originalTrip);
+            modifiedStopTimes.addUpdatedStopTimes(newReplacementStopTimes.values());
 
-            modifiedStopTimes.addAll(getAllStopTimesAfterSelection(postModificationStopTimesIndex, originalStopTimes,
-                    propagatedModificationDelay));
+            int stopSequenceOffset = replacementStops.size() - (postModificationStopTimesIndex - startSelectorStopTimesIndex);
 
+            if(startSelectorStopTimesIndex != 19) {
+                System.out.println("test");
+            }
+
+            List<StopTimeEntry> postReplacementStopTimes = getAllStopTimesAfterSelection(postModificationStopTimesIndex,
+                    stopSequenceOffset, originalStopTimes, propagatedModificationDelay);
+
+            modifiedStopTimes.addUpdatedStopTimes(postReplacementStopTimes);
+
+
+            modifiedStopTimes.addModifiedAddedStopTimeIndices(newReplacementStopTimes.keySet());
         }
 
         return modifiedStopTimes;
 
     }
+
+    private int getInitialPostReplacementStopSequence(int initialAddedStopSequence, int replacementStopsSize) {
+        if(replacementStopsSize == 0){
+            return initialAddedStopSequence;
+        }
+        return initialAddedStopSequence + replacementStopsSize;
+    }
+
+    private int getLastKnownStopSequence(List<StopTimeEntry> stopTimes) {
+        if(stopTimes.isEmpty()) {
+            return 0;
+        }
+        return stopTimes.get(stopTimes.size()-1).getGtfsSequence();
+    }
+
 
     private void refreshStopTimes(List<StopTimeEntry> originalStopTimes) {
         for (StopTimeEntry stopTimeEntry : originalStopTimes) {
@@ -280,40 +326,55 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
         return originalStopTimes.subList(0, startSelectorStopTimesIndex);
     }
 
-    List<StopTimeEntry> getAllReplacedStopTimes(int startSelectorStopTimesIndex,
-                                                        List<StopTimeEntry> originalStopTimes,
-                                                        List<GtfsRealtime.ReplacementStop> replacementStops,
-                                                        TripEntryImpl originalTrip) {
+    private List<Integer> getAllStopTimeIndicesToBeReplaced(int startSelectorStopTimesIndex, int endSelectorStopTimesIndex) {
+        return IntStream.rangeClosed(startSelectorStopTimesIndex, endSelectorStopTimesIndex)
+                    .boxed()
+                    .collect(Collectors.toList());
+    }
 
-        List<StopTimeEntry> modifiedStopTimes = new ArrayList<>();
+    Map<Integer, StopTimeEntry> getAllNewReplacementStopTimes(int startSelectorStopTimesIndex,
+                                                              int lastKnownStopSequence,
+                                                              List<StopTimeEntry> originalStopTimes,
+                                                              List<GtfsRealtime.ReplacementStop> replacementStops,
+                                                              TripEntryImpl originalTrip) {
 
+        Map<Integer,StopTimeEntry> modifiedStopTimes = new LinkedHashMap<>();
+        int currentIndex = startSelectorStopTimesIndex;
         int referenceTime = _util.getReferenceTime(originalStopTimes, startSelectorStopTimesIndex);
+
         for (var replacementStop : replacementStops) {
-            int updatedGtfsStopSequence = DEFAULT_UPDATED_GTFS_STOP_SEQUENCE;
+            lastKnownStopSequence++;
             double shapeDistanceTraveled = DEFAULT_UPDATED_SHAPE_DIST_TRAVELED;
 
             StopTimeEntry newStopTime = createStopTimeEntry(
                     replacementStop,
                     referenceTime,
-                    updatedGtfsStopSequence,
+                    lastKnownStopSequence,
                     shapeDistanceTraveled,
                     originalTrip
             );
-            modifiedStopTimes.add(newStopTime);
+            modifiedStopTimes.put(currentIndex, newStopTime);
+            currentIndex++;
         }
         return modifiedStopTimes;
     }
 
     List<StopTimeEntry> getAllStopTimesAfterSelection(int postModificationStopTimesIndex,
-                                                              List<StopTimeEntry> originalStopTimes,
-                                                              int propagatedModificationDelay) {
+                                                      int stopSequenceOffset,
+                                                      List<StopTimeEntry> originalStopTimes,
+                                                      int propagatedModificationDelay) {
+
         List<StopTimeEntry> modifiedStopTimes = new ArrayList<>();
 
         for (int i = postModificationStopTimesIndex; i < originalStopTimes.size(); i++) {
-            int updatedGtfsStopSequence = DEFAULT_UPDATED_GTFS_STOP_SEQUENCE;
+            StopTimeEntry originalStopTime = originalStopTimes.get(i);
+            int updatedGtfsStopSequence = originalStopTime.getGtfsSequence() + stopSequenceOffset;
+            int updatedStopSequence = -999;//originalStopTime.getSequence() + stopSequenceOffset;
+
             StopTimeEntry adjusted = adjustStopTime(
-                    originalStopTimes.get(i),
+                    originalStopTime,
                     updatedGtfsStopSequence,
+                    updatedStopSequence,
                     propagatedModificationDelay
             );
             modifiedStopTimes.add(adjusted);
@@ -338,10 +399,12 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
 
 
     StopTimeEntry adjustStopTime(StopTimeEntry original,
-                                 int newSequence,
+                                 int newGtfsSequence,
+                                 int newStopSequence,
                                  int propagatedDelay) {
         StopTimeEntryImpl adjusted = new StopTimeEntryImpl(original);
-        adjusted.setSequence(newSequence);
+        adjusted.setGtfsSequence(newGtfsSequence);
+        adjusted.setSequence(newStopSequence);
         adjusted.setArrivalTime(original.getArrivalTime() + propagatedDelay);
         adjusted.setDepartureTime(original.getDepartureTime() + propagatedDelay);
         return adjusted;
@@ -355,10 +418,14 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
             TripEntryImpl tripEntry = (TripEntryImpl) transitGraphTripEntry;
 
             List<GtfsRealtime.TripModifications.Modification> modifications = Collections.emptyList();
+            ModifiedStopTimes modifiedStopTimes = new ModifiedStopTimes();
+            modifiedStopTimes.addUpdatedStopTimes(tripEntry.getStopTimes());
 
-            return new ModifiedTrip(tripId,
+            return new ModifiedTrip(
+                    NULL_ENTITY_ID,
+                    tripId,
                     tripEntry.getShapeId(),
-                    tripEntry.getStopTimes(),
+                    modifiedStopTimes,
                     tripEntry,
                     modifications,
                     _util.getActiveServiceDateForTrip(tripEntry));

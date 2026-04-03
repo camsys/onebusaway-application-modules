@@ -148,11 +148,11 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
 
         for (FeedEntity entity : feedMessage.getEntityList()) {
             if (entity.hasShape()) {
-                tripModificationsChanges.addShape(entity.getShape());
+                tripModificationsChanges.addShape(entity.getId(), entity.getShape());
             } else if (entity.hasStop()) {
-                tripModificationsChanges.addStop(entity.getStop());
+                tripModificationsChanges.addStop(entity.getId(), entity.getStop());
             } else if (entity.hasTripModifications()) {
-                tripModificationsChanges.addTripModification(entity.getTripModifications());
+                tripModificationsChanges.addTripModification(entity.getId(), entity.getTripModifications());
             }
         }
 

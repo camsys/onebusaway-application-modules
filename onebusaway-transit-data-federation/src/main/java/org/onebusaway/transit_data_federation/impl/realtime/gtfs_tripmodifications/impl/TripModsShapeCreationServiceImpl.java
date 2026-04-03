@@ -30,7 +30,9 @@ import org.springframework.stereotype.Component;
 import org.onebusaway.geospatial.services.PolylineEncoder;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class TripModsShapeCreationServiceImpl implements TripModsShapeCreationService {
@@ -52,11 +54,14 @@ public class TripModsShapeCreationServiceImpl implements TripModsShapeCreationSe
     }
 
     @Override
-    public AddedShapes createAddedShapes(List<Shape> shapes){
+    public AddedShapes createAddedShapes(Map<String, Shape> shapesByEntityId){
 
         AddedShapes addedShapes = new AddedShapes();
 
-        for (Shape shape : shapes) {
+        for (Map.Entry<String,Shape> shapeEntry : shapesByEntityId.entrySet()) {
+            String entityId = shapeEntry.getKey();
+            Shape shape = shapeEntry.getValue();
+
             if(!isValidShape(shape)){
                 addedShapes.addFailedAddedShapeId(shape.getShapeId());
                 continue;
@@ -69,7 +74,7 @@ public class TripModsShapeCreationServiceImpl implements TripModsShapeCreationSe
             }
 
             ShapePoints shapePoints = createShapePoints(shape, shapeId);
-            AddedShape addedShape = new AddedShape(shapePoints, shapeId);
+            AddedShape addedShape = new AddedShape(shapePoints, shapeId, entityId);
             addedShapes.addShape(addedShape);
             addedShapes.addSuccessfullyAddedShapeId(shape.getShapeId());
         }

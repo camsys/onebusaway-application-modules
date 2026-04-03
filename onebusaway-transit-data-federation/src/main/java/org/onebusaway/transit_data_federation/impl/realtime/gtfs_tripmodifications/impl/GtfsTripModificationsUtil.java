@@ -95,11 +95,18 @@ public class GtfsTripModificationsUtil {
                 AgencyAndId.convertToString(agencyAndId).equals(id);
     }
 
-    public int findStopTimeIndexForSelector(List<StopTimeEntry> stopTimes, GtfsRealtime.StopSelector selector) {
+    /**
+     * Returns Index of StopTime within the StopTimes list.
+     * Possibly equivalent to OBA Stop Sequence (Not to be confused with GTFS Sequence).
+     * @param originalStopTimes
+     * @param selector
+     * @return
+     */
+    public int findStopTimeIndexForSelector(List<StopTimeEntry> originalStopTimes, GtfsRealtime.StopSelector selector) {
         if (selector.hasStopSequence()) {
             int selectorStopSequence = selector.getStopSequence();
-            for (int i = 0; i < stopTimes.size(); i++) {
-                int gtfsStopSequence =  stopTimes.get(i).getGtfsSequence();
+            for (int i = 0; i < originalStopTimes.size(); i++) {
+                int gtfsStopSequence =  originalStopTimes.get(i).getGtfsSequence();
                 if (selectorStopSequence == gtfsStopSequence) {
                     return i;
                 }
@@ -107,8 +114,8 @@ public class GtfsTripModificationsUtil {
         }
         if (selector.hasStopId()) {
             String selectorStopId = selector.getStopId();
-            for (int i = 0; i < stopTimes.size(); i++) {
-                AgencyAndId currentAgencyAndStopId = stopTimes.get(i).getStop().getId();
+            for (int i = 0; i < originalStopTimes.size(); i++) {
+                AgencyAndId currentAgencyAndStopId = originalStopTimes.get(i).getStop().getId();
                 if (areIdsEqual(currentAgencyAndStopId, selectorStopId)) {
                     return i;
                 }

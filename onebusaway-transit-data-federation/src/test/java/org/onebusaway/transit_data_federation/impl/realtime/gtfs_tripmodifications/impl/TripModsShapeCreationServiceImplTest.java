@@ -29,9 +29,7 @@ import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.EntityIdService;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -55,9 +53,12 @@ public class TripModsShapeCreationServiceImplTest {
 
     private AgencyAndId shapeAgencyAndId;
 
+    private String entityId;
+
     @Before
     public void setUp() {
         shapeAgencyAndId = new AgencyAndId("MTA", "SHAPE_1");
+        entityId = UUID.randomUUID().toString();
         when(entityIdService.getShapeId(anyString())).thenReturn(shapeAgencyAndId);
         when(transitGraphDao.getShape(any())).thenReturn(null); // shape does not exist by default
     }
@@ -70,7 +71,7 @@ public class TripModsShapeCreationServiceImplTest {
     public void createAddedShapes_returnsAddedShapeForValidNewShape() {
         Shape shape = validShape("SHAPE_1");
 
-        AddedShapes result = service.createAddedShapes(Collections.singletonList(shape));
+        AddedShapes result = service.createAddedShapes(Collections.singletonMap(entityId, shape));
 
         assertEquals(1, result.getAddedShapes().size());
         assertTrue(result.getFailedAddedShapeIds().isEmpty());
@@ -80,7 +81,7 @@ public class TripModsShapeCreationServiceImplTest {
     public void createAddedShapes_shapeIdIsSetOnReturnedShapePoints() {
         Shape shape = validShape("SHAPE_1");
 
-        AddedShapes result = service.createAddedShapes(Collections.singletonList(shape));
+        AddedShapes result = service.createAddedShapes(Collections.singletonMap(entityId, shape));
 
         AddedShape addedShape = result.getAddedShapes().get(0);
         assertEquals(shapeAgencyAndId, addedShape.getShapeId());
@@ -91,7 +92,7 @@ public class TripModsShapeCreationServiceImplTest {
     public void createAddedShapes_shapePointsContainDecodedCoordinates() {
         Shape shape = validShape("SHAPE_1");
 
-        AddedShapes result = service.createAddedShapes(Collections.singletonList(shape));
+        AddedShapes result = service.createAddedShapes(Collections.singletonMap(entityId, shape));
 
         ShapePoints sp = result.getAddedShapes().get(0).getShapePoints();
         assertNotNull(sp.getLats());
@@ -104,7 +105,7 @@ public class TripModsShapeCreationServiceImplTest {
     public void createAddedShapes_distTraveledIsPopulated() {
         Shape shape = validShape("SHAPE_1");
 
-        AddedShapes result = service.createAddedShapes(Collections.singletonList(shape));
+        AddedShapes result = service.createAddedShapes(Collections.singletonMap(entityId, shape));
 
         double[] distTraveled = result.getAddedShapes().get(0).getShapePoints().getDistTraveled();
         assertNotNull(distTraveled);
@@ -118,7 +119,9 @@ public class TripModsShapeCreationServiceImplTest {
         when(entityIdService.getShapeId("SHAPE_1")).thenReturn(shapeAgencyAndId);
         when(entityIdService.getShapeId("SHAPE_2")).thenReturn(id2);
 
-        List<Shape> shapes = Arrays.asList(validShape("SHAPE_1"), validShape("SHAPE_2"));
+        Map<String, Shape> shapes = new HashMap<>();
+        shapes.put("SHAPE_1", validShape("SHAPE_1"));
+        shapes.put("SHAPE_2", validShape("SHAPE_2"));
 
         AddedShapes result = service.createAddedShapes(shapes);
 
@@ -128,7 +131,7 @@ public class TripModsShapeCreationServiceImplTest {
 
     @Test
     public void createAddedShapes_returnsEmptyResultForEmptyInput() {
-        AddedShapes result = service.createAddedShapes(Collections.emptyList());
+        AddedShapes result = service.createAddedShapes(Collections.emptyMap());
 
         assertTrue(result.getAddedShapes().isEmpty());
         assertTrue(result.getFailedAddedShapeIds().isEmpty());
@@ -145,7 +148,7 @@ public class TripModsShapeCreationServiceImplTest {
                 .setEncodedPolyline(VALID_POLYLINE)
                 .build();
 
-        AddedShapes result = service.createAddedShapes(Collections.singletonList(shape));
+        AddedShapes result = service.createAddedShapes(Collections.singletonMap(entityId, shape));
 
         assertTrue(result.getAddedShapes().isEmpty());
         assertEquals(1, result.getFailedAddedShapeIds().size());
@@ -159,7 +162,7 @@ public class TripModsShapeCreationServiceImplTest {
                 .setEncodedPolyline(VALID_POLYLINE)
                 .build();
 
-        AddedShapes result = service.createAddedShapes(Collections.singletonList(shape));
+        AddedShapes result = service.createAddedShapes(Collections.singletonMap(entityId, shape));
 
         assertTrue(result.getAddedShapes().isEmpty());
         assertEquals(1, result.getFailedAddedShapeIds().size());
@@ -172,7 +175,7 @@ public class TripModsShapeCreationServiceImplTest {
                 // no encoded polyline set
                 .build();
 
-        AddedShapes result = service.createAddedShapes(Collections.singletonList(shape));
+        AddedShapes result = service.createAddedShapes(Collections.singletonMap(entityId, shape));
 
         assertTrue(result.getAddedShapes().isEmpty());
         assertTrue(result.getFailedAddedShapeIds().contains("SHAPE_1"));
@@ -182,7 +185,7 @@ public class TripModsShapeCreationServiceImplTest {
     public void createAddedShapes_addsToFailedWhenShapeAlreadyExistsInTransitGraph() {
         when(transitGraphDao.getShape(shapeAgencyAndId)).thenReturn(new ShapePoints());
 
-        AddedShapes result = service.createAddedShapes(Collections.singletonList(validShape("SHAPE_1")));
+        AddedShapes result = service.createAddedShapes(Collections.singletonMap(entityId, validShape("SHAPE_1")));
 
         assertTrue(result.getAddedShapes().isEmpty());
         assertTrue(result.getFailedAddedShapeIds().contains("SHAPE_1"));
@@ -195,7 +198,11 @@ public class TripModsShapeCreationServiceImplTest {
         Shape valid = validShape("SHAPE_1");
         when(entityIdService.getShapeId("SHAPE_1")).thenReturn(shapeAgencyAndId);
 
-        AddedShapes result = service.createAddedShapes(Arrays.asList(invalid, valid));
+        Map<String, Shape> shapes = new HashMap<>();
+        shapes.put("SHAPE_BAD",invalid);
+        shapes.put("SHAPE_1", valid);
+
+        AddedShapes result = service.createAddedShapes(shapes);
 
         assertEquals(1, result.getAddedShapes().size());
         assertEquals(1, result.getFailedAddedShapeIds().size());
@@ -206,7 +213,7 @@ public class TripModsShapeCreationServiceImplTest {
     public void createAddedShapes_doesNotCallEntityIdServiceForInvalidShape() {
         Shape shape = Shape.newBuilder().setShapeId("").build();
 
-        service.createAddedShapes(Collections.singletonList(shape));
+        service.createAddedShapes(Collections.singletonMap(entityId, shape));
 
         verify(entityIdService, never()).getShapeId(anyString());
     }
@@ -215,7 +222,7 @@ public class TripModsShapeCreationServiceImplTest {
     public void createAddedShapes_doesNotCallTransitGraphForInvalidShape() {
         Shape shape = Shape.newBuilder().setShapeId("SHAPE_1").build(); // no polyline
 
-        service.createAddedShapes(Collections.singletonList(shape));
+        service.createAddedShapes(Collections.singletonMap(entityId, shape));
 
         verify(transitGraphDao, never()).getShape(any());
     }

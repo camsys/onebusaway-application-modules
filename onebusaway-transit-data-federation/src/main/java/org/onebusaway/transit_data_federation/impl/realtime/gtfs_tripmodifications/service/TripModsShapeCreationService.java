@@ -18,14 +18,16 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificati
 import com.google.transit.realtime.GtfsRealtime.Shape;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.AddedShapes;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public interface TripModsShapeCreationService {
     /**
      * Add a set of shapes, returning the number of successfully added shapes.
      *
-     * @param shapes to add
+     * @param shapesByEntityId to add
      * @return modified shapes object with list of successfully added shapepoints
      */
-     AddedShapes createAddedShapes(List<Shape> shapes);
+     AddedShapes createAddedShapes(Map<String, Shape> shapesByEntityId);
 }
