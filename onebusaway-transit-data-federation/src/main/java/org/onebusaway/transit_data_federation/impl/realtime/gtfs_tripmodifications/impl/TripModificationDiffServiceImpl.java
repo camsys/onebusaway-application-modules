@@ -16,7 +16,6 @@
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.impl;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedStopTimes;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrip;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrips;
@@ -34,7 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 

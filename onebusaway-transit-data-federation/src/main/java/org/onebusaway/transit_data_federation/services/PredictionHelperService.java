@@ -16,7 +16,6 @@
 package org.onebusaway.transit_data_federation.services;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;

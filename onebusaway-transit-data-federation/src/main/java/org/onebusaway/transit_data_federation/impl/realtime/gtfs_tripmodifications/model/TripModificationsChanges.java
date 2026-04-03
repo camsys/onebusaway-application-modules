@@ -17,9 +17,7 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificati
 
 import com.google.transit.realtime.GtfsRealtime;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class TripModificationsChanges {

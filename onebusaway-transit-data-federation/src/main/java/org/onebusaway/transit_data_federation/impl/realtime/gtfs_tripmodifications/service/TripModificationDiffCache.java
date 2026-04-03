@@ -18,12 +18,8 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificati
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public interface TripModificationDiffCache {
     void put(AgencyAndId tripId, TripModificationDiff diff);
