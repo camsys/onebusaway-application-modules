@@ -18,13 +18,7 @@ package org.onebusaway.presentation.impl.realtime;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -87,10 +81,18 @@ public final class SiriSupport {
 	 * in the case of A-D for stop!
 	 */
 	@SuppressWarnings("unused")
-	public static void fillMonitoredVehicleJourney(MonitoredVehicleJourneyStructure monitoredVehicleJourney, 
-			TripBean framedJourneyTripBean, TripStatusBean currentVehicleTripStatus, StopBean monitoredCallStopBean, OnwardCallsMode onwardCallsMode,
-			PresentationService presentationService, TransitDataService transitDataService,
-			int maximumOnwardCalls, List<TimepointPredictionRecord> stopLevelPredictions, boolean hasRealtimeData, long responseTimestamp, boolean showRawLocation) {
+	public static void fillMonitoredVehicleJourney(MonitoredVehicleJourneyStructure monitoredVehicleJourney,
+												   TripBean framedJourneyTripBean,
+												   TripStatusBean currentVehicleTripStatus,
+												   StopBean monitoredCallStopBean,
+												   OnwardCallsMode onwardCallsMode,
+												   PresentationService presentationService,
+												   TransitDataService transitDataService,
+												   int maximumOnwardCalls,
+												   Collection<TimepointPredictionRecord> stopLevelPredictions,
+												   boolean hasRealtimeData,
+												   long responseTimestamp,
+												   boolean showRawLocation) {
 
 		BlockInstanceBean blockInstance = 
 				transitDataService.getBlockInstance(currentVehicleTripStatus.getActiveTrip().getBlockId(), currentVehicleTripStatus.getServiceDate());

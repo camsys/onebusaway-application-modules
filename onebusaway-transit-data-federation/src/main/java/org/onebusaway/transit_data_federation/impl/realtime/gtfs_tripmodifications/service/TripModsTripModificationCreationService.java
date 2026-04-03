@@ -21,9 +21,10 @@ import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificatio
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrips;
 
 import java.util.List;
+import java.util.Map;
 
 public interface TripModsTripModificationCreationService {
-    ModifiedTrips createModifiedTrips(List<GtfsRealtime.TripModifications> tripModificationsList);
+    ModifiedTrips createModifiedTrips(Map<String, GtfsRealtime.TripModifications> tripModifications);
 
     ModifiedTrip createModifiedTripForExistingTrip(AgencyAndId tripId);
 }

@@ -547,7 +547,7 @@ public interface TransitDataService extends FederatedService {
    * @return a list of TimepointPredictionRecords.
    */
   @FederatedByAgencyIdMethod
-  public List<TimepointPredictionRecord> getPredictionRecordsForTrip(String agencyId, TripStatusBean tripStatus);
+  public Collection<TimepointPredictionRecord> getPredictionRecordsForTrip(String agencyId, TripStatusBean tripStatus);
   
   /**
    * Check to see if scheduled service is expected.

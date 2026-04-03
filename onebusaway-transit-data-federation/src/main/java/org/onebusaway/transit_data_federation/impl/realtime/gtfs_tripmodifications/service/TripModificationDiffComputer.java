@@ -22,11 +22,14 @@ import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEnt
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 public interface TripModificationDiffComputer {
 
     /**
      * Compute the diff between the original and modified stop times for a trip, and return a TripModificationDiff object that captures the differences.
+     * @param entityId GTFSRT entity id
      * @param tripId trip id
      * @param originalStopTimes original stop times for the trip
      * @param modifiedStopTimes modified stop times for the trip
@@ -35,11 +38,15 @@ public interface TripModificationDiffComputer {
      * @param effectiveServiceDate the service date for the trip
      * @return
      */
-    TripModificationDiff computeDiff(
+    Optional<TripModificationDiff> computeDiff(
+            String entityId,
             AgencyAndId tripId,
             List<StopTimeEntry> originalStopTimes,
-            List<StopTimeEntry> modifiedStopTimes,
             ShapePoints originalShape,
+            Set<Integer> originalRemovedStopTimeIndices,
+            List<StopTimeEntry> modifiedStopTimes,
             AgencyAndId replacementShapeId,
+            Set<Integer> modifiedAddedStopTimeIndices,
             LocalDate effectiveServiceDate);
+
 }

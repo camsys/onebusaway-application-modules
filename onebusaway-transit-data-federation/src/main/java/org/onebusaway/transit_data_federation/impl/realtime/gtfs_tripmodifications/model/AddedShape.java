@@ -22,10 +22,12 @@ import org.onebusaway.transit_data_federation.model.ShapePoints;
 public class AddedShape {
     private final ShapePoints shapePoints;
     private final AgencyAndId shapeId;
+    private final String entityId;
 
-    public AddedShape(ShapePoints shapePoints, AgencyAndId shapeId) {
+    public AddedShape(ShapePoints shapePoints, AgencyAndId shapeId, String entityId) {
         this.shapePoints = shapePoints;
         this.shapeId = shapeId;
+        this.entityId = entityId;
     }
 
     public ShapePoints getShapePoints() {
@@ -34,5 +36,9 @@ public class AddedShape {
 
     public AgencyAndId getShapeId() {
         return shapeId;
+    }
+
+    public String getEntityId() {
+        return entityId;
     }
 }

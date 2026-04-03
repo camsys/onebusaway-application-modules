@@ -24,9 +24,11 @@ public class StopTimeSnapshot implements Serializable {
     private String stopName;
     private double lat, lon;
     private int stopSequence;
-    private int arrivalOffset;
-    private int departureOffset;
+    private int gtfsSequence;
+    private int arrivalTime;
+    private int departureTime;
     private Double shapeDistTraveled;
+    private int index;
 
     public String getStopId() { return stopId; }
     public void setStopId(String stopId) { this.stopId = stopId; }
@@ -43,12 +45,26 @@ public class StopTimeSnapshot implements Serializable {
     public int getStopSequence() { return stopSequence; }
     public void setStopSequence(int stopSequence) { this.stopSequence = stopSequence; }
 
-    public int getArrivalOffset() { return arrivalOffset; }
-    public void setArrivalOffset(int arrivalOffset) { this.arrivalOffset = arrivalOffset; }
+    public int getArrivalTime() { return arrivalTime; }
+    public void setArrivalTime(int arrivalTime) { this.arrivalTime = arrivalTime; }
 
-    public int getDepartureOffset() { return departureOffset; }
-    public void setDepartureOffset(int departureOffset) { this.departureOffset = departureOffset; }
+    public int getDepartureTime() { return departureTime; }
+    public void setDepartureTime(int departureTime) { this.departureTime = departureTime; }
 
     public Double getShapeDistTraveled() { return shapeDistTraveled; }
     public void setShapeDistTraveled(Double shapeDistTraveled) { this.shapeDistTraveled = shapeDistTraveled; }
+
+    public int getGtfsSequence() {
+        return gtfsSequence;
+    }
+
+    public void setGtfsSequence(int gtfsSequence) {
+        this.gtfsSequence = gtfsSequence;
+    }
+
+    public int getIndex() { return index; }
+    public void setIndex(int index) {
+        this.index = index;
+
+    }
 }

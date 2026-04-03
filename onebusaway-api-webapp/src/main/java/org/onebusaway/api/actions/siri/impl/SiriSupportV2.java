@@ -18,10 +18,7 @@ package org.onebusaway.api.actions.siri.impl;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.api.actions.siri.model.DetailLevel;
@@ -113,7 +110,7 @@ public final class SiriSupportV2 {
       PresentationService presentationService,
       TransitDataService transitDataService,
       int maximumOnwardCalls,
-      List<TimepointPredictionRecord> stopLevelPredictions,
+      Collection<TimepointPredictionRecord> stopLevelPredictions,
       boolean hasRealtimeData,
       DetailLevel detailLevel,
       long responseTimestamp, Map<Filters, String> filters) {

@@ -15,11 +15,7 @@
  */
 package org.onebusaway.presentation.impl.realtime;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.presentation.impl.realtime.SiriSupport.OnwardCallsMode;
@@ -154,9 +150,12 @@ public class RealtimeServiceImpl implements RealtimeService {
     	  activity.setRecordedAtTime(new Date(tripDetails.getStatus().getLastUpdateTime()));
       }
       
-      List<TimepointPredictionRecord> timePredictionRecords = null;
-      
-	  timePredictionRecords = _transitDataService.getPredictionRecordsForTrip(AgencyAndId.convertFromString(routeId).getAgencyId(), tripDetails.getStatus());
+
+      String routeAgencyId = AgencyAndId.convertFromString(routeId).getAgencyId();
+      TripStatusBean tripStatusBean = tripDetails.getStatus();
+
+      Collection<TimepointPredictionRecord> timePredictionRecords =
+              _transitDataService.getPredictionRecordsForTrip(routeAgencyId, tripStatusBean);
 	  
       activity.setMonitoredVehicleJourney(new MonitoredVehicleJourney());  
       SiriSupport.fillMonitoredVehicleJourney(activity.getMonitoredVehicleJourney(), 
@@ -215,9 +214,11 @@ public class RealtimeServiceImpl implements RealtimeService {
     else{
     	output.setRecordedAtTime(new Date(tripDetailsForCurrentTrip.getStatus().getLastUpdateTime()));
     }
-    
-    List<TimepointPredictionRecord> timePredictionRecords = null;
-    timePredictionRecords = _transitDataService.getPredictionRecordsForTrip(AgencyAndId.convertFromString(vehicleId).getAgencyId(), tripDetailsForCurrentTrip.getStatus());
+
+    String vehicleAgencyId = AgencyAndId.convertFromString(vehicleId).getAgencyId();
+    TripStatusBean currentTripStatusBean = tripDetailsForCurrentTrip.getStatus();
+    Collection<TimepointPredictionRecord> timePredictionRecords = _transitDataService
+                              .getPredictionRecordsForTrip(vehicleAgencyId, currentTripStatusBean);
       
     output.setMonitoredVehicleJourney(new MonitoredVehicleJourney());
     SiriSupport.fillMonitoredVehicleJourney(output.getMonitoredVehicleJourney(), 

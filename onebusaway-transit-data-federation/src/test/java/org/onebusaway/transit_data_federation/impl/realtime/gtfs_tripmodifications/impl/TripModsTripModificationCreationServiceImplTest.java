@@ -38,9 +38,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEnt
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -143,11 +141,14 @@ public class TripModsTripModificationCreationServiceImplTest {
 
         GtfsRealtime.TripModifications valid = getTripModificationsWithValidDates();
 
-        List<GtfsRealtime.TripModifications> result =
-                service.filterTripModifications(Arrays.asList(invalid, valid));
+        Map<String, GtfsRealtime.TripModifications> tripMods = new HashMap<>();
+        tripMods.put("TRIP_MOD_BAD",invalid);
+        tripMods.put("TRIP_MOD_1", valid);
+
+        Map<String, GtfsRealtime.TripModifications> result = service.filterTripModifications(tripMods);
 
         assertEquals(1, result.size());
-        assertEquals(valid, result.get(0));
+        assertEquals(valid, result.get("TRIP_MOD_1"));
     }
 
     private GtfsRealtime.TripModifications getTripModificationsWithValidDates() {
@@ -248,7 +249,7 @@ public class TripModsTripModificationCreationServiceImplTest {
         original.setDepartureTime(110);
         original.setSequence(5);
 
-        StopTimeEntry adjusted = service.adjustStopTime(original, -999, 30);
+        StopTimeEntry adjusted = service.adjustStopTime(original, -999, -999, 30);
 
         assertNotSame(original, adjusted);
         assertEquals(130, adjusted.getArrivalTime());
@@ -292,7 +293,7 @@ public class TripModsTripModificationCreationServiceImplTest {
         st3.setDepartureTime(310);
 
         List<StopTimeEntry> result =
-                service.getAllStopTimesAfterSelection(1, Arrays.asList(st1, st2, st3), 15);
+                service.getAllStopTimesAfterSelection(1, 0, Arrays.asList(st1, st2, st3), 15);
 
         assertEquals(2, result.size());
 
@@ -355,7 +356,7 @@ public class TripModsTripModificationCreationServiceImplTest {
         assertEquals(tripId, result.getTripId());
         assertEquals(shapeId, result.getShapeId());
         assertEquals(serviceDate, result.getServiceDate());
-        assertEquals(stopTimes, result.getStopTimes());
+        assertEquals(stopTimes, result.getModifiedStopTimes().getUpdatedStopTimes());
         assertSame(tripEntry, result.getTripEntry());
         assertTrue(result.getModifications().isEmpty());
     }
@@ -395,7 +396,10 @@ public class TripModsTripModificationCreationServiceImplTest {
         when(util.parseServiceDates(Collections.singletonList("20260310")))
                 .thenReturn(Collections.singleton(LocalDate.of(2026, 3, 10)));
 
-        ModifiedTrips result = service.createModifiedTrips(Collections.singletonList(tripMods));
+        Map<String, GtfsRealtime.TripModifications> tripModsMap = new HashMap<>();
+        tripModsMap.put("TRIP_MOD_1", tripMods);
+
+        ModifiedTrips result = service.createModifiedTrips(tripModsMap);
 
         assertNotNull(result);
         assertTrue(result.getModifiedTrips().isEmpty());

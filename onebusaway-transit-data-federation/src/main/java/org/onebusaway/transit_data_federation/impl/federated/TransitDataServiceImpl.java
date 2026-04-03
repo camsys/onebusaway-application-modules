@@ -608,7 +608,7 @@ public class TransitDataServiceImpl implements TransitDataService {
   }
 
   @Override
-  public List<TimepointPredictionRecord> getPredictionRecordsForTrip(
+  public Collection<TimepointPredictionRecord> getPredictionRecordsForTrip(
 		  String agencyId,
 		  TripStatusBean tripStatus) {
     blockUntilBundleIsReady();
