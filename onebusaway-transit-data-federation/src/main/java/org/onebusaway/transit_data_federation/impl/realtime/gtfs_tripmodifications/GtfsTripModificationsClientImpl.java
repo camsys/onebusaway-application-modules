@@ -125,9 +125,13 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
 
     }
 
-    private void processFeed(FeedMessage feedMessage) throws NoSuchAlgorithmException {
+    private void processFeed(FeedMessage feedMessage) {
         if(isValidFeed(feedMessage)){
-            handleNewFeed(feedMessage);
+            try {
+                handleNewFeed(feedMessage);
+            } catch (NoSuchAlgorithmException e) {
+                _log.error("SHA-256 algorithm is unavailable; unable to process GTFS Trip Modifications feed", e);
+            }
         } else{
             _log.warn("Unable to process GTFS Trip Modifications feed");
         }
