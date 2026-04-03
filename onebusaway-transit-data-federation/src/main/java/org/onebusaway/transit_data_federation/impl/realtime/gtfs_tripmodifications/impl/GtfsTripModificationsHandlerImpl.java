@@ -42,6 +42,8 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
 
     private TimeService _timeService;
 
+    private LocalDateTime _reapplyTime;
+
     private RefreshService _refreshService;
 
     private CacheableMethodManager _cacheableMethodManager;
@@ -155,6 +157,7 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
                 }
 
                 _lastKnownHash = tripModificationsChanges.getHash();
+                _reapplyTime = getReapplyTime(modifiedTrips);
             }
             catch (Exception ex) {
                 _log.error("Error processing trip modifications", ex);
@@ -178,19 +181,30 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
 
     boolean shouldApplyChanges(TripModificationsChanges tripModificationsChanges) {
         if (_lastKnownHash == null) {
-            _log.info("First update for feed.");
+            _log.info("First update for Trip Modifications feed.");
             if (tripModificationsChanges.hasChanges()) {
                 return true;
             } else {
-                _log.info("Feed is empty, ignoring.");
+                _log.info("Trip Modifications feed is empty, ignoring.");
                 return false;
             }
         } else if (!Arrays.equals(_lastKnownHash, tripModificationsChanges.getHash())) {
-            _log.info("Feed changes detected, updating feed.");
+            _log.info("Trip Modifications feed changes detected, updating feed.");
             return true;
         }
 
-        _log.warn("No changes detected in feed!");
+        LocalDateTime currentTime = _timeService.getCurrentTime();
+        if(_reapplyTime != null && currentTime.isAfter(_reapplyTime)){
+            _log.debug("Trip Modifications Feed is the same as previously processed, check reapply time ({}), current time = {}",
+                    _reapplyTime, currentTime);
+            boolean shouldReapplyChanges = currentTime.isAfter(_reapplyTime);
+            if(shouldReapplyChanges){
+                _log.info("The current time = {} is after reapply time {}", currentTime, _reapplyTime);
+            }
+            return shouldReapplyChanges;
+        }
+
+        _log.debug("No changes detected in Trip Modifications feed.");
         return false;
     }
 
