@@ -185,7 +185,7 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
                 _log.info("Feed is empty, ignoring.");
                 return false;
             }
-        } else if (Arrays.equals(_lastKnownHash, tripModificationsChanges.getHash())) {
+        } else if (!Arrays.equals(_lastKnownHash, tripModificationsChanges.getHash())) {
             _log.info("Feed changes detected, updating feed.");
             return true;
         }
