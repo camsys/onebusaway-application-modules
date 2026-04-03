@@ -28,9 +28,12 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
@@ -148,7 +151,13 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         tripModificationsChanges.setFeedTimestamp(extractFeedTimeStamp(feedMessage));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
 
-        for (FeedEntity entity : feedMessage.getEntityList()) {
+        List<FeedEntity> sortedFeedEntities = feedMessage.getEntityList().stream()
+                .sorted(Comparator.comparing(FeedEntity::getId)
+                        .thenComparing(GtfsTripModificationsClientImpl::getEntityType)
+                )
+                .collect(Collectors.toList());
+
+        for (FeedEntity entity : sortedFeedEntities) {
             if (entity.hasShape()) {
                 tripModificationsChanges.addShape(entity.getShape());
             } else if (entity.hasStop()) {
@@ -161,6 +170,22 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
          tripModificationsChanges.setHash(md.digest());
         _gtfsTripModificationsHandler.handleTripModifications(tripModificationsChanges);
 
+    }
+
+    static int getEntityType(FeedEntity entity) {
+        if(entity.hasAlert()){
+            return 0;
+        }
+        if(entity.hasShape()){
+            return 1;
+        }
+        if(entity.hasStop()){
+            return 2;
+        }
+        if(entity.hasTripModifications()){
+            return 3;
+        }
+        return 4;
     }
 
     private long extractFeedTimeStamp(FeedMessage feedMessage) {
