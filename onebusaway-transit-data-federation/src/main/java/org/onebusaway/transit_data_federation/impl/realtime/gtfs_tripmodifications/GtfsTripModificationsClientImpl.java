@@ -26,6 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -120,7 +122,7 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
 
     }
 
-    private void processFeed(FeedMessage feedMessage) {
+    private void processFeed(FeedMessage feedMessage) throws NoSuchAlgorithmException {
         if(isValidFeed(feedMessage)){
             handleNewFeed(feedMessage);
         } else{
@@ -140,11 +142,11 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         return true;
     }
 
-    private void handleNewFeed(FeedMessage feedMessage) {
+    private void handleNewFeed(FeedMessage feedMessage) throws NoSuchAlgorithmException {
         _log.info("Processing feed with {} entities.", feedMessage.getEntityList().size());
         TripModificationsChanges tripModificationsChanges = new TripModificationsChanges();
-
         tripModificationsChanges.setFeedTimestamp(extractFeedTimeStamp(feedMessage));
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
 
         for (FeedEntity entity : feedMessage.getEntityList()) {
             if (entity.hasShape()) {
@@ -154,8 +156,9 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
             } else if (entity.hasTripModifications()) {
                 tripModificationsChanges.addTripModification(entity.getTripModifications());
             }
+            md.update(entity.toByteArray());
         }
-
+         tripModificationsChanges.setHash(md.digest());
         _gtfsTripModificationsHandler.handleTripModifications(tripModificationsChanges);
 
     }

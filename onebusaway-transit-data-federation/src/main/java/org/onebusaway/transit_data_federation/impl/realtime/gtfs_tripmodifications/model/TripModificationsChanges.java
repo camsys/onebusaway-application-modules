@@ -26,6 +26,7 @@ public class TripModificationsChanges {
     private final List<GtfsRealtime.Shape> shapesList = new ArrayList<>();
     private final List<GtfsRealtime.Stop> stopsList = new ArrayList<>();
     private long feedTimestamp;
+    private byte[] hash;
 
     public List<GtfsRealtime.TripModifications> getTripModifications() {
         return tripModificationsList;
@@ -60,11 +61,23 @@ public class TripModificationsChanges {
         }
     }
 
+    public void setLastModifiedTimestamp(Long timestamp) {
+        if(timestamp <= 0) {}
+    }
+
     public long getFeedTimestamp() {
         return this.feedTimestamp;
     }
 
     public boolean hasChanges() {
         return !tripModificationsList.isEmpty() || !shapesList.isEmpty() || !stopsList.isEmpty();
+    }
+
+    public byte[] getHash() {
+        return hash;
+    }
+
+    public void setHash(byte[] hash) {
+        this.hash = hash;
     }
 }

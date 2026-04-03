@@ -37,11 +37,9 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
 
     private static final Logger _log = LoggerFactory.getLogger(GtfsTripModificationsHandlerImpl.class);
 
-    private long _lastUpdatedTimestamp = -1;
+    private byte[] _lastKnownHash = null;
 
     private TimeService _timeService;
-
-    private LocalDateTime _reapplyTime;
 
     private RefreshService _refreshService;
 
@@ -155,9 +153,12 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
                     forceFlush();
                 }
 
-                _lastUpdatedTimestamp = tripModificationsChanges.getFeedTimestamp();
-                _reapplyTime = getReapplyTime(modifiedTrips);
-            } finally {
+                _lastKnownHash = tripModificationsChanges.getHash();
+            }
+            catch (Exception ex) {
+                _log.error("Error processing trip modifications", ex);
+            }
+            finally {
                 _isApplying = false;
             }
         }
@@ -175,7 +176,7 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
     }
 
     boolean shouldApplyChanges(TripModificationsChanges tripModificationsChanges) {
-        if (_lastUpdatedTimestamp == -1) {
+        if (_lastKnownHash == null) {
             _log.info("First update for feed.");
             if (tripModificationsChanges.hasChanges()) {
                 return true;
@@ -183,16 +184,12 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
                 _log.info("Feed is empty, ignoring.");
                 return false;
             }
-        } else if (_lastUpdatedTimestamp < tripModificationsChanges.getFeedTimestamp()) {
-            _log.info("Update feed.");
+        } else if (_lastKnownHash != tripModificationsChanges.getHash()) {
+            _log.info("Feed changes detected, updating feed.");
             return true;
-        } else if (_lastUpdatedTimestamp == tripModificationsChanges.getFeedTimestamp()) {
-            _log.info("Feed is the same as previously processed, check reapply time ({}), current time = {}",
-                    _reapplyTime, _timeService.getCurrentTime());
-            return _timeService.getCurrentTime().isAfter(_reapplyTime);
         }
 
-        _log.error("Non-increasing timestamps in feed!");
+        _log.warn("No changes detected in feed!");
         return false;
     }
 
@@ -241,8 +238,7 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
     @Override
     public void resetLastUpdatedTime() {
         synchronized (_applyingLock) {
-            _lastUpdatedTimestamp = -1;
-            _reapplyTime = null;
+            _lastKnownHash = null;
         }
     }
 
