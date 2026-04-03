@@ -30,6 +30,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collection;
 
 @Component
@@ -184,7 +185,7 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
                 _log.info("Feed is empty, ignoring.");
                 return false;
             }
-        } else if (_lastKnownHash != tripModificationsChanges.getHash()) {
+        } else if (Arrays.equals(_lastKnownHash, tripModificationsChanges.getHash())) {
             _log.info("Feed changes detected, updating feed.");
             return true;
         }
