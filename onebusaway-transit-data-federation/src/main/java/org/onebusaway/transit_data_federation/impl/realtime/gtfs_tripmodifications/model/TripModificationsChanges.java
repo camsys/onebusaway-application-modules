@@ -62,7 +62,11 @@ public class TripModificationsChanges {
     }
 
     public void setLastModifiedTimestamp(Long timestamp) {
-        if(timestamp <= 0) {}
+        if (timestamp == null) {
+            setFeedTimestamp(0);
+        } else {
+            setFeedTimestamp(timestamp);
+        }
     }
 
     public long getFeedTimestamp() {
