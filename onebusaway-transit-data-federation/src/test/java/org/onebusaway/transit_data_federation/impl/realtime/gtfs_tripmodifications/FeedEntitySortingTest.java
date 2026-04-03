@@ -217,23 +217,20 @@ public class FeedEntitySortingTest {
 
     @Test
     public void testUnsortedFeedProducesDifferentHashThanSorted() throws Exception {
-        List<FeedEntity> unsorted = feedMessage.getEntityList();
-        List<FeedEntity> sorted = sort(unsorted);
+        List<FeedEntity> sorted = sort(feedMessage.getEntityList());
+        assertTrue("Test fixture must contain at least two entities to verify order-dependent hashing",
+                sorted.size() > 1);
 
-        // Only compare if the sort actually changed the order
-        boolean orderChanged = false;
-        for (int i = 0; i < unsorted.size(); i++) {
-            if (!unsorted.get(i).equals(sorted.get(i))) {
-                orderChanged = true;
-                break;
-            }
-        }
+        List<FeedEntity> unsorted = new java.util.ArrayList<>(sorted);
+        java.util.Collections.reverse(unsorted);
 
-        if (orderChanged) {
-            byte[] unsortedHash = computeHash(unsorted);
-            byte[] sortedHash = computeHash(sorted);
-            assertFalse("Sorted and unsorted feeds should produce different hashes",
-                    Arrays.equals(unsortedHash, sortedHash));
-        }
+        assertFalse("Test setup must produce a different entity order than the sorted list",
+                unsorted.equals(sorted));
+
+        byte[] unsortedHash = computeHash(unsorted);
+        byte[] sortedHash = computeHash(sorted);
+
+        assertFalse("Sorted and unsorted feeds should produce different hashes",
+                Arrays.equals(unsortedHash, sortedHash));
     }
 }
