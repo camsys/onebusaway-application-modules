@@ -1,5 +1,6 @@
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.impl;
 
+import org.onebusaway.geospatial.services.PolylineEncoder;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data.model.trip_mods.*;
@@ -132,7 +133,7 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         int startIdx = findSpliceIndex(originalShape, startStop);
         int endIdx   = findSpliceIndex(originalShape, endStop);
 
-        // f they're equal or inverted, bail
+        // if they're equal or inverted, bail
         if (startIdx >= endIdx) {
             _log.warn("Invalid splice indices [{}, {}] for shape {}, skipping shape diff",
                     startIdx, endIdx, originalShape.getShapeId());
@@ -161,6 +162,12 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         diff.setModifiedShape(toShapeSnapshots(modifiedShape));
         diff.setOriginalSegment(toShapeSnapshots(originalSegment));
         diff.setReplacementSegment(toShapeSnapshots(replacement));
+        diff.setOriginalShapePolyline(encodePolyline(originalShape));
+        diff.setModifiedShapePolyline(encodePolyline(modifiedShape));
+        diff.setOriginalSegmentPolyline(encodePolyline(originalSegment));
+        diff.setReplacementSegmentPolyline(encodePolyline(replacement));
+        diff.setPrefixSegmentPolyline(encodePolyline(prefix));
+        diff.setSuffixSegmentPolyline(encodePolyline(suffix));
         diff.setStartStopId(startStop.getStop().getId().toString());
         diff.setEndStopId(endStop.getStop().getId().toString());
 
@@ -179,6 +186,11 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
                 stop.getStop().getId());
 
         return findIndexByNearestPoint(shape, stop);
+    }
+
+    private String encodePolyline(ShapePoints points) {
+        if (points == null || points.isEmpty()) return null;
+        return PolylineEncoder.createEncodings(points.getLats(), points.getLons()).getPoints();
     }
 
     private List<ShapePointSnapshot> toShapeSnapshots(ShapePoints points) {
@@ -204,7 +216,6 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
                 bestDelta = delta;
                 best = i;
             }
-            // dist_traveled is monotonically increasing — once we're past it, stop
             if (dists[i] > targetDist && delta > bestDelta) break;
         }
         return best;
@@ -260,6 +271,7 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         double[] lons         = new double[totalSize];
         double[] distTraveled = new double[totalSize];
 
+        // copy points from the three segments into the new arrays
         int cursor = 0;
         for (ShapePoints part : new ShapePoints[]{prefix, middle, suffix}) {
             for (int i = 0; i < part.getSize(); i++, cursor++) {
