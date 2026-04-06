@@ -99,28 +99,34 @@ public final class StopNarrative implements Serializable {
       return new StopNarrative(this);
     }
 
-    public void setCode(String code) {
+    public Builder setCode(String code) {
       this.code = code;
+      return this;
     }
 
-    public void setName(String name) {
+    public Builder setName(String name) {
       this.name = name;
+      return this;
     }
 
-    public void setDescription(String description) {
+    public Builder setDescription(String description) {
       this.description = description;
+      return this;
     }
 
-    public void setUrl(String url) {
+    public Builder setUrl(String url) {
       this.url = url;
+      return this;
     }
 
-    public void setLocationType(int locationType) {
+    public Builder setLocationType(int locationType) {
       this.locationType = locationType;
+      return this;
     }
 
-    public void setDirection(String direction) {
+    public Builder setDirection(String direction) {
       this.direction = direction;
+      return this;
     }
   }
 

@@ -15,13 +15,7 @@
  */
 package org.onebusaway.api.actions.siri.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.api.actions.siri.impl.SiriSupportV2.Filters;
@@ -174,8 +168,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
           .toXmlGregorianCalendar(tripDetails.getStatus()
               .getLastUpdateTime()));
 
-      List<TimepointPredictionRecord> timePredictionRecords = null;
-      timePredictionRecords = _transitDataService
+      Collection<TimepointPredictionRecord> timePredictionRecords = _transitDataService
           .getPredictionRecordsForTrip(AgencyAndId
               .convertFromString(routeId).getAgencyId(),
                 tripDetails.getStatus());
@@ -243,8 +236,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
           .toXmlGregorianCalendar(tripDetailsForCurrentTrip
               .getStatus().getLastUpdateTime()));
 
-      List<TimepointPredictionRecord> timePredictionRecords = null;
-      timePredictionRecords = _transitDataService
+      Collection<TimepointPredictionRecord> timePredictionRecords = _transitDataService
           .getPredictionRecordsForTrip(AgencyAndId
               .convertFromString(vehicleId).getAgencyId(),
               tripDetailsForCurrentTrip.getStatus());
@@ -297,8 +289,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
           .toXmlGregorianCalendar(statusBeanForCurrentTrip
               .getLastUpdateTime()));
 
-      List<TimepointPredictionRecord> timePredictionRecords = null;
-      timePredictionRecords = _transitDataService
+      Collection<TimepointPredictionRecord> timePredictionRecords = _transitDataService
           .getPredictionRecordsForTrip(AgencyAndId
               .convertFromString(stopId).getAgencyId(),
                 statusBeanForCurrentTrip);

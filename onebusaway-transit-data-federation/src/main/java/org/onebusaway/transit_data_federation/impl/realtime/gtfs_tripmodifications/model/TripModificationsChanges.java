@@ -17,38 +17,39 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificati
 
 import com.google.transit.realtime.GtfsRealtime;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TripModificationsChanges {
 
-    private final List<GtfsRealtime.TripModifications> tripModificationsList = new ArrayList<>();
-    private final List<GtfsRealtime.Shape> shapesList = new ArrayList<>();
-    private final List<GtfsRealtime.Stop> stopsList = new ArrayList<>();
+    private final Map<String, GtfsRealtime.TripModifications> tripModificationsList = new HashMap<>();
+    private final Map<String, GtfsRealtime.Shape> shapesList = new HashMap<>();
+    private final Map<String, GtfsRealtime.Stop> stopsList = new HashMap<>();
     private long feedTimestamp;
+    private byte[] hash;
 
-    public List<GtfsRealtime.TripModifications> getTripModifications() {
+    public Map<String, GtfsRealtime.TripModifications> getTripModifications() {
         return tripModificationsList;
     }
 
-    public void addTripModification(GtfsRealtime.TripModifications tripModification) {
-        this.tripModificationsList.add(tripModification);
+    public void addTripModification(String entityId, GtfsRealtime.TripModifications tripModification) {
+        this.tripModificationsList.put(entityId, tripModification);
     }
 
-    public List<GtfsRealtime.Shape> getShapes() {
+    public Map<String, GtfsRealtime.Shape> getShapes() {
         return shapesList;
     }
 
-    public void addShape(GtfsRealtime.Shape shape) {
-        this.shapesList.add(shape);
+    public void addShape(String entityId, GtfsRealtime.Shape shape) {
+        this.shapesList.put(entityId, shape);
     }
 
-    public List<GtfsRealtime.Stop> getStops() {
+    public Map<String, GtfsRealtime.Stop> getStops() {
         return stopsList;
     }
 
-    public void addStop(GtfsRealtime.Stop stop) {
-        this.stopsList.add(stop);
+    public void addStop(String entityId, GtfsRealtime.Stop stop) {
+        this.stopsList.put(entityId, stop);
     }
 
     public void setFeedTimestamp(long timestamp) {
@@ -60,11 +61,27 @@ public class TripModificationsChanges {
         }
     }
 
+    public void setLastModifiedTimestamp(Long timestamp) {
+        if (timestamp == null) {
+            setFeedTimestamp(0);
+        } else {
+            setFeedTimestamp(timestamp);
+        }
+    }
+
     public long getFeedTimestamp() {
         return this.feedTimestamp;
     }
 
     public boolean hasChanges() {
         return !tripModificationsList.isEmpty() || !shapesList.isEmpty() || !stopsList.isEmpty();
+    }
+
+    public byte[] getHash() {
+        return hash == null ? null : hash.clone();
+    }
+
+    public void setHash(byte[] hash) {
+        this.hash = hash == null ? null : hash.clone();
     }
 }

@@ -16,29 +16,22 @@
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.transit_data_federation.model.ShapePoints;
 
+public final class StopEntryData {
+    private final AgencyAndId stopId;
+    private final double lat;
+    private final double lon;
+    private final String name;
 
-public class AddedShape {
-    private final ShapePoints shapePoints;
-    private final AgencyAndId shapeId;
-    private final String entityId;
-
-    public AddedShape(ShapePoints shapePoints, AgencyAndId shapeId, String entityId) {
-        this.shapePoints = shapePoints;
-        this.shapeId = shapeId;
-        this.entityId = entityId;
+    public StopEntryData(AgencyAndId stopId, double lat, double lon, String name) {
+        this.stopId = stopId;
+        this.lat = lat;
+        this.lon = lon;
+        this.name = name;
     }
 
-    public ShapePoints getShapePoints() {
-        return shapePoints;
-    }
-
-    public AgencyAndId getShapeId() {
-        return shapeId;
-    }
-
-    public String getEntityId() {
-        return entityId;
-    }
+    public AgencyAndId getStopId() { return stopId; }
+    public double getLat() { return lat; }
+    public double getLon() { return lon; }
+    public String getName() { return name; }
 }

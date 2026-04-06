@@ -26,26 +26,33 @@ import java.util.List;
 import java.util.Objects;
 
 public class ModifiedTrip {
+    private final String entityId;
     private final AgencyAndId tripId;
     private final AgencyAndId shapeId;
     private final LocalDate serviceDate;
     private final TripEntryImpl tripEntry;
-    private final List<StopTimeEntry> stopTimeEntries;
+    private final ModifiedStopTimes modifiedStopTimes;
     private final List<GtfsRealtime.TripModifications.Modification> modifications;
 
 
-    public ModifiedTrip(AgencyAndId tripId,
+    public ModifiedTrip(String entityId,
+                        AgencyAndId tripId,
                         AgencyAndId shapeId,
-                        List<StopTimeEntry> stopTimeEntries,
+                        ModifiedStopTimes modifiedStopTimes,
                         TripEntryImpl tripEntry,
                         List<GtfsRealtime.TripModifications.Modification> modifications,
                         LocalDate serviceDate) {
+        this.entityId = entityId;
         this.tripId = tripId;
         this.shapeId = shapeId;
         this.tripEntry = tripEntry;
         this.serviceDate = serviceDate;
-        this.stopTimeEntries = stopTimeEntries;
+        this.modifiedStopTimes = modifiedStopTimes;
         this.modifications = modifications;
+    }
+
+    public String getEntityId() {
+        return entityId;
     }
 
     public AgencyAndId getTripId() {
@@ -64,8 +71,8 @@ public class ModifiedTrip {
         return serviceDate;
     }
 
-    public List<StopTimeEntry> getStopTimes() {
-        return stopTimeEntries;
+    public ModifiedStopTimes getModifiedStopTimes() {
+        return modifiedStopTimes;
     }
 
     public List<GtfsRealtime.TripModifications.Modification> getModifications() {
@@ -81,11 +88,11 @@ public class ModifiedTrip {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         ModifiedTrip that = (ModifiedTrip) o;
-        return Objects.equals(tripId, that.tripId) && Objects.equals(shapeId, that.shapeId) && Objects.equals(serviceDate, that.serviceDate) && Objects.equals(modifications, that.modifications);
+        return Objects.equals(entityId, that.entityId) && Objects.equals(tripId, that.tripId) && Objects.equals(shapeId, that.shapeId) && Objects.equals(serviceDate, that.serviceDate) && Objects.equals(tripEntry, that.tripEntry) && Objects.equals(modifiedStopTimes, that.modifiedStopTimes) && Objects.equals(modifications, that.modifications);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tripId, shapeId, serviceDate, modifications);
+        return Objects.hash(entityId, tripId, shapeId, serviceDate, tripEntry, modifiedStopTimes, modifications);
     }
 }

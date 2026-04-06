@@ -41,9 +41,11 @@ import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordQueryBean
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertRecordBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
+import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.transit_data.model.trips.*;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.impl.realtime.apc.VehicleOccupancyRecordCache;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModificationDiffService;
 import org.onebusaway.transit_data_federation.model.bundle.HistoricalRidership;
 import org.onebusaway.transit_data_federation.services.*;
 import org.onebusaway.transit_data_federation.services.beans.*;
@@ -61,6 +63,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Component
@@ -142,6 +145,9 @@ public class TransitDataServiceTemplateImpl implements TransitDataServiceTemplat
 
   @Autowired
   private VehicleOccupancyRecordCache _vehicleOccupancyRecordCache;
+
+  @Autowired
+  private TripModificationDiffService _tripModificationDiffService;
 
   /****
    * {@link TransitDataService} Interface
@@ -689,7 +695,7 @@ public class TransitDataServiceTemplateImpl implements TransitDataServiceTemplat
   }
 
   //@Override
-  public List<TimepointPredictionRecord> getPredictionRecordsForTrip(
+  public Collection<TimepointPredictionRecord> getPredictionRecordsForTrip(
 		  String agencyId,
 		  TripStatusBean tripStatus) {
     
@@ -768,6 +774,18 @@ public class TransitDataServiceTemplateImpl implements TransitDataServiceTemplat
 
   public VehicleOccupancyRecord getVehicleOccupancyRecordForVehicleIdAndRoute(AgencyAndId vehicleId, String routeId, String directionId) {
     return _vehicleOccupancyRecordCache.getRecordForVehicleIdAndRoute(vehicleId, routeId, directionId);
+  }
+
+  public Optional<TripModificationDiff> getTripModificationDiffs(AgencyAndId tripId, LocalDate serviceDate) {
+    return _tripModificationDiffService.getTripModificationDiffs(tripId, serviceDate);
+  }
+
+  public Collection<TripModificationDiff> getAllTripModificationDiffs(LocalDate serviceDate) {
+    return _tripModificationDiffService.getAllTripModificationDiffs(serviceDate);
+  }
+
+  public Map<AgencyAndId, TripModificationDiff> getAllTripModificationDiffsById(LocalDate serviceDate) {
+    return _tripModificationDiffService.getAllTripModificationDiffsById(serviceDate);
   }
 
   /****

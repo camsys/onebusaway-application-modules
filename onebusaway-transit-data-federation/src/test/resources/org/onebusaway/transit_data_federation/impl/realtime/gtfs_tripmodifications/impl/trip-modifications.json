@@ -1,192 +1,944 @@
 {
   "header": {
-    "gtfs_realtime_version": "2.0",
+    "gtfsRealtimeVersion": "2.0",
     "incrementality": "FULL_DATASET",
-    "timestamp": "1770159187"
+    "timestamp": "1773806717"
   },
-  "entity": [{
-    "id": "1ba95a2e-7f57-445e-8176-46b27233751a",
-    "alert": {
-      "active_period": [{
-        "start": "1768280400",
-        "end": "1775016000"
-      }],
-      "informed_entity": [{
-        "route_id": "S40"
-      }],
-      "cause": "UNKNOWN_CAUSE",
-      "effect": "DETOUR",
-      "header_text": {
-        "translation": [{
-          "text": "S40 Detour"
-        }]
-      },
-      "description_text": {
-        "translation": [{
-          "text": "S40 Detour"
-        }]
+  "entity": [
+    {
+      "id": "4926a464-16b6-4259-a3cb-258a610f2a34",
+      "alert": {
+        "activePeriod": [
+          {
+            "start": "1772427600"
+          }
+        ],
+        "informedEntity": [
+          {
+            "stopId": "200791"
+          }
+        ],
+        "cause": "UNKNOWN_CAUSE",
+        "effect": "OTHER_EFFECT",
+        "headerText": {
+          "translation": [
+            {
+              "text": "stop closure"
+            }
+          ]
+        },
+        "descriptionText": {
+          "translation": [
+            {
+              "text": "test"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "4926a464-16b6-4259-a3cb-258a610f2a34",
+      "shape": {
+        "shapeId": "S420213",
+        "encodedPolyline": "ucawFvrbcM????HX[NL`@^n@x@|@`Ap@r@i@NAbB|A`@VRFj@Ft@C`F}@NAPBXzDeNtBhAhDk@Nu@f@??{F~D_KrHmAx@k@d@OVO^qCfQKz@KpB?z@Jv@`ArC`@]??lIgGrFyDtB`It@zCfK~A~HvA??lAR`@@RAt@Sn@_@VfCBNLPNLjC`BxBnA|@p@RR^n@b@rBB^A~AUrFI~@eDhDSL]L_GtA??{Fj@_CuVvCm@"
+      }
+    },
+    {
+      "id": "4926a464-16b6-4259-a3cb-258a610f2a34",
+      "tripModifications": {
+        "selectedTrips": [
+          {
+            "tripIds": [
+              "CA_P6-Weekday-036100_S4252_27",
+              "CA_P6-Weekday-039300_S4252_27",
+              "CA_P6-Weekday-043700_S4252_30",
+              "CA_P6-Weekday-046800_S4252_35",
+              "CA_P6-Weekday-048300_S4252_28",
+              "CA_P6-Weekday-051300_S4252_29",
+              "CA_P6-Weekday-055500_S4252_28",
+              "CA_P6-Weekday-058500_S4252_27",
+              "CA_P6-Weekday-060100_S4252_28",
+              "CA_P6-Weekday-087100_S4252_36",
+              "CA_P6-Weekday-090100_S4252_36",
+              "CA_P6-Weekday-093100_S4252_41",
+              "CA_P6-Weekday-096100_S4252_41",
+              "CA_P6-Weekday-099100_S4252_41",
+              "CA_P6-Weekday-101100_S4252_39",
+              "CA_P6-Weekday-103100_S4252_35",
+              "CA_P6-Weekday-105100_S4252_44",
+              "CA_P6-Weekday-106600_S4252_42",
+              "CA_P6-Weekday-108100_S4252_37",
+              "CA_P6-Weekday-109600_S4252_36",
+              "CA_P6-Weekday-111100_S4252_45",
+              "CA_P6-Weekday-112600_S4252_42",
+              "CA_P6-Weekday-114100_S4252_36",
+              "CA_P6-Weekday-115600_S4252_41",
+              "CA_P6-Weekday-117100_S4252_40",
+              "CA_P6-Weekday-119100_S4252_41",
+              "CA_P6-Weekday-121100_S4252_38",
+              "CA_P6-Weekday-123100_S4252_44",
+              "CA_P6-Weekday-126100_S4252_45",
+              "CA_P6-Weekday-129100_S4252_39",
+              "CA_P6-Weekday-132100_S4252_40",
+              "CA_P6-Weekday-135100_S4252_46",
+              "CA_P6-Weekday-138100_S4252_43",
+              "CA_P6-Weekday-144100_S4252_41",
+              "CA_P6-Weekday-150000_S4252_44"
+            ],
+            "shapeId": "S420213"
+          }
+        ],
+        "serviceDates": [
+          "20260301"
+        ],
+        "modifications": [
+          {
+            "startStopSelector": {
+              "stopId": "200791"
+            },
+            "endStopSelector": {
+              "stopId": "202563"
+            },
+            "propagatedModificationDelay": 0,
+            "serviceAlertId": "4926a464-16b6-4259-a3cb-258a610f2a34",
+            "lastModifiedTime": "1772482529"
+          }
+        ]
+      }
+    },
+    {
+      "id": "4926a464-16b6-4259-a3cb-258a610f2a34",
+      "shape": {
+        "shapeId": "S520035",
+        "encodedPolyline": "ucawFvrbcM????HX[NL`@^n@x@|@`Ap@r@i@NAbB|A`@VRFj@Ft@C`F}@NAPBXzDeNtBhAhDk@Nu@f@??{F~D_KrHmAx@k@d@OVO^qCfQKz@KpB?z@Jv@`ArC`@]??lIgGrFyDtB`It@zCfK~A~HvA??lAR`@@RAt@Sn@_@fCuCr@aAR]Rg@`AsCf@XVHt@f@jBpBlCzB`ByCLa@`@oB^y@fG{G??zGcHnBwB`A`A~P{`@XlG??D^FNRJv@n@jIxHj@YLKt@[hQkHf@QbKwI??~@y@tA_A^UrDkBxG_EvDmC`EoC`D_CvBuAjCmB\\?VJFDd@n@VU??nOiM^_@Zc@x@_AhAaAdDgCfA~CVb@JF\\NnD~@tBn@rAd@fBd@??xGjBTLf@~@F^@\\Al@Dt@xBtHjHuAlBCfAJ^NR]ZWnAP`@@TEPIT]~AeDT[r@i@??h@[xLxh@v@pDPhA?ZQlBhH_E??zF_DzD{BEw@i@sBiAkDYcAi@{Aa@}@oCoFSm@w@kDGeA@oM??BuBjCiAzDkB`@YvBsBdOhOrL~I??v@j@x@v@lC`ExDjEfItH`NxOcBbE??eQrb@eFxL"
+      }
+    },
+    {
+      "id": "4926a464-16b6-4259-a3cb-258a610f2a34",
+      "tripModifications": {
+        "selectedTrips": [
+          {
+            "tripIds": [
+              "CA_P6-Weekday-030000_S4252_25",
+              "CA_P6-Weekday-036000_S4252_28",
+              "CA_P6-Weekday-039000_S4252_29",
+              "CA_P6-Weekday-040500_S4252_25",
+              "CA_P6-Weekday-042000_S4252_32",
+              "CA_P6-Weekday-043500_S4252_26",
+              "CA_P6-Weekday-045000_S4252_27",
+              "CA_P6-Weekday-046500_S4252_31",
+              "CA_P6-Weekday-048000_S4252_33",
+              "CA_P6-Weekday-049500_S4252_30",
+              "CA_P6-Weekday-051000_S4252_34",
+              "CA_P6-Weekday-052500_S4252_35",
+              "CA_P6-Weekday-054000_S4252_36",
+              "CA_P6-Weekday-057000_S4252_37",
+              "CA_P6-Weekday-060000_S4252_29",
+              "CA_P6-Weekday-063000_S4252_26",
+              "CA_P6-Weekday-066000_S4252_25",
+              "CA_P6-Weekday-069000_S4252_28",
+              "CA_P6-Weekday-072000_S4252_31",
+              "CA_P6-Weekday-074000_S4252_27",
+              "CA_P6-Weekday-076000_S4252_32",
+              "CA_P6-Weekday-078000_S4252_33",
+              "CA_P6-Weekday-081000_S4252_34",
+              "CA_P6-Weekday-084000_S4252_38",
+              "CA_P6-Weekday-087000_S4252_40",
+              "CA_P6-Weekday-090000_S4252_35",
+              "CA_P6-Weekday-093000_S4252_42",
+              "CA_P6-Weekday-096000_S4252_36",
+              "CA_P6-Weekday-099000_S4252_43",
+              "CA_P6-Weekday-101000_S4252_40",
+              "CA_P6-Weekday-103000_S4252_41",
+              "CA_P6-Weekday-105000_S4252_39",
+              "CA_P6-Weekday-106500_S4252_35",
+              "CA_P6-Weekday-108000_S4252_38",
+              "CA_P6-Weekday-109500_S4252_44",
+              "CA_P6-Weekday-111000_S4252_46",
+              "CA_P6-Weekday-112500_S4252_43",
+              "CA_P6-Weekday-114000_S4252_37",
+              "CA_P6-Weekday-115500_S4252_45",
+              "CA_P6-Weekday-117000_S4252_42",
+              "CA_P6-Weekday-119000_S4252_39",
+              "CA_P6-Weekday-121000_S4252_40",
+              "CA_P6-Weekday-123000_S4252_46",
+              "CA_P6-Weekday-126000_S4252_43",
+              "CA_P6-Weekday-129000_S4252_44",
+              "CA_P6-Weekday-132000_S4252_42",
+              "CA_P6-Weekday-135000_S4252_41",
+              "CA_P6-Weekday-138000_S4252_45",
+              "CA_P6-Weekday-141000_S4252_44",
+              "CA_P6-Weekday-144000_S4252_46",
+              "CA_P6-Weekday-147000_S4252_45",
+              "CA_P6-Weekday-153000_S4252_46"
+            ],
+            "shapeId": "S520035"
+          }
+        ],
+        "serviceDates": [
+          "20260301"
+        ],
+        "modifications": [
+          {
+            "startStopSelector": {
+              "stopId": "200791"
+            },
+            "endStopSelector": {
+              "stopId": "203487"
+            },
+            "propagatedModificationDelay": 0,
+            "serviceAlertId": "4926a464-16b6-4259-a3cb-258a610f2a34",
+            "lastModifiedTime": "1772482529"
+          }
+        ]
+      }
+    },
+    {
+      "id": "638fbfd7-ad3f-4f14-8b97-64569e508141",
+      "alert": {
+        "activePeriod": [
+          {
+            "start": "1773633600",
+            "end": "1774238400"
+          }
+        ],
+        "informedEntity": [
+          {
+            "routeId": "S40"
+          }
+        ],
+        "cause": "UNKNOWN_CAUSE",
+        "effect": "DETOUR",
+        "headerText": {
+          "translation": [
+            {
+              "text": "Around the block test 1"
+            }
+          ]
+        },
+        "descriptionText": {
+          "translation": [
+            {
+              "text": "Test around the block - 1 stop closure Richmond Terr/Jewett Av - no stops added on the disrupted route"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "638fbfd7-ad3f-4f14-8b97-64569e508141",
+      "shape": {
+        "shapeId": "5b3d4e14-d7b6-4532-be62-09ad2d52dec0",
+        "encodedPolyline": "{cawFdrbcM????Nj@[NL`@^n@x@|@Jd@?RGh@uPnLo@f@SZm@hA{CvGa@lASjAeAxJ??sBbK[jBAxAF|@N|@Tx@`EzIjB~Cv@lBb@fB|CtR??fAlH^vCLhBTzFFvD?bAO~C?pGCl@Mp@k@nBSz@_@|BKlA@dCLnE??NbRHhCFp@~A`Lx@lCn@zA^j@XV^LpABLLNx@NzBLz@L`@b@bAt@rAp@fA??tEnITn@~@`Dv@nBDR@PCROXi@n@S`@Ib@EdA@VPx@d@jARVRTjB`BnG~GzAfC^|@b@xA??h@pBNt@d@~CAvE[|JEB??B?D?D?B@^J???JAJIbD??IAIAiAIELUlAWx@CF??GRIGyAcAGEGEEGEECGEGCIAIYoACI??EQOFCBQJSNUPSPQNSPKHGJIJKLc@l@EF??KL???????@_ArBKj@CZFf@J|I??P~SHbA~A|HB^QfFJ~BV|A|AbFt@lCrC|H??^~@l@zFdBvTZhDv@zTArDIjG???dDDfE?bDGnAc@rCW`AaBlEeAvDg@dA}@bBy@jAgCvC]n@a@~@iA|DSbAfA@??~Z`@"
+      }
+    },
+    {
+      "id": "638fbfd7-ad3f-4f14-8b97-64569e508141",
+      "tripModifications": {
+        "selectedTrips": [
+          {
+            "tripIds": [
+              "CA_P6-Weekday-101300_S4090_16",
+              "CA_P6-Weekday-103300_S4090_22",
+              "CA_P6-Weekday-105400_S4090_21",
+              "CA_P6-Weekday-108300_S4090_16",
+              "CA_P6-Weekday-109800_S4090_14",
+              "CA_P6-Weekday-112800_S4090_18",
+              "CA_P6-Weekday-123300_S4090_23",
+              "CA_P6-Weekday-126300_S4090_17",
+              "CA_P6-Weekday-132300_S4090_18"
+            ],
+            "shapeId": "5b3d4e14-d7b6-4532-be62-09ad2d52dec0"
+          }
+        ],
+        "serviceDates": [
+          "20260315",
+          "20260316",
+          "20260317",
+          "20260318",
+          "20260319",
+          "20260320",
+          "20260321",
+          "20260322"
+        ],
+        "modifications": [
+          {
+            "startStopSelector": {
+              "stopId": "200070"
+            },
+            "endStopSelector": {
+              "stopId": "202824"
+            },
+            "propagatedModificationDelay": 24,
+            "serviceAlertId": "638fbfd7-ad3f-4f14-8b97-64569e508141",
+            "lastModifiedTime": "1773672984"
+          }
+        ]
+      }
+    },
+    {
+      "id": "638fbfd7-ad3f-4f14-8b97-64569e508141",
+      "shape": {
+        "shapeId": "e124684f-70bd-4033-a6ef-4d7a2b0a64ed",
+        "encodedPolyline": "{cawFdrbcM????Nj@[NL`@^n@x@|@Jd@?RGh@uPnLo@f@SZm@hA{CvGa@lASjAeAxJ??sBbK[jBAxAF|@N|@Tx@`EzIjB~Cv@lBb@fB|CtR??fAlH^vCLhBTzFFvD?bAO~C?pGCl@Mp@k@nBSz@_@|BKlA@dCLnE??NbRHhCFp@~A`Lx@lCn@zA^j@XV^LpABLLNx@NzBLz@L`@b@bAt@rAp@fA??tEnITn@~@`Dv@nBDR@PCROXi@n@S`@Ib@EdA@VPx@d@jARVRTjB`BnG~GzAfC^|@b@xA??h@pBNt@d@~CAvE[|JEB??B?D?D?B@^J???JAJIbD??IAIAiAIELUlAWx@CF??GRIGyAcAGEGEEGEECGEGCIAIYoACI??EQOFCBQJSNUPSPQNSPKHGJIJKLc@l@EF??KL???????@_ArBKj@CZFf@J|I??P~SHbA~A|HB^QfFJ~BV|A|AbFt@lCrC|H??^~@l@zFdBvTZhDv@zTArDIjG???dDDfE?bDGnAc@rCW`AaBlEeAvDg@dA}@bBy@jAgCvC]n@a@~@iA|DSbAfA@??dw@dA??rJJxHNXDwAdMCt@LrDh@jLDZPt@nApD??xDnKNbAD`AMxHI|AsIdRmE~I}@|B??uAjDsDrIxAdB\\Qv@k@j@k@Vm@Ny@HeALg@\\}@nHqOdEgI??\\o@jC_D|DyDzAaAp@_@fBy@lBi@lAUdCOtABn@DhC^tLxC??tOxDhCv@`CfAlHbEj@\\d@`@z@`AzCxEd@n@|@`AjA~@??NLsAjGsDbW[B_@C[ImHqCw@Sy@MQGKKK]?g@}HkB??{FsAs@_@s@m@[q@oBqGmBbD"
+      }
+    },
+    {
+      "id": "638fbfd7-ad3f-4f14-8b97-64569e508141",
+      "tripModifications": {
+        "selectedTrips": [
+          {
+            "tripIds": [
+              "CA_P6-Weekday-006000_S4090_1",
+              "CA_P6-Weekday-009000_S4090_2",
+              "CA_P6-Weekday-012000_S4090_3",
+              "CA_P6-Weekday-015000_S4090_1",
+              "CA_P6-Weekday-018000_S4090_2",
+              "CA_P6-Weekday-021000_S4090_4",
+              "CA_P6-Weekday-024000_S4090_3",
+              "CA_P6-Weekday-027000_S4090_7",
+              "CA_P6-Weekday-030000_S4090_8",
+              "CA_P6-Weekday-033000_S4090_6",
+              "CA_P6-Weekday-034500_S4090_3",
+              "CA_P6-Weekday-036000_S4090_1",
+              "CA_P6-Weekday-037500_S4090_4",
+              "CA_P6-Weekday-039000_S4090_7",
+              "CA_P6-Weekday-040500_S4090_8",
+              "CA_P6-Weekday-042000_S4090_11",
+              "CA_P6-Weekday-043500_S4090_6",
+              "CA_P6-Weekday-045000_S4090_3",
+              "CA_P6-Weekday-046500_S4090_15",
+              "CA_P6-Weekday-048000_S4090_10",
+              "CA_P6-Weekday-050000_S4090_12",
+              "CA_P6-Weekday-052000_S4090_16",
+              "CA_P6-Weekday-054000_S4090_4",
+              "CA_P6-Weekday-057000_S4090_7",
+              "CA_P6-Weekday-060000_S4090_5",
+              "CA_P6-Weekday-063000_S4090_6",
+              "CA_P6-Weekday-066000_S4090_10",
+              "CA_P6-Weekday-069000_S4090_8",
+              "CA_P6-Weekday-072000_S4090_11",
+              "CA_P6-Weekday-075000_S4090_13",
+              "CA_P6-Weekday-078000_S4090_9",
+              "CA_P6-Weekday-081000_S4090_17",
+              "CA_P6-Weekday-084000_S4090_11",
+              "CA_P6-Weekday-087000_S4090_13",
+              "CA_P6-Weekday-090000_S4090_9",
+              "CA_P6-Weekday-093300_S4090_19",
+              "CA_P6-Weekday-096300_S4090_20",
+              "CA_P6-Weekday-099300_S4090_14",
+              "CA_P6-Weekday-106500_S4090_20",
+              "CA_P6-Weekday-111000_S4090_12",
+              "CA_P6-Weekday-114000_S4090_15",
+              "CA_P6-Weekday-115800_S4090_19",
+              "CA_P6-Weekday-117000_S4090_17",
+              "CA_P6-Weekday-119000_S4090_22",
+              "CA_P6-Weekday-121000_S4090_21",
+              "CA_P6-Weekday-129000_S4090_20",
+              "CA_P6-Weekday-135000_S4090_22",
+              "CA_P6-Weekday-138300_S4090_23",
+              "CA_P6-Weekday-141000_S4090_21",
+              "CA_P6-Weekday-144000_S4090_22",
+              "CA_P6-Weekday-147000_S4090_23"
+            ],
+            "shapeId": "e124684f-70bd-4033-a6ef-4d7a2b0a64ed"
+          }
+        ],
+        "serviceDates": [
+          "20260315",
+          "20260316",
+          "20260317",
+          "20260318",
+          "20260319",
+          "20260320",
+          "20260321",
+          "20260322"
+        ],
+        "modifications": [
+          {
+            "startStopSelector": {
+              "stopId": "200070"
+            },
+            "endStopSelector": {
+              "stopId": "805202"
+            },
+            "propagatedModificationDelay": 16,
+            "serviceAlertId": "638fbfd7-ad3f-4f14-8b97-64569e508141",
+            "lastModifiedTime": "1773672984"
+          }
+        ]
+      }
+    },
+    {
+      "id": "46c73d9a-ea65-4f5e-8728-4af279a6e0d8",
+      "alert": {
+        "activePeriod": [
+          {
+            "start": "1773633600",
+            "end": "1774238400"
+          }
+        ],
+        "informedEntity": [
+          {
+            "routeId": "S44"
+          }
+        ],
+        "cause": "UNKNOWN_CAUSE",
+        "effect": "DETOUR",
+        "headerText": {
+          "translation": [
+            {
+              "text": "Around the block test 2"
+            }
+          ]
+        },
+        "descriptionText": {
+          "translation": [
+            {
+              "text": "Test around the block - no stop closures - no stops added on the disrupted route"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "46c73d9a-ea65-4f5e-8728-4af279a6e0d8",
+      "shape": {
+        "shapeId": "975bfb0d-74aa-40ec-b06d-a80318de2a68",
+        "encodedPolyline": "i}svFfwtcM????nGuPPKRCRARBtGpNcFnGQVSj@Ez@CvB@bByCG??kTg@cBIoCWJi@vAcDe@e@_@KQAcDxA]LM?yIeC??iD_AwHaCeEmAa@pBMfDM~AiBOa@GmHsAsA[q@Wq@e@uBmB??mCmC}@gA_M{Q_@_@aBmAoAe@iCs@i@Gk@AeABe@DiEp@mBR??{SbCy@LaAT}AXe@Fk@?aAG{@OuMmDuAMsB@??u@@sD`@]P_@Bi@?c@Em@SWOm@i@_@m@oAuCMQ_Ay@YOoKoDaEwAWMy@m@oE_E??y@g@mEyAsI}C_F_DiGaHsBeCoA}B_@u@qCaF??aAiBa@m@}FuGWWUQKEkHaAmAUuAKuB]}RiE??mJ{BvDm]F[jBeGuDyEa@m@{@eA[[??iEoEaFoFaCwAjF{KhFkL|AeDp@_BBMGgA??cAuTScB_@cBi@_DC_AoCyd@??{Cch@kH|@_NzA??kALaAaRQg@g@eAy@_IUq@]w@]mGWsDwA_J??LAB?fDa@??AO?ISyC??M@I@c@D{BVI@??Wm@??kAkHYqBCoBKcDQuBYkFu@}JaBV_QlD??iCb@MiB_@wCuAiJoCyPS}@Oi@w@mBkB_DaE{IOi@??UmAG}@@yAZkBpBwJHi@|@{IRkAPk@|@uBlBcE`AeBn@g@~HsF??tBwApF_ENAL[Em@g@uE]oCa@iAc@k@e@O_@Ds@^g@f@UPNj@"
+      }
+    },
+    {
+      "id": "46c73d9a-ea65-4f5e-8728-4af279a6e0d8",
+      "tripModifications": {
+        "selectedTrips": [
+          {
+            "tripIds": [
+              "YU_P6-Weekday-027000_S4494_401",
+              "YU_P6-Weekday-029000_S4494_402",
+              "YU_P6-Weekday-030500_S4494_403",
+              "YU_P6-Weekday-031500_S4494_404",
+              "YU_P6-Weekday-032500_S4494_405",
+              "YU_P6-Weekday-033500_S4494_406",
+              "YU_P6-Weekday-034500_S4494_407",
+              "YU_P6-Weekday-035500_S4494_408",
+              "YU_P6-Weekday-036500_S4494_409",
+              "YU_P6-Weekday-037500_S4494_410",
+              "YU_P6-Weekday-038500_S4494_402",
+              "YU_P6-Weekday-039500_S4494_401",
+              "YU_P6-Weekday-040500_S4494_404",
+              "YU_P6-Weekday-041500_S4494_405",
+              "YU_P6-Weekday-042500_S4494_403",
+              "YU_P6-Weekday-043500_S4494_407",
+              "YU_P6-Weekday-044500_S4494_411",
+              "YU_P6-Weekday-045500_S4494_406",
+              "YU_P6-Weekday-047000_S4494_412",
+              "YU_P6-Weekday-048500_S4494_408",
+              "YU_P6-Weekday-050000_S4494_409",
+              "YU_P6-Weekday-052000_S4494_410",
+              "YU_P6-Weekday-054000_S4494_413",
+              "YU_P6-Weekday-057000_S4494_405",
+              "YU_P6-Weekday-060000_S4494_403",
+              "YU_P6-Weekday-063000_S4494_402",
+              "YU_P6-Weekday-066000_S4494_413",
+              "YU_P6-Weekday-069000_S4494_405",
+              "YU_P6-Weekday-072000_S4494_403",
+              "YU_P6-Weekday-075000_S4494_402",
+              "YU_P6-Weekday-078000_S4494_406",
+              "YU_P6-Weekday-081000_S4494_404",
+              "YU_P6-Weekday-084000_S4494_401",
+              "YU_P6-Weekday-087000_S4494_415",
+              "YU_P6-Weekday-088500_S4494_408",
+              "YU_P6-Weekday-090000_S4494_409",
+              "YU_P6-Weekday-091500_S4494_406",
+              "YU_P6-Weekday-093000_S4494_410",
+              "YU_P6-Weekday-094500_S4494_407",
+              "YU_P6-Weekday-096000_S4494_417",
+              "YU_P6-Weekday-097500_S4494_414",
+              "YU_P6-Weekday-099000_S4494_416",
+              "YU_P6-Weekday-100500_S4494_418",
+              "YU_P6-Weekday-102000_S4494_411",
+              "YU_P6-Weekday-103500_S4494_415",
+              "YU_P6-Weekday-105000_S4494_412",
+              "YU_P6-Weekday-106500_S4494_419",
+              "YU_P6-Weekday-108000_S4494_410",
+              "YU_P6-Weekday-109500_S4494_413",
+              "YU_P6-Weekday-111000_S4494_417",
+              "YU_P6-Weekday-112500_S4494_416",
+              "YU_P6-Weekday-114000_S4494_414",
+              "YU_P6-Weekday-115500_S4494_411",
+              "YU_P6-Weekday-117000_S4494_415",
+              "YU_P6-Weekday-118500_S4494_412",
+              "YU_P6-Weekday-120000_S4494_418",
+              "YU_P6-Weekday-121500_S4494_413",
+              "YU_P6-Weekday-123500_S4494_417",
+              "YU_P6-Weekday-125500_S4494_419",
+              "YU_P6-Weekday-127500_S4494_414",
+              "YU_P6-Weekday-129500_S4494_415",
+              "YU_P6-Weekday-132500_S4494_418",
+              "YU_P6-Weekday-136000_S4494_417",
+              "YU_P6-Weekday-139000_S4494_419",
+              "YU_P6-Weekday-141500_S4494_416"
+            ],
+            "shapeId": "975bfb0d-74aa-40ec-b06d-a80318de2a68"
+          }
+        ],
+        "serviceDates": [
+          "20260315",
+          "20260316",
+          "20260317",
+          "20260318",
+          "20260319",
+          "20260320",
+          "20260321",
+          "20260322"
+        ],
+        "modifications": [
+          {
+            "startStopSelector": {
+              "stopId": "200853"
+            },
+            "endStopSelector": {
+              "stopId": "805016"
+            },
+            "propagatedModificationDelay": 236,
+            "serviceAlertId": "46c73d9a-ea65-4f5e-8728-4af279a6e0d8",
+            "lastModifiedTime": "1773679121"
+          }
+        ]
+      }
+    },
+    {
+      "id": "4f047e85-75be-41cc-bd42-dcc1817e4595",
+      "alert": {
+        "activePeriod": [
+          {
+            "start": "1773633600"
+          }
+        ],
+        "informedEntity": [
+          {
+            "routeId": "S51"
+          }
+        ],
+        "cause": "UNKNOWN_CAUSE",
+        "effect": "DETOUR",
+        "headerText": {
+          "translation": [
+            {
+              "text": "Around the block test 3"
+            }
+          ]
+        },
+        "descriptionText": {
+          "translation": [
+            {
+              "text": "Test around the block - 1 stop closure  - 1 stop added on the disrupted route"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "4f047e85-75be-41cc-bd42-dcc1817e4595",
+      "shape": {
+        "shapeId": "11d63dc7-659a-4525-bbf8-784205cdcf42",
+        "encodedPolyline": "obawFlqbcM????Lf@eAj@L`@^n@x@|@`Ap@r@i@NAbB|A`@VRFj@Ft@ClB_@bC_@rEt@tAZzC^vAVnAHLKf@UvCkA??zAk@|Bk@pBUd@A^BTDfA^xHjDtAt@\\LjAVjAPb@A`E_@`Fk@v@WbCkA??dE{BbGgCbBeAtEaFjF{D^UrDmCxA_ApFoE??n@g@bHyExFwD~ByAjT{N??FNBH`A`CXr@j@xAj@xA\\x@f@pAVn@DNfAlC`A`Cp@bBBHDH?@DJ??EK?AzAkAHGJIlAgAVSPSXc@??IUCEkA_Dg@sAWs@EM]_As@oBiEcLAEIS??????BCrGeEvCwBzJoGrRqM??zCoBN@dHsEtEjSz@bE~@vDx@zD`A|DvAeA??~BgBdBkAlCsBVI\\CNFLLdA`Bf@^`Al@l@P|EFd@DvBn@l@VNNlAzBxHxJ??|C|DrMvM|M~JfAbAlC`EjBvB??lArAfItH~TlWrAnBxCfG??jF|KhD~GhDfHnA`Ct@~ArCtFVb@v@fAzEzE??xAtAwU|h@k@tAu@zA{C~G??sAzCSXq@j@_DzBy@~AiAnCfA`AvEpEETg@tAoBxEy@t@{@|@mEzJ??kKbV"
+      }
+    },
+    {
+      "id": "4f047e85-75be-41cc-bd42-dcc1817e4595",
+      "tripModifications": {
+        "selectedTrips": [
+          {
+            "tripIds": [
+              "CA_P6-Weekday-039000_S5181_89",
+              "CA_P6-Weekday-043500_S5181_90",
+              "CA_P6-Weekday-046500_S5181_93",
+              "CA_P6-Weekday-050000_S5181_95",
+              "CA_P6-Weekday-054000_S5181_87",
+              "CA_P6-Weekday-060000_S5181_88",
+              "CA_P6-Weekday-066000_S5181_92",
+              "CA_P6-Weekday-072000_S5181_89",
+              "CA_P6-Weekday-078000_S5181_90",
+              "CA_P6-Weekday-084000_S5181_97",
+              "CA_P6-Weekday-090000_S5181_96",
+              "CA_P6-Weekday-096000_S5181_91",
+              "CA_P6-Weekday-101000_S5181_95",
+              "CA_P6-Weekday-105000_S5181_91",
+              "CA_P6-Weekday-108000_S5181_98",
+              "CA_P6-Weekday-111000_S5181_100"
+            ],
+            "shapeId": "11d63dc7-659a-4525-bbf8-784205cdcf42"
+          }
+        ],
+        "serviceDates": [
+          "20260315"
+        ],
+        "modifications": [
+          {
+            "startStopSelector": {
+              "stopId": "200194"
+            },
+            "endStopSelector": {
+              "stopId": "905103"
+            },
+            "propagatedModificationDelay": 142,
+            "replacementStops": [
+              {
+                "travelTimeToStop": 140,
+                "stopId": "201224"
+              }
+            ],
+            "serviceAlertId": "4f047e85-75be-41cc-bd42-dcc1817e4595",
+            "lastModifiedTime": "1773679050"
+          }
+        ]
+      }
+    },
+    {
+      "id": "4f047e85-75be-41cc-bd42-dcc1817e4595",
+      "shape": {
+        "shapeId": "81664970-a61f-4a77-91de-8dfabfa851c6",
+        "encodedPolyline": "obawFlqbcM????Lf@eAj@L`@^n@x@|@`Ap@r@i@NAbB|A`@VRFj@Ft@ClB_@bC_@rEt@tAZzC^vAVnAHLKf@UvCkA??zAk@|Bk@pBUd@A^BTDfA^xHjDtAt@\\LjAVjAPb@A`E_@`Fk@v@WbCkA??dE{BbGgCbBeAtEaFjF{D^UrDmCxA_ApFoE??n@g@bHyExFwD~ByAjT{N??FNBH`A`CXr@j@xAj@xA\\x@f@pAVn@DNfAlC`A`Cp@bBBHDH?@DJ??EK?AzAkAHGJIlAgAVSPSXc@??IUCEkA_Dg@sAWs@EM]_As@oBiEcLAEIS??????BCrGeEvCwBbG{Df@YpE|MjBpFXr@Jf@Tp@j@l@??VVd@Th@Lv@Jl@?|@GnEcAzAW`Ds@fCe@l@UhAm@bF}CvEmDdBkAzBeB??PMf@ML?NFLLdA`Bf@^`Al@^Lb@DnED\\DvBn@l@VNNlAzBvMvPzC~C??vHvH|M~Jp@l@h@l@tAxBz@jA`DnDzFpF??jAbA`EtE~GbInBvBlBzBp@~@`@n@lAbCbItP??fIrPpHzNv@fA~D`EtBnBoDbI??gPx^k@tAu@zAoFzLSXYVqDhC??EDe@z@}ArDfA`AvEpEETg@tAoBxEy@t@{@|@_IlQ{BjF??}CdH"
+      }
+    },
+    {
+      "id": "4f047e85-75be-41cc-bd42-dcc1817e4595",
+      "tripModifications": {
+        "selectedTrips": [
+          {
+            "tripIds": [
+              "CA_P6-Weekday-006000_S5181_85",
+              "CA_P6-Weekday-009000_S5181_86",
+              "CA_P6-Weekday-012000_S5181_85",
+              "CA_P6-Weekday-015000_S5181_86",
+              "CA_P6-Weekday-018000_S5181_85",
+              "CA_P6-Weekday-021000_S5181_87",
+              "CA_P6-Weekday-024000_S5181_88",
+              "CA_P6-Weekday-027000_S5181_87",
+              "CA_P6-Weekday-030000_S5181_88",
+              "CA_P6-Weekday-033000_S5181_86",
+              "CA_P6-Weekday-036000_S5181_85",
+              "CA_P6-Weekday-042000_S5181_86",
+              "CA_P6-Weekday-045000_S5181_92",
+              "CA_P6-Weekday-048000_S5181_94",
+              "CA_P6-Weekday-052000_S5181_91",
+              "CA_P6-Weekday-057000_S5181_94",
+              "CA_P6-Weekday-063000_S5181_89",
+              "CA_P6-Weekday-069000_S5181_88",
+              "CA_P6-Weekday-075000_S5181_92",
+              "CA_P6-Weekday-081000_S5181_96",
+              "CA_P6-Weekday-087000_S5181_90",
+              "CA_P6-Weekday-093000_S5181_97",
+              "CA_P6-Weekday-099000_S5181_93",
+              "CA_P6-Weekday-103000_S5181_99",
+              "CA_P6-Weekday-106500_S5181_94",
+              "CA_P6-Weekday-109500_S5181_93",
+              "CA_P6-Weekday-112500_S5181_99",
+              "CA_P6-Weekday-114000_S5181_97",
+              "CA_P6-Weekday-115500_S5181_94",
+              "CA_P6-Weekday-117000_S5181_98",
+              "CA_P6-Weekday-119000_S5181_96",
+              "CA_P6-Weekday-121000_S5181_99",
+              "CA_P6-Weekday-123000_S5181_97",
+              "CA_P6-Weekday-126000_S5181_100",
+              "CA_P6-Weekday-129000_S5181_96",
+              "CA_P6-Weekday-132000_S5181_98",
+              "CA_P6-Weekday-135000_S5181_100",
+              "CA_P6-Weekday-138000_S5181_99",
+              "CA_P6-Weekday-141000_S5181_98",
+              "CA_P6-Weekday-144000_S5181_100",
+              "CA_P6-Weekday-147000_S5181_99"
+            ],
+            "shapeId": "81664970-a61f-4a77-91de-8dfabfa851c6"
+          }
+        ],
+        "serviceDates": [
+          "20260315"
+        ],
+        "modifications": [
+          {
+            "startStopSelector": {
+              "stopId": "200194"
+            },
+            "endStopSelector": {
+              "stopId": "905103"
+            },
+            "propagatedModificationDelay": 161,
+            "replacementStops": [
+              {
+                "travelTimeToStop": 95,
+                "stopId": "201224"
+              }
+            ],
+            "serviceAlertId": "4f047e85-75be-41cc-bd42-dcc1817e4595",
+            "lastModifiedTime": "1773679050"
+          }
+        ]
+      }
+    },
+    {
+      "id": "16d97543-16ad-472a-ac9d-a5c833441c4c",
+      "alert": {
+        "activePeriod": [
+          {
+            "start": "1773633600"
+          }
+        ],
+        "informedEntity": [
+          {
+            "routeId": "S54"
+          }
+        ],
+        "cause": "UNKNOWN_CAUSE",
+        "effect": "DETOUR",
+        "headerText": {
+          "translation": [
+            {
+              "text": "Longer Disruption test 4"
+            }
+          ]
+        },
+        "descriptionText": {
+          "translation": [
+            {
+              "text": "Test a longer disruption that is open ended (no end date)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "16d97543-16ad-472a-ac9d-a5c833441c4c",
+      "shape": {
+        "shapeId": "93dcddea-d1ea-425d-978d-69a23399fb53",
+        "encodedPolyline": "en`wFdckcM????XG|@KlC?dCGtESzCAvHy@NG?Vl@nMb@tM??z@xWlB]n@QtAq@tDsBhMsHf@]pAhE??f@zAjApBB\\`Fu@|Fw@dDW??@N?LTlGXbILtD@RHjC@V@p@TlGEz@Cf@AH??APH@F@f@LNDP@jADn@?NAzBBJ?RAHA~AQtAMnBQLCLAtBQn@I?@??|Ee@tAM`@CHALAPCzBOn@ELAxAKfAGn@EPAD?lCO??JA~@Ep@ENALAD?zAI`@AhCMZA\\Cr@C\\A??@U?Q?W@c@?g@?I?g@?E?GG_B?KA[EcAC{@Ca@EoAASCo@?ICi@ASAUAYSyFASCa@?G?GAIAc@Cu@AYGqB?GA]Am@I{CAo@??@KXGhAc@fDaA??hFcBhAc@t@OxEQpD[hH[vFIfCMnIW??vISb@?TFJHJJrF|JbApBnDvHRv@Db@@n@iAdR??e@nH?v@Dd@`@xAj@jAjAvB`CpDtDzDzCxBlBpA|A~@jBr@b@LVJxBgF??Zq@LOJGLYAKIQEo@Ww@WeATAf@OZI^GvAI\\KpAWqAV]JwAH_@FcAXU@AiAh@kAJ]@_@SeB?[Ly@bAMcALMx@?Z@LPvAA^K\\i@jAOd@?f@Bd@Rn@??JX@LAp@ER?T_DlHpInDx@`@fBhA`JdHbAn@d@NDm@`EiH??bC}EhCuFjAwBp@{@\\W\\IPAb@FpAZh@Dn@@TERIn@e@TU^o@Vs@Lu@\\{C\\oAf@qAn@mATWtAeA\\]f@m@Zi@??j@iAPUbE}DbBkAlFwCh@OLAL?d@FhBv@|@LvCQjAQbARjA`@p@ZPLZ`@JVnBjI??bB~GhAhEt@tDXbCZxEr@bN~AfW??tBl]?|@Ej@[dCrBp@TLpKvNvA`B^h@??rBxCdAbB~FzGv@dAhDnFzAbAjFtCzMsE??nKmD~XsJnDkAjEcBzAc@??vH_CZfAz@hCrCgB\\MjDg@bCYr@M|BsAfEsBjEqBfCeA??vCcB|AkA|BaDjBqDtMlKxKtI|AjB??vFfHbJ|KfEvDTs@AU"
+      }
+    },
+    {
+      "id": "16d97543-16ad-472a-ac9d-a5c833441c4c",
+      "tripModifications": {
+        "selectedTrips": [
+          {
+            "tripIds": [
+              "CA_P6-Weekday-032800_S54_120",
+              "CA_P6-Weekday-035800_S54_122",
+              "CA_P6-Weekday-038000_S54_123",
+              "CA_P6-Weekday-040000_S54_124",
+              "CA_P6-Weekday-042000_S54_121",
+              "CA_P6-Weekday-044000_S54_120",
+              "CA_P6-Weekday-046000_S54_126",
+              "CA_P6-Weekday-048000_S54_122",
+              "CA_P6-Weekday-050000_S54_125",
+              "CA_P6-Weekday-052000_S54_123",
+              "CA_P6-Weekday-054000_S54_124",
+              "CA_P6-Weekday-056000_S54_121",
+              "CA_P6-Weekday-059000_S54_126",
+              "CA_P6-Weekday-062000_S54_120",
+              "CA_P6-Weekday-065000_S54_123",
+              "CA_P6-Weekday-068000_S54_121",
+              "CA_P6-Weekday-071000_S54_122",
+              "CA_P6-Weekday-074000_S54_127",
+              "CA_P6-Weekday-077000_S54_123",
+              "CA_P6-Weekday-080000_S54_124",
+              "CA_P6-Weekday-083000_S54_128",
+              "CA_P6-Weekday-085000_S54_129",
+              "CA_P6-Weekday-087000_S54_127",
+              "CA_P6-Weekday-089500_S54_125",
+              "CA_P6-Weekday-092500_S54_126",
+              "CA_P6-Weekday-095500_S54_130",
+              "CA_P6-Weekday-098500_S54_128",
+              "CA_P6-Weekday-101500_S54_129",
+              "CA_P6-Weekday-104500_S54_125",
+              "CA_P6-Weekday-107500_S54_126",
+              "CA_P6-Weekday-110500_S54_127",
+              "CA_P6-Weekday-113500_S54_130",
+              "CA_P6-Weekday-116500_S54_128",
+              "CA_P6-Weekday-119500_S54_129",
+              "CA_P6-Weekday-122500_S54_127",
+              "CA_P6-Weekday-125500_S54_130",
+              "CA_P6-Weekday-128500_S54_128",
+              "CA_P6-Weekday-131500_S54_129"
+            ],
+            "shapeId": "93dcddea-d1ea-425d-978d-69a23399fb53"
+          }
+        ],
+        "serviceDates": [
+          "20260315"
+        ],
+        "modifications": [
+          {
+            "startStopSelector": {
+              "stopId": "201730"
+            },
+            "endStopSelector": {
+              "stopId": "201737"
+            },
+            "propagatedModificationDelay": 155,
+            "replacementStops": [
+              {
+                "travelTimeToStop": 168,
+                "stopId": "200593"
+              },
+              {
+                "travelTimeToStop": 246,
+                "stopId": "200591"
+              },
+              {
+                "travelTimeToStop": 300,
+                "stopId": "200533"
+              }
+            ],
+            "serviceAlertId": "16d97543-16ad-472a-ac9d-a5c833441c4c",
+            "lastModifiedTime": "1773682823"
+          }
+        ]
+      }
+    },
+    {
+      "id": "847b8342-e742-4f92-8b00-f58ef5f439bd",
+      "alert": {
+        "activePeriod": [
+          {
+            "start": "1773892800",
+            "end": "1774324800"
+          }
+        ],
+        "informedEntity": [
+          {
+            "routeId": "S48"
+          }
+        ],
+        "cause": "UNKNOWN_CAUSE",
+        "effect": "DETOUR",
+        "headerText": {
+          "translation": [
+            {
+              "text": "Longer Disruption test 5"
+            }
+          ]
+        },
+        "descriptionText": {
+          "translation": [
+            {
+              "text": "Test a longer disruption that is scheduled to Start this coming Thursday to next Tuesday"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "847b8342-e742-4f92-8b00-f58ef5f439bd",
+      "shape": {
+        "shapeId": "0dde165c-75f1-4363-bda0-577cd3138a3e",
+        "encodedPolyline": "qdawFtmbcM????z@lDq@\\L`@^n@x@|@`Ap@r@i@NAbB|A`@VRFj@Ft@ClB_@bC_@rEt@tAZbBR?`CC`A{A|F??EXEn@@`@Jd@Nb@v@zAtBrErC~FfBrEv@rCn@jBj@~@h@h@zEvDtG`F??xDvCpBtAjAdAx@bAJPYrA_Hrn@??AX@XL~ARfAn@fCHj@p@dIv@~KX`Fd@xIDtCjAbM??dBdPh@fEf@`FbAvP@l@CjH@dAFp@nB|G??jDtLhAtQ??MBkBVaANO@G?CAAAGCQ]u@qAIOIDGBs@l@??@RZ|ERzC@D??@N}BX}IlAMB??@LBr@VlF??@PLCnHaAp@It@KlAQbC[tDg@d@GNC??Z|D\\dFH|B?nA??ElLFh@HXdBhDlCvE`C|EJXThBIlFq@pKi@dH??YbDWzDNbLEjCa@dK{@dOu@pO??SrDq@dJc@fFQnC}@hOcAvRq@hG??_@nDYEyHOoVYwPW??c@ASh^oID"
+      }
+    },
+    {
+      "id": "847b8342-e742-4f92-8b00-f58ef5f439bd",
+      "tripModifications": {
+        "selectedTrips": [
+          {
+            "tripIds": [
+              "CA_P6-Weekday-006000_S4898_70",
+              "CA_P6-Weekday-009000_S4898_71",
+              "CA_P6-Weekday-012000_S4898_72",
+              "CA_P6-Weekday-015000_S4898_70",
+              "CA_P6-Weekday-018000_S4898_71",
+              "CA_P6-Weekday-021000_S4898_72",
+              "CA_P6-Weekday-024000_S4898_73",
+              "CA_P6-Weekday-027000_S4898_71",
+              "CA_P6-Weekday-030000_S4898_74",
+              "CA_P6-Weekday-033000_S4898_73",
+              "CA_P6-Weekday-036000_S4898_75",
+              "CA_P6-Weekday-039000_S4898_74",
+              "CA_P6-Weekday-040500_S4898_70",
+              "CA_P6-Weekday-042000_S4898_73",
+              "CA_P6-Weekday-043500_S4898_72",
+              "CA_P6-Weekday-045000_S4898_77",
+              "CA_P6-Weekday-046500_S4898_75",
+              "CA_P6-Weekday-048000_S4898_71",
+              "CA_P6-Weekday-049500_S4898_76",
+              "CA_P6-Weekday-051000_S4898_74",
+              "CA_P6-Weekday-052500_S4898_70",
+              "CA_P6-Weekday-054000_S4898_78",
+              "CA_P6-Weekday-055500_S4898_72",
+              "CA_P6-Weekday-057000_S4898_77",
+              "CA_P6-Weekday-058500_S4898_73",
+              "CA_P6-Weekday-060000_S4898_71",
+              "CA_P6-Weekday-063000_S4898_75",
+              "CA_P6-Weekday-066000_S4898_78",
+              "CA_P6-Weekday-069000_S4898_79",
+              "CA_P6-Weekday-072000_S4898_74",
+              "CA_P6-Weekday-075000_S4898_75",
+              "CA_P6-Weekday-078000_S4898_80",
+              "CA_P6-Weekday-081000_S4898_81",
+              "CA_P6-Weekday-084000_S4898_76",
+              "CA_P6-Weekday-087000_S4898_82",
+              "CA_P6-Weekday-090000_S4898_80",
+              "CA_P6-Weekday-093000_S4898_81",
+              "CA_P6-Weekday-096000_S4898_76",
+              "CA_P6-Weekday-097500_S4898_83",
+              "CA_P6-Weekday-099000_S4898_82",
+              "CA_P6-Weekday-101000_S4898_84",
+              "CA_P6-Weekday-103000_S4898_77",
+              "CA_P6-Weekday-105000_S4898_79",
+              "CA_P6-Weekday-106500_S4898_85",
+              "CA_P6-Weekday-108000_S4898_80",
+              "CA_P6-Weekday-109500_S4898_83",
+              "CA_P6-Weekday-111000_S4898_81",
+              "CA_P6-Weekday-112500_S4898_84",
+              "CA_P6-Weekday-114000_S4898_78",
+              "CA_P6-Weekday-115500_S4898_82",
+              "CA_P6-Weekday-117000_S4898_79",
+              "CA_P6-Weekday-119000_S4898_80",
+              "CA_P6-Weekday-121000_S4898_83",
+              "CA_P6-Weekday-123000_S4898_81",
+              "CA_P6-Weekday-126000_S4898_82",
+              "CA_P6-Weekday-129000_S4898_85",
+              "CA_P6-Weekday-132000_S4898_84",
+              "CA_P6-Weekday-135000_S4898_83",
+              "CA_P6-Weekday-138000_S4898_85",
+              "CA_P6-Weekday-141000_S4898_84",
+              "CA_P6-Weekday-144000_S4898_83",
+              "CA_P6-Weekday-147000_S4898_85"
+            ],
+            "shapeId": "0dde165c-75f1-4363-bda0-577cd3138a3e"
+          }
+        ],
+        "serviceDates": [
+          "20260318",
+          "20260319",
+          "20260320",
+          "20260321",
+          "20260322",
+          "20260323"
+        ],
+        "modifications": [
+          {
+            "startStopSelector": {
+              "stopId": "201557"
+            },
+            "endStopSelector": {
+              "stopId": "203423"
+            },
+            "propagatedModificationDelay": -25,
+            "replacementStops": [
+              {
+                "travelTimeToStop": 100,
+                "stopId": "200838"
+              },
+              {
+                "travelTimeToStop": 101,
+                "stopId": "200898"
+              }
+            ],
+            "serviceAlertId": "847b8342-e742-4f92-8b00-f58ef5f439bd",
+            "lastModifiedTime": "1773683924"
+          }
+        ]
       }
     }
-  }, {
-    "id": "1ba95a2e-7f57-445e-8176-46b27233751a",
-    "shape": {
-      "shape_id": "",
-      "encoded_polyline": "wv_wFpqtcM????}X]RcAh@oB^mA`@_A\\o@fCwCx@kA|@cBf@eAdAwD`@eA??~@gCVaAb@sCFoAEaOH{G@sDw@{Ta@uE??_BkSm@{FyCaIY{@u@mC}AcFOy@Gc@K_CPgFC_@WmA??gAoFIcAWgZEuCG]Be@Jk@~@sBj@}@bAiAvAeAtAs@t@WtAWlA_@??ZI??B?D?D?B@^Jt@TD@D?D@D?R?^?dB???Z?h@@jB?H?B?L?J@J@B@F?H@j@HF@F@FBDBlBjANF??BSDU?C?A?CGaC?SAQE{AMmDCw@GwACs@?QA???KBq@Je@HsDn@qEt@g@JkB\\OB??IO@sA?cCe@_DOu@mAkEe@gAsA{BqGaHkBaBg@m@e@kAQy@AWDeAHc@HQ??HOh@o@NYBSAQESw@oB_AaDUo@yEwIm@_Au@sAc@cAU{@U}COy@MMqAC_@MYW_@k@o@{Ay@mCs@cF??k@}DMsBSuTMeEAeCJmA^}BR{@j@oBLq@Bm@?qGN_DAwA??EcDU{FMiB_@wCuAiJoCyPc@gBw@mBkB_DoBeE??qAuCUy@O}@G}@@yAZkBpBwJHi@|@{IRkA`@mAl@sAlBcE`AeBn@g@dD_C??nGkEpF_ENAL[Em@g@uE]oCa@iAc@k@e@Oi@Hi@Zg@f@UPPv@"
-    }
-  }, {
-    "id": "1ba95a2e-7f57-445e-8176-46b27233751a",
-    "trip_modifications": {
-      "selected_trips": [{
-        "trip_ids": ["CA_A6-Weekday-SDon-024700_S4090_3", "CA_A6-Weekday-SDon-036400_S4090_9", "CA_A6-Weekday-SDon-036800_S4090_2", "CA_A6-Weekday-SDon-037300_MISC_272", "CA_A6-Weekday-SDon-039900_S4090_11", "CA_A6-Weekday-SDon-040200_MISC_225", "CA_A6-Weekday-SDon-041000_S4090_12", "CA_A6-Weekday-SDon-041900_S4090_9", "CA_A6-Weekday-SDon-042300_S4090_13", "CA_A6-Weekday-SDon-043000_S4090_14", "CA_A6-Weekday-SDon-044100_S4090_1", "CA_A6-Weekday-SDon-045100_MISC_272", "CA_A6-Weekday-SDon-045900_S4090_8", "CA_A6-Weekday-SDon-046200_S4090_10", "CA_A6-Weekday-SDon-047100_S4090_11", "CA_A6-Weekday-SDon-048100_MISC_227", "CA_A6-Weekday-SDon-049100_S4090_7", "CA_A6-Weekday-SDon-050100_S4090_14", "CA_A6-Weekday-SDon-051000_MISC_336"],
-        "shape_id": ""
-      }],
-      "service_dates": ["20260112", "20260113", "20260114", "20260115", "20260116", "20260117", "20260118", "20260119", "20260120", "20260121", "20260122", "20260123", "20260124", "20260125", "20260126", "20260127", "20260128", "20260129", "20260130", "20260131", "20260201", "20260202", "20260203", "20260204", "20260205", "20260206", "20260207", "20260208", "20260209", "20260210", "20260211", "20260212", "20260213", "20260214", "20260215", "20260216", "20260217", "20260218", "20260219", "20260220", "20260221", "20260222", "20260223", "20260224", "20260225", "20260226", "20260227", "20260228", "20260301", "20260302", "20260303", "20260304", "20260305", "20260306", "20260307", "20260308", "20260309", "20260310", "20260311", "20260312", "20260313", "20260314", "20260315", "20260316", "20260317", "20260318", "20260319", "20260320", "20260321", "20260322", "20260323", "20260324", "20260325", "20260326", "20260327", "20260328", "20260329", "20260330", "20260331"],
-      "modifications": [{
-        "start_stop_selector": {
-          "stop_id": "200027"
-        },
-        "end_stop_selector": {
-          "stop_id": "805006"
-        },
-        "propagated_modification_delay": 124,
-        "replacement_stops": [{
-          "travel_time_to_stop": 61,
-          "stop_id": "905019"
-        }],
-        "service_alert_id": "1ba95a2e-7f57-445e-8176-46b27233751a",
-        "last_modified_time": "1770135924"
-      }]
-    }
-  }, {
-    "id": "1ba95a2e-7f57-445e-8176-46b27233751a",
-    "shape": {
-      "shape_id": "",
-      "encoded_polyline": "sk|vFdixcM????_A~AHHxDuGhBbGZp@r@l@r@^xP~D?f@J\\JJPFx@Lv@RlEbB??~Al@ZH^BZCrDcWrAkG{AmA}@aAe@o@{CyE{@aAe@a@cDkB??uDuBkAk@kBs@sA_@k]sIiC_@o@EuAC]@??gBLmATmBh@gBx@q@^eBhAw@_C_H}QsEqMQu@E[KgB??]cIMiEB_@vAeMYEyHOcTW??}o@{@RcAh@oBf@{A??v@aBfCwCx@kA|@cBf@eAdAwD`BmEVaAb@sCFoAEaOH{G?cC??@o@w@{T[iDeBwTe@qEGi@yCaIc@sA??k@uB}AcFOy@Gc@K_CPgFC_@qAkGSmAEcAGuKMuLEuCG]?Q??N_A~@sBj@}@bAiAvAeAtAs@t@WtAWhBi@??B?D?D?B@^Jt@TD@D?D@D?R?^?dB???Z?h@@jB?H?B?L?J@J@B@F?H@j@HF@F@FBDBlBjANF??BSDU?C?A?CGaC?SAQE{AMmDCw@GwACs@?QA???KBq@Je@HsDn@qEt@g@JkB\\OB??IO@wEe@_DOu@mAkEe@gAsA{BY]??wFcGkBaBSUSWe@kAQy@AWDeAHc@Ra@h@o@NYBSGe@w@oB_AaDUo@yEwIm@_Au@sAc@cAMa@GYGi@??MsBOy@MMqACg@SQQ_@k@o@{Ay@mC_BaLGq@IiCOmROyF?qAFw@??b@sCR{@j@oBLq@Bm@?qGN_D?eAGuDU{FMiB_@wCoAqIwAwI??}@yFc@gBw@mBkB_DaE{IUy@O}@G}@@yAZkBpBwJHi@~@eJ??PaA`@mAzCwG`AeBn@g@tLkIpF_ENAL[Em@eAeJa@iA_@g@??CCe@Oi@Hi@Zg@f@UPPv@"
-    }
-  }, {
-    "id": "1ba95a2e-7f57-445e-8176-46b27233751a",
-    "trip_modifications": {
-      "selected_trips": [{
-        "trip_ids": ["CA_A6-Saturday-002000_S4090_1", "CA_A6-Sunday-002000_S4090_1", "CA_A6-Weekday-SDon-002000_MISC_221", "CA_A6-Weekday-SDon-005000_S4090_1", "CA_A6-Sunday-005000_S4090_2", "CA_A6-Saturday-005000_S4090_2", "CA_A6-Sunday-008000_S4090_3", "CA_A6-Saturday-008000_S4090_3", "CA_A6-Weekday-SDon-008000_S4090_2", "CA_A6-Sunday-011000_S4090_1", "CA_A6-Saturday-011000_S4090_1", "CA_A6-Weekday-SDon-011000_MISC_221", "CA_A6-Weekday-SDon-014000_S4090_1", "CA_A6-Sunday-014000_S4090_2", "CA_A6-Saturday-014000_S4090_2", "CA_A6-Sunday-017000_S4090_3", "CA_A6-Weekday-SDon-017000_S4090_2", "CA_A6-Saturday-017000_S4090_3", "CA_A6-Weekday-SDon-020000_MISC_221", "CA_A6-Sunday-020000_S4090_1", "CA_A6-Saturday-020000_S4090_1", "CA_A6-Weekday-SDon-023000_S4090_1", "CA_A6-Saturday-023000_S4090_2", "CA_A6-Sunday-023000_S4090_2", "CA_A6-Weekday-SDon-026000_S4090_2", "CA_A6-Saturday-026000_S4090_3", "CA_A6-Sunday-026000_S4090_3", "CA_A6-Weekday-SDon-027500_MISC_230", "CA_A6-Saturday-029000_S4090_1", "CA_A6-Weekday-SDon-029000_MISC_227", "CA_A6-Sunday-029000_MISC_224", "CA_A6-Weekday-SDon-030000_S4090_3", "CA_A6-Weekday-SDon-031000_MISC_221", "CA_A6-Weekday-SDon-031800_MISC_225", "CA_A6-Sunday-032000_S4090_1", "CA_A6-Saturday-032000_MISC_225", "CA_A6-Weekday-SDon-032800_S4090_4", "CA_A6-Sunday-035000_S4090_3", "CA_A6-Saturday-035000_S4090_2", "CA_A6-Weekday-SDon-036500_S4090_8", "CA_A6-Weekday-SDon-037000_MISC_261", "CA_A6-Saturday-037500_MISC_230", "CA_A6-Sunday-038000_MISC_224", "CA_A6-Weekday-SDon-038000_S4090_6", "CA_A6-Saturday-039300_MISC_243", "CA_A6-Saturday-040500_MISC_247", "CA_A6-Sunday-041000_S4090_1", "CA_A6-Saturday-041500_S4090_1", "CA_A6-Weekday-SDon-042500_MISC_221", "CA_A6-Saturday-042500_MISC_225", "CA_A6-Saturday-043500_S4090_3", "CA_A6-Sunday-044000_S4090_2", "CA_A6-Saturday-044500_S4090_2", "CA_A6-Saturday-046000_MISC_230", "CA_A6-Sunday-047000_S4090_3", "CA_A6-Saturday-049000_MISC_247", "CA_A6-Sunday-050000_S4090_1", "CA_A6-Weekday-SDon-051000_S4090_6", "CA_A6-Weekday-SDon-052000_MISC_272", "CA_A6-Saturday-052000_S4090_3", "CA_A6-Weekday-SDon-053000_S4090_12", "CA_A6-Sunday-053000_S4090_2", "CA_A6-Weekday-SDon-054000_S4090_9", "CA_A6-Sunday-055000_S4090_3", "CA_A6-Saturday-055000_MISC_270", "CA_A6-Weekday-SDon-055000_MISC_261", "CA_A6-Weekday-SDon-056000_S4090_2", "CA_A6-Sunday-057000_MISC_261", "CA_A6-Weekday-SDon-057000_S4090_15", "CA_A6-Saturday-058000_MISC_247", "CA_A6-Weekday-SDon-059000_S4090_13", "CA_A6-Sunday-059000_MISC_256", "CA_A6-Weekday-SDon-061000_MISC_336", "CA_A6-Sunday-061000_MISC_262", "CA_A6-Saturday-061000_MISC_291", "CA_A6-Weekday-SDon-063000_S4090_3", "CA_A6-Sunday-063000_MISC_261", "CA_A6-Saturday-063500_S4090_7", "CA_A6-Sunday-064500_MISC_223", "CA_A6-Weekday-SDon-065000_S4090_7", "CA_A6-Saturday-065000_MISC_270", "CA_A6-Sunday-066000_MISC_290", "CA_A6-Saturday-066500_S4090_8", "CA_A6-Weekday-SDon-067000_S4090_15", "CA_A6-Sunday-067500_MISC_256", "CA_A6-Saturday-068000_MISC_247", "CA_A6-Weekday-SDon-069000_S4090_4", "CA_A6-Sunday-069000_MISC_238", "CA_A6-Saturday-070000_MISC_240", "CA_A6-Sunday-070500_MISC_262", "CA_A6-Weekday-SDon-071000_S4090_5", "CA_A6-Saturday-072000_MISC_291", "CA_A6-Sunday-072000_MISC_240", "CA_A6-Weekday-SDon-073000_S4090_8", "CA_A6-Sunday-073500_MISC_261", "CA_A6-Saturday-074000_MISC_270", "CA_A6-Sunday-075000_MISC_247", "CA_A6-Weekday-SDon-075000_S4090_7", "CA_A6-Saturday-075500_MISC_336", "CA_A6-Sunday-076500_MISC_290", "CA_A6-Weekday-SDon-077000_S4090_6", "CA_A6-Saturday-077000_S4090_8", "CA_A6-Sunday-078000_MISC_266", "CA_A6-Saturday-078500_MISC_339", "CA_A6-Weekday-SDon-079000_S4090_4", "CA_A6-Sunday-079500_MISC_238", "CA_A6-Saturday-080000_MISC_240", "CA_A6-Sunday-081000_MISC_250", "CA_A6-Weekday-SDon-081000_S4090_5", "CA_A6-Saturday-081500_MISC_347", "CA_A6-Sunday-082500_MISC_240", "CA_A6-Weekday-SDon-083000_S4090_8", "CA_A6-Saturday-083000_MISC_291", "CA_A6-Sunday-084000_MISC_247", "CA_A6-Saturday-084500_MISC_336", "CA_A6-Weekday-SDon-085000_S4090_16", "CA_A6-Sunday-085500_MISC_290", "CA_A6-Saturday-086000_S4090_8", "CA_A6-Sunday-087000_MISC_266", "CA_A6-Weekday-SDon-087000_S4090_6", "CA_A6-Saturday-087500_MISC_339", "CA_A6-Sunday-088500_MISC_238", "CA_A6-Weekday-SDon-089000_S4090_10", "CA_A6-Saturday-089000_S4090_7", "CA_A6-Sunday-090000_MISC_250", "CA_A6-Saturday-090500_MISC_347", "CA_A6-Weekday-SDon-091000_MISC_278", "CA_A6-Sunday-091500_MISC_240", "CA_A6-Saturday-092000_MISC_356", "CA_A6-Weekday-SDon-093000_S4090_12", "CA_A6-Sunday-093000_MISC_247", "CA_A6-Saturday-093500_MISC_336", "CA_A6-Weekday-SDon-094500_S4090_18", "CA_A6-Sunday-094500_MISC_267", "CA_A6-Saturday-095000_MISC_366", "CA_A6-Sunday-096000_MISC_266", "CA_A6-Weekday-SDon-096000_S4090_9", "CA_A6-Saturday-096500_MISC_369", "CA_A6-Weekday-SDon-097500_S4090_17", "CA_A6-Sunday-097500_MISC_269", "CA_A6-Saturday-098000_S4090_7", "CA_A6-Weekday-SDon-099000_MISC_370", "CA_A6-Sunday-099000_MISC_272", "CA_A6-Saturday-099200_MISC_347", "CA_A6-Saturday-100400_MISC_368", "CA_A6-Sunday-100500_MISC_375", "CA_A6-Weekday-SDon-100500_MISC_376", "CA_A6-Saturday-101600_MISC_356", "CA_A6-Sunday-102000_MISC_273", "CA_A6-Weekday-SDon-102000_MISC_278", "CA_A6-Saturday-102800_MISC_372", "CA_A6-Sunday-103200_MISC_271", "CA_A6-Weekday-SDon-103500_S4090_13", "CA_A6-Saturday-104000_MISC_366", "CA_A6-Sunday-104400_MISC_267", "CA_A6-Weekday-SDon-105000_S4090_18", "CA_A6-Saturday-105200_MISC_369", "CA_A6-Sunday-105600_MISC_343", "CA_A6-Saturday-106400_MISC_382", "CA_A6-Weekday-SDon-106500_S4090_14", "CA_A6-Sunday-107000_MISC_291", "CA_A6-Saturday-107600_S4090_7", "CA_A6-Weekday-SDon-108000_S4090_11", "CA_A6-Sunday-108500_MISC_272", "CA_A6-Saturday-108800_S4090_8", "CA_A6-Weekday-SDon-109000_MISC_370", "CA_A6-Saturday-110000_MISC_368", "CA_A6-Weekday-SDon-110000_MISC_337", "CA_A6-Sunday-110500_MISC_375", "CA_A6-Weekday-SDon-111000_S4090_19", "CA_A6-Saturday-111500_MISC_372", "CA_A6-Weekday-SDon-112500_S4090_16", "CA_A6-Saturday-113000_MISC_366", "CA_A6-Sunday-113000_MISC_391", "CA_A6-Weekday-SDon-114000_S4090_20", "CA_A6-Weekday-SDon-115500_MISC_376", "CA_A6-Saturday-116000_MISC_382", "CA_A6-Sunday-116000_MISC_343", "CA_A6-Weekday-SDon-117000_S4090_17", "CA_A6-Weekday-SDon-118500_MISC_337", "CA_A6-Sunday-119000_MISC_374", "CA_A6-Saturday-119000_MISC_368", "CA_A6-Weekday-SDon-119900_S4090_19", "CA_A6-Weekday-SDon-121600_S4090_16", "CA_A6-Saturday-122000_MISC_363", "CA_A6-Sunday-122000_MISC_391", "CA_A6-Weekday-SDon-123300_MISC_340", "CA_A6-Weekday-SDon-125000_S4090_18", "CA_A6-Sunday-125000_MISC_343", "CA_A6-Saturday-125000_MISC_382", "CA_A6-Weekday-SDon-127500_S4090_17", "CA_A6-Sunday-128000_MISC_374", "CA_A6-Saturday-128000_MISC_380", "CA_A6-Weekday-SDon-130500_S4090_20", "CA_A6-Saturday-131000_MISC_363", "CA_A6-Sunday-131000_MISC_384", "CA_A6-Weekday-SDon-133500_S4090_18", "CA_A6-Saturday-134000_MISC_392", "CA_A6-Sunday-134000_MISC_390", "CA_A6-Weekday-SDon-136500_MISC_348", "CA_A6-Sunday-137000_MISC_374", "CA_A6-Saturday-137000_MISC_380", "CA_A6-Weekday-SDon-139500_S4090_20", "CA_A6-Sunday-140000_MISC_384", "CA_A6-Saturday-140000_MISC_363", "CA_A6-Weekday-SDon-143000_S4090_19", "CA_A6-Sunday-143000_MISC_390", "CA_A6-Saturday-143000_MISC_392"],
-        "shape_id": ""
-      }],
-      "service_dates": ["20260112", "20260113", "20260114", "20260115", "20260116", "20260117", "20260118", "20260119", "20260120", "20260121", "20260122", "20260123", "20260124", "20260125", "20260126", "20260127", "20260128", "20260129", "20260130", "20260131", "20260201", "20260202", "20260203", "20260204", "20260205", "20260206", "20260207", "20260208", "20260209", "20260210", "20260211", "20260212", "20260213", "20260214", "20260215", "20260216", "20260217", "20260218", "20260219", "20260220", "20260221", "20260222", "20260223", "20260224", "20260225", "20260226", "20260227", "20260228", "20260301", "20260302", "20260303", "20260304", "20260305", "20260306", "20260307", "20260308", "20260309", "20260310", "20260311", "20260312", "20260313", "20260314", "20260315", "20260316", "20260317", "20260318", "20260319", "20260320", "20260321", "20260322", "20260323", "20260324", "20260325", "20260326", "20260327", "20260328", "20260329", "20260330", "20260331"],
-      "modifications": [{
-        "start_stop_selector": {
-          "stop_id": "200027"
-        },
-        "end_stop_selector": {
-          "stop_id": "805006"
-        },
-        "propagated_modification_delay": 118,
-        "replacement_stops": [{
-          "travel_time_to_stop": 55,
-          "stop_id": "905019"
-        }],
-        "service_alert_id": "1ba95a2e-7f57-445e-8176-46b27233751a",
-        "last_modified_time": "1770135924"
-      }]
-    }
-  }, {
-    "id": "146b126f-aafb-48f1-a408-170fee443960",
-    "alert": {
-      "active_period": [{
-        "start": "1770786000",
-        "end": "1771218000"
-      }],
-      "informed_entity": [{
-        "route_id": "S61"
-      }],
-      "cause": "OTHER_CAUSE",
-      "effect": "DETOUR",
-      "header_text": {
-        "translation": [{
-          "text": "Heartland Village Farmer\u0027s Market"
-        }]
-      },
-      "description_text": {
-        "translation": [{
-          "text": "S61 is running a modified service because of the farmer\u0027s market, please be aware of changes. "
-        }]
-      }
-    }
-  }, {
-    "id": "146b126f-aafb-48f1-a408-170fee443960",
-    "shape": {
-      "shape_id": "",
-      "encoded_polyline": "kaawF|qbcM????BF_Bz@L`@^n@x@|@`Ap@r@i@NAbB|A`@VRFj@Ft@ClB_@bC_@rEt@tAZbBR?`CC`A{A`GETEn@@b@??Jb@Nb@v@zAtBrErC~FfBrEpApETl@j@~@h@h@zEvD|I|G??pBzApBtAjAdAx@bArAjBXR`HvD~FjDtBpApBtAXXbFtG??nHjJtH~JbNjQrFlF??`EzDb@p@Rb@d@rA~BjHrBbGNj@f@bDnAjJvB|P??^|CRhDHzCj@vOPbHPrDRzFPtGNpCHtD??LbGjAjZFrEE^E`A\\fG@v@NDnLC??x@AdCKdCYJnDXbPl@lYDrDjCM??TAkAui@M_EGcExAOr@EnACvEW??fJg@`N_AXtJNrDJtAf@tMFhC??`@|O|DI|AMlCIzJnGfMvI??fDnCzDtCbEtCXP\\J^FzF`@lJf@dJbA\\HZLJL??bAjAFTtBpCwAbDqA`DaGfOwCdG??LLxBtBJHJLbK|JJJJJxH|H??NPITEFADOZO\\EJKTQ^AFINYr@GLsA|CGJm@tA??CHtCnCVh@rDfDnAp@p@TrOjE\\Fr@FnEX??lCNVHPLfBpBOj@iNl[Y|ArEVpGR@c@??@KZ{@JO|C}H"
-    }
-  }, {
-    "id": "146b126f-aafb-48f1-a408-170fee443960",
-    "trip_modifications": {
-      "selected_trips": [{
-        "trip_ids": ["YU_H6-Weekday-036000_MISC_730", "YU_A6-Weekday-SDon-036000_MISC_708", "YU_A6-Weekday-SDon-039000_MISC_713", "YU_H6-Weekday-039000_MISC_741", "YU_A6-Weekday-SDon-042000_S6191_455", "YU_H6-Weekday-042000_MISC_755", "YU_A6-Saturday-042000_MISC_713", "YU_A6-Weekday-SDon-043500_S6191_456", "YU_A6-Saturday-044000_MISC_717", "YU_H6-Weekday-044000_MISC_715", "YU_A6-Sunday-045000_MISC_706", "YU_A6-Weekday-SDon-045000_S6191_457", "YU_A6-Saturday-046000_MISC_720", "YU_H6-Weekday-046000_MISC_786", "YU_A6-Weekday-SDon-046500_MISC_743", "YU_A6-Sunday-048000_MISC_707", "YU_H6-Weekday-048000_MISC_794", "YU_A6-Weekday-SDon-048000_S6191_459", "YU_A6-Saturday-048000_MISC_726", "YU_A6-Weekday-SDon-049500_MISC_708", "YU_H6-Weekday-049500_MISC_730", "YU_A6-Saturday-049500_MISC_732", "YU_H6-Weekday-051000_MISC_813", "YU_A6-Saturday-051000_MISC_703", "YU_A6-Sunday-051000_MISC_708", "YU_A6-Weekday-SDon-051000_S6191_452", "YU_H6-Weekday-052500_MISC_821", "YU_A6-Weekday-SDon-052500_S6191_453", "YU_A6-Saturday-052500_MISC_707", "YU_H6-Weekday-054000_MISC_741", "YU_A6-Saturday-054000_MISC_713", "YU_A6-Sunday-054000_MISC_703", "YU_A6-Weekday-SDon-054000_MISC_713", "YU_H6-Weekday-055500_MISC_755", "YU_A6-Weekday-SDon-055500_S6191_456", "YU_A6-Saturday-055500_MISC_743", "YU_H6-Weekday-057000_MISC_836", "YU_A6-Saturday-057000_MISC_720", "YU_A6-Weekday-SDon-057000_S6191_458", "YU_A6-Sunday-057000_MISC_706", "YU_A6-Weekday-SDon-058500_MISC_743", "YU_H6-Weekday-058500_MISC_834", "YU_A6-Saturday-058500_MISC_727", "YU_A6-Saturday-060000_MISC_726", "YU_A6-Weekday-SDon-060000_S6191_459", "YU_H6-Weekday-060000_MISC_786", "YU_A6-Sunday-060000_MISC_711", "YU_A6-Weekday-SDon-061500_MISC_746", "YU_A6-Saturday-061500_MISC_732", "YU_H6-Weekday-062000_MISC_794", "YU_A6-Weekday-SDon-063000_S6191_451", "YU_A6-Sunday-063000_MISC_708", "YU_A6-Saturday-063000_MISC_703", "YU_H6-Weekday-064000_MISC_821", "YU_A6-Saturday-064500_MISC_707", "YU_A6-Weekday-SDon-064500_S6191_460", "YU_A6-Weekday-SDon-066000_MISC_719", "YU_A6-Saturday-066000_MISC_711", "YU_A6-Sunday-066000_MISC_703", "YU_H6-Weekday-066000_MISC_775", "YU_A6-Saturday-067500_MISC_743", "YU_A6-Weekday-SDon-067500_S6191_454", "YU_H6-Weekday-068000_MISC_836", "YU_A6-Saturday-069000_MISC_753", "YU_A6-Weekday-SDon-069000_S6191_453", "YU_A6-Sunday-069000_MISC_706", "YU_H6-Weekday-070000_MISC_834", "YU_A6-Sunday-070500_MISC_707", "YU_A6-Weekday-SDon-070500_MISC_754", "YU_A6-Saturday-070500_MISC_727", "YU_A6-Sunday-072000_MISC_711", "YU_A6-Saturday-072000_MISC_752", "YU_H6-Weekday-072000_MISC_711", "YU_A6-Weekday-SDon-072000_S6191_450", "YU_A6-Weekday-SDon-073500_MISC_746", "YU_A6-Saturday-073500_MISC_732", "YU_A6-Sunday-073500_MISC_720", "YU_H6-Weekday-074000_MISC_747", "YU_A6-Saturday-075000_MISC_725", "YU_A6-Weekday-SDon-075000_S6191_451", "YU_A6-Sunday-075000_MISC_708", "YU_H6-Weekday-076000_MISC_754", "YU_A6-Weekday-SDon-076500_S6191_452", "YU_A6-Sunday-076500_MISC_721", "YU_A6-Saturday-076500_MISC_759", "YU_A6-Saturday-078000_MISC_711", "YU_A6-Sunday-078000_MISC_703", "YU_A6-Weekday-SDon-078000_S6191_455", "YU_H6-Weekday-078000_MISC_775", "YU_A6-Weekday-SDon-079500_S6191_454", "YU_A6-Sunday-079500_S6191_463", "YU_A6-Saturday-079500_MISC_743", "YU_H6-Weekday-080000_MISC_845", "YU_A6-Saturday-081000_MISC_741", "YU_A6-Sunday-081000_MISC_722", "YU_A6-Weekday-SDon-081000_S6191_453", "YU_H6-Weekday-082000_MISC_718", "YU_A6-Saturday-082500_MISC_762", "YU_A6-Sunday-082500_MISC_707", "YU_A6-Weekday-SDon-082500_S6191_461", "YU_A6-Weekday-SDon-084000_MISC_761", "YU_A6-Saturday-084000_MISC_752", "YU_A6-Sunday-084000_MISC_709", "YU_H6-Weekday-084000_MISC_858", "YU_A6-Saturday-085500_MISC_735", "YU_A6-Weekday-SDon-085500_S6191_462", "YU_A6-Sunday-085500_MISC_720", "YU_H6-Weekday-086000_MISC_851", "YU_A6-Sunday-087000_MISC_726", "YU_A6-Saturday-087000_MISC_725", "YU_A6-Weekday-SDon-087000_S6191_457", "YU_H6-Weekday-088000_MISC_747", "YU_A6-Weekday-SDon-088500_S6191_455", "YU_A6-Sunday-088500_MISC_721", "YU_A6-Saturday-088500_MISC_759", "YU_A6-Saturday-090000_MISC_720", "YU_A6-Sunday-090000_MISC_729", "YU_H6-Weekday-090000_MISC_860", "YU_A6-Weekday-SDon-090000_MISC_767", "YU_A6-Weekday-SDon-091500_MISC_719", "YU_H6-Weekday-091500_MISC_864", "YU_A6-Sunday-091500_S6191_463", "YU_A6-Saturday-091500_MISC_722", "YU_A6-Sunday-093000_MISC_722", "YU_H6-Weekday-093000_MISC_845", "YU_A6-Weekday-SDon-093000_S6191_459", "YU_A6-Saturday-093000_MISC_741", "YU_A6-Weekday-SDon-094200_S6191_463", "YU_A6-Saturday-094500_MISC_762", "YU_H6-Weekday-094500_MISC_872", "YU_A6-Sunday-094500_MISC_707", "YU_A6-Saturday-096000_MISC_774", "YU_A6-Weekday-SDon-096000_MISC_752", "YU_H6-Weekday-096000_MISC_828", "YU_A6-Sunday-096000_MISC_709", "YU_A6-Weekday-SDon-097500_S6191_456", "YU_H6-Weekday-097500_MISC_858", "YU_A6-Saturday-097500_MISC_776", "YU_A6-Sunday-098000_MISC_717", "YU_H6-Weekday-099000_MISC_851", "YU_A6-Saturday-099000_MISC_778", "YU_A6-Weekday-SDon-099300_S6191_460", "YU_A6-Sunday-100000_MISC_726", "YU_A6-Saturday-100500_MISC_786", "YU_H6-Weekday-100500_MISC_827", "YU_A6-Weekday-SDon-101300_S6191_464", "YU_A6-Saturday-102000_MISC_757", "YU_A6-Sunday-102000_MISC_729", "YU_H6-Weekday-102000_MISC_852", "YU_A6-Saturday-103500_MISC_784", "YU_H6-Weekday-103500_MISC_860", "YU_A6-Saturday-105000_MISC_741", "YU_A6-Sunday-105000_MISC_780", "YU_H6-Weekday-105000_MISC_900", "YU_A6-Weekday-SDon-105300_S6191_461", "YU_H6-Weekday-106500_MISC_903", "YU_A6-Saturday-106500_MISC_764", "YU_A6-Saturday-108000_MISC_767", "YU_A6-Sunday-108000_MISC_723", "YU_H6-Weekday-108000_MISC_872", "YU_A6-Weekday-SDon-108300_S6191_465", "YU_H6-Weekday-109500_MISC_828", "YU_A6-Saturday-109500_MISC_776", "YU_H6-Weekday-111000_MISC_856", "YU_A6-Sunday-111000_MISC_717", "YU_A6-Saturday-111000_MISC_778", "YU_A6-Weekday-SDon-111300_S6191_464", "YU_A6-Saturday-112500_MISC_786", "YU_H6-Weekday-112500_MISC_865", "YU_H6-Weekday-114000_MISC_827", "YU_A6-Saturday-114000_MISC_757", "YU_A6-Sunday-114000_S6191_463", "YU_A6-Weekday-SDon-114300_MISC_747", "YU_H6-Weekday-115500_MISC_852", "YU_A6-Weekday-SDon-115800_S6191_458", "YU_A6-Saturday-117000_MISC_764", "YU_A6-Sunday-117000_MISC_780", "YU_H6-Weekday-117000_MISC_878", "YU_A6-Weekday-SDon-117300_S6191_462", "YU_A6-Weekday-SDon-118500_MISC_772", "YU_H6-Weekday-119000_MISC_903", "YU_A6-Saturday-120000_MISC_767", "YU_A6-Sunday-120000_MISC_723", "YU_A6-Weekday-SDon-120000_S6191_465", "YU_H6-Weekday-121000_MISC_875", "YU_A6-Weekday-SDon-121500_S6191_463", "YU_A6-Sunday-123000_MISC_717", "YU_A6-Saturday-123000_MISC_777", "YU_A6-Weekday-SDon-123000_MISC_782", "YU_H6-Weekday-123000_MISC_856", "YU_A6-Weekday-SDon-124500_MISC_773", "YU_A6-Weekday-SDon-126000_S6191_464", "YU_H6-Weekday-126000_MISC_865", "YU_A6-Sunday-126000_S6191_463", "YU_A6-Saturday-126000_MISC_784", "YU_A6-Saturday-129000_MISC_764", "YU_A6-Weekday-SDon-129000_S6191_462", "YU_H6-Weekday-129000_MISC_878", "YU_A6-Sunday-129000_MISC_723", "YU_H6-Weekday-132000_MISC_875", "YU_A6-Saturday-132000_MISC_767", "YU_A6-Weekday-SDon-132000_S6191_463", "YU_A6-Weekday-SDon-135000_S6191_465", "YU_A6-Saturday-135000_MISC_777", "YU_H6-Weekday-135000_MISC_912", "YU_A6-Weekday-SDon-138000_S6191_464", "YU_A6-Saturday-138000_MISC_784", "YU_H6-Weekday-138000_MISC_883", "YU_H6-Weekday-141000_MISC_896", "YU_A6-Weekday-SDon-141000_S6191_462", "YU_A6-Weekday-SDon-144000_S6191_465", "YU_H6-Weekday-144000_MISC_912"],
-        "shape_id": ""
-      }],
-      "service_dates": ["20260210", "20260211", "20260212", "20260213", "20260214", "20260215"],
-      "modifications": [{
-        "start_stop_selector": {
-          "stop_id": "202718"
-        },
-        "end_stop_selector": {
-          "stop_id": "202991"
-        },
-        "propagated_modification_delay": -34,
-        "service_alert_id": "146b126f-aafb-48f1-a408-170fee443960",
-        "last_modified_time": "1770146674"
-      }]
-    }
-  }, {
-    "id": "146b126f-aafb-48f1-a408-170fee443960",
-    "shape": {
-      "shape_id": "",
-      "encoded_polyline": "kaawF|qbcM????BF_Bz@L`@^n@x@|@`Ap@r@i@NAbB|A`@VRFj@Ft@ClB_@bC_@rEt@tAZbBR?`CC`A{A`GETEn@@b@??Jb@Nb@v@zAtBrErC~FfBrEpApETl@j@~@h@h@zEvD|I|G??pBzApBtAjAdAx@bArAjBXR`HvD~FjDtBpApBtAXXbFtG??nHjJtH~JbNjQrFlF??`EzDb@p@Rb@d@rA~BjHrBbGNj@f@bDnAjJvB|P??^|CRhDHzCj@vOPbHPrDRzFPtGNpCHtD??LbGjAjZFrEE^E`A\\fG@v@NDnLC??x@AdCKdCYJnDXbPl@lYDrDjCM??TAkAui@M_EGcExAOr@EnACvEW??fJg@`N_AXtJNrDJtAf@tMFhC??`@|O|DI|AMlCIzJnGfMvI??fDnCzDtCbEtCXP\\J^FzF`@lJf@dJbA\\HZLJL??bAjAFTtBpCwAbDqA`DaGfOwCdG??LLxBtBJHJLbK|JJJJJxH|H??NPITEFADOZO\\EJKTQ^AFINYr@GLsA|CGJm@tA??CHtCnCVh@`@^"
-    }
-  }, {
-    "id": "146b126f-aafb-48f1-a408-170fee443960",
-    "trip_modifications": {
-      "selected_trips": [{
-        "trip_ids": ["YU_A6-Weekday-SDon-044500_MISC_745"],
-        "shape_id": ""
-      }],
-      "service_dates": ["20260210", "20260211", "20260212", "20260213", "20260214", "20260215"],
-      "modifications": [{
-        "start_stop_selector": {
-          "stop_id": "202718"
-        },
-        "end_stop_selector": {
-          "stop_id": "202991"
-        },
-        "propagated_modification_delay": -109,
-        "service_alert_id": "146b126f-aafb-48f1-a408-170fee443960",
-        "last_modified_time": "1770146674"
-      }]
-    }
-  }, {
-    "id": "146b126f-aafb-48f1-a408-170fee443960",
-    "shape": {
-      "shape_id": "",
-      "encoded_polyline": "mixvFxslcM????BYAo@Ec@Sw@oDwHiBmDmEaIWUUGc@?gCHCbAHjHDpN??FlFb@hSNnDd@|PNrDJtAd@dM??j@vT|DI|AMlCIzJnG`JjG??vBxAtC`CzDtC|EfD\\J^FjJn@dFTtI~@??f@F\\HZLh@j@d@l@FTtBpCwAbDqA`DaGfOwCdG??LLxBtBJHJLbK|JJJJJxH|H??NPITEFADOZO\\EJKTQ^AFINYr@GLsA|CGJm@tA??CHtCnCVh@rDfDnAp@p@TtN`Ez@PlCR??bG\\VHPLfBpBOj@iNl[Y|ArEVtDL??zADBo@Z{@JO|C}H"
-    }
-  }, {
-    "id": "146b126f-aafb-48f1-a408-170fee443960",
-    "trip_modifications": {
-      "selected_trips": [{
-        "trip_ids": ["YU_A6-Weekday-SDon-090500_MISC_771"],
-        "shape_id": ""
-      }],
-      "service_dates": ["20260210", "20260211", "20260212", "20260213", "20260214", "20260215"],
-      "modifications": [{
-        "start_stop_selector": {
-          "stop_id": "202718"
-        },
-        "end_stop_selector": {
-          "stop_id": "202991"
-        },
-        "propagated_modification_delay": 27,
-        "service_alert_id": "146b126f-aafb-48f1-a408-170fee443960",
-        "last_modified_time": "1770146674"
-      }]
-    }
-  }]
+  ]
 }

@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2026 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.impl;
 
 import org.onebusaway.geospatial.services.PolylineEncoder;
@@ -15,9 +30,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Component
 public class TripModificationDiffComputerImpl implements TripModificationDiffComputer {
@@ -32,96 +47,148 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
     }
 
     @Override
-    public TripModificationDiff computeDiff(AgencyAndId tripId,
+    public Optional<TripModificationDiff> computeDiff(String entityId,
+                                            AgencyAndId tripAgencyAndId,
                                             List<StopTimeEntry> originalStopTimes,
-                                            List<StopTimeEntry> modifiedStopTimes,
                                             ShapePoints originalShape,
+                                            Set<Integer> originalRemovedStopTimeIndices,
+                                            List<StopTimeEntry> modifiedStopTimes,
                                             AgencyAndId replacementShapeId,
+                                            Set<Integer> modifiedAddedStopTimeIndices,
                                             LocalDate effectiveServiceDate) {
 
-        List<StopChangeDiff> changes = diffStopLists(originalStopTimes, modifiedStopTimes);
+        String tripId = AgencyAndId.convertToString(tripAgencyAndId);
+        Optional<StopChangeDiffs> scDiff = getStopTimeDiffs(originalStopTimes, modifiedStopTimes,
+                originalRemovedStopTimeIndices, modifiedAddedStopTimeIndices);
 
-        TripModificationDiff diff = new TripModificationDiff();
-        diff.setTripId(tripId.toString());
-        diff.setOriginalStopTimes(toSnapshots(originalStopTimes));
-        diff.setModifiedStopTimes(toSnapshots(modifiedStopTimes));
-        diff.setChanges(changes);
-        diff.setLastUpdated(System.currentTimeMillis());
-        diff.setEffectiveServiceDate(
-                effectiveServiceDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"))
-        );
+        if(scDiff.isPresent()) {
+            StopChangeDiffs stopChangeDiffs = scDiff.get();
+            List<StopChangeDiff> stopChangeDiffList = stopChangeDiffs.getStopChangeDiffs();
+            Map<Integer, StopTimeSnapshot> removedBySequence = stopChangeDiffs.getRemovedStopTimes();
+            Map<Integer, StopTimeSnapshot> addedBySequence = stopChangeDiffs.getAddedStopTimes();
+            Map<AgencyAndId, StopTimeSnapshot> originalStopTimesSnapShot = stopChangeDiffs.getOriginalStopTimeSnapshots();
+            Map<AgencyAndId, StopTimeSnapshot> modifiedStopTimesSnapShot = stopChangeDiffs.getModifiedStopTimeSnapshots();
+            long lastUpdated = System.currentTimeMillis();
+            ShapeModificationDiff shapeDiff = getShapeDiff(tripId, replacementShapeId, originalShape, originalStopTimes);
 
+            return Optional.of(new TripModificationDiff(entityId,
+                    tripId,
+                    effectiveServiceDate,
+                    lastUpdated,
+                    originalStopTimesSnapShot,
+                    modifiedStopTimesSnapShot,
+                    stopChangeDiffList,
+                    shapeDiff,
+                    removedBySequence,
+                    addedBySequence));
+        }
+        return Optional.empty();
+    }
+
+    private ShapeModificationDiff getShapeDiff(String tripId,
+                                               AgencyAndId replacementShapeId,
+                                               ShapePoints originalShape,
+                                               List<StopTimeEntry> originalStopTimes
+                                               ) {
         // Shape diff only if a replacement shape was provided
         if (replacementShapeId != null && originalShape != null && !originalShape.isEmpty()) {
             StopTimeEntry startStop = originalStopTimes.get(0);
             StopTimeEntry endStop   = originalStopTimes.get(originalStopTimes.size() - 1);
 
             try {
-                ShapeModificationDiff shapeDiff = computeShapeDiff(originalShape, replacementShapeId, startStop, endStop);
-                diff.setShapeDiff(shapeDiff);
+                return computeShapeDiff(originalShape, replacementShapeId, startStop, endStop);
             } catch (Exception e) {
                 _log.warn("Failed to compute shape diff for trip {}: {}", tripId, e.getMessage());
             }
         }
-
-        return diff;
+        return null;
     }
 
-    private List<StopChangeDiff>  diffStopLists(
+    /**
+     *
+     * @param original
+     * @param modified
+     * @param originalRemovedStopTimeIndices
+     * @param modifiedAddedStopTimeIndices
+     * @return
+     */
+    private Optional<StopChangeDiffs> getStopTimeDiffs(
             List<StopTimeEntry> original,
-            List<StopTimeEntry> modified) {
+            List<StopTimeEntry> modified,
+            Set<Integer> originalRemovedStopTimeIndices,
+            Set<Integer> modifiedAddedStopTimeIndices) {
 
-        List<StopChangeDiff> stopChangeDiffList = new ArrayList<>();
+        try {
+            StopChangeDiffs stopChangeDiffs = new StopChangeDiffs();
+            List<StopChangeDiff> stopChangeDiffList = new ArrayList<>();
 
-        Map<AgencyAndId, Integer> originalIndexByStopId = new LinkedHashMap<>();
-        for (int i = 0; i < original.size(); i++) {
-            originalIndexByStopId.put(original.get(i).getStop().getId(), i);
-        }
+            for (int i = 0; i < original.size(); i++) {
+                StopTimeEntry originalStopTime = original.get(i);
+                AgencyAndId originalStopId = originalStopTime.getStop().getId();
 
-        Set<AgencyAndId> modifiedStopIds = modified.stream()
-                .map(st -> st.getStop().getId())
-                .collect(Collectors.toSet());
+                StopTimeSnapshot originalStopTimeSnapshot = toSnapshot(originalStopTime, i);
+                stopChangeDiffs.addOriginalStopTimeSnapshot(originalStopId, originalStopTimeSnapshot);
 
-        for (int i = 0; i < original.size(); i++) {
-            StopTimeEntry orig = original.get(i);
-            if (!modifiedStopIds.contains(orig.getStop().getId())) {
-                StopChangeDiff change = new StopChangeDiff();
-                change.setChangeType(StopChangeDiff.ChangeType.REMOVED);
-                change.setStopId(orig.getStop().getId().toString());
-                change.setOriginalStopTime(toSnapshot(orig));
-                change.setOriginalIndex(i);
-                stopChangeDiffList.add(change);
-            }
-        }
-
-        for (int i = 0; i < modified.size(); i++) {
-            StopTimeEntry mod = modified.get(i);
-            StopChangeDiff change = new StopChangeDiff();
-            change.setStopId(mod.getStop().getId().toString());
-            change.setModifiedStopTime(toSnapshot(mod));
-            change.setModifiedIndex(i);
-
-            if (!originalIndexByStopId.containsKey(mod.getStop().getId())) {
-                change.setChangeType(StopChangeDiff.ChangeType.ADDED);
-            } else {
-                int origIdx = originalIndexByStopId.get(mod.getStop().getId());
-                StopTimeEntry orig = original.get(origIdx);
-                change.setOriginalStopTime(toSnapshot(orig));
-                change.setOriginalIndex(origIdx);
-                if (timesChanged(orig, mod)) {
-                    change.setChangeType(StopChangeDiff.ChangeType.TIME_CHANGED);
-                } else {
-                    change.setChangeType(StopChangeDiff.ChangeType.UNCHANGED);
+                if (originalRemovedStopTimeIndices.contains(i)) {
+                    StopChangeDiff change = createStopChangeDiff(i, originalStopId, originalStopTimeSnapshot);
+                    change.setChangeType(StopChangeDiff.ChangeType.REMOVED);
+                    stopChangeDiffList.add(change);
+                    stopChangeDiffs.addOriginalRemovedStopTimeBySequence(i, originalStopTimeSnapshot);
                 }
             }
-            stopChangeDiffList.add(change);
+
+            for (int i = 0; i < modified.size(); i++) {
+                StopTimeEntry modifiedStopTime = modified.get(i);
+                StopEntry modifiedStop = modifiedStopTime.getStop();
+                AgencyAndId modifiedStopId = modifiedStop.getId();
+                StopTimeSnapshot modifiedStopTimeSnapshot = toSnapshot(modifiedStopTime, i);
+                stopChangeDiffs.addModifiedStopTimeSnapshot(modifiedStopId, modifiedStopTimeSnapshot);
+
+                StopChangeDiff change = createStopChangeDiff(i, modifiedStopId, modifiedStopTimeSnapshot);
+
+                if (modifiedAddedStopTimeIndices.contains(i)) {
+                    change.setChangeType(StopChangeDiff.ChangeType.ADDED);
+                    stopChangeDiffs.addModifiedAddedStopTimeBySequence(i, modifiedStopTimeSnapshot);
+                } else {
+                    StopTimeSnapshot originalStopTimeSnapshot = stopChangeDiffs.getOriginalStopTimeSnapshots().get(modifiedStopId);
+                    if(originalStopTimeSnapshot == null){
+                        _log.warn("Unable to find original stop time index for stop {}",modifiedStopId);
+                       continue;
+                    }
+                    change.setOriginalStopTime(originalStopTimeSnapshot);
+                    change.setOriginalIndex(originalStopTimeSnapshot.getIndex());
+                    if (timesChanged(originalStopTimeSnapshot, modifiedStopTimeSnapshot)) {
+                        change.setChangeType(StopChangeDiff.ChangeType.TIME_CHANGED);
+                    } else {
+                        change.setChangeType(StopChangeDiff.ChangeType.UNCHANGED);
+                    }
+                }
+                stopChangeDiffList.add(change);
+            }
+
+            stopChangeDiffList.sort(Comparator.comparingInt(c ->
+                    c.getModifiedIndex() != null ? c.getModifiedIndex() : c.getOriginalIndex()));
+
+            stopChangeDiffs.addAllStopChangeDiffs(stopChangeDiffList);
+
+            return Optional.of(stopChangeDiffs);
         }
-
-        stopChangeDiffList.sort(Comparator.comparingInt(c ->
-                c.getModifiedIndex() != null ? c.getModifiedIndex() : c.getOriginalIndex()));
-
-        return stopChangeDiffList;
+        catch (Exception e) {
+            _log.error("Error processing stop change diffs", e);
+            return Optional.empty();
+        }
     }
+
+    private StopChangeDiff createStopChangeDiff(int index,
+                                               AgencyAndId originalStopId,
+                                               StopTimeSnapshot originalStopTimeSnapshot) {
+        StopChangeDiff change = new StopChangeDiff();
+        change.setStopId(AgencyAndId.convertToString(originalStopId));
+        change.setOriginalStopTime(originalStopTimeSnapshot);
+        change.setOriginalIndex(index);
+        return change;
+    }
+
 
     public ShapeModificationDiff computeShapeDiff(
             ShapePoints originalShape,
@@ -301,28 +368,28 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         }
     }
 
-    private StopTimeSnapshot toSnapshot(StopTimeEntry stopTime) {
+    private StopTimeSnapshot toSnapshot(StopTimeEntry stopTime, int index) {
         StopTimeSnapshot snapshot = new StopTimeSnapshot();
-
         StopEntry stop = stopTime.getStop();
         snapshot.setStopId(stop.getId().toString());
         snapshot.setLat(stop.getStopLat());
         snapshot.setLon(stop.getStopLon());
         snapshot.setStopSequence(stopTime.getSequence());
-        snapshot.setArrivalOffset(stopTime.getArrivalTime());
-        snapshot.setDepartureOffset(stopTime.getDepartureTime());
+        snapshot.setArrivalTime(stopTime.getArrivalTime());
+        snapshot.setDepartureTime(stopTime.getDepartureTime());
         snapshot.setShapeDistTraveled(stopTime.getShapeDistTraveled());
-
+        snapshot.setGtfsSequence(stopTime.getGtfsSequence());
+        snapshot.setIndex(index);
         return snapshot;
     }
 
     private List<StopTimeSnapshot> toSnapshots(List<StopTimeEntry> stopTimes) {
-        return stopTimes.stream()
-                .map(this::toSnapshot)
+        return IntStream.range(0, stopTimes.size())
+                .mapToObj(i -> toSnapshot(stopTimes.get(i), i))
                 .collect(Collectors.toList());
     }
 
-    private boolean timesChanged(StopTimeEntry original, StopTimeEntry modified) {
+    private boolean timesChanged(StopTimeSnapshot original, StopTimeSnapshot modified) {
         return original.getArrivalTime() != modified.getArrivalTime()
                 || original.getDepartureTime() != modified.getDepartureTime();
     }
