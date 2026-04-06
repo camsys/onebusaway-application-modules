@@ -3,9 +3,8 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificati
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 
-import java.time.format.DateTimeFormatter;
-
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -23,9 +22,9 @@ public interface TripModificationDiffCache {
     void clear();
 
     default boolean isActiveToday(TripModificationDiff diff) {
-        DateTimeFormatter SERVICE_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
-        String date = diff.getEffectiveServiceDate();
-        if (date == null || date.isEmpty()) return false;
-        return date.equals(LocalDate.now().format(SERVICE_DATE_FORMATTER));
+        String effectiveDate = diff.getEffectiveServiceDate();
+        if (effectiveDate == null || effectiveDate.isEmpty()) return false;
+        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        return effectiveDate.equals(today);
     }
 }

@@ -133,7 +133,7 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         int startIdx = findSpliceIndex(originalShape, startStop);
         int endIdx   = findSpliceIndex(originalShape, endStop);
 
-        // if they're equal or inverted, bail
+        // If they're equal or inverted, bail
         if (startIdx >= endIdx) {
             _log.warn("Invalid splice indices [{}, {}] for shape {}, skipping shape diff",
                     startIdx, endIdx, originalShape.getShapeId());
@@ -271,7 +271,6 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         double[] lons         = new double[totalSize];
         double[] distTraveled = new double[totalSize];
 
-        // copy points from the three segments into the new arrays
         int cursor = 0;
         for (ShapePoints part : new ShapePoints[]{prefix, middle, suffix}) {
             for (int i = 0; i < part.getSize(); i++, cursor++) {
