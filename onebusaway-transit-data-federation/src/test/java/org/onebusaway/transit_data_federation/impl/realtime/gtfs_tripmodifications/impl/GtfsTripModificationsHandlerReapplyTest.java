@@ -21,7 +21,8 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class GtfsTripModificationsHandlerReapplyTest {
 
-    private TimeService _timeService = new TimeServiceImpl();
+    @Mock
+    private TimeService _timeService;
 
     private TripModificationsChanges _changes = new TripModificationsChanges();
 
@@ -45,8 +46,6 @@ public class GtfsTripModificationsHandlerReapplyTest {
     @Test
     public void testReapplyTime_null_doesNotEnterBranch() {
         setField("_reapplyTime", null);
-        when(_timeService.getCurrentTime()).thenReturn(REAPPLY_TIME.plusHours(1));
-
         assertFalse("Should not apply when _reapplyTime is null",
                 _handler.shouldApplyChanges(_changes));
     }
