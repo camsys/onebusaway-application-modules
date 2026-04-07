@@ -20,7 +20,6 @@ import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,7 +34,7 @@ public interface TripModificationDiffComputer {
      * @param modifiedStopTimes modified stop times for the trip
      * @param originalShape the original shape for the trip
      * @param replacementShapeId the shape id for the replacement shape, if the shape is modified; null otherwise
-     * @param effectiveServiceDate the service date for the trip
+     * @param effectiveServiceDate the service date for the trip as epoch day (days since 1970-01-01)
      * @return
      */
     Optional<TripModificationDiff> computeDiff(
@@ -47,6 +46,6 @@ public interface TripModificationDiffComputer {
             List<StopTimeEntry> modifiedStopTimes,
             AgencyAndId replacementShapeId,
             Set<Integer> modifiedAddedStopTimeIndices,
-            LocalDate effectiveServiceDate);
+            long effectiveServiceDate);
 
 }

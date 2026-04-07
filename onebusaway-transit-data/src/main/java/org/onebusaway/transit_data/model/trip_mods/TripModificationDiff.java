@@ -18,16 +18,15 @@ package org.onebusaway.transit_data.model.trip_mods;
 import org.onebusaway.gtfs.model.AgencyAndId;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
 public class TripModificationDiff implements Serializable {
-    private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = 3L;
 
     private final String entityId;
     private final String tripId;
-    private final LocalDate effectiveServiceDate;
+    private final long effectiveServiceDate;
     private final long lastUpdated;
     private final Map<AgencyAndId, StopTimeSnapshot>  originalStopTimes;
     private final Map<AgencyAndId, StopTimeSnapshot>  modifiedStopTimes;
@@ -38,7 +37,7 @@ public class TripModificationDiff implements Serializable {
 
     public TripModificationDiff(String entityId,
                                 String tripId,
-                                LocalDate effectiveServiceDate,
+                                long effectiveServiceDate,
                                 long lastUpdated,
                                 Map<AgencyAndId, StopTimeSnapshot> originalStopTimes,
                                 Map<AgencyAndId, StopTimeSnapshot> modifiedStopTimes,
@@ -64,7 +63,7 @@ public class TripModificationDiff implements Serializable {
 
     public String getTripId() { return tripId; }
 
-    public LocalDate getEffectiveServiceDate() {
+    public long getEffectiveServiceDate() {
         return effectiveServiceDate;
     }
 
