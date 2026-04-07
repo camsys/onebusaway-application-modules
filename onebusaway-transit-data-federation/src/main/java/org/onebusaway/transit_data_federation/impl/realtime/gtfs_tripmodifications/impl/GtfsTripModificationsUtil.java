@@ -71,12 +71,6 @@ public class GtfsTripModificationsUtil {
     }
 
     public Set<LocalDate> parseServiceDates(List<String> serviceDateStrings) {
-        serviceDateStrings.add("20260407");
-        serviceDateStrings.add("20260408");
-        serviceDateStrings.add("20260409");
-        serviceDateStrings.add("20260410");
-        serviceDateStrings.add("20260411");
-        serviceDateStrings.add("20260412");
         return serviceDateStrings.stream()
                 .map(s -> LocalDate.parse(s, SERVICE_DATE_FORMAT))
                 .collect(Collectors.toSet());
