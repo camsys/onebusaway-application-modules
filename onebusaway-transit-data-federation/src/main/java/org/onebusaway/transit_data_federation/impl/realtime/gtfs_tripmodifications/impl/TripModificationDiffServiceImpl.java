@@ -99,7 +99,7 @@ public class TripModificationDiffServiceImpl implements TripModificationDiffServ
 
             String entityId = modifiedTrip.getEntityId();
             AgencyAndId tripId = modifiedTrip.getTripEntry().getId();
-            LocalDate effectiveServiceDate = modifiedTrip.getServiceDate();
+            long effectiveServiceDate = modifiedTrip.getServiceDate().toEpochDay();
             ModifiedStopTimes modifiedStopTimes = modifiedTrip.getModifiedStopTimes();
 
             // Original StopTimes
@@ -141,7 +141,6 @@ public class TripModificationDiffServiceImpl implements TripModificationDiffServ
 
     private boolean matchesServiceDate(TripModificationDiff tripDiff,
                                        LocalDate serviceDate) {
-        return serviceDate == null || (tripDiff.getEffectiveServiceDate() != null &&
-                serviceDate.equals(tripDiff.getEffectiveServiceDate()));
+        return serviceDate == null || serviceDate.toEpochDay() == tripDiff.getEffectiveServiceDate();
     }
 }
