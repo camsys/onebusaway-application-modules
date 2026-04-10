@@ -67,11 +67,7 @@ public class ServiceAlertsPersistenceDB implements ServiceAlertsPersistence {
   @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
   public boolean needsSync() {
     Long dbLastModified = getLastModified();
-    if (dbLastModified == null) {
-      _log.error("no dbLastModified with this.lastModified={}", new Date(this.lastModified));
-      return false;
-    }
-    if (dbLastModified > this.lastModified) {
+    if (dbLastModified != null && dbLastModified > this.lastModified) {
       return true;
     }
     return getRowCount() != this.rowCount;
