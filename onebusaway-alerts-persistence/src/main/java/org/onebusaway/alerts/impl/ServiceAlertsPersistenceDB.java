@@ -63,60 +63,30 @@ public class ServiceAlertsPersistenceDB implements ServiceAlertsPersistence {
     getSession().delete(existingServiceAlertRecord);
   }
 
-  
-  /**
-   * check if our local cache has expired, and if so, sync
-   * with persister
-   */
-  @Transactional(readOnly = true, propagation= Propagation.NOT_SUPPORTED)
-  public synchronized boolean cachedNeedsSync() {
-    long now = SystemTime.currentTimeMillis();
-    
-    if (now > lastRefresh + _refreshInterval) {
-      lastRefresh = now;
-      return needsSync();
-    }
-    return false;
-  }
-  
-  /**
-   *  check if the persister has more recent info then we do, and if so
-   *  load it into the cache
-   */
-  @Transactional(readOnly = true, propagation= Propagation.NOT_SUPPORTED)
-  public synchronized boolean needsSync() {
+  @Override
+  @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
+  public boolean needsSync() {
     Long dbLastModified = getLastModified();
-    if (dbLastModified != null) {
-    } else {
-      _log.error("no dbLastModified with this.lastModified=" + new Date(this.lastModified));
-    }
-    if (dbLastModified == null) {
-      // if the database doesn't have an answer for us, fall back on or refresh interval
-      dbLastModified = lastRefresh;
-    }
-    if (dbLastModified > this.lastModified) {
-      _log.debug("in needsSync with delta dbLast - lastmod = "
-              + (dbLastModified - this.lastModified)
-              + ", "
-              + new Date(dbLastModified) + ", " + new Date(this.lastModified)
-              + ", "
-              + dbLastModified + ", " + lastModified);
-      lastModified = dbLastModified;
-      return true; // we are out of sync
-    }
-    
-    // check to see if a record was deleted
-    long rowCount = getRowCount();
-    if (rowCount != this.rowCount) {
-      _log.info("rowCount changed from " + this.rowCount + " to " + rowCount);
-      this.rowCount = rowCount;
+    if (dbLastModified != null && dbLastModified > this.lastModified) {
       return true;
     }
-    
-    return false; // no updates necessary
+    return getRowCount() != this.rowCount;
+  }
+
+  /**
+   * Updates persister state to reflect the current DB state.
+   * Must be called after a successful reload.
+   */
+  @Override
+  @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
+  public void markSynced() {
+    Long dbLastModified = getLastModified();
+    if (dbLastModified != null) {
+      lastModified = dbLastModified;
+    }
+    rowCount = getRowCount();
   }
   
-  @Transactional(readOnly = true, propagation= Propagation.NOT_SUPPORTED)
   long getRowCount() {
     try {
         Query query = getSession().createQuery("SELECT count(serviceAlert) FROM ServiceAlertRecord serviceAlert");

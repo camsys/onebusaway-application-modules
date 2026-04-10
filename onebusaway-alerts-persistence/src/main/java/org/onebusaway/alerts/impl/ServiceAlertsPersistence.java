@@ -31,7 +31,7 @@ public interface ServiceAlertsPersistence {
 
   boolean needsSync();
 
-  boolean cachedNeedsSync();
-
   boolean deleteOrphans();
+
+  void markSynced();
 }

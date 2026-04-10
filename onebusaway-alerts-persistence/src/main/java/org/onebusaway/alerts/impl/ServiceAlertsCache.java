@@ -17,40 +17,29 @@
 package org.onebusaway.alerts.impl;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-
-import java.util.Map;
+import java.util.Collection;
 import java.util.Set;
 
+/**
+ * Cache for service alerts and their indexes.
+ *
+ * This interface makes no thread-safety guarantees. Callers are
+ * responsible for ensuring appropriate locking before calling any method.
+ */
 public interface ServiceAlertsCache {
-  
   void clear();
+  void putServiceAlert(AgencyAndId id, ServiceAlertRecord alert);
+  ServiceAlertRecord removeServiceAlert(AgencyAndId id);
+  ServiceAlertRecord getServiceAlert(AgencyAndId id);
+  Collection<ServiceAlertRecord> getAllServiceAlerts();
 
-  Map<AgencyAndId, ServiceAlertRecord> getServiceAlerts();
-
-  ServiceAlertRecord removeServiceAlert(AgencyAndId serviceAlertId);
-
-  ServiceAlertRecord putServiceAlert(AgencyAndId id, ServiceAlertRecord serviceAlert);
-  
-  Map<String, Set<AgencyAndId>> getServiceAlertIdsByServiceAlertAgencyId();
-
-  Map<String, Set<AgencyAndId>> getServiceAlertIdsByAgencyId();
-
-  Map<AgencyAndId, Set<AgencyAndId>> getServiceAlertIdsByStopId();
-
-  Map<AgencyAndId, Set<AgencyAndId>> getServiceAlertIdsByRouteId();
-
-  Map<RouteAndDirectionRef, Set<AgencyAndId>> getServiceAlertIdsByRouteAndDirectionId();
-
-  Map<RouteAndStopCallRef, Set<AgencyAndId>> getServiceAlertIdsByRouteAndStop();
-
-  Map<RouteDirectionAndStopCallRef, Set<AgencyAndId>> getServiceAlertIdsByRouteDirectionAndStopCall();
-
-  Map<AgencyAndId, Set<AgencyAndId>> getServiceAlertIdsByTripId();
-
-  Map<TripAndStopCallRef, Set<AgencyAndId>> getServiceAlertIdsByTripAndStopId();
-  
-  
-
-  
-
+  Set<AgencyAndId> getAlertIdsByServiceAlertAgencyId(String agencyId);
+  Set<AgencyAndId> getAlertIdsByAgencyId(String agencyId);
+  Set<AgencyAndId> getAlertIdsByStopId(AgencyAndId stopId);
+  Set<AgencyAndId> getAlertIdsByRouteId(AgencyAndId routeId);
+  Set<AgencyAndId> getAlertIdsByRouteAndDirectionId(RouteAndDirectionRef ref);
+  Set<AgencyAndId> getAlertIdsByRouteAndStop(RouteAndStopCallRef ref);
+  Set<AgencyAndId> getAlertIdsByRouteDirectionAndStopCall(RouteDirectionAndStopCallRef ref);
+  Set<AgencyAndId> getAlertIdsByTripId(AgencyAndId tripId);
+  Set<AgencyAndId> getAlertIdsByTripAndStopId(TripAndStopCallRef ref);
 }
