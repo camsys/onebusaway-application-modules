@@ -19,218 +19,172 @@ package org.onebusaway.alerts.impl;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Semaphore;
+import java.util.*;
 
+/**
+ * NOT thread-safe. All access must be protected by the ReadWriteLock
+ * in ServiceAlertsServiceImpl. Read operations require the read lock,
+ * write operations require the write lock.
+ */
 @Component
 public class ServiceAlertsCacheInMemoryImpl implements ServiceAlertsCache {
 
-  private final Semaphore _available = new Semaphore(1, true);
-  
-  private ConcurrentMap<AgencyAndId, ServiceAlertRecord> _serviceAlerts = new ConcurrentHashMap<AgencyAndId, ServiceAlertRecord>();
+  private static final class IndexEntry<T> {
+    final AffectsKeyFactory<T> factory;
+    final Map<T, Set<AgencyAndId>> index = new HashMap<>();
 
-  private ConcurrentMap<String, Set<AgencyAndId>> _serviceAlertIdsByServiceAlertAgencyId = new ConcurrentHashMap<String, Set<AgencyAndId>>();
+    IndexEntry(AffectsKeyFactory<T> factory) {
+      this.factory = factory;
+    }
 
-  private ConcurrentMap<String, Set<AgencyAndId>> _serviceAlertIdsByAgencyId = new ConcurrentHashMap<String, Set<AgencyAndId>>();
+    void update(AgencyAndId id, ServiceAlertRecord existing, ServiceAlertRecord updated) {
+      Set<T> oldKeys = existing != null
+              ? factory.getKeysForAffects(existing)
+              : Collections.emptySet();
+      Set<T> newKeys = updated != null
+              ? factory.getKeysForAffects(updated)
+              : Collections.emptySet();
 
-  private ConcurrentMap<AgencyAndId, Set<AgencyAndId>> _serviceAlertIdsByStopId = new ConcurrentHashMap<AgencyAndId, Set<AgencyAndId>>();
+      if (oldKeys.equals(newKeys)) return;
 
-  private ConcurrentMap<AgencyAndId, Set<AgencyAndId>> _serviceAlertIdsByRouteId = new ConcurrentHashMap<AgencyAndId, Set<AgencyAndId>>();
+      for (T key : oldKeys) {
+        if (!newKeys.contains(key)) {
+          Set<AgencyAndId> ids = index.get(key);
+          if (ids != null) {
+            ids.remove(id);
+            if (ids.isEmpty()) index.remove(key);
+          }
+        }
+      }
 
-  private ConcurrentMap<RouteAndDirectionRef, Set<AgencyAndId>> _serviceAlertIdsByRouteAndDirectionId = new ConcurrentHashMap<RouteAndDirectionRef, Set<AgencyAndId>>();
+      for (T key : newKeys) {
+        if (!oldKeys.contains(key)) {
+          index.computeIfAbsent(key, k -> new HashSet<>()).add(id);
+        }
+      }
+    }
 
-  private ConcurrentMap<RouteAndStopCallRef, Set<AgencyAndId>> _serviceAlertIdsByRouteAndStop = new ConcurrentHashMap<RouteAndStopCallRef, Set<AgencyAndId>>();
+    Set<AgencyAndId> get(T key) {
+      Set<AgencyAndId> ids = index.get(key);
+      return ids != null ? Collections.unmodifiableSet(ids) : Collections.emptySet();
+    }
 
-  private ConcurrentMap<RouteDirectionAndStopCallRef, Set<AgencyAndId>> _serviceAlertIdsByRouteDirectionAndStopCall = new ConcurrentHashMap<RouteDirectionAndStopCallRef, Set<AgencyAndId>>();
+    void clear() {
+      index.clear();
+    }
+  }
 
-  private ConcurrentMap<AgencyAndId, Set<AgencyAndId>> _serviceAlertIdsByTripId = new ConcurrentHashMap<AgencyAndId, Set<AgencyAndId>>();
+  private final Map<AgencyAndId, ServiceAlertRecord> _serviceAlerts = new HashMap<>();
 
-  private ConcurrentMap<TripAndStopCallRef, Set<AgencyAndId>> _serviceAlertIdsByTripAndStopId = new ConcurrentHashMap<TripAndStopCallRef, Set<AgencyAndId>>();
+  private final IndexEntry<String> _byServiceAlertAgencyId =
+          new IndexEntry<>(AffectsServiceAlertAgencyKeyFactory.INSTANCE);
+  private final IndexEntry<String> _byAgencyId =
+          new IndexEntry<>(AffectsAgencyKeyFactory.INSTANCE);
+  private final IndexEntry<AgencyAndId> _byStopId =
+          new IndexEntry<>(AffectsStopKeyFactory.INSTANCE);
+  private final IndexEntry<AgencyAndId> _byRouteId =
+          new IndexEntry<>(AffectsRouteKeyFactory.INSTANCE);
+  private final IndexEntry<RouteAndDirectionRef> _byRouteAndDirectionId =
+          new IndexEntry<>(AffectsRouteAndDirectionKeyFactory.INSTANCE);
+  private final IndexEntry<RouteAndStopCallRef> _byRouteAndStop =
+          new IndexEntry<>(AffectsRouteAndStopKeyFactory.INSTANCE);
+  private final IndexEntry<RouteDirectionAndStopCallRef> _byRouteDirectionAndStopCall =
+          new IndexEntry<>(AffectsRouteDirectionAndStopCallKeyFactory.INSTANCE);
+  private final IndexEntry<AgencyAndId> _byTripId =
+          new IndexEntry<>(AffectsTripKeyFactory.INSTANCE);
+  private final IndexEntry<TripAndStopCallRef> _byTripAndStopId =
+          new IndexEntry<>(AffectsTripAndStopKeyFactory.INSTANCE);
+
+  private final List<IndexEntry<?>> _allIndexes = Arrays.asList(
+          _byServiceAlertAgencyId,
+          _byAgencyId,
+          _byStopId,
+          _byRouteId,
+          _byRouteAndDirectionId,
+          _byRouteAndStop,
+          _byRouteDirectionAndStopCall,
+          _byTripId,
+          _byTripAndStopId
+  );
 
   @Override
   public void clear() {
-    try {
-      _available.acquire();
-      _serviceAlerts.clear();
-      _serviceAlertIdsByServiceAlertAgencyId.clear();
-      _serviceAlertIdsByAgencyId.clear();
-      _serviceAlertIdsByStopId.clear();
-      _serviceAlertIdsByRouteId.clear();
-      _serviceAlertIdsByRouteAndDirectionId.clear();
-      _serviceAlertIdsByRouteAndStop.clear();
-      _serviceAlertIdsByRouteDirectionAndStopCall.clear();
-      _serviceAlertIdsByTripId.clear();
-      _serviceAlertIdsByTripAndStopId.clear();
-    } catch (InterruptedException e) {
-      // bury
-    } finally {
-      _available.release();
-    }
-
-    }
-  
-  @Override
-  public Map<AgencyAndId, ServiceAlertRecord> getServiceAlerts() {
-    try {
-      _available.acquire();
-      return _serviceAlerts;
-    } catch (InterruptedException e) {
-      // bury
-    } finally {
-      _available.release();
-    }
-    return null;
-  }
-  
-  @Override
-  public ServiceAlertRecord removeServiceAlert(AgencyAndId serviceAlertId) {
-    try {
-      _available.acquire();
-      return _serviceAlerts.remove(serviceAlertId);
-    } catch (InterruptedException e) {
-      // bury
-    } finally {
-      _available.release();
-    }
-    return null;
+    _serviceAlerts.clear();
+    _allIndexes.forEach(IndexEntry::clear);
   }
 
   @Override
-  public ServiceAlertRecord putServiceAlert(AgencyAndId id, ServiceAlertRecord serviceAlert) {
-    try {
-      _available.acquire();
-      ServiceAlertRecord existing = _serviceAlerts.get(id);
-      _serviceAlerts.put(id, serviceAlert);
-      return existing;
-    } catch (InterruptedException e) {
-      // bury
-    } finally {
-      _available.release();
-    }
-    return null;
-  }
-
-
-  @Override
-  public Map<String, Set<AgencyAndId>> getServiceAlertIdsByServiceAlertAgencyId() {
-    try {
-      _available.acquire();
-      return _serviceAlertIdsByServiceAlertAgencyId;
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    } finally {
-      _available.release();
-    }
-    return null;
+  public void putServiceAlert(AgencyAndId id, ServiceAlertRecord alert) {
+    ServiceAlertRecord existing = _serviceAlerts.get(id);
+    _serviceAlerts.put(id, alert);
+    updateIndexes(id, existing, alert);
   }
 
   @Override
-  public Map<String, Set<AgencyAndId>> getServiceAlertIdsByAgencyId() {
-    try {
-      _available.acquire();
-      return _serviceAlertIdsByAgencyId;
-    } catch (InterruptedException e) {
-      // bury
-    } finally {
-      _available.release();
+  public ServiceAlertRecord removeServiceAlert(AgencyAndId id) {
+    ServiceAlertRecord existing = _serviceAlerts.remove(id);
+    if (existing != null) {
+      updateIndexes(id, existing, null);
     }
-    return null;
+    return existing;
   }
 
   @Override
-  public Map<AgencyAndId, Set<AgencyAndId>> getServiceAlertIdsByStopId() {
-    try {
-      _available.acquire();
-      return _serviceAlertIdsByStopId;
-    } catch (InterruptedException e) {
-      // bury
-    } finally {
-      _available.release();
-    }
-    return null;
+  public ServiceAlertRecord getServiceAlert(AgencyAndId id) {
+    return _serviceAlerts.get(id);
   }
 
   @Override
-  public Map<AgencyAndId, Set<AgencyAndId>> getServiceAlertIdsByRouteId() {
-    try {
-      _available.acquire();
-      return _serviceAlertIdsByRouteId;
-    } catch (InterruptedException e) {
-      // bury
-    } finally {
-      _available.release();
-    }
-    return null;
+  public Collection<ServiceAlertRecord> getAllServiceAlerts() {
+    return Collections.unmodifiableCollection(_serviceAlerts.values());
   }
 
   @Override
-  public Map<RouteAndDirectionRef, Set<AgencyAndId>> getServiceAlertIdsByRouteAndDirectionId() {
-    try {
-      _available.acquire();
-      return _serviceAlertIdsByRouteAndDirectionId;
-    } catch (InterruptedException e) {
-      // bury
-    } finally {
-      _available.release();
-    }
-    return null;
+  public Set<AgencyAndId> getAlertIdsByServiceAlertAgencyId(String agencyId) {
+    return _byServiceAlertAgencyId.get(agencyId);
   }
 
   @Override
-  public Map<RouteAndStopCallRef, Set<AgencyAndId>> getServiceAlertIdsByRouteAndStop() {
-    try {
-      _available.acquire();
-      return _serviceAlertIdsByRouteAndStop;
-    } catch (InterruptedException e) {
-      // bury
-    } finally {
-      _available.release();
-    }
-    return null;
+  public Set<AgencyAndId> getAlertIdsByAgencyId(String agencyId) {
+    return _byAgencyId.get(agencyId);
   }
 
   @Override
-  public Map<RouteDirectionAndStopCallRef, Set<AgencyAndId>> getServiceAlertIdsByRouteDirectionAndStopCall() {
-    try {
-      _available.acquire();
-      return _serviceAlertIdsByRouteDirectionAndStopCall;
-    } catch (InterruptedException e) {
-      // bury
-    } finally {
-      _available.release();
-    }
-    return null;
+  public Set<AgencyAndId> getAlertIdsByStopId(AgencyAndId stopId) {
+    return _byStopId.get(stopId);
   }
 
   @Override
-  public Map<AgencyAndId, Set<AgencyAndId>> getServiceAlertIdsByTripId() {
-    try {
-      _available.acquire();
-      return _serviceAlertIdsByTripId;
-    } catch (InterruptedException e) {
-      // bury
-    } finally {
-      _available.release();
-    }
-    return null;
+  public Set<AgencyAndId> getAlertIdsByRouteId(AgencyAndId routeId) {
+    return _byRouteId.get(routeId);
   }
 
   @Override
-  public Map<TripAndStopCallRef, Set<AgencyAndId>> getServiceAlertIdsByTripAndStopId() {
-    try {
-      _available.acquire();
-      return _serviceAlertIdsByTripAndStopId;
-    } catch (InterruptedException e) {
-      // bury
-    } finally {
-      _available.release();
-    }
-    return null;
+  public Set<AgencyAndId> getAlertIdsByRouteAndDirectionId(RouteAndDirectionRef ref) {
+    return _byRouteAndDirectionId.get(ref);
   }
 
+  @Override
+  public Set<AgencyAndId> getAlertIdsByRouteAndStop(RouteAndStopCallRef ref) {
+    return _byRouteAndStop.get(ref);
+  }
 
-  
+  @Override
+  public Set<AgencyAndId> getAlertIdsByRouteDirectionAndStopCall(RouteDirectionAndStopCallRef ref) {
+    return _byRouteDirectionAndStopCall.get(ref);
+  }
+
+  @Override
+  public Set<AgencyAndId> getAlertIdsByTripId(AgencyAndId tripId) {
+    return _byTripId.get(tripId);
+  }
+
+  @Override
+  public Set<AgencyAndId> getAlertIdsByTripAndStopId(TripAndStopCallRef ref) {
+    return _byTripAndStopId.get(ref);
+  }
+
+  private void updateIndexes(AgencyAndId id, ServiceAlertRecord existing, ServiceAlertRecord updated) {
+    _allIndexes.forEach(entry -> entry.update(id, existing, updated));
+  }
 }
