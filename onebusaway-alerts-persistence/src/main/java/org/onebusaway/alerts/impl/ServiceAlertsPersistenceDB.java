@@ -63,16 +63,6 @@ public class ServiceAlertsPersistenceDB implements ServiceAlertsPersistence {
     getSession().delete(existingServiceAlertRecord);
   }
 
-
-  public boolean isDueForSyncCheck() {
-    long now = SystemTime.currentTimeMillis();
-    if (now > lastRefresh + _refreshInterval) {
-      lastRefresh = now;
-      return true;
-    }
-    return false;
-  }
-
   @Override
   @Transactional(readOnly = true, propagation = Propagation.NOT_SUPPORTED)
   public boolean needsSync() {
