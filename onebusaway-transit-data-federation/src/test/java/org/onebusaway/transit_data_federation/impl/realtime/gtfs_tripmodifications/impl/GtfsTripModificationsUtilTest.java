@@ -358,8 +358,8 @@ public class GtfsTripModificationsUtilTest {
         assertEquals(0, index);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void findStopTimeIndexForSelector_throwsWhenSequenceNotFound() {
+    @Test
+    public void findStopTimeIndexForSelector_returnsNegativeOneWhenSequenceNotFound() {
         when(stopTimeEntry0.getGtfsSequence()).thenReturn(10);
         List<StopTimeEntry> stopTimes = Collections.singletonList(stopTimeEntry0);
 
@@ -367,11 +367,12 @@ public class GtfsTripModificationsUtilTest {
                 .setStopSequence(999)
                 .build();
 
-        util.findStopTimeIndexForSelector(stopTimes, selector);
+        int index = util.findStopTimeIndexForSelector(stopTimes, selector);
+        assertEquals(-1, index);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void findStopTimeIndexForSelector_throwsWhenStopIdNotFound() {
+    @Test
+    public void findStopTimeIndexForSelector_returnsNegativeOneWhenStopIdNotFound() {
         AgencyAndId stopId = new AgencyAndId("MTA", "S10");
         when(stopEntry.getId()).thenReturn(stopId);
         when(stopTimeEntry0.getStop()).thenReturn(stopEntry);
@@ -381,7 +382,8 @@ public class GtfsTripModificationsUtilTest {
                 .setStopId("S999")
                 .build();
 
-        util.findStopTimeIndexForSelector(stopTimes, selector);
+        int index = util.findStopTimeIndexForSelector(stopTimes, selector);
+        assertEquals(-1, index);
     }
 
     @Test
