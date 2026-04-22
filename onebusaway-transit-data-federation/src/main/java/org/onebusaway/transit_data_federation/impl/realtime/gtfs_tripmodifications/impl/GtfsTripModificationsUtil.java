@@ -121,6 +121,12 @@ public class GtfsTripModificationsUtil {
                 }
             }
         }
+        _log.error("Stop not found for selector: {}. Trip has {} stop times. " +
+                        "Available sequences: {}. Available stop IDs: {}",
+                selector,
+                originalStopTimes.size(),
+                originalStopTimes.stream().map(StopTimeEntry::getGtfsSequence).collect(Collectors.toList()),
+                originalStopTimes.stream().map(st -> AgencyAndId.convertToString(st.getStop().getId())).collect(Collectors.toList()));
         throw new IllegalArgumentException("Stop not found for selector: " + selector);
     }
 
