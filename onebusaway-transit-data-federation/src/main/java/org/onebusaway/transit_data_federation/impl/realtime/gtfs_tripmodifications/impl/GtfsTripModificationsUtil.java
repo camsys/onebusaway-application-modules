@@ -126,8 +126,10 @@ public class GtfsTripModificationsUtil {
                 selector,
                 originalStopTimes.size(),
                 originalStopTimes.stream().map(StopTimeEntry::getGtfsSequence).collect(Collectors.toList()),
-                originalStopTimes.stream().map(st -> AgencyAndId.convertToString(st.getStop().getId())).collect(Collectors.toList()));
-        throw new IllegalArgumentException("Stop not found for selector: " + selector);
+                originalStopTimes.stream()
+                        .map(st -> st.getStop() != null ? AgencyAndId.convertToString(st.getStop().getId()) : "null")
+                        .collect(Collectors.toList()));
+        return -1;
     }
 
     public LocalDate toLocalDate(long epochTime, ZoneId timeZone) {

@@ -260,6 +260,11 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
         for (GtfsRealtime.TripModifications.Modification mod : modifications) {
             int startSelectorStopTimesIndex = _util.findStopTimeIndexForSelector(originalStopTimes, mod.getStartStopSelector());
             int endSelectorStopTimesIndex = _util.findStopTimeIndexForSelector(originalStopTimes, mod.getEndStopSelector());
+            if (startSelectorStopTimesIndex == -1 || endSelectorStopTimesIndex == -1) {
+                _log.warn("Skipping modification due to unresolved stop selector: start={}, end={}",
+                        mod.getStartStopSelector(), mod.getEndStopSelector());
+                continue;
+            }
             int postModificationStopTimesIndex = endSelectorStopTimesIndex + 1;
 
 
