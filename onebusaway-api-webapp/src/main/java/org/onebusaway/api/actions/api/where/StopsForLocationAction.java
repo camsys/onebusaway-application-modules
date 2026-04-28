@@ -78,6 +78,8 @@ public class StopsForLocationAction extends ApiActionSupport {
 
   private long _time = 0;
 
+  private boolean _serviceIntervalOverride = false;
+
   public StopsForLocationAction() {
     super(LegacyV1ApiSupport.isDefaultToV1() ? V1 : V2);
   }
@@ -118,6 +120,10 @@ public class StopsForLocationAction extends ApiActionSupport {
       _time = _dateTimeConverter.parse(timeStr);
   }
 
+  public void setServiceIntervalOveride(boolean serviceIntervalOveride) {
+    _serviceIntervalOverride = serviceIntervalOveride;
+  }
+
   public DefaultHttpHeaders index() throws IOException, ServiceException {
 
     int maxCount = _maxCount.getMaxCount();
@@ -134,7 +140,11 @@ public class StopsForLocationAction extends ApiActionSupport {
     }
 
     SearchQueryBean searchQuery = new SearchQueryBean();
-    searchQuery.setServiceInterval(_factory.constructForDate(new Date(_time)));
+    if(_serviceIntervalOverride) {
+      searchQuery.setServiceInterval(null);
+    } else {
+      searchQuery.setServiceInterval(_factory.constructForDate(new Date(_time)));
+    }
     searchQuery.setBounds(bounds);
     searchQuery.setMaxCount(maxCount);
     searchQuery.setType(EQueryType.BOUNDS);
