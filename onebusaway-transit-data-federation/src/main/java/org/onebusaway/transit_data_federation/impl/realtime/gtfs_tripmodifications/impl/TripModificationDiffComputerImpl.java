@@ -47,7 +47,7 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         _dao = dao;
     }
 
-    @Autowired
+    @Autowired(required = false)
     public void setConfigurationService(ConfigurationService configurationService) {
         _configurationService = configurationService;
     }
@@ -195,6 +195,7 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
     static final String SHAPE_OVERLAP_THRESHOLD_CONFIG_KEY = "tripModifications.shapeOverlapThresholdMeters";
 
     private double getShapeOverlapThreshold() {
+        if (_configurationService == null) return DEFAULT_SHAPE_OVERLAP_THRESHOLD_METERS;
         return _configurationService.getConfigurationValueAsDouble(
                 SHAPE_OVERLAP_THRESHOLD_CONFIG_KEY, DEFAULT_SHAPE_OVERLAP_THRESHOLD_METERS);
     }
