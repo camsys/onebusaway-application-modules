@@ -24,6 +24,7 @@ import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
+import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Component
 public class TripModificationDiffComputerImpl implements TripModificationDiffComputer {
@@ -40,9 +40,16 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
 
     private TransitGraphDao _dao;
 
+    private ConfigurationService _configurationService;
+
     @Autowired
     public void setTransitGraphDao(TransitGraphDao dao) {
         _dao = dao;
+    }
+
+    @Autowired
+    public void setConfigurationService(ConfigurationService configurationService) {
+        _configurationService = configurationService;
     }
 
     @Override
@@ -68,7 +75,7 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
             Map<AgencyAndId, StopTimeSnapshot> originalStopTimesSnapShot = stopChangeDiffs.getOriginalStopTimeSnapshots();
             Map<AgencyAndId, StopTimeSnapshot> modifiedStopTimesSnapShot = stopChangeDiffs.getModifiedStopTimeSnapshots();
             long lastUpdated = System.currentTimeMillis();
-            ShapeModificationDiff shapeDiff = getShapeDiff(tripId, replacementShapeId, originalShape, originalStopTimes);
+            ShapeModificationDiff shapeDiff = getShapeDiff(tripId, replacementShapeId, originalShape);
 
             return Optional.of(new TripModificationDiff(entityId,
                     tripId,
@@ -86,16 +93,10 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
 
     private ShapeModificationDiff getShapeDiff(String tripId,
                                                AgencyAndId replacementShapeId,
-                                               ShapePoints originalShape,
-                                               List<StopTimeEntry> originalStopTimes
-                                               ) {
-        // Shape diff only if a replacement shape was provided
+                                               ShapePoints originalShape) {
         if (replacementShapeId != null && originalShape != null && !originalShape.isEmpty()) {
-            StopTimeEntry startStop = originalStopTimes.get(0);
-            StopTimeEntry endStop   = originalStopTimes.get(originalStopTimes.size() - 1);
-
             try {
-                return computeShapeDiff(originalShape, replacementShapeId, startStop, endStop);
+                return computeShapeDiff(originalShape, replacementShapeId);
             } catch (Exception e) {
                 _log.warn("Failed to compute shape diff for trip {}: {}", tripId, e.getMessage());
             }
@@ -189,27 +190,18 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
     }
 
 
+    // Maximum distance in meters for two shape points to be considered "the same path"
+    static final double DEFAULT_SHAPE_OVERLAP_THRESHOLD_METERS = 25.0;
+    static final String SHAPE_OVERLAP_THRESHOLD_CONFIG_KEY = "tripModifications.shapeOverlapThresholdMeters";
+
+    private double getShapeOverlapThreshold() {
+        return _configurationService.getConfigurationValueAsDouble(
+                SHAPE_OVERLAP_THRESHOLD_CONFIG_KEY, DEFAULT_SHAPE_OVERLAP_THRESHOLD_METERS);
+    }
+
     public ShapeModificationDiff computeShapeDiff(
             ShapePoints originalShape,
-            AgencyAndId replacementShapeId,
-            StopTimeEntry startStop,
-            StopTimeEntry endStop) {
-
-        // Find splice indices in the original shape
-        int startIdx = findSpliceIndex(originalShape, startStop);
-        int endIdx   = findSpliceIndex(originalShape, endStop);
-
-        // If they're equal or inverted, bail
-        if (startIdx >= endIdx) {
-            _log.warn("Invalid splice indices [{}, {}] for shape {}, skipping shape diff",
-                    startIdx, endIdx, originalShape.getShapeId());
-            return null;
-        }
-
-        // Slice into three zones
-        ShapePoints prefix          = sliceShapePoints(originalShape, 0, startIdx);
-        ShapePoints originalSegment = sliceShapePoints(originalShape, startIdx, endIdx);
-        ShapePoints suffix          = sliceShapePoints(originalShape, endIdx, originalShape.getSize() - 1);
+            AgencyAndId replacementShapeId) {
 
         ShapePoints replacement = _dao.getShape(replacementShapeId);
         if (replacement == null || replacement.isEmpty()) {
@@ -218,8 +210,69 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
             return null;
         }
 
-        // Stitch together the modified full shape
-        ShapePoints modifiedShape = stitchShapePoints(prefix, replacement, suffix);
+        // For each replacement point, record distance to nearest original point
+        int replSize = replacement.getSize();
+        double[] dists         = new double[replSize];
+        int[]    nearestOnOrig = new int[replSize];
+        for (int i = 0; i < replSize; i++) {
+            double lat = replacement.getLatForIndex(i);
+            double lon = replacement.getLonForIndex(i);
+            int nearest = findNearestIndex(originalShape, lat, lon);
+            nearestOnOrig[i] = nearest;
+            dists[i] = SphericalGeometryLibrary.distance(
+                    lat, lon,
+                    originalShape.getLatForIndex(nearest),
+                    originalShape.getLonForIndex(nearest));
+        }
+
+        double threshold = getShapeOverlapThreshold();
+
+        // Peak divergence point ( inside the detour )
+        int peakReplIdx = 0;
+        for (int i = 1; i < replSize; i++) {
+            if (dists[i] > dists[peakReplIdx]) peakReplIdx = i;
+        }
+
+        if (dists[peakReplIdx] < threshold) {
+            _log.warn("Peak divergence {}m is below threshold {}m for shape {}, skipping shape diff",
+                    String.format("%.1f", dists[peakReplIdx]), threshold, replacementShapeId);
+            return null;
+        }
+
+        // Walk left from peak: last point within threshold is the divergence boundary
+        int replStartIdx = 0;
+        int origStartIdx = nearestOnOrig[0];
+        for (int i = peakReplIdx - 1; i >= 0; i--) {
+            if (dists[i] <= threshold) {
+                replStartIdx = i;
+                origStartIdx = nearestOnOrig[i];
+                break;
+            }
+        }
+
+        // Walk right from peak: first point back within threshold is the convergence boundary
+        int replEndIdx = replSize - 1;
+        int origEndIdx = nearestOnOrig[replSize - 1];
+        for (int i = peakReplIdx + 1; i < replSize; i++) {
+            if (dists[i] <= threshold) {
+                replEndIdx = i;
+                origEndIdx = nearestOnOrig[i];
+                break;
+            }
+        }
+
+        if (origStartIdx >= origEndIdx || replStartIdx >= replEndIdx) {
+            _log.warn("Invalid splice indices orig=[{},{}] repl=[{},{}] for shape {}, skipping shape diff",
+                    origStartIdx, origEndIdx, replStartIdx, replEndIdx, originalShape.getShapeId());
+            return null;
+        }
+
+        ShapePoints prefix              = sliceShapePoints(originalShape, 0, origStartIdx);
+        ShapePoints originalSegment     = sliceShapePoints(originalShape, origStartIdx, origEndIdx);
+        ShapePoints suffix              = sliceShapePoints(originalShape, origEndIdx, originalShape.getSize() - 1);
+        ShapePoints replacementSegment  = sliceShapePoints(replacement, replStartIdx, replEndIdx);
+
+        ShapePoints modifiedShape = stitchShapePoints(prefix, replacementSegment, suffix);
 
         ShapeModificationDiff diff = new ShapeModificationDiff();
         diff.setPrefixSegment(toShapeSnapshots(prefix));
@@ -227,31 +280,15 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         diff.setOriginalShape(toShapeSnapshots(originalShape));
         diff.setModifiedShape(toShapeSnapshots(modifiedShape));
         diff.setOriginalSegment(toShapeSnapshots(originalSegment));
-        diff.setReplacementSegment(toShapeSnapshots(replacement));
+        diff.setReplacementSegment(toShapeSnapshots(replacementSegment));
         diff.setOriginalShapePolyline(encodePolyline(originalShape));
         diff.setModifiedShapePolyline(encodePolyline(modifiedShape));
         diff.setOriginalSegmentPolyline(encodePolyline(originalSegment));
-        diff.setReplacementSegmentPolyline(encodePolyline(replacement));
+        diff.setReplacementSegmentPolyline(encodePolyline(replacementSegment));
         diff.setPrefixSegmentPolyline(encodePolyline(prefix));
         diff.setSuffixSegmentPolyline(encodePolyline(suffix));
-        diff.setStartStopId(startStop.getStop().getId().toString());
-        diff.setEndStopId(endStop.getStop().getId().toString());
 
         return diff;
-    }
-
-    private int findSpliceIndex(ShapePoints shape, StopTimeEntry stop) {
-        double shapeDistTraveled = stop.getShapeDistTraveled();
-
-        if (shapeDistTraveled > 0 && shape.getDistTraveled() != null) {
-            return findIndexByDistTraveled(shape, shapeDistTraveled);
-        }
-
-        // Fallback: nearest point by spherical distance
-        _log.debug("No shapeDistTraveled for stop {}, falling back to nearest-point projection",
-                stop.getStop().getId());
-
-        return findIndexByNearestPoint(shape, stop);
     }
 
     private String encodePolyline(ShapePoints points) {
@@ -271,33 +308,12 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         return snapshots;
     }
 
-    private int findIndexByDistTraveled(ShapePoints shape, double targetDist) {
-        double[] dists = shape.getDistTraveled();
-        int best = 0;
-        double bestDelta = Math.abs(dists[0] - targetDist);
-
-        for (int i = 1; i < dists.length; i++) {
-            double delta = Math.abs(dists[i] - targetDist);
-            if (delta < bestDelta) {
-                bestDelta = delta;
-                best = i;
-            }
-            if (dists[i] > targetDist && delta > bestDelta) break;
-        }
-        return best;
-    }
-
-    private int findIndexByNearestPoint(ShapePoints shape, StopTimeEntry stop) {
-        double stopLat = stop.getStop().getStopLat();
-        double stopLon = stop.getStop().getStopLon();
+    private int findNearestIndex(ShapePoints shape, double lat, double lon) {
         int best = 0;
         double bestDist = Double.MAX_VALUE;
-
         for (int i = 0; i < shape.getSize(); i++) {
             double d = SphericalGeometryLibrary.distance(
-                    stopLat, stopLon,
-                    shape.getLatForIndex(i),
-                    shape.getLonForIndex(i));
+                    lat, lon, shape.getLatForIndex(i), shape.getLonForIndex(i));
             if (d < bestDist) {
                 bestDist = d;
                 best = i;
@@ -380,12 +396,6 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         snapshot.setGtfsSequence(stopTime.getGtfsSequence());
         snapshot.setIndex(index);
         return snapshot;
-    }
-
-    private List<StopTimeSnapshot> toSnapshots(List<StopTimeEntry> stopTimes) {
-        return IntStream.range(0, stopTimes.size())
-                .mapToObj(i -> toSnapshot(stopTimes.get(i), i))
-                .collect(Collectors.toList());
     }
 
     private boolean timesChanged(StopTimeSnapshot original, StopTimeSnapshot modified) {

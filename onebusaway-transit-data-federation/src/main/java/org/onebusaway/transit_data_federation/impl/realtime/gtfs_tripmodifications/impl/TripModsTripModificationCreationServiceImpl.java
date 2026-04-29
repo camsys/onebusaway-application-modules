@@ -287,10 +287,6 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
 
             int stopSequenceOffset = replacementStops.size() - (postModificationStopTimesIndex - startSelectorStopTimesIndex);
 
-            if(startSelectorStopTimesIndex != 19) {
-                System.out.println("test");
-            }
-
             List<StopTimeEntry> postReplacementStopTimes = getAllStopTimesAfterSelection(postModificationStopTimesIndex,
                     stopSequenceOffset, originalStopTimes, propagatedModificationDelay);
 

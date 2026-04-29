@@ -154,10 +154,11 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
 
                 if (hasSuccessfulUpdates(addedShapesResult, modifiedTripsResult)) {
                     forceFlush();
+                    _lastKnownHash = tripModificationsChanges.getHash();
+                    _reapplyTime = getReapplyTime(modifiedTrips);
+                } else {
+                    _log.warn("No trip modifications were successfully applied; will retry on next poll.");
                 }
-
-                _lastKnownHash = tripModificationsChanges.getHash();
-                _reapplyTime = getReapplyTime(modifiedTrips);
             }
             catch (Exception ex) {
                 _log.error("Error processing trip modifications", ex);
