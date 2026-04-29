@@ -225,15 +225,17 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
                     originalShape.getLonForIndex(nearest));
         }
 
+        double threshold = getShapeOverlapThreshold();
+
         // Peak divergence point ( inside the detour )
         int peakReplIdx = 0;
         for (int i = 1; i < replSize; i++) {
             if (dists[i] > dists[peakReplIdx]) peakReplIdx = i;
         }
 
-        if (dists[peakReplIdx] < getShapeOverlapThreshold()) {
+        if (dists[peakReplIdx] < threshold) {
             _log.warn("Peak divergence {}m is below threshold {}m for shape {}, skipping shape diff",
-                    String.format("%.1f", dists[peakReplIdx]), getShapeOverlapThreshold(), replacementShapeId);
+                    String.format("%.1f", dists[peakReplIdx]), threshold, replacementShapeId);
             return null;
         }
 
@@ -241,7 +243,7 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         int replStartIdx = 0;
         int origStartIdx = nearestOnOrig[0];
         for (int i = peakReplIdx - 1; i >= 0; i--) {
-            if (dists[i] <= getShapeOverlapThreshold()) {
+            if (dists[i] <= threshold) {
                 replStartIdx = i;
                 origStartIdx = nearestOnOrig[i];
                 break;
@@ -252,7 +254,7 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         int replEndIdx = replSize - 1;
         int origEndIdx = nearestOnOrig[replSize - 1];
         for (int i = peakReplIdx + 1; i < replSize; i++) {
-            if (dists[i] <= getShapeOverlapThreshold()) {
+            if (dists[i] <= threshold) {
                 replEndIdx = i;
                 origEndIdx = nearestOnOrig[i];
                 break;
