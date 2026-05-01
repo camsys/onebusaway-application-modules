@@ -53,8 +53,10 @@ public class TripModsTripModificationUpdateServiceImpl implements TripModsTripMo
             if (originalTrip != null && _dao.updateStopTimesForTrip(modifiedTrip.getTripEntry(), modifiedTrip.getModifiedStopTimes().getUpdatedStopTimes(),
                     modifiedTrip.getShapeId())) {
                 result.addOriginalTrip(originalTrip);
+                result.addSuccessfullyUpdatedTripId(modifiedTrip.getTripId());
             } else {
                 _log.info("Unable to apply changes for trip {}", modifiedTrip.getTripId());
+                result.addFailedUpdatedTripId(modifiedTrip.getTripId());
             }
         }
         return result;

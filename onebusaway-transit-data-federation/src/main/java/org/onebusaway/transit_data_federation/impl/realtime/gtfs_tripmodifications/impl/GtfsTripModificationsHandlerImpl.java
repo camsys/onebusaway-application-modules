@@ -16,6 +16,7 @@
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.impl;
 
 import org.onebusaway.container.cache.CacheableMethodManager;
+import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
@@ -153,6 +154,7 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
                 _tripModsRevertService.setLastKnownShapeResults(addedShapesResult);
 
                 ModifiedTripsResult modifiedTripsResult = _tripModificationUpdateService.updateTrips(modifiedTrips.getModifiedTrips());
+                _tripModsRevertService.setLastKnownTripModificationResults(modifiedTripsResult);
 
                 if (hasSuccessfulUpdates(addedShapesResult, modifiedTripsResult)) {
                     forceFlush();
@@ -248,10 +250,22 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
         }
     }
 
+    @Refreshable(dependsOn = RefreshableResources.TRANSIT_GRAPH)
+    public void onTransitGraphRefresh() {
+        synchronized (_applyingLock) {
+            _log.info("Transit graph refreshed; resetting Trip Modifications state so changes are reapplied.");
+            _lastKnownHash = null;
+            _reapplyTime = null;
+            _tripModsRevertService.setLastKnownShapeResults(null);
+            _tripModsRevertService.setLastKnownTripModificationResults(null);
+        }
+    }
+
     @Override
     public void resetLastUpdatedTime() {
         synchronized (_applyingLock) {
             _lastKnownHash = null;
+            _reapplyTime = null;
         }
     }
 
