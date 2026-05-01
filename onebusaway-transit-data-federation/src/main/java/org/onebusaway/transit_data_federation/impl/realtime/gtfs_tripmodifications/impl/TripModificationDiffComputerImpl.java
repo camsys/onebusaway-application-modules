@@ -24,14 +24,12 @@ import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
-import org.onebusaway.util.services.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 public class TripModificationDiffComputerImpl implements TripModificationDiffComputer {
@@ -40,17 +38,11 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
 
     private TransitGraphDao _dao;
 
-    private ConfigurationService _configurationService;
-
     @Autowired
     public void setTransitGraphDao(TransitGraphDao dao) {
         _dao = dao;
     }
 
-    @Autowired(required = false)
-    public void setConfigurationService(ConfigurationService configurationService) {
-        _configurationService = configurationService;
-    }
 
     @Override
     public Optional<TripModificationDiff> computeDiff(String entityId,
@@ -61,7 +53,8 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
                                             List<StopTimeEntry> modifiedStopTimes,
                                             AgencyAndId replacementShapeId,
                                             Set<Integer> modifiedAddedStopTimeIndices,
-                                            long effectiveServiceDate) {
+                                            long effectiveServiceDate,
+                                            double shapeOverlapThreshold) {
 
         String tripId = AgencyAndId.convertToString(tripAgencyAndId);
         Optional<StopChangeDiffs> scDiff = getStopTimeDiffs(originalStopTimes, modifiedStopTimes,
@@ -75,7 +68,7 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
             Map<AgencyAndId, StopTimeSnapshot> originalStopTimesSnapShot = stopChangeDiffs.getOriginalStopTimeSnapshots();
             Map<AgencyAndId, StopTimeSnapshot> modifiedStopTimesSnapShot = stopChangeDiffs.getModifiedStopTimeSnapshots();
             long lastUpdated = System.currentTimeMillis();
-            ShapeModificationDiff shapeDiff = getShapeDiff(tripId, replacementShapeId, originalShape);
+            ShapeModificationDiff shapeDiff = getShapeDiff(tripId, replacementShapeId, originalShape, shapeOverlapThreshold);
 
             return Optional.of(new TripModificationDiff(entityId,
                     tripId,
@@ -93,10 +86,11 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
 
     private ShapeModificationDiff getShapeDiff(String tripId,
                                                AgencyAndId replacementShapeId,
-                                               ShapePoints originalShape) {
+                                               ShapePoints originalShape,
+                                               double shapeOverlapThreshold) {
         if (replacementShapeId != null && originalShape != null && !originalShape.isEmpty()) {
             try {
-                return computeShapeDiff(originalShape, replacementShapeId);
+                return computeShapeDiff(originalShape, replacementShapeId, shapeOverlapThreshold);
             } catch (Exception e) {
                 _log.warn("Failed to compute shape diff for trip {}: {}", tripId, e.getMessage());
             }
@@ -189,20 +183,10 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         return change;
     }
 
-
-    // Maximum distance in meters for two shape points to be considered "the same path"
-    static final double DEFAULT_SHAPE_OVERLAP_THRESHOLD_METERS = 25.0;
-    static final String SHAPE_OVERLAP_THRESHOLD_CONFIG_KEY = "tripModifications.shapeOverlapThresholdMeters";
-
-    private double getShapeOverlapThreshold() {
-        if (_configurationService == null) return DEFAULT_SHAPE_OVERLAP_THRESHOLD_METERS;
-        return _configurationService.getConfigurationValueAsDouble(
-                SHAPE_OVERLAP_THRESHOLD_CONFIG_KEY, DEFAULT_SHAPE_OVERLAP_THRESHOLD_METERS);
-    }
-
     public ShapeModificationDiff computeShapeDiff(
             ShapePoints originalShape,
-            AgencyAndId replacementShapeId) {
+            AgencyAndId replacementShapeId,
+            double shapeOverlapThresholdMeters) {
 
         ShapePoints replacement = _dao.getShape(replacementShapeId);
         if (replacement == null || replacement.isEmpty()) {
@@ -226,17 +210,15 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
                     originalShape.getLonForIndex(nearest));
         }
 
-        double threshold = getShapeOverlapThreshold();
-
         // Peak divergence point ( inside the detour )
         int peakReplIdx = 0;
         for (int i = 1; i < replSize; i++) {
             if (dists[i] > dists[peakReplIdx]) peakReplIdx = i;
         }
 
-        if (dists[peakReplIdx] < threshold) {
+        if (dists[peakReplIdx] < shapeOverlapThresholdMeters) {
             _log.warn("Peak divergence {}m is below threshold {}m for shape {}, skipping shape diff",
-                    String.format("%.1f", dists[peakReplIdx]), threshold, replacementShapeId);
+                    String.format("%.1f", dists[peakReplIdx]), shapeOverlapThresholdMeters, replacementShapeId);
             return null;
         }
 
@@ -244,7 +226,7 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         int replStartIdx = 0;
         int origStartIdx = nearestOnOrig[0];
         for (int i = peakReplIdx - 1; i >= 0; i--) {
-            if (dists[i] <= threshold) {
+            if (dists[i] <= shapeOverlapThresholdMeters) {
                 replStartIdx = i;
                 origStartIdx = nearestOnOrig[i];
                 break;
@@ -255,7 +237,7 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
         int replEndIdx = replSize - 1;
         int origEndIdx = nearestOnOrig[replSize - 1];
         for (int i = peakReplIdx + 1; i < replSize; i++) {
-            if (dists[i] <= threshold) {
+            if (dists[i] <= shapeOverlapThresholdMeters) {
                 replEndIdx = i;
                 origEndIdx = nearestOnOrig[i];
                 break;

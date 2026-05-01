@@ -53,9 +53,6 @@ public class TripModsTripModificationCreationServiceImplTest {
     private EntityIdService entityIdService;
 
     @Mock
-    private NarrativeService narrativeService;
-
-    @Mock
     private TripModsStopTimeFetcher stopTimeFetcher;
 
     @Mock
@@ -70,32 +67,20 @@ public class TripModsTripModificationCreationServiceImplTest {
     private TimeService timeService;
 
     @Mock
-    private TripModsTimeService tripModsTimeService;
-
-    @Mock
     private TripEntryImpl tripEntry;
-
-    @Mock
-    private TripModificationDiffComputer tripModificationDiffComputer;
-
-    @Mock
-    private TripModificationDiffCache tripModificationDiffCache;
 
     private TripModsTripModificationCreationServiceImpl service;
 
     @Before
     public void setUp() {
         util = Mockito.spy(new GtfsTripModificationsUtil(timeService, blockCalendarService));
+
         service = new TripModsTripModificationCreationServiceImpl(
                 dao,
                 entityIdService,
-                narrativeService,
                 stopTimeFetcher,
                 stopTimeEntryFactory,
-                util,
-                tripModsTimeService,
-                tripModificationDiffComputer,
-                tripModificationDiffCache
+                util
         );
     }
 

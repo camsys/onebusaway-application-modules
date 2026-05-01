@@ -17,6 +17,7 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificati
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.TripModificationConfiguration;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 
@@ -46,6 +47,7 @@ public interface TripModificationDiffComputer {
             List<StopTimeEntry> modifiedStopTimes,
             AgencyAndId replacementShapeId,
             Set<Integer> modifiedAddedStopTimeIndices,
-            long effectiveServiceDate);
+            long effectiveServiceDate,
+            double shapeOverlapThreshold);
 
 }

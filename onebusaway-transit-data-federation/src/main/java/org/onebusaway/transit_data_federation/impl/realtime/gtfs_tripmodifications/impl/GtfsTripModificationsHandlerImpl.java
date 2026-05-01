@@ -20,6 +20,7 @@ import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.TimeService;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.TripModificationConfiguration;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.*;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.*;
 import org.slf4j.Logger;
@@ -127,7 +128,8 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
     }
 
     @Override
-    public void handleTripModifications(TripModificationsChanges tripModificationsChanges) {
+    public void handleTripModifications(TripModificationsChanges tripModificationsChanges,
+                                        TripModificationConfiguration tripModificationConfiguration) {
 
         synchronized (_applyingLock) {
             // Check whether changes should be re-applied
@@ -146,7 +148,7 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
                 AddedShapesResult addedShapesResult = _tripModsShapeUpdateService.addShapes(addedShapes.getAddedShapes());
 
                 ModifiedTrips modifiedTrips = _tripModificationCreationService.createModifiedTrips(tripModificationsChanges.getTripModifications());
-                Collection<TripModificationDiff> diffs = _tripModificationDiffService.createDiffsFromModifications(modifiedTrips);
+                Collection<TripModificationDiff> diffs = _tripModificationDiffService.createDiffsFromModifications(modifiedTrips, tripModificationConfiguration);
 
                 _tripModsRevertService.setLastKnownShapeResults(addedShapesResult);
 
@@ -208,10 +210,6 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
         return false;
     }
 
-    @Override
-    public boolean isApplying() {
-        return _isApplying;
-    }
 
     // Re-apply time is earliest of:
     // 1) 3:00AM Local time tonight

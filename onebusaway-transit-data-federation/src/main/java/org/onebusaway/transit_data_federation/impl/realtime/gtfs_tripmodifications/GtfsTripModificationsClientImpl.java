@@ -54,6 +54,8 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
 
     private int _refreshInterval = 60;
 
+    private TripModificationConfiguration _tripModificationConfiguration;
+
 
     public void setRefreshInterval(int refreshInterval) {
         _refreshInterval = refreshInterval;
@@ -66,6 +68,10 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
         } catch (URISyntaxException | IllegalArgumentException e) {
             _gtfsTripModificationsFetcher = null;
         }
+    }
+
+    public void setTripModificationConfiguration(TripModificationConfiguration tripModificationConfiguration) {
+        _tripModificationConfiguration = tripModificationConfiguration;
     }
 
     public void setTripModificationsEnabled(boolean enabled) {
@@ -105,6 +111,9 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
                 _log.debug("Gtfs Trip Modifications Fetcher is undefined. Likely cause is invalid Trip Modifications URL {}", _gtfsTripModificationsUrl);
                 return;
             }
+            if(_tripModificationConfiguration == null){
+                _tripModificationConfiguration = new TripModificationConfiguration();
+            }
 
             _log.info("Fetching GTFS Trip Modifications from {}", _gtfsTripModificationsUrl);
 
@@ -123,6 +132,10 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
             _log.error("Error ({}): {}", t.getClass().getName(), t.getMessage(), t);
         }
 
+    }
+
+    private TripModificationConfiguration getTripModsConfig() {
+        return new TripModificationConfiguration();
     }
 
     private void processFeed(FeedMessage feedMessage) {
@@ -172,7 +185,7 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
             md.update(entity.toByteArray());
         }
          tripModificationsChanges.setHash(md.digest());
-        _gtfsTripModificationsHandler.handleTripModifications(tripModificationsChanges);
+        _gtfsTripModificationsHandler.handleTripModifications(tripModificationsChanges, _tripModificationConfiguration);
 
     }
 

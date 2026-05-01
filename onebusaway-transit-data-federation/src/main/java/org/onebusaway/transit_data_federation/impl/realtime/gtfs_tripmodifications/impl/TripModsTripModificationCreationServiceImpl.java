@@ -51,8 +51,6 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
 
     private static final Logger _log = LoggerFactory.getLogger(TripModsTripModificationCreationServiceImpl.class);
 
-    private static final int DEFAULT_UPDATED_GTFS_STOP_SEQUENCE = -999;
-
     private static final double DEFAULT_UPDATED_SHAPE_DIST_TRAVELED = -999;
 
     private static final String NULL_ENTITY_ID = null;
@@ -61,40 +59,25 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
 
     private final EntityIdService _entityIdService;
 
-    private final NarrativeService _narrativeService;
-
     private final TripModsStopTimeFetcher _stopTimeFetcher;
 
     private final TripModsStopTimeEntryFactory  _stopTimeEntryFactory;
 
     private final GtfsTripModificationsUtil _util;
 
-    private final TripModsTimeService _timeService;
-
-    private final TripModificationDiffComputer _tripModificationDiffComputer;
-
-    private final TripModificationDiffCache _diffCache;
 
 
     @Autowired
     public TripModsTripModificationCreationServiceImpl(TransitGraphDao dao,
                                                        EntityIdService entityIdService,
-                                                       NarrativeService narrativeService,
                                                        TripModsStopTimeFetcher stopTimeFetcher,
                                                        TripModsStopTimeEntryFactory  stopTimeEntryFactory,
-                                                       GtfsTripModificationsUtil gtfsTripModificationsUtil,
-                                                       TripModsTimeService timeService,
-                                                       TripModificationDiffComputer tripModificationDiffComputer,
-                                                       TripModificationDiffCache tripModificationDiffCache) {
+                                                       GtfsTripModificationsUtil gtfsTripModificationsUtil) {
         _dao = dao;
         _entityIdService = entityIdService;
-        _narrativeService = narrativeService;
         _stopTimeFetcher = stopTimeFetcher;
         _stopTimeEntryFactory = stopTimeEntryFactory;
         _util = gtfsTripModificationsUtil;
-        _timeService = timeService;
-        _tripModificationDiffComputer = tripModificationDiffComputer;
-        _diffCache = tripModificationDiffCache;
 
     }
 
@@ -160,7 +143,7 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
             return false;
         }
         if(modifiedTrip.getServiceDate() == null) {
-            _log.warn("Unable to create ModifiedTrip. No service date for tripId {}.", modifiedTrip.getTripId());
+            _log.warn("Unable to create ModifiedTrip. No service date or service date is in the past for tripId {}.", modifiedTrip.getTripId());
             return false;
         }
         if(modifiedTrip.getModifiedStopTimes() == null || modifiedTrip.getModifiedStopTimes().getUpdatedStopTimes().isEmpty()) {
@@ -168,7 +151,7 @@ public class TripModsTripModificationCreationServiceImpl implements TripModsTrip
             return false;
         }
         if(!selectedTripServiceDates.contains(modifiedTrip.getServiceDate())) {
-            _log.warn("Unable to create ModifiedTrip. Trip {} does not have an active service date {}.", modifiedTrip.getTripId(), modifiedTrip.getServiceDate());
+            _log.warn("Unable to create ModifiedTrip. Trip {} does not have an active service for today.", modifiedTrip.getTripId(), modifiedTrip.getServiceDate());
             return false;
         }
         return true;

@@ -16,6 +16,7 @@
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service;
 
 import com.google.transit.realtime.GtfsRealtime.TripModifications;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.TripModificationConfiguration;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.TripModificationsChanges;
 
 import java.util.Collection;
@@ -27,9 +28,9 @@ public interface GtfsTripModificationsHandler {
      *
      * @param tripModificationsChanges to process
      */
-    void handleTripModifications(TripModificationsChanges tripModificationsChanges);
 
-    boolean isApplying();
+    void handleTripModifications(TripModificationsChanges tripModificationsChanges,
+                                 TripModificationConfiguration tripModificationConfiguration);
 
 
     void resetLastUpdatedTime();

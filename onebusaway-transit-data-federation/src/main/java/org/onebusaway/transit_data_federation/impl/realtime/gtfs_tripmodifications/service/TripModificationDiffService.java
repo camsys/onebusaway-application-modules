@@ -17,6 +17,7 @@ package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificati
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.TripModificationConfiguration;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrips;
 
 import java.time.LocalDate;
@@ -38,5 +39,6 @@ public interface TripModificationDiffService {
 
     Optional<TripModificationDiff> getTripModificationDiffs(AgencyAndId tripId, LocalDate date);
 
-    Collection<TripModificationDiff> createDiffsFromModifications(ModifiedTrips modifiedTrips);
+    Collection<TripModificationDiff> createDiffsFromModifications(ModifiedTrips modifiedTrips,
+                                                                  TripModificationConfiguration tripModificationConfiguration);
 }

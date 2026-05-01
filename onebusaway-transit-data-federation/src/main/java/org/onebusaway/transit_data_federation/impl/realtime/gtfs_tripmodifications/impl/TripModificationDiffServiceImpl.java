@@ -16,6 +16,7 @@
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.impl;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.TripModificationConfiguration;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedStopTimes;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrip;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrips;
@@ -90,7 +91,8 @@ public class TripModificationDiffServiceImpl implements TripModificationDiffServ
     }
 
     @Override
-    public Collection<TripModificationDiff> createDiffsFromModifications(ModifiedTrips modifiedTrips) {
+    public Collection<TripModificationDiff> createDiffsFromModifications(ModifiedTrips modifiedTrips,
+                                                                         TripModificationConfiguration tripModificationConfiguration) {
 
         Map<AgencyAndId, TripModificationDiff> newCache = new HashMap<>();
 
@@ -113,6 +115,9 @@ public class TripModificationDiffServiceImpl implements TripModificationDiffServ
             AgencyAndId modifiedTripShapeId = modifiedTrip.getShapeId();
             Set<Integer> modifiedTripAddedStopIndices = modifiedStopTimes.getModifiedAddedStopTimeIndices();
 
+            // Shape Configuration
+            double shapeOverlapThreshold = tripModificationConfiguration.getShapeOverlapThreshold();
+
 
             Optional<TripModificationDiff> diff = _tripModificationDiffComputer.computeDiff(
                     entityId,
@@ -123,7 +128,8 @@ public class TripModificationDiffServiceImpl implements TripModificationDiffServ
                     modifiedTripStopTimesList,
                     modifiedTripShapeId,
                     modifiedTripAddedStopIndices,
-                    effectiveServiceDate
+                    effectiveServiceDate,
+                    shapeOverlapThreshold
             );
 
             if (diff.isEmpty()) {
