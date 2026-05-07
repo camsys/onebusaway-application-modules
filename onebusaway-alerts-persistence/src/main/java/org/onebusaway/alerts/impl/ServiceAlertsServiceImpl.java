@@ -81,71 +81,77 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 
 	@Override
 	public ServiceAlertRecord createOrUpdateServiceAlert(ServiceAlertRecord record) {
+		if (record.getServiceAlertId() == null) {
+			record.setServiceAlertId(UUID.randomUUID().toString());
+		}
+		long lastModified = SystemTime.currentTimeMillis();
+		if (record.getCreationTime() < 1L) {
+			record.setCreationTime(lastModified);
+		}
+		AgencyAndId id = ServiceAlertLibrary.agencyAndId(record.getAgencyId(), record.getServiceAlertId());
+
 		_writeLock.lock();
 		try {
-			if (record.getServiceAlertId() == null) {
-				record.setServiceAlertId(UUID.randomUUID().toString());
-			}
-			long lastModified = SystemTime.currentTimeMillis();
-			if (record.getCreationTime() < 1L) {
-				record.setCreationTime(lastModified);
-			}
-			AgencyAndId id = ServiceAlertLibrary.agencyAndId(record.getAgencyId(), record.getServiceAlertId());
 			_cache.putServiceAlert(id, record);
-			saveDBServiceAlert(record, lastModified);
-			return record;
 		} finally {
 			_writeLock.unlock();
 		}
+
+		saveDBServiceAlert(record, lastModified);
+		return record;
 	}
 
 	@Override
 	public List<ServiceAlertRecord> createOrUpdateServiceAlerts(String agencyId, List<ServiceAlertRecord> records) {
+		long lastModified = SystemTime.currentTimeMillis();
+		List<ServiceAlertRecord> changed = new ArrayList<>();
+
+		for (ServiceAlertRecord record : records) {
+			if (record.getServiceAlertId() == null) {
+				record.setServiceAlertId(UUID.randomUUID().toString());
+			}
+			if (record.getCreationTime() < 1L) {
+				record.setCreationTime(lastModified);
+			}
+		}
+
 		_writeLock.lock();
 		try {
-			long lastModified = SystemTime.currentTimeMillis();
-			List<ServiceAlertRecord> changed = new ArrayList<>();
-
 			for (ServiceAlertRecord record : records) {
-				if (record.getServiceAlertId() == null) {
-					record.setServiceAlertId(UUID.randomUUID().toString());
-				}
-				if (record.getCreationTime() < 1L) {
-					record.setCreationTime(lastModified);
-				}
 				AgencyAndId id = ServiceAlertLibrary.agencyAndId(record.getAgencyId(), record.getServiceAlertId());
 				ServiceAlertRecord existing = _cache.getServiceAlert(id);
-
 				if (existing == null || !existing.equals(record)) {
 					changed.add(record);
 				}
 				_cache.putServiceAlert(id, record);
 			}
-
-			if (!changed.isEmpty()) {
-				saveDBServiceAlerts(changed, lastModified);
-			}
-			return records;
 		} finally {
 			_writeLock.unlock();
 		}
+
+		if (!changed.isEmpty()) {
+			saveDBServiceAlerts(changed, lastModified);
+		}
+		return records;
 	}
 
 	@Override
 	public ServiceAlertRecord copyServiceAlert(ServiceAlertRecord record) {
+		record.setServiceAlertId(UUID.randomUUID().toString());
+		long lastModified = SystemTime.currentTimeMillis();
+		record.setCreationTime(lastModified);
+		record.setCopy(Boolean.TRUE);
+		AgencyAndId id = ServiceAlertLibrary.agencyAndId(record.getAgencyId(), record.getServiceAlertId());
+
 		_writeLock.lock();
 		try {
-			record.setServiceAlertId(UUID.randomUUID().toString());
-			long lastModified = SystemTime.currentTimeMillis();
-			record.setCreationTime(lastModified);
-			record.setCopy(Boolean.TRUE);
-			AgencyAndId id = ServiceAlertLibrary.agencyAndId(record.getAgencyId(), record.getServiceAlertId());
 			_cache.putServiceAlert(id, record);
-			saveDBServiceAlert(record, lastModified);
-			return record;
 		} finally {
 			_writeLock.unlock();
 		}
+
+		saveDBServiceAlert(record, lastModified);
+		return record;
 	}
 
 	@Override
@@ -155,19 +161,23 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 
 	@Override
 	public void removeServiceAlerts(List<AgencyAndId> serviceAlertIds) {
+		List<ServiceAlertRecord> toDelete = new ArrayList<>();
+
 		_writeLock.lock();
 		try {
 			for (AgencyAndId serviceAlertId : serviceAlertIds) {
-				_cache.removeServiceAlert(serviceAlertId);
-				ServiceAlertRecord record = _persister.getServiceAlertRecordByAlertId(
-						serviceAlertId.getAgencyId(), serviceAlertId.getId());
-				if (record != null) {
-					_log.info("deleting service alert {}", serviceAlertId.getId());
-					_persister.delete(record);
+				ServiceAlertRecord removed = _cache.removeServiceAlert(serviceAlertId);
+				if (removed != null) {
+					toDelete.add(removed);
 				}
 			}
 		} finally {
 			_writeLock.unlock();
+		}
+
+		for (ServiceAlertRecord record : toDelete) {
+			_log.info("deleting service alert {}", record.getServiceAlertId());
+			_persister.delete(record);
 		}
 	}
 
@@ -185,13 +195,21 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 
 	@Override
 	public boolean sync() {
+		List<ServiceAlertRecord> alerts = _persister.getAlerts();
+		ServiceAlertsCache newCache = new ServiceAlertsCacheInMemoryImpl();
+		for (ServiceAlertRecord alert : alerts) {
+			AgencyAndId id = ServiceAlertLibrary.agencyAndId(alert.getAgencyId(), alert.getServiceAlertId());
+			newCache.putServiceAlert(id, alert);
+		}
+
 		_writeLock.lock();
 		try {
-			loadServiceAlerts();
-			return true;
+			_cache = newCache;
+			_persister.markSynced();
 		} finally {
 			_writeLock.unlock();
 		}
+		return true;
 	}
 
 	@Override
@@ -394,8 +412,8 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 	 * before the bean is exposed to other threads.
 	 */
 	private void loadServiceAlerts() {
-		_cache.clear();
 		List<ServiceAlertRecord> alerts = _persister.getAlerts();
+		_cache.clear();
 		_log.info("Loaded {} service alerts from DB", alerts.size());
 		for (ServiceAlertRecord alert : alerts) {
 			AgencyAndId id = ServiceAlertLibrary.agencyAndId(alert.getAgencyId(), alert.getServiceAlertId());

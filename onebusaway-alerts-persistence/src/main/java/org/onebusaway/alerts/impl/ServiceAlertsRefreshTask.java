@@ -19,8 +19,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.PostConstruct;
+import java.time.Duration;
 
 @Component
 public class ServiceAlertsRefreshTask {
@@ -29,6 +33,7 @@ public class ServiceAlertsRefreshTask {
 
     private ServiceAlertsServiceImpl _service;
     private ServiceAlertsPersistence _persister;
+    private ThreadPoolTaskScheduler _taskScheduler;
 
     @Autowired
     public void setServiceAlertsService(ServiceAlertsServiceImpl service) {
@@ -40,8 +45,17 @@ public class ServiceAlertsRefreshTask {
         _persister = persister;
     }
 
-    @Scheduled(fixedDelayString = "${serviceAlerts.refreshInterval:60000}")
-    @Transactional(readOnly = true)
+    @Autowired
+    public void setTaskScheduler(ThreadPoolTaskScheduler taskScheduler) {
+        _taskScheduler = taskScheduler;
+    }
+
+    @PostConstruct
+    public void setup() {
+        _taskScheduler.scheduleWithFixedDelay(this::refresh, Duration.ofMillis(60000));
+    }
+
+
     public void refresh() {
         try {
             if (_persister.needsSync()) {
