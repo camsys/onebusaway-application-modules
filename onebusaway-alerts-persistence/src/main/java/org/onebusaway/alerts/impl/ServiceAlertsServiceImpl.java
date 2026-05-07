@@ -93,11 +93,11 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 		_writeLock.lock();
 		try {
 			_cache.putServiceAlert(id, record);
+			saveDBServiceAlert(record, lastModified);
 		} finally {
 			_writeLock.unlock();
 		}
 
-		saveDBServiceAlert(record, lastModified);
 		return record;
 	}
 
@@ -125,12 +125,11 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 				}
 				_cache.putServiceAlert(id, record);
 			}
+			if (!changed.isEmpty()) {
+				saveDBServiceAlerts(changed, lastModified);
+			}
 		} finally {
 			_writeLock.unlock();
-		}
-
-		if (!changed.isEmpty()) {
-			saveDBServiceAlerts(changed, lastModified);
 		}
 		return records;
 	}
@@ -146,11 +145,10 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 		_writeLock.lock();
 		try {
 			_cache.putServiceAlert(id, record);
+			saveDBServiceAlert(record, lastModified);
 		} finally {
 			_writeLock.unlock();
 		}
-
-		saveDBServiceAlert(record, lastModified);
 		return record;
 	}
 
@@ -171,13 +169,12 @@ public class ServiceAlertsServiceImpl implements ServiceAlertsService {
 					toDelete.add(removed);
 				}
 			}
+			for (ServiceAlertRecord record : toDelete) {
+				_log.info("deleting service alert {}", record.getServiceAlertId());
+				_persister.delete(record);
+			}
 		} finally {
 			_writeLock.unlock();
-		}
-
-		for (ServiceAlertRecord record : toDelete) {
-			_log.info("deleting service alert {}", record.getServiceAlertId());
-			_persister.delete(record);
 		}
 	}
 
