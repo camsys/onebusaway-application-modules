@@ -27,8 +27,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -184,6 +186,8 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
                 String allTripModificationTrips = getAllTripModificationTrips(entity.getTripModifications());
                 try {
                     tripModificationsChanges.addTripModification(HashUtil.getJoinedIdentifier(entity.getId(), HashUtil.getEncodedString(allTripModificationTrips)), entity.getTripModifications());
+                } catch (NoSuchAlgorithmException e) {
+                    _log.error("SHA-256 algorithm is unavailable", e);
                 } catch (IllegalArgumentException e) {
                     _log.error("Error getting an encoded string of all of the trip modification trips: {}", allTripModificationTrips , e);
                 }
