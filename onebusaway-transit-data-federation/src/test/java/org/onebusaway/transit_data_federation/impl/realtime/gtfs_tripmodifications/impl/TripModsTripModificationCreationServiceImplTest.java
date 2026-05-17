@@ -24,6 +24,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.service.TimeService;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedStopTimes;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrip;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTrips;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.StopEntryData;
@@ -355,6 +356,59 @@ public class TripModsTripModificationCreationServiceImplTest {
         ModifiedTrip result = service.createModifiedTripForExistingTrip(tripId);
 
         assertNull(result);
+    }
+
+    @Test
+    public void getModifiedStopTimeEntriesWithNoReplacementStopsOnlyKeepsPreSelectionStops() {
+        AgencyAndId stopId0 = new AgencyAndId("MTA", "stop0");
+        AgencyAndId stopId1 = new AgencyAndId("MTA", "stop1");
+        AgencyAndId stopId2 = new AgencyAndId("MTA", "stop2");
+
+        StopEntryImpl stopEntry0 = new StopEntryImpl(stopId0, 40.0, -73.0);
+        StopEntryImpl stopEntry1 = new StopEntryImpl(stopId1, 40.1, -73.1);
+        StopEntryImpl stopEntry2 = new StopEntryImpl(stopId2, 40.2, -73.2);
+
+        StopTimeEntryImpl st0 = new StopTimeEntryImpl();
+        st0.setStop(stopEntry0);
+        st0.setGtfsSequence(1);
+        st0.setArrivalTime(100);
+        st0.setDepartureTime(110);
+
+        StopTimeEntryImpl st1 = new StopTimeEntryImpl();
+        st1.setStop(stopEntry1);
+        st1.setGtfsSequence(2);
+        st1.setArrivalTime(200);
+        st1.setDepartureTime(210);
+
+        StopTimeEntryImpl st2 = new StopTimeEntryImpl();
+        st2.setStop(stopEntry2);
+        st2.setGtfsSequence(3);
+        st2.setArrivalTime(300);
+        st2.setDepartureTime(310);
+
+        List<StopTimeEntry> stopTimes = Arrays.asList(st0, st1, st2);
+        when(tripEntry.getStopTimes()).thenReturn(stopTimes);
+
+        when(dao.getStopEntryForId(stopId0)).thenReturn(stopEntry0);
+        when(dao.getStopEntryForId(stopId1)).thenReturn(stopEntry1);
+        when(dao.getStopEntryForId(stopId2)).thenReturn(stopEntry2);
+
+        GtfsRealtime.TripModifications.Modification modification =
+                GtfsRealtime.TripModifications.Modification.newBuilder()
+                        .setStartStopSelector(GtfsRealtime.StopSelector.newBuilder().setStopSequence(2))
+                        .setEndStopSelector(GtfsRealtime.StopSelector.newBuilder().setStopSequence(3))
+                        .build();
+
+        ModifiedStopTimes result = service.getModifiedStopTimeEntries(tripEntry, Collections.singletonList(modification));
+
+        assertEquals(1, result.getUpdatedStopTimes().size());
+        assertSame(st0, result.getUpdatedStopTimes().get(0));
+
+        assertEquals(2, result.getOriginalRemovedStopTimeIndices().size());
+        assertTrue(result.getOriginalRemovedStopTimeIndices().contains(1));
+        assertTrue(result.getOriginalRemovedStopTimeIndices().contains(2));
+
+        assertTrue(result.getModifiedAddedStopTimeIndices().isEmpty());
     }
 
     @Test

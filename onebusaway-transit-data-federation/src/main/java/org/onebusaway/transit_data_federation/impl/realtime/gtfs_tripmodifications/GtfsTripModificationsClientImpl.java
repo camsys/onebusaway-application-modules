@@ -19,6 +19,7 @@ import org.onebusaway.realtime.gtfsrt.util.GtfsRealtimeDeserializer;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.impl.GtfsTripModificationsFetcherImpl;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.TripModificationsChanges;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.*;
+import org.onebusaway.transit_data_federation.util.HashUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +27,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -175,18 +178,32 @@ public class GtfsTripModificationsClientImpl implements GtfsTripModificationsCli
                 .collect(Collectors.toList());
 
         for (FeedEntity entity : sortedFeedEntities) {
-            if (entity.hasShape()) {
-                tripModificationsChanges.addShape(entity.getId(), entity.getShape());
+            if (entity.hasShape() && entity.getShape().getShapeId() != null) {
+                tripModificationsChanges.addShape(HashUtil.getJoinedIdentifier(entity.getId(), entity.getShape().getShapeId()), entity.getShape());
             } else if (entity.hasStop()) {
                 tripModificationsChanges.addStop(entity.getId(), entity.getStop());
             } else if (entity.hasTripModifications()) {
-                tripModificationsChanges.addTripModification(entity.getId(), entity.getTripModifications());
+                String allTripModificationTrips = getAllTripModificationTrips(entity.getTripModifications());
+                try {
+                    tripModificationsChanges.addTripModification(HashUtil.getJoinedIdentifier(entity.getId(), HashUtil.getEncodedString(allTripModificationTrips)), entity.getTripModifications());
+                } catch (NoSuchAlgorithmException e) {
+                    _log.error("SHA-256 algorithm is unavailable", e);
+                } catch (IllegalArgumentException e) {
+                    _log.error("Error getting an encoded string of all of the trip modification trips: {}", allTripModificationTrips , e);
+                }
             }
             md.update(entity.toByteArray());
         }
          tripModificationsChanges.setHash(md.digest());
         _gtfsTripModificationsHandler.handleTripModifications(tripModificationsChanges, _tripModificationConfiguration);
 
+    }
+
+    static String getAllTripModificationTrips(com.google.transit.realtime.GtfsRealtime.TripModifications tripModifications) {
+        return tripModifications.getSelectedTripsList().stream()
+                .flatMap(st -> st.getTripIdsList().stream())
+                .sorted()
+                .collect(Collectors.joining(","));
     }
 
     static int getEntityType(FeedEntity entity) {
