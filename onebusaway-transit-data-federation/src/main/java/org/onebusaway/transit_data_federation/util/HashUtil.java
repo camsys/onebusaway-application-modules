@@ -21,7 +21,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
 public class HashUtil {
-    public static String getEncodedString(String input) throws NoSuchAlgorithmException {
+    public static String getEncodedString(String input)  {
         byte[] hashBytes = MessageDigest.getInstance("SHA-256").digest(input.getBytes(StandardCharsets.UTF_8));
         return Base64.getEncoder().encodeToString(hashBytes);
     }
