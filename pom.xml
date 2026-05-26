@@ -19,7 +19,7 @@
         <gwt-version>2.4.0</gwt-version>
         <csv-entities-version>1.1.7</csv-entities-version>
         <collections-version>1.2.8</collections-version>
-        <gtfs-version>1.4.29-cs</gtfs-version>
+        <gtfs-version>1.4.30-cs</gtfs-version>
         <gtfs-api-version>1.2.32</gtfs-api-version>
         <guava-version>16.0.1</guava-version>
         <jackson-version>2.12.0</jackson-version>
