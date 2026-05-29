@@ -1,60 +1,155 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-
-    Copyright (C) 2008 Brian Ferris <bdferris@onebusaway.org>
-
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-            http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-
--->
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xsi:schemaLocation="
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
 
-    <bean id="dataSource"
-          class="org.springframework.jndi.JndiObjectFactoryBean">
-      <property name="jndiName"
-                value="java:comp/env/jdbc/appDB"/>   
-      <property name="lookupOnStartup"
-                value="true"/>   
-      <property name="cache"
-                value="true"/>   
-      <property name="proxyInterface"
-                value="javax.sql.DataSource"/>   
-      <property name="resourceRef"
-                value="true" />
+    <!--    <bean id="dataSource"-->
+    <!--          class="org.springframework.jndi.JndiObjectFactoryBean">-->
+    <!--      <property name="jndiName"-->
+    <!--                value="java:comp/env/jdbc/appDB"/>-->
+    <!--      <property name="lookupOnStartup"-->
+    <!--                value="true"/>-->
+    <!--      <property name="cache"-->
+    <!--                value="true"/>-->
+    <!--      <property name="proxyInterface"-->
+    <!--                value="javax.sql.DataSource"/>-->
+    <!--      <property name="resourceRef"-->
+    <!--                value="true" />-->
+    <!--    </bean>-->
+
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
+        <property name="url" value="jdbc:hsqldb:mem:org_onebusaway_users" />
+        <property name="username" value="sa" />
+        <property name="password" value="" />
     </bean>
+
 
     <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
-      <property name="order" value="-2" />
-      <property name="properties">
-          <props>
-              <prop key="bundlePath">/var/lib/obanyc/no-such-dir</prop>
-         </props>
-      </property>
+        <property name="order" value="-2" />
+        <property name="properties">
+            <props>
+                <prop key="bundlePath">/var/lib/oba/bundle</prop>
+            </props>
+        </property>
     </bean>
 
+    <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
+        <property name="properties">
+            <props>
+                <prop key="blockLocationServiceImpl.persistBlockLocationRecords">false</prop>
+                <prop key="blockLocationServiceImpl.locationInterpolation">false</prop>
+                <prop key="blockStatusServiceImpl.runningLateWindow">3600</prop>
+                <prop key="routeBeanServiceImpl.doNotSortRouteIdList">1_H6,1_REX</prop>
+                <prop key="configurationServiceClient.externalConfigurationApiUrl">https://adminv2.qa.wmata.obaweb.org/api/config/list</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="wmata_avl" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
+        <property name="tripUpdatesUrl" value="https://api.goswift.ly/real-time/wmata/gtfs-rt-trip-updates" />
+        <property name="vehiclePositionsUrl" value="https://api.goswift.ly/real-time/wmata/gtfs-rt-vehicle-positions" />
+        <property name="refreshInterval" value="5" />
+        <property name="agencyIds">
+            <list>
+                <value>1</value>
+            </list>
+        </property>
+        <property name="showNegativeScheduledArrivals" value="false"/>
+        <property name="headersMap">
+            <map>
+                <entry key="Authorization" value="109318e3874474894d44935c1dae814a"></entry>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="wmata_alerts" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
+        <property name="alertCollectionUrl" value="https://adminv2.qa.wmata.obaweb.org/api/alerts/service/1.pb" />
+        <property name="refreshInterval" value="60" />
+        <property name="alertSourcePrefix" value="WMATA_" />
+        <property name="agencyIds">
+            <list>
+                <value>1</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="dash_alerts" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
+        <property name="alertCollectionUrl" value="https://adminv2.qa.wmata.obaweb.org/api/alerts/service/71.pb" />
+        <property name="refreshInterval" value="300" />
+        <property name="agencyIds">
+            <list>
+                <value>71</value>
+            </list>
+        </property>
+    </bean>
+    <bean id ="dc_alerts" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
+        <property name="alertCollectionUrl" value="https://adminv2.qa.wmata.obaweb.org/api/alerts/service/45.pb" />
+        <property name="refreshInterval" value="300" />
+        <property name="agencyIds">
+            <list>
+                <value>45</value>
+            </list>
+        </property>
+    </bean>
+
+
+    <bean id="dash_avl" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
+        <property name="tripUpdatesUrl" value="https://api.goswift.ly/real-time/alexandria-dash/gtfs-rt-trip-updates" />
+        <property name="vehiclePositionsUrl" value="https://api.goswift.ly/real-time/alexandria-dash/gtfs-rt-vehicle-positions" />
+        <property name="refreshInterval" value="5" />
+        <property name="agencyIds">
+            <list>
+                <value>71</value>
+            </list>
+        </property>
+        <property name="showNegativeScheduledArrivals" value="false"/>
+        <property name="headersMap">
+            <map>
+                <entry key="Authorization" value="4769b19b1e9e0a56326c194c90a809f6"></entry>
+            </map>
+        </property>
+    </bean>
+
+    <!--    <bean class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">-->
+    <!--        <property name="tripUpdatesUrl" value="http://data.peaktransit.com/gtfsrt/45/TripUpdate.pb" />-->
+    <!--        <property name="vehiclePositionsUrl" value="http://data.peaktransit.com/gtfsrt/45/VehiclePosition.pb" />-->
+    <!--        <property name="refreshInterval" value="90" />-->
+    <!--        <property name="maxDeltaLocationMeters" value="1000" />-->
+    <!--        <property name="useLabelAsId" value="true" />-->
+    <!--        <property name="agencyIds">-->
+    <!--            <list>-->
+    <!--                <value>45</value>-->
+    <!--            </list>-->
+    <!--        </property>-->
+    <!--        <property name="showNegativeScheduledArrivals" value="false"/>-->
+    <!--    </bean>-->
+
+    <!--
+        <bean class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">
+        <property name="alertsUrl" value="http://adminv2.qa.wmata.obaweb.org:8080/api/alerts-from-rss/service-alerts" />
+
+        <property name="refreshInterval" value="300" />
+        <property name="agencyIds">
+            <list>
+                    <value>1</value>
+            </list>
+            </property>
+        </bean>
+    -->
+
     <bean id="httpServiceClient" class="org.onebusaway.transit_data_federation.util.HttpServiceClientImpl" >
-      <constructor-arg type="java.lang.String" value="localhost"/>
-      <constructor-arg type="java.lang.Integer" value="9999" />
+        <constructor-arg type="java.lang.String" value="https" />
+        <constructor-arg type="java.lang.String" value="adminv2.qa.wmata.obaweb.org"/>
+        <constructor-arg type="java.lang.Integer" value="443" />
         <constructor-arg type="java.lang.String" value="/api/" />
     </bean>
 
     <bean id="bundleManagementService" class="org.onebusaway.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
-      <property name="bundleStoreRoot" value="/var/lib/oba/tds/bundle" />
-      <property name="standaloneMode" value="false" />
+        <property name="bundleStoreRoot" value="${bundlePath}" />
+        <property name="standaloneMode" value="false" />
     </bean>
 
+    <bean id="refreshServiceImpl" class="org.onebusaway.container.refresh.RefreshServiceImpl" />
 </beans>

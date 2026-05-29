@@ -42,15 +42,15 @@
         <Logger name="org.springframework.remoting.support.RemoteInvocationTraceInterceptor"
                 level="error"
                 additivity="false">
-            <AppenderRef ref="${log4j.appender}"/>
+            <AppenderRef ref="stdout"/>
         </Logger>
         <Logger name="org.hibernate.engine.internal.StatisticalLoggingSessionEventListener"
                 level="fatal"
                 additivity="false">
-            <AppenderRef ref="${log4j.appender}"/>
+            <AppenderRef ref="stdout"/>
         </Logger>
         <Root level="info">
-            <AppenderRef ref="${log4j.appender}"/>
+            <AppenderRef ref="stdout"/>
         </Root>
     </Loggers>
 
