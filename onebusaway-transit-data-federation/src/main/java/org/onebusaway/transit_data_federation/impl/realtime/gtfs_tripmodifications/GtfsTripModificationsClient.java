@@ -16,7 +16,15 @@
 package org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications;
 
 public interface GtfsTripModificationsClient {
+    /** Poll every configured feed. */
     void update();
 
+    /** Poll a single configured feed. */
+    void update(String feedId);
+
+    /** Force every configured feed to be reapplied on its next poll. */
     void reapplyTripModifications();
+
+    /** Force a single configured feed to be reapplied on its next poll. */
+    void reapplyTripModifications(String feedId);
 }

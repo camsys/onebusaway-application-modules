@@ -45,7 +45,8 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
 
 
     @Override
-    public Optional<TripModificationDiff> computeDiff(String entityId,
+    public Optional<TripModificationDiff> computeDiff(String feedId,
+                                            String entityId,
                                             AgencyAndId tripAgencyAndId,
                                             List<StopTimeEntry> originalStopTimes,
                                             ShapePoints originalShape,
@@ -70,7 +71,8 @@ public class TripModificationDiffComputerImpl implements TripModificationDiffCom
             long lastUpdated = System.currentTimeMillis();
             ShapeModificationDiff shapeDiff = getShapeDiff(tripId, replacementShapeId, originalShape, shapeOverlapThreshold);
 
-            return Optional.of(new TripModificationDiff(entityId,
+            return Optional.of(new TripModificationDiff(feedId,
+                    entityId,
                     tripId,
                     effectiveServiceDate,
                     lastUpdated,

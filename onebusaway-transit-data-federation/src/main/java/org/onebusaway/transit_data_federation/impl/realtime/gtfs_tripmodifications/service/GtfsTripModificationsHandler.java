@@ -24,14 +24,18 @@ import java.util.Collection;
 public interface GtfsTripModificationsHandler {
 
     /**
-     * Process TripModificationsChanges; make the appropriate changes in the graph.
+     * Process TripModificationsChanges for a given feed; make the appropriate changes in the graph.
      *
+     * @param feedId identifies which configured feed these changes came from
      * @param tripModificationsChanges to process
      */
 
-    void handleTripModifications(TripModificationsChanges tripModificationsChanges,
+    void handleTripModifications(String feedId,
+                                 TripModificationsChanges tripModificationsChanges,
                                  TripModificationConfiguration tripModificationConfiguration);
 
 
-    void resetLastUpdatedTime();
+    void resetLastUpdatedTime(String feedId);
+
+    boolean isApplying();
 }

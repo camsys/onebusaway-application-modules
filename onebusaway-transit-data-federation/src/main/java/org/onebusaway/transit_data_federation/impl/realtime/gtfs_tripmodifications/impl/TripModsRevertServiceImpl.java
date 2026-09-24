@@ -28,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class TripModsRevertServiceImpl implements TripModsRevertService {
@@ -35,9 +37,12 @@ public class TripModsRevertServiceImpl implements TripModsRevertService {
 
     private final TripModsShapeUpdateService _tripModsShapeUpdateService;
     private final TripModsTripModificationUpdateService _tripModificationUpdateService;
-    private AddedStopsResult _lastKnownStopResults;
-    private AddedShapesResult _lastKnownShapeResults;
-    private ModifiedTripsResult _lastKnownTripModificationResults;
+
+    // Tracked per feed id so that reverting one feed's changes can never touch another feed's
+    // currently-applied state.
+    private final Map<String, AddedStopsResult> _lastKnownStopResultsByFeed = new ConcurrentHashMap<>();
+    private final Map<String, AddedShapesResult> _lastKnownShapeResultsByFeed = new ConcurrentHashMap<>();
+    private final Map<String, ModifiedTripsResult> _lastKnownTripModificationResultsByFeed = new ConcurrentHashMap<>();
 
 
     @Autowired
@@ -48,73 +53,93 @@ public class TripModsRevertServiceImpl implements TripModsRevertService {
     }
 
     @Override
-    public AddedStopsResult getLastKnownStopResults() {
-        return _lastKnownStopResults;
+    public AddedStopsResult getLastKnownStopResults(String feedId) {
+        return _lastKnownStopResultsByFeed.get(feedId);
     }
 
     @Override
-    public void setLastKnownStopResults(AddedStopsResult lastKnownStopResults) {
-        _lastKnownStopResults = lastKnownStopResults;
+    public void setLastKnownStopResults(String feedId, AddedStopsResult lastKnownStopResults) {
+        putOrRemove(_lastKnownStopResultsByFeed, feedId, lastKnownStopResults);
     }
 
     @Override
-    public AddedShapesResult getLastKnownShapeResults() {
-        return _lastKnownShapeResults;
+    public AddedShapesResult getLastKnownShapeResults(String feedId) {
+        return _lastKnownShapeResultsByFeed.get(feedId);
     }
 
     @Override
-    public void setLastKnownShapeResults(AddedShapesResult lastKnownShapeResults) {
-        _lastKnownShapeResults = lastKnownShapeResults;
+    public void setLastKnownShapeResults(String feedId, AddedShapesResult lastKnownShapeResults) {
+        putOrRemove(_lastKnownShapeResultsByFeed, feedId, lastKnownShapeResults);
     }
 
     @Override
-    public ModifiedTripsResult getLastKnownTripModificationResults() {
-        return _lastKnownTripModificationResults;
+    public ModifiedTripsResult getLastKnownTripModificationResults(String feedId) {
+        return _lastKnownTripModificationResultsByFeed.get(feedId);
     }
 
     @Override
-    public void setLastKnownTripModificationResults(ModifiedTripsResult lastKnownTripModificationResults) {
-        _lastKnownTripModificationResults = lastKnownTripModificationResults;
+    public void setLastKnownTripModificationResults(String feedId, ModifiedTripsResult lastKnownTripModificationResults) {
+        putOrRemove(_lastKnownTripModificationResultsByFeed, feedId, lastKnownTripModificationResults);
     }
 
     @Override
-    public void revertPreviousChanges() {
-        revertAddedTrips();
-        revertAddedShapes();
+    public void revertPreviousChanges(String feedId) {
+        revertAddedTrips(feedId);
+        revertAddedShapes(feedId);
         // TODO implement revert Added Stops
-        revertAddedStops();
+        revertAddedStops(feedId);
     }
 
-    void revertAddedTrips() {
-        if (_lastKnownTripModificationResults != null) {
-            ModifiedTripsResult result =  _tripModificationUpdateService.updateTrips(
-                    _lastKnownTripModificationResults.getOriginalTrips());
+    @Override
+    public void clearAll() {
+        _lastKnownStopResultsByFeed.clear();
+        _lastKnownShapeResultsByFeed.clear();
+        _lastKnownTripModificationResultsByFeed.clear();
+    }
 
-            _log.info("Successfully reverted {} previously added trips: {}.",
+    private <T> void putOrRemove(Map<String, T> map, String feedId, T value) {
+        if (value == null) {
+            map.remove(feedId);
+        } else {
+            map.put(feedId, value);
+        }
+    }
+
+    void revertAddedTrips(String feedId) {
+        ModifiedTripsResult lastKnownTripModificationResults = _lastKnownTripModificationResultsByFeed.get(feedId);
+        if (lastKnownTripModificationResults != null) {
+            ModifiedTripsResult result = _tripModificationUpdateService.updateTrips(
+                    lastKnownTripModificationResults.getOriginalTrips());
+
+            _log.info("Successfully reverted {} previously added trips for feed {}: {}.",
                     result.getSuccessfullyUpdatedTripsCount(),
+                    feedId,
                     result.getSuccessfullyUpdatedTripIds());
 
-            if(result.getFailedUpdatedTripsCount() > 0){
-                _log.warn("Failed to revert {} previously added trips: {}.",
+            if (result.getFailedUpdatedTripsCount() > 0) {
+                _log.warn("Failed to revert {} previously added trips for feed {}: {}.",
                         result.getFailedUpdatedTripsCount(),
+                        feedId,
                         result.getFailedUpdatedTripIdsAsString());
             }
         }
     }
 
-    void revertAddedShapes() {
-        if (_lastKnownShapeResults != null) {
-            List<AgencyAndId> shapeIdsToRemove = _lastKnownShapeResults.getSuccessfullyUpdatedShapeIds();
+    void revertAddedShapes(String feedId) {
+        AddedShapesResult lastKnownShapeResults = _lastKnownShapeResultsByFeed.get(feedId);
+        if (lastKnownShapeResults != null) {
+            List<AgencyAndId> shapeIdsToRemove = lastKnownShapeResults.getSuccessfullyUpdatedShapeIds();
             _tripModsShapeUpdateService.removeShapes(shapeIdsToRemove);
-            _log.info("Successfully reverted {} previously added shapes: {}.",
-                    _lastKnownShapeResults.getSuccessfullyUpdatedShapeCount(),
-                    _lastKnownShapeResults.getSuccessfullyUpdatedShapeIdsAsString());
+            _log.info("Successfully reverted {} previously added shapes for feed {}: {}.",
+                    lastKnownShapeResults.getSuccessfullyUpdatedShapeCount(),
+                    feedId,
+                    lastKnownShapeResults.getSuccessfullyUpdatedShapeIdsAsString());
         }
     }
 
-    void revertAddedStops() {
-        _log.info("Reverting added stops not yet implemented.");
-        if (_lastKnownStopResults != null) {
+    void revertAddedStops(String feedId) {
+        _log.info("Reverting added stops not yet implemented (feed {}).", feedId);
+        if (_lastKnownStopResultsByFeed.get(feedId) != null) {
         }
     }
 }

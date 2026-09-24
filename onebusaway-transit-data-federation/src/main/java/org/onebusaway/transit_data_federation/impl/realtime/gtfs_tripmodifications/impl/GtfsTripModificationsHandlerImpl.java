@@ -34,17 +34,21 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHandler {
 
     private static final Logger _log = LoggerFactory.getLogger(GtfsTripModificationsHandlerImpl.class);
 
-    private byte[] _lastKnownHash = null;
+    // Tracked per feed id so that one feed's poll cycle can never revert or short-circuit
+    // another feed's independently-tracked state.
+    private final Map<String, byte[]> _lastKnownHashByFeed = new ConcurrentHashMap<>();
+
+    private final Map<String, LocalDateTime> _reapplyTimeByFeed = new ConcurrentHashMap<>();
 
     private TimeService _timeService;
-
-    private LocalDateTime _reapplyTime;
 
     private RefreshService _refreshService;
 
@@ -129,18 +133,21 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
     }
 
     @Override
-    public void handleTripModifications(TripModificationsChanges tripModificationsChanges,
+    public void handleTripModifications(String feedId,
+                                        TripModificationsChanges tripModificationsChanges,
                                         TripModificationConfiguration tripModificationConfiguration) {
 
         synchronized (_applyingLock) {
-            // Check whether changes should be re-applied
-            if (!shouldApplyChanges(tripModificationsChanges)) {
-                _log.info("Not applying Trip Modification changes.");
+            // Check whether changes should be re-applied. A single shared lock across all feeds
+            // is intentional here (not per-feed): concurrently mutating the graph from two feeds'
+            // schedulers firing at the same instant would be unsafe regardless of feed scoping.
+            if (!shouldApplyChanges(feedId, tripModificationsChanges)) {
+                _log.info("Not applying Trip Modification changes for feed {}.", feedId);
                 return;
             }
             try {
                 _isApplying = true;
-                _tripModsRevertService.revertPreviousChanges();
+                _tripModsRevertService.revertPreviousChanges(feedId);
 
                 //AddedStops addedStops = _tripModsStopCreationService.createAddedStops(tripModificationsChanges.getStops());
                 AddedShapes addedShapes = _tripModsShapeCreationService.createAddedShapes(tripModificationsChanges.getShapes());
@@ -149,23 +156,23 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
                 AddedShapesResult addedShapesResult = _tripModsShapeUpdateService.addShapes(addedShapes.getAddedShapes());
 
                 ModifiedTrips modifiedTrips = _tripModificationCreationService.createModifiedTrips(tripModificationsChanges.getTripModifications());
-                Collection<TripModificationDiff> diffs = _tripModificationDiffService.createDiffsFromModifications(modifiedTrips, tripModificationConfiguration);
+                Collection<TripModificationDiff> diffs = _tripModificationDiffService.createDiffsFromModifications(feedId, modifiedTrips, tripModificationConfiguration);
 
-                _tripModsRevertService.setLastKnownShapeResults(addedShapesResult);
+                _tripModsRevertService.setLastKnownShapeResults(feedId, addedShapesResult);
 
                 ModifiedTripsResult modifiedTripsResult = _tripModificationUpdateService.updateTrips(modifiedTrips.getModifiedTrips());
-                _tripModsRevertService.setLastKnownTripModificationResults(modifiedTripsResult);
+                _tripModsRevertService.setLastKnownTripModificationResults(feedId, modifiedTripsResult);
 
                 if (hasSuccessfulUpdates(addedShapesResult, modifiedTripsResult)) {
                     forceFlush();
-                    _lastKnownHash = tripModificationsChanges.getHash();
-                    _reapplyTime = getReapplyTime(modifiedTrips);
+                    _lastKnownHashByFeed.put(feedId, tripModificationsChanges.getHash());
+                    _reapplyTimeByFeed.put(feedId, getReapplyTime(modifiedTrips));
                 } else {
-                    _log.warn("No trip modifications were successfully applied; will retry on next poll.");
+                    _log.warn("No trip modifications were successfully applied for feed {}; will retry on next poll.", feedId);
                 }
             }
             catch (Exception ex) {
-                _log.error("Error processing trip modifications", ex);
+                _log.error("Error processing trip modifications for feed {}", feedId, ex);
             }
             finally {
                 _isApplying = false;
@@ -184,31 +191,33 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
         return false;
     }
 
-    boolean shouldApplyChanges(TripModificationsChanges tripModificationsChanges) {
-        if (_lastKnownHash == null) {
-            _log.info("First update for Trip Modifications feed.");
+    boolean shouldApplyChanges(String feedId, TripModificationsChanges tripModificationsChanges) {
+        byte[] lastKnownHash = _lastKnownHashByFeed.get(feedId);
+        if (lastKnownHash == null) {
+            _log.info("First update for Trip Modifications feed {}.", feedId);
             if (tripModificationsChanges.hasChanges()) {
                 return true;
             } else {
-                _log.info("Trip Modifications feed is empty, ignoring.");
+                _log.info("Trip Modifications feed {} is empty, ignoring.", feedId);
                 return false;
             }
-        } else if (!Arrays.equals(_lastKnownHash, tripModificationsChanges.getHash())) {
-            _log.info("Trip Modifications feed changes detected, updating feed.");
+        } else if (!Arrays.equals(lastKnownHash, tripModificationsChanges.getHash())) {
+            _log.info("Trip Modifications feed {} changes detected, updating feed.", feedId);
             return true;
         }
 
-        if(_reapplyTime != null){
+        LocalDateTime reapplyTime = _reapplyTimeByFeed.get(feedId);
+        if (reapplyTime != null) {
             LocalDateTime currentTime = _timeService.getCurrentTime();
-            if(currentTime.isAfter(_reapplyTime)){
-                _log.debug("Trip Modifications Feed is the same as previously processed, check reapply time ({}), current time = {}",
-                        _reapplyTime, currentTime);
-                _log.info("The current time = {} is after reapply time {}", currentTime, _reapplyTime);
+            if (currentTime.isAfter(reapplyTime)) {
+                _log.debug("Trip Modifications Feed {} is the same as previously processed, check reapply time ({}), current time = {}",
+                        feedId, reapplyTime, currentTime);
+                _log.info("The current time = {} is after reapply time {} for feed {}", currentTime, reapplyTime, feedId);
                 return true;
             }
         }
 
-        _log.debug("No changes detected in Trip Modifications feed.");
+        _log.debug("No changes detected in Trip Modifications feed {}.", feedId);
         return false;
     }
 
@@ -253,20 +262,24 @@ public class GtfsTripModificationsHandlerImpl implements GtfsTripModificationsHa
     @Refreshable(dependsOn = RefreshableResources.TRANSIT_GRAPH)
     public void onTransitGraphRefresh() {
         synchronized (_applyingLock) {
-            _log.info("Transit graph refreshed; resetting Trip Modifications state so changes are reapplied.");
-            _lastKnownHash = null;
-            _reapplyTime = null;
-            _tripModsRevertService.setLastKnownShapeResults(null);
-            _tripModsRevertService.setLastKnownTripModificationResults(null);
+            _log.info("Transit graph refreshed; resetting Trip Modifications state for all feeds so changes are reapplied.");
+            _lastKnownHashByFeed.clear();
+            _reapplyTimeByFeed.clear();
+            _tripModsRevertService.clearAll();
         }
     }
 
     @Override
-    public void resetLastUpdatedTime() {
+    public void resetLastUpdatedTime(String feedId) {
         synchronized (_applyingLock) {
-            _lastKnownHash = null;
-            _reapplyTime = null;
+            _lastKnownHashByFeed.remove(feedId);
+            _reapplyTimeByFeed.remove(feedId);
         }
+    }
+
+    @Override
+    public boolean isApplying() {
+        return _isApplying;
     }
 
 }
