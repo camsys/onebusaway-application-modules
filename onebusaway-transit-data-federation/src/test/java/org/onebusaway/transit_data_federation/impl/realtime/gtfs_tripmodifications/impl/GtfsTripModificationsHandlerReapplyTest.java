@@ -28,6 +28,8 @@ import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificatio
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -44,6 +46,8 @@ public class GtfsTripModificationsHandlerReapplyTest {
     @InjectMocks
     private GtfsTripModificationsHandlerImpl _handler;
 
+    private static final String FEED_A = "feed-a";
+    private static final String FEED_B = "feed-b";
     private static final byte[] HASH = {1, 2, 3};
     private static final LocalDate TODAY = LocalDate.of(2026, 3, 15);
     private static final LocalDateTime REAPPLY_TIME = TODAY.plusDays(1).atTime(3, 0);
@@ -53,16 +57,16 @@ public class GtfsTripModificationsHandlerReapplyTest {
         _changes.setHash(HASH);
         //when(_timeService.getCurrentDate()).thenReturn(TODAY);
 
-        // Simulate a prior successful feed application
-        setField("_lastKnownHash", HASH);
-        setField("_reapplyTime", REAPPLY_TIME);
+        // Simulate a prior successful feed application for FEED_A
+        setMapField("_lastKnownHashByFeed", FEED_A, HASH);
+        setMapField("_reapplyTimeByFeed", FEED_A, REAPPLY_TIME);
     }
 
     @Test
     public void testReapplyTime_null_doesNotEnterBranch() {
-        setField("_reapplyTime", null);
-        assertFalse("Should not apply when _reapplyTime is null",
-                _handler.shouldApplyChanges(_changes));
+        clearMapEntry("_reapplyTimeByFeed", FEED_A);
+        assertFalse("Should not apply when reapplyTime is null",
+                _handler.shouldApplyChanges(FEED_A, _changes));
     }
 
     @Test
@@ -70,7 +74,7 @@ public class GtfsTripModificationsHandlerReapplyTest {
         when(_timeService.getCurrentTime()).thenReturn(REAPPLY_TIME.minusMinutes(1));
 
         assertFalse("Should not apply when current time is before reapply time",
-                _handler.shouldApplyChanges(_changes));
+                _handler.shouldApplyChanges(FEED_A, _changes));
     }
 
     @Test
@@ -79,7 +83,7 @@ public class GtfsTripModificationsHandlerReapplyTest {
         when(_timeService.getCurrentTime()).thenReturn(REAPPLY_TIME);
 
         assertFalse("Should not apply when current time equals reapply time",
-                _handler.shouldApplyChanges(_changes));
+                _handler.shouldApplyChanges(FEED_A, _changes));
     }
 
     @Test
@@ -87,7 +91,7 @@ public class GtfsTripModificationsHandlerReapplyTest {
         when(_timeService.getCurrentTime()).thenReturn(REAPPLY_TIME.plusSeconds(1));
 
         assertTrue("Should apply when current time is just after reapply time",
-                _handler.shouldApplyChanges(_changes));
+                _handler.shouldApplyChanges(FEED_A, _changes));
     }
 
     @Test
@@ -95,19 +99,69 @@ public class GtfsTripModificationsHandlerReapplyTest {
         when(_timeService.getCurrentTime()).thenReturn(REAPPLY_TIME.plusHours(5));
 
         assertTrue("Should apply when current time is well after reapply time",
-                _handler.shouldApplyChanges(_changes));
+                _handler.shouldApplyChanges(FEED_A, _changes));
     }
 
-    // --- Helper ---
+    @Test
+    public void testUnknownFeed_firstUpdate_withActualChanges_shouldApply() {
+        // FEED_B has no tracked state at all, unlike FEED_A set up in setUp(). Unlike the shared
+        // _changes fixture (hash only, no content), this one has an actual stop change so
+        // hasChanges() is true.
+        TripModificationsChanges changesWithContent = new TripModificationsChanges();
+        changesWithContent.setHash(HASH);
+        changesWithContent.addStop("entity-1", com.google.transit.realtime.GtfsRealtime.Stop.newBuilder().build());
 
-    private void setField(String fieldName, Object value) {
+        assertTrue("An unrecognized feed with actual changes should be treated as a first update",
+                _handler.shouldApplyChanges(FEED_B, changesWithContent));
+    }
+
+    @Test
+    public void testUnknownFeed_firstUpdate_emptyFeed_shouldNotApply() {
+        // The shared _changes fixture only carries a hash, no shapes/stops/tripMods, so
+        // hasChanges() is false — an empty feed should be ignored even on first sight.
+        assertFalse("An unrecognized feed with no actual changes should not be applied",
+                _handler.shouldApplyChanges(FEED_B, _changes));
+    }
+
+    @Test
+    public void testOneFeedsReapplyTime_doesNotForceAnotherFeedToReapply() {
+        // FEED_B has the same hash as FEED_A but its own reapply time has not yet passed
+        setMapField("_lastKnownHashByFeed", FEED_B, HASH);
+        setMapField("_reapplyTimeByFeed", FEED_B, REAPPLY_TIME.plusHours(1));
+
+        when(_timeService.getCurrentTime()).thenReturn(REAPPLY_TIME.plusMinutes(30));
+
+        assertTrue("FEED_A's reapply time has passed and should reapply",
+                _handler.shouldApplyChanges(FEED_A, _changes));
+        assertFalse("FEED_B's own (later) reapply time has not passed and should not reapply",
+                _handler.shouldApplyChanges(FEED_B, _changes));
+    }
+
+    // --- Helpers ---
+
+    @SuppressWarnings("unchecked")
+    private <V> void setMapField(String fieldName, String feedId, V value) {
+        Map<String, V> map = (Map<String, V>) getField(fieldName);
+        map.put(feedId, value);
+    }
+
+    private void clearMapEntry(String fieldName, String feedId) {
+        ((Map<?, ?>) getField(fieldName)).remove(feedId);
+    }
+
+    private Object getField(String fieldName) {
         try {
             java.lang.reflect.Field field =
                     GtfsTripModificationsHandlerImpl.class.getDeclaredField(fieldName);
             field.setAccessible(true);
-            field.set(_handler, value);
+            Object value = field.get(_handler);
+            if (value == null) {
+                value = new ConcurrentHashMap<>();
+                field.set(_handler, value);
+            }
+            return value;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to set field: " + fieldName, e);
+            throw new RuntimeException("Failed to access field: " + fieldName, e);
         }
     }
 }

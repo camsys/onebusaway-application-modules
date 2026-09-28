@@ -21,18 +21,30 @@ import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import java.util.Collection;
 import java.util.Map;
 
+/**
+ * Caches Trip Modification diffs per feed. Multiple feeds may report a diff for the same trip id;
+ * getAll()/getAllById()/get() resolve exactly one winner per trip across all feeds by the feeds'
+ * registered priority (lower value wins), logging a warning when feeds actually disagree.
+ */
 public interface TripModificationDiffCache {
-    void put(AgencyAndId tripId, TripModificationDiff diff);
+    void put(String feedId, AgencyAndId tripId, TripModificationDiff diff);
 
     TripModificationDiff get(AgencyAndId tripId);
 
-    void remove(AgencyAndId tripId);
+    void remove(String feedId, AgencyAndId tripId);
 
-    void replaceAll(Map<AgencyAndId, TripModificationDiff> newEntries);
+    void replaceAll(String feedId, Map<AgencyAndId, TripModificationDiff> newEntries);
 
     Collection<TripModificationDiff> getAll();
 
     Map<AgencyAndId, TripModificationDiff> getAllById();
 
+    /** Clear only the entries contributed by the given feed. */
+    void clear(String feedId);
+
+    /** Clear every feed's entries. */
     void clear();
+
+    /** Register (or update) the priority used to resolve conflicts for the given feed. */
+    void registerFeedPriority(String feedId, int priority);
 }

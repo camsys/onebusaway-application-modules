@@ -91,7 +91,8 @@ public class TripModificationDiffServiceImpl implements TripModificationDiffServ
     }
 
     @Override
-    public Collection<TripModificationDiff> createDiffsFromModifications(ModifiedTrips modifiedTrips,
+    public Collection<TripModificationDiff> createDiffsFromModifications(String feedId,
+                                                                         ModifiedTrips modifiedTrips,
                                                                          TripModificationConfiguration tripModificationConfiguration) {
 
         Map<AgencyAndId, TripModificationDiff> newCache = new HashMap<>();
@@ -120,6 +121,7 @@ public class TripModificationDiffServiceImpl implements TripModificationDiffServ
 
 
             Optional<TripModificationDiff> diff = _tripModificationDiffComputer.computeDiff(
+                    feedId,
                     entityId,
                     tripId,
                     originalTripStopTimes,
@@ -139,9 +141,9 @@ public class TripModificationDiffServiceImpl implements TripModificationDiffServ
             newCache.put(tripEntry.getId(), diff.get());
         }
 
-        _diffCache.replaceAll(newCache);
+        _diffCache.replaceAll(feedId, newCache);
 
-        return _diffCache.getAll();
+        return newCache.values();
     }
 
 

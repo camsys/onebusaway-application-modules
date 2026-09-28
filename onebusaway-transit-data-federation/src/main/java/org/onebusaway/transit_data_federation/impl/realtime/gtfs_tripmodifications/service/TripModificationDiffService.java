@@ -39,6 +39,7 @@ public interface TripModificationDiffService {
 
     Optional<TripModificationDiff> getTripModificationDiffs(AgencyAndId tripId, LocalDate date);
 
-    Collection<TripModificationDiff> createDiffsFromModifications(ModifiedTrips modifiedTrips,
+    Collection<TripModificationDiff> createDiffsFromModifications(String feedId,
+                                                                  ModifiedTrips modifiedTrips,
                                                                   TripModificationConfiguration tripModificationConfiguration);
 }

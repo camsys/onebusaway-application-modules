@@ -20,17 +20,20 @@ import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodificatio
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.model.ModifiedTripsResult;
 
 public interface TripModsRevertService {
-    AddedStopsResult getLastKnownStopResults();
+    AddedStopsResult getLastKnownStopResults(String feedId);
 
-    void setLastKnownStopResults(AddedStopsResult lastKnownStopResults);
+    void setLastKnownStopResults(String feedId, AddedStopsResult lastKnownStopResults);
 
-    AddedShapesResult getLastKnownShapeResults();
+    AddedShapesResult getLastKnownShapeResults(String feedId);
 
-    void setLastKnownShapeResults(AddedShapesResult lastKnownShapeResults);
+    void setLastKnownShapeResults(String feedId, AddedShapesResult lastKnownShapeResults);
 
-    ModifiedTripsResult getLastKnownTripModificationResults();
+    ModifiedTripsResult getLastKnownTripModificationResults(String feedId);
 
-    void setLastKnownTripModificationResults(ModifiedTripsResult lastKnownTripModificationResults);
+    void setLastKnownTripModificationResults(String feedId, ModifiedTripsResult lastKnownTripModificationResults);
 
-    void revertPreviousChanges();
+    void revertPreviousChanges(String feedId);
+
+    /** Discard last-known state for every feed, e.g. because the transit graph itself was refreshed. */
+    void clearAll();
 }

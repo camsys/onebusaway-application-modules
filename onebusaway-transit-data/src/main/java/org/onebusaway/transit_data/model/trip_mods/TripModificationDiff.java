@@ -22,8 +22,9 @@ import java.util.List;
 import java.util.Map;
 
 public class TripModificationDiff implements Serializable {
-    private static final long serialVersionUID = 3L;
+    private static final long serialVersionUID = 4L;
 
+    private final String feedId;
     private final String entityId;
     private final String tripId;
     private final long effectiveServiceDate;
@@ -35,7 +36,8 @@ public class TripModificationDiff implements Serializable {
     private final Map<Integer, StopTimeSnapshot> removedBySequence;
     private final Map<Integer, StopTimeSnapshot> addedBySequence;
 
-    public TripModificationDiff(String entityId,
+    public TripModificationDiff(String feedId,
+                                String entityId,
                                 String tripId,
                                 long effectiveServiceDate,
                                 long lastUpdated,
@@ -45,6 +47,7 @@ public class TripModificationDiff implements Serializable {
                                 ShapeModificationDiff shapeDiff,
                                 Map<Integer, StopTimeSnapshot> removedBySequence,
                                 Map<Integer, StopTimeSnapshot> addedBySequence) {
+        this.feedId = feedId;
         this.entityId = entityId;
         this.tripId = tripId;
         this.effectiveServiceDate = effectiveServiceDate;
@@ -55,6 +58,10 @@ public class TripModificationDiff implements Serializable {
         this.shapeDiff = shapeDiff;
         this.removedBySequence = removedBySequence;
         this.addedBySequence = addedBySequence;
+    }
+
+    public String getFeedId() {
+        return feedId;
     }
 
     public String getEntityId() {

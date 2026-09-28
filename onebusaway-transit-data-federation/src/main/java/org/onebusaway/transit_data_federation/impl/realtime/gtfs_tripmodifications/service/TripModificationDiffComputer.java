@@ -29,6 +29,7 @@ public interface TripModificationDiffComputer {
 
     /**
      * Compute the diff between the original and modified stop times for a trip, and return a TripModificationDiff object that captures the differences.
+     * @param feedId identifies which configured feed this modification came from
      * @param entityId GTFSRT entity id
      * @param tripId trip id
      * @param originalStopTimes original stop times for the trip
@@ -39,6 +40,7 @@ public interface TripModificationDiffComputer {
      * @return
      */
     Optional<TripModificationDiff> computeDiff(
+            String feedId,
             String entityId,
             AgencyAndId tripId,
             List<StopTimeEntry> originalStopTimes,
