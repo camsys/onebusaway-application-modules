@@ -56,9 +56,14 @@
         <qualifier value="smsDestinationAbbreviations" />
     </bean>
 
-    <!-- Optional notice appended to SMS responses; omit to disable
-    <bean id="smsServiceNotice" class="java.lang.String">
-        <constructor-arg value="Notice text here." />
+    <!-- Optional notice appended to SMS responses; omit to disable. Set it as a
+         property override, never as a java.lang.String bean (that breaks Struts).
+    <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
+        <property name="properties">
+            <props>
+                <prop key="smsServiceNoticeConfig.text">Notice text here.</prop>
+            </props>
+        </property>
     </bean>
     -->
 
