@@ -37,5 +37,6 @@
 <s:if test="%{hasAlerts()}">
     <s:property value="alertPresentText" />
 </s:if>
+<s:if test="serviceNotice != null"><div><s:property value="serviceNotice" /></div></s:if>
 </body>
 </html>

@@ -29,5 +29,6 @@
 <div>#setSearchLocation</div>
 <div>#bookmarks</div>
 
+<s:if test="serviceNotice != null"><div><s:property value="serviceNotice" /></div></s:if>
 </body>
 </html>

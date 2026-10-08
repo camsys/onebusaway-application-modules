@@ -16,6 +16,7 @@
 package org.onebusaway.sms.actions.sms;
 
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
@@ -25,6 +26,7 @@ import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.users.services.CurrentUserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 
 @ParentPackage("onebusaway-sms-webapp-default")
@@ -45,6 +47,15 @@ public class AbstractTextmarksAction extends NextActionSupport {
   protected CurrentUserService _currentUserService;
 
   protected String _text;
+
+  /**
+   * Optional notice appended to SMS responses, configured as the
+   * smsServiceNotice bean in data-sources.xml. Field-injected so there is no
+   * public setter for request parameters to override.
+   */
+  @Autowired(required = false)
+  @Qualifier("smsServiceNotice")
+  private String _serviceNotice;
 
   @Autowired
   public void setTransitDataService(TransitDataService transitDataService) {
@@ -67,5 +78,9 @@ public class AbstractTextmarksAction extends NextActionSupport {
 
   public String getText() {
     return _text;
+  }
+
+  public String getServiceNotice() {
+    return StringUtils.trimToNull(_serviceNotice);
   }
 }

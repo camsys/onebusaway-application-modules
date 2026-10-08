@@ -27,5 +27,6 @@
 
 <div>No stops were found with the stop id <s:property value="stopQuery"/>.</div>
 
+<s:if test="serviceNotice != null"><div><s:property value="serviceNotice" /></div></s:if>
 </body>
 </html>

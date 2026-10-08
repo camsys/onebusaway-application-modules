@@ -56,4 +56,10 @@
         <qualifier value="smsDestinationAbbreviations" />
     </bean>
 
+    <!-- Optional notice appended to SMS responses; omit to disable
+    <bean id="smsServiceNotice" class="java.lang.String">
+        <constructor-arg value="Notice text here." />
+    </bean>
+    -->
+
 </beans>
