@@ -48,7 +48,7 @@ public class AbstractTextmarksAction extends NextActionSupport {
   protected String _text;
 
   /**
-   * Optional notice appended to SMS responses
+   * Optional notices shown before and after the body of SMS responses
    */
   @Autowired
   private SmsServiceNoticeConfig _serviceNoticeConfig;
@@ -76,7 +76,11 @@ public class AbstractTextmarksAction extends NextActionSupport {
     return _text;
   }
 
-  public String getServiceNotice() {
-    return _serviceNoticeConfig.getText();
+  public String getServiceNoticeBefore() {
+    return _serviceNoticeConfig.getTextBefore();
+  }
+
+  public String getServiceNoticeAfter() {
+    return _serviceNoticeConfig.getTextAfter();
   }
 }

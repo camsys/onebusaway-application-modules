@@ -23,6 +23,7 @@
 <title>Real-Time Arrival Information</title>
 </head>
 <body>
+<s:if test="serviceNoticeBefore != null"><div><s:property value="serviceNoticeBefore" /></div></s:if>
 
 <s:iterator value="result.arrivalsAndDepartures">
     <s:set var="routeName"><oba:routeName value="trip.route" /></s:set>
@@ -37,6 +38,6 @@
 <s:if test="%{hasAlerts()}">
     <s:property value="alertPresentText" />
 </s:if>
-<s:if test="serviceNotice != null"><div><s:property value="serviceNotice" /></div></s:if>
+<s:if test="serviceNoticeAfter != null"><div><s:property value="serviceNoticeAfter" /></div></s:if>
 </body>
 </html>

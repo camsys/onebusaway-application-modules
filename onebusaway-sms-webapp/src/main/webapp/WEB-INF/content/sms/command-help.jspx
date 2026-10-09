@@ -24,11 +24,12 @@
 <title>Command Help</title>
 </head>
 <body>
+<s:if test="serviceNoticeBefore != null"><div><s:property value="serviceNoticeBefore" /></div></s:if>
 <div>Available commands:</div>
 <div>#help [commandName]</div>
 <div>#setSearchLocation</div>
 <div>#bookmarks</div>
 
-<s:if test="serviceNotice != null"><div><s:property value="serviceNotice" /></div></s:if>
+<s:if test="serviceNoticeAfter != null"><div><s:property value="serviceNoticeAfter" /></div></s:if>
 </body>
 </html>

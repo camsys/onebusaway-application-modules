@@ -20,24 +20,38 @@ import org.onebusaway.container.ConfigurationParameter;
 import org.springframework.stereotype.Component;
 
 /**
- * Holds an optional notice appended to SMS responses. Set it in
- * data-sources.xml through the PropertyOverrideConfigurer, e.g.
- * smsServiceNoticeConfig.text=...
+ * Holds optional notices shown before and after the body of SMS responses.
+ * Set them in data-sources.xml through the PropertyOverrideConfigurer, e.g.
+ * smsServiceNoticeConfig.textBefore=... and smsServiceNoticeConfig.textAfter=...
  */
 @Component("smsServiceNoticeConfig")
 public class SmsServiceNoticeConfig {
 
-  private String _text;
+  private String _textBefore;
+
+  private String _textAfter;
 
   @ConfigurationParameter
-  public void setText(String text) {
-    _text = text;
+  public void setTextBefore(String textBefore) {
+    _textBefore = textBefore;
+  }
+
+  @ConfigurationParameter
+  public void setTextAfter(String textAfter) {
+    _textAfter = textAfter;
   }
 
   /**
-   * @return the notice text, or null when unset or blank
+   * @return the notice shown before the body, or null when unset or blank
    */
-  public String getText() {
-    return StringUtils.trimToNull(_text);
+  public String getTextBefore() {
+    return StringUtils.trimToNull(_textBefore);
+  }
+
+  /**
+   * @return the notice shown after the body, or null when unset or blank
+   */
+  public String getTextAfter() {
+    return StringUtils.trimToNull(_textAfter);
   }
 }
