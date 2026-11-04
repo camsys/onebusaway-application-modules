@@ -28,9 +28,9 @@ import org.apache.struts2.json.JSONException;
 import org.apache.struts2.json.JSONUtil;
 
 import com.opensymphony.xwork2.util.ValueStack;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
 import com.opensymphony.xwork2.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JsonComponent extends ContextBean {
 
