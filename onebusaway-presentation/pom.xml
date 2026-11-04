@@ -10,6 +10,13 @@
 
     <name>onebusaway-presentation</name>
 
+    <!-- Only this module moves to Struts 6 (OBANYC-4247): onebusaway-nyc uses this jar on Struts 6, and the
+         two Struts versions are not binary compatible. The other webapps in this repo stay on the root version. -->
+    <properties>
+        <struts-version>6.12.0</struts-version>
+        <asm-version>9.10.1</asm-version>
+    </properties>
+
     <dependencies>
 
         <dependency>

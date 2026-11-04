@@ -27,8 +27,8 @@ import org.onebusaway.util.SystemTime;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.util.ValueStack;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DateComponent extends ContextBean {
 
@@ -148,19 +148,19 @@ public class DateComponent extends ContextBean {
   private String getFormat() {
     if (_format == null)
       return null;
-    return findStringIfAltSyntax(_format);
+    return findString(_format);
   }
 
   private String getDateStyle() {
     if (_dateStyle == null)
       return null;
-    return findStringIfAltSyntax(_dateStyle);
+    return findString(_dateStyle);
   }
 
   private String getTimeStyle() {
     if (_timeStyle == null)
       return null;
-    return findStringIfAltSyntax(_timeStyle);
+    return findString(_timeStyle);
   }
 
   private TimeZone getTimeZone() {
