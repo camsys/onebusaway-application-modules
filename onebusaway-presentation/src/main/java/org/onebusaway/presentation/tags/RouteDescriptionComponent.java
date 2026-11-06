@@ -23,8 +23,8 @@ import org.onebusaway.presentation.client.RoutePresenter;
 import org.onebusaway.transit_data.model.RouteBean;
 
 import com.opensymphony.xwork2.util.ValueStack;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RouteDescriptionComponent extends ContextBean {
 

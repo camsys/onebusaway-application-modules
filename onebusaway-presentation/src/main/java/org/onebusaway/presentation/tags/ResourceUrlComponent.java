@@ -25,8 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.util.ValueStack;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ResourceUrlComponent extends ContextBean {
 
@@ -55,7 +55,7 @@ public class ResourceUrlComponent extends ContextBean {
     if (_value == null)
       _value = "top";
 
-    String value = findStringIfAltSyntax(_value);
+    String value = findString(_value);
     
     Locale locale = Locale.getDefault();
     ActionContext ctx = ActionContext.getContext();
