@@ -22,8 +22,8 @@ import org.apache.struts2.components.ContextBean;
 import org.onebusaway.transit_data.model.NameBean;
 
 import com.opensymphony.xwork2.util.ValueStack;
-import com.opensymphony.xwork2.util.logging.Logger;
-import com.opensymphony.xwork2.util.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NameComponent extends ContextBean {
 
